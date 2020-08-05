@@ -45,7 +45,6 @@ def _zero_sum_node_decorator(state):
 
 def main(argv):
   del argv
-
   game = pyspiel.load_game(FLAGS.game)
   game_type = game.get_type()
 
