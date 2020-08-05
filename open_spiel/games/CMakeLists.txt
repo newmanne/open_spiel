@@ -1,4 +1,6 @@
 set(GAME_SOURCES
+  auction.cc
+  auction.h
   backgammon.cc
   backgammon.h
   battleship.cc
@@ -218,6 +220,11 @@ add_library(bridge_double_dummy_solver OBJECT
 )
 target_include_directories (bridge_double_dummy_solver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(bridge_double_dummy_solver PUBLIC DDS_NO_STATIC_INIT)
+
+add_executable(auction_test auction_test.cc ${OPEN_SPIEL_OBJECTS}
+               $<TARGET_OBJECTS:tests>)
+add_test(auction_test auction_test)
+
 
 add_executable(backgammon_test backgammon_test.cc ${OPEN_SPIEL_OBJECTS}
                $<TARGET_OBJECTS:tests>)

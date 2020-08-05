@@ -23,6 +23,8 @@ from absl import flags
 
 from open_spiel.python.algorithms import cfr
 from open_spiel.python.algorithms import exploitability
+from open_spiel.python.algorithms import policy_utils
+
 import pyspiel
 
 FLAGS = flags.FLAGS
@@ -41,8 +43,10 @@ def main(_):
   for i in range(FLAGS.iterations):
     cfr_solver.evaluate_and_update_policy()
     if i % FLAGS.print_freq == 0:
-      conv = exploitability.exploitability(game, cfr_solver.average_policy())
-      print("Iteration {} exploitability {}".format(i, conv))
+      #conv = exploitability.exploitability(game, cfr_solver.average_policy())
+      conv = exploitability.nash_conv(game, cfr_solver.average_policy())
+      print("Iteration {} nashconv {}".format(i, conv))
+      # print(policy_utils.policy_to_dict(cfr_solver.average_policy(), game))
 
 
 if __name__ == "__main__":
