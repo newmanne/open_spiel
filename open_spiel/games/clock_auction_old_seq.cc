@@ -26,21 +26,24 @@ namespace auction {
 namespace {
 // Default Parameters.
 constexpr int kDefaultPlayers = 2;
+// Number of licenses available for sale
 constexpr int kLicenses = 3;  
 constexpr int kInvalidOutcome = -1;
 constexpr int kInvalidBid = -1;
 
+// How much to multiply the price of a license by in each round
 constexpr double defaultIncrement = 0.1;
+// The starting price of a license
 constexpr double defaultOpenPrice = 100.0;
 
+// Type space. Assuming linear values for now, so your value for licenses is v * x, where x is the number of licenses you win
 constexpr double v1 = 125;
 constexpr double v2 = 150;
+// Budgets. You cannot bid above your budget.
 constexpr double b1 = 350;
 constexpr double b2 = 400;
 
 constexpr double move_limit = 4;
-
-
 
 // Facts about the game
 const GameType kGameType{/*short_name=*/"auction",
@@ -286,7 +289,7 @@ std::unique_ptr<State> AuctionGame::NewInitialState() const {
 int AuctionGame::MaxChanceOutcomes() const { return 2; }
 
 int AuctionGame::MaxGameLength() const {
-  return move_limit; // TODO: Figure out how long until neither player would want anything
+  return 2000; // TODO: This is just a large number I put in. I assume it isn't being used by the algorithms we are interested in using.
 }
 
 std::vector<int> AuctionGame::InformationStateTensorShape() const {

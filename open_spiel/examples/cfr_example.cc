@@ -21,6 +21,8 @@
 #include "open_spiel/algorithms/tabular_exploitability.h"
 #include "open_spiel/spiel.h"
 #include "open_spiel/spiel_utils.h"
+#include "open_spiel/game_transforms/turn_based_simultaneous_game.h"
+
 
 ABSL_FLAG(std::string, game_name, "kuhn_poker", "Game to run CFR on.");
 ABSL_FLAG(int, num_iters, 1000, "How many iters to run for.");
@@ -32,7 +34,9 @@ constexpr int kSeed = 230398247;
 int main(int argc, char **argv)
 {
   absl::ParseCommandLine(argc, argv);
-  std::shared_ptr<const open_spiel::Game> game = open_spiel::LoadGame(absl::GetFlag(FLAGS_game_name));
+  std::shared_ptr<const open_spiel::Game> game = open_spiel::LoadGameAsTurnBased("clock_auction");
+
+  // std::shared_ptr<const open_spiel::Game> game = open_spiel::LoadGame(absl::GetFlag(FLAGS_game_name));
   std::mt19937 rng(kSeed);
   
   open_spiel::algorithms::CFRSolver solver(*game);

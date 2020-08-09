@@ -12,25 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "open_spiel/spiel.h"
+#include "open_spiel/game_parameters.h"
+#include "open_spiel/game_transforms/turn_based_simultaneous_game.h"
+#include "open_spiel/spiel_utils.h"
 #include "open_spiel/tests/basic_tests.h"
 
 namespace open_spiel {
-namespace auction {
+namespace clock_auction {
 namespace {
 
 namespace testing = open_spiel::testing;
 
 void BasicAuctionTests() {
-  testing::LoadGameTest("auction");
-  testing::ChanceOutcomesTest(*LoadGame("auction"));
-  testing::RandomSimTest(*LoadGame("auction"), 100);
+  testing::LoadGameTest("clock_auction");
+  testing::ChanceOutcomesTest(*LoadGame("clock_auction"));
+  testing::RandomSimTest(*LoadGame("clock_auction"), 100);
 }
 
 }  // namespace
-}  // namespace liars_dice
+}  // namespace clock_auction
 }  // namespace open_spiel
 
 int main(int argc, char** argv) {
-  open_spiel::auction::BasicAuctionTests();
+  open_spiel::clock_auction::BasicAuctionTests();
 }
