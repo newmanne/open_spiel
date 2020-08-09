@@ -84,10 +84,11 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game, int num_licenses, d
       total_moves_(0),
       player_moves_(0),
       undersell_(false),
+      finished_(false),
       num_licenses_(num_licenses),
       increment_(increment),
       bidseq_(),
-      aggregate_demands(),
+      aggregate_demands_(),
       bidseq_str_() {
       for (auto p = Player{0}; p < num_players_; p++) {
         std::vector<int> demand;
@@ -109,11 +110,18 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
     player_moves_++;
   }
 
-  aggregate_demands.push_back(aggregateDemand);
+  aggregate_demands_.push_back(aggregateDemand);
 
-  if (aggregateDemand <= num_licenses_) {
-    // TODO: Undersell handling. Return to kChancePlayer if s is strictly less and only let one player drop
-    undersell_ = true;
+  bool undersell = aggregateDemand < num_licenses_;
+
+  if ((undersell && price_.size() == 1) || aggregateDemand == num_licenses_) {
+    // Undersell in the first round is allowed without penalty
+    finished_ = true;
+  } else if (undersell) {
+      finished_ = true;
+      // TODO: Think harder about what you want to do with undersell
+      // undersell_ = true;
+      // cur_player_ = kChancePlayerId;  
   } else {
     // Increment price
     price_.push_back(price_.back() * (1 + increment_));
@@ -128,10 +136,11 @@ std::string AuctionState::ActionToString(Player player, Action action_id) const 
   } else {
     if (value_.size() < num_players_) {
       return absl::StrCat("Player ", value_.size(), " was assigned a value of ", values[action_id]);
-    } else {
+    } else if (budget_.size() < num_players_) {
       return absl::StrCat("Player ", budget_.size(), " was assigned a budget of ", budgets[action_id]);
+    } else if (undersell_) {
+      return absl::StrCat("Assigning undersell drop to ", action_id);
     }
-    // TODO: Undersell handling
   }
 }
 
@@ -155,13 +164,25 @@ void AuctionState::DoApplyAction(Action action) {
     value_.push_back(values[action]); 
   } else if (budget_.size() < num_players_) {
     budget_.push_back(budgets[action]);
+  } else if (undersell_) {
+      SpielFatalError("Unimplemented undersell");  
+    // // If there is undersell and it is not the first round, we let one player drop randomly so that the entire supply of units are sold. This is a bit strange, but the best I can think of without enhancing the action space to include intra-round bidding
+    // // int prevDemands = aggregate_demands.end()[-2];
+    // int allowedDrops = num_licenses_ - aggregate_demands_.back();
+    // bidseq_[action].push_back(bidseq_[action].back() - allowedDrops);
+    // SPIEL_CHECK_GE(bidseq_[action].back(), 0);
+
+    // int aggregateDemand = 0;
+    // for (auto p = Player{0}; p < num_players_; ++p) {
+    //   aggregateDemand += bidseq_[p].back();
+    // }
+    // SPIEL_CHECK_EQ(aggregateDemand, num_licenses_);
+    // finished_ = true;
   }
-  
+
   if (budget_.size() == num_players_) {
     cur_player_ = kSimultaneousPlayerId;
   }
-
-  // TODO: UNDERSELL HANDLING
 }
 
 std::vector<Action> AuctionState::LegalActions(Player player) const {
@@ -192,13 +213,8 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
 std::vector<std::pair<Action, double>> AuctionState::ChanceOutcomes() const {
   SPIEL_CHECK_TRUE(IsChanceNode());
   ActionsAndProbs valuesAndProbs;
-  if (value_.size() < num_players_) {
-    valuesAndProbs.push_back(std::make_pair(0, 1. / 2));
-    valuesAndProbs.push_back(std::make_pair(1, 1. / 2));
-  } else if (budget_.size() < num_players_) {
-    valuesAndProbs.push_back(std::make_pair(0, 1. / 2));
-    valuesAndProbs.push_back(std::make_pair(1, 1. / 2));
-  } 
+  valuesAndProbs.push_back(std::make_pair(0, 1. / 2));
+  valuesAndProbs.push_back(std::make_pair(1, 1. / 2));
   return valuesAndProbs;
 }
 
@@ -213,7 +229,7 @@ std::string AuctionState::InformationStateString(Player player) const {
     absl::StrAppend(&result, absl::StrCat("b", budget_[player]));
   }
   for (int i = 0; i < bidseq_[player].size(); i++) {
-    absl::StrAppend(&result, absl::StrCat("r", i + 1, " p", player, " b", bidseq_[player][i], " d", aggregate_demands[i], "\n"));
+    absl::StrAppend(&result, absl::StrCat("r", i + 1, " p", player, " b", bidseq_[player][i], " d", aggregate_demands_[i], "\n"));
   }
   return result;
 }
@@ -235,14 +251,12 @@ std::string AuctionState::ToString() const {
 }
 
 bool AuctionState::IsTerminal() const { 
-  // TODO: Should have the one more chance node for undersell...
-  return undersell_ || player_moves_ >= move_limit; 
+  return finished_ || player_moves_ >= move_limit; 
 }
 
 std::vector<double> AuctionState::Returns() const {
   std::vector<double> returns(num_players_, 0.0);
   for (auto p = Player{0}; p < num_players_; p++) {
-    // TODO: This doesn't account for undersell tie-breaking, which may require price[-2]
     returns[p] = (value_[p] - price_.back()) * bidseq_[p].back();
   }
   return returns;

@@ -68,8 +68,9 @@ class AuctionState : public SimMoveState {
   std::vector<double> price_;
   std::vector<double> value_;
   std::vector<double> budget_;
-  std::vector<int> aggregate_demands;
+  std::vector<int> aggregate_demands_;
   
+  bool finished_;
   bool undersell_;
   
   int num_licenses_;
@@ -85,7 +86,7 @@ class AuctionGame : public Game {
   std::unique_ptr<State> NewInitialState() const override;
   int MaxChanceOutcomes() const override;
   int NumPlayers() const override { return num_players_; }
-  double MinUtility() const override { return 0; } 
+  double MinUtility() const override { return -1000; } // TODO: Not a real calculation, just assuming we won't use this
   double MaxUtility() const override { return (150 - open_price_) * num_licenses_; } // Winning all licenses at the opening price with the highest value TODO: Make this depend on values() since I"ll forget to change it
   std::shared_ptr<const Game> Clone() const override {
     return std::shared_ptr<const Game>(new AuctionGame(*this));
