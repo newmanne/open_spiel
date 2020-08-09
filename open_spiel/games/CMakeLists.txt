@@ -1,8 +1,8 @@
 set(GAME_SOURCES
   amazons.cc
   amazons.h
-  auction.cc
-  auction.h
+  clock_auction.cc
+  clock_auction.h
   backgammon.cc
   backgammon.h
   bargaining.cc
@@ -257,13 +257,17 @@ target_include_directories (bridge_double_dummy_solver PUBLIC ${CMAKE_CURRENT_SO
 target_compile_definitions(bridge_double_dummy_solver PUBLIC DDS_NO_STATIC_INIT)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 add_executable(amazons_test amazons_test.cc ${OPEN_SPIEL_OBJECTS}
                $<TARGET_OBJECTS:tests>)
 add_test(amazons_test amazons_test)
 =======
 add_executable(auction_test auction_test.cc ${OPEN_SPIEL_OBJECTS}
+=======
+add_executable(clock_auction_test clock_auction_test.cc ${OPEN_SPIEL_OBJECTS}
+>>>>>>> Add simultaneous clock auction game
                $<TARGET_OBJECTS:tests>)
-add_test(auction_test auction_test)
+add_test(clock_auction_test clock_auction_test)
 
 >>>>>>> Simple auction game
 
