@@ -100,16 +100,15 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game, int num_licenses, d
 void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
   // Check the actions are valid.
   SPIEL_CHECK_EQ(actions.size(), num_players_);
-  int aggregateDemand = 0;
   for (auto p = Player{0}; p < num_players_; ++p) {
     const int action = actions[p];
     SPIEL_CHECK_GE(action, 0);
     SPIEL_CHECK_LE(action, bidseq_[p].empty() ? num_licenses_ : bidseq_[p].back());
     bidseq_[p].push_back(action);
-    aggregateDemand += action;
     player_moves_++;
   }
 
+  int aggregateDemand = this->aggregateDemand();
   aggregate_demands_.push_back(aggregateDemand);
 
   bool undersell = aggregateDemand < num_licenses_;
@@ -128,17 +127,14 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
       }
     }
     if (droppers.size() > 1) {
+      // Chance will decide who gets to drop
       cur_player_ = kChancePlayerId;  
     } else {
-      // In some cases, only one player has dropped. In those cases, we don't need to invoke the chance node, since the solution is deterministic. (Current implementation is correct, just might waste a chance node).
-      SPIEL_CHECK_EQ(droppers.size(), 1);
-      if (num_players_ > 2) {
-          SpielFatalError("Unimplemented tiebreaking with > 2 players");  
-      }
-
+      // In some cases, only one player has dropped. In those cases, we don't need to invoke the chance node, since the solution is deterministic
       // This player can drop as much as able
       int demandWithoutI = aggregateDemand - bidseq_[droppers[0]].back();
       bidseq_[droppers[0]].end()[-1] = num_licenses_ - demandWithoutI;
+      finished_ = true;
     }
   } else {
     // Increment price
@@ -150,14 +146,14 @@ std::string AuctionState::ActionToString(Player player, Action action_id) const 
   if (player == kSimultaneousPlayerId)
     return FlatJointActionToString(action_id);
   if (player != kChancePlayerId) {
-    return absl::StrCat("Player ", player, " bid for ", action_id, " licenses");
+    return absl::StrCat("Bid for ", action_id, " licenses");
   } else {
     if (value_.size() < num_players_) {
       return absl::StrCat("Player ", value_.size(), " was assigned a value of ", values[action_id]);
     } else if (budget_.size() < num_players_) {
       return absl::StrCat("Player ", budget_.size(), " was assigned a budget of ", budgets[action_id]);
     } else if (undersell_) {
-      return absl::StrCat("Assigning undersell drop to ", action_id);
+      return absl::StrCat("Undersell! Allowing player ", action_id, " to drop");
     }
   }
 }
@@ -200,38 +196,29 @@ void AuctionState::DoApplyAction(Action action) {
   } else if (budget_.size() < num_players_) {
     budget_.push_back(budgets[action]);
   } else if (undersell_) {
-    int allowedDrops = 0;
     std::vector<int> requestedDrops = this->requestedDrops();
+    // Copy over the bids
     for (auto p = Player{0}; p < num_players_; ++p) {
-      allowedDrops += bidseq_[p].back();
+      bidseq_[p].end()[-1] = bidseq_[p].end()[-2];
     }
-    allowedDrops -= num_licenses_;
+
+    // Compute allowed number of drops
+    int allowedDrops = this->aggregateDemand() - num_licenses_;
     SPIEL_CHECK_GE(allowedDrops, 1);
     if (num_players_ > 2) {
         SpielFatalError("Unimplemented tiebreaking with > 2 players");  
     }
 
     while (allowedDrops > 0) {
-      if (requestedDrops[action] > 0) {
-        requestedDrops[action] -= 1;
-        std::size_t back_idx = bidseq_[action].size() - 1;
-        bidseq_[action][back_idx] -= 1;
-      } else if (requestedDrops[1 - action] > 0) {
-        requestedDrops[1 - action] -= 1;
-        std::size_t back_idx = bidseq_[1 - action].size() - 1;
-        bidseq_[1 - action][back_idx] -= 1;
-      } else {
-        SpielFatalError("Shouldn't reach here");  
-      }
-
+      int idx = requestedDrops[action] > 0 ? action : 1 - action;
+      requestedDrops[idx] -= 1;
+      std::size_t back_idx = bidseq_[idx].size() - 1;
+      bidseq_[idx][back_idx] -= 1;
+      SPIEL_CHECK_GE(bidseq_[idx][back_idx], 0);
       allowedDrops--;
     }
 
-    int aggregateDemand = 0;
-    for (auto p = Player{0}; p < num_players_; ++p) {
-      aggregateDemand += bidseq_[p].back();
-    }
-    SPIEL_CHECK_EQ(aggregateDemand, num_licenses_);
+    SPIEL_CHECK_EQ(this->aggregateDemand(), num_licenses_);
     finished_ = true;
   }
 
@@ -290,18 +277,18 @@ std::string AuctionState::InformationStateString(Player player) const {
 }
 
 std::string AuctionState::ToString() const {
-  // TODO: Write this better
   std::string result = "";
-  absl::StrAppend(&result, absl::StrCat("Price: ", price_.back(), "."));
+  if (bidseq_[0].size() < 1) {
+    return result;
+  }
+
+  absl::StrAppend(&result, absl::StrCat("Price: ", price_.back(), "\n"));
 
   for (auto p = Player{0}; p < num_players_; p++) {
-    if (p != 0) absl::StrAppend(&result, " ");
-    absl::StrAppend(&result, absl::StrJoin(bidseq_[p], " "));
+    absl::StrAppend(&result, absl::StrCat("Player ", p, " demanded: ", absl::StrJoin(bidseq_[p], " "), "\n"));
   }
+  absl::StrAppend(&result, absl::StrCat("Aggregate demands: ", absl::StrJoin(aggregate_demands_, " ")));
 
-  if (IsChanceNode()) {
-    return "";
-  }
   return result;
 }
 
