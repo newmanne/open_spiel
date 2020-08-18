@@ -57,6 +57,9 @@ class AuctionState : public SimMoveState {
   void DoApplyActions(const std::vector<Action>& actions);
 
  private:
+  std::vector<int> requestedDrops() const;
+  int aggregateDemand() const;
+ 
   // Initialized to invalid values. Use Game::NewInitialState().
   Player cur_player_;  // Player whose turn it is.
   int total_moves_;
@@ -86,7 +89,7 @@ class AuctionGame : public Game {
   std::unique_ptr<State> NewInitialState() const override;
   int MaxChanceOutcomes() const override;
   int NumPlayers() const override { return num_players_; }
-  double MinUtility() const override { return -1000; } // TODO: Not a real calculation, just assuming we won't use this
+  double MinUtility() const override { return -1000; } // TODO: Not a real calculation, just assuming we won't use this. You could wind up paying arbitarily much for licenes
   double MaxUtility() const override { return (150 - open_price_) * num_licenses_; } // Winning all licenses at the opening price with the highest value TODO: Make this depend on values() since I"ll forget to change it
   std::shared_ptr<const Game> Clone() const override {
     return std::shared_ptr<const Game>(new AuctionGame(*this));

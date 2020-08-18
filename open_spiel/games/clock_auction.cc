@@ -118,10 +118,28 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
     // Undersell in the first round is allowed without penalty
     finished_ = true;
   } else if (undersell) {
-      finished_ = true;
-      // TODO: Think harder about what you want to do with undersell
-      // undersell_ = true;
-      // cur_player_ = kChancePlayerId;  
+    undersell_ = true;
+
+    std::vector<int> requestedDrops = this->requestedDrops();
+    std::vector<Player> droppers;
+    for (int i = 0; i < requestedDrops.size(); i++) {
+      if (requestedDrops[i] > 0) {
+        droppers.push_back(i);
+      }
+    }
+    if (droppers.size() > 1) {
+      cur_player_ = kChancePlayerId;  
+    } else {
+      // In some cases, only one player has dropped. In those cases, we don't need to invoke the chance node, since the solution is deterministic. (Current implementation is correct, just might waste a chance node).
+      SPIEL_CHECK_EQ(droppers.size(), 1);
+      if (num_players_ > 2) {
+          SpielFatalError("Unimplemented tiebreaking with > 2 players");  
+      }
+
+      // This player can drop as much as able
+      int demandWithoutI = aggregateDemand - bidseq_[droppers[0]].back();
+      bidseq_[droppers[0]].end()[-1] = num_licenses_ - demandWithoutI;
+    }
   } else {
     // Increment price
     price_.push_back(price_.back() * (1 + increment_));
@@ -152,6 +170,23 @@ int AuctionState::CurrentPlayer() const {
   }
 }
 
+std::vector<int> AuctionState::requestedDrops() const {
+    std::vector<int> requestedDrops; // Keep track of how many drops each player wants
+    for (auto p = Player{0}; p < num_players_; ++p) {
+      int requestedDropsPlayer = bidseq_[p].end()[-2] - bidseq_[p].back();
+      requestedDrops.push_back(requestedDropsPlayer);
+    }
+    return requestedDrops;
+}
+
+int AuctionState::aggregateDemand() const {
+  int aggregateDemand = 0;
+  for (auto p = Player{0}; p < num_players_; ++p) {
+    aggregateDemand += bidseq_[p].back();
+  }
+  return aggregateDemand;
+}
+
 void AuctionState::DoApplyAction(Action action) {
   total_moves_++;
 
@@ -165,19 +200,39 @@ void AuctionState::DoApplyAction(Action action) {
   } else if (budget_.size() < num_players_) {
     budget_.push_back(budgets[action]);
   } else if (undersell_) {
-      SpielFatalError("Unimplemented undersell");  
-    // // If there is undersell and it is not the first round, we let one player drop randomly so that the entire supply of units are sold. This is a bit strange, but the best I can think of without enhancing the action space to include intra-round bidding
-    // // int prevDemands = aggregate_demands.end()[-2];
-    // int allowedDrops = num_licenses_ - aggregate_demands_.back();
-    // bidseq_[action].push_back(bidseq_[action].back() - allowedDrops);
-    // SPIEL_CHECK_GE(bidseq_[action].back(), 0);
+    int allowedDrops = 0;
+    std::vector<int> requestedDrops = this->requestedDrops();
+    for (auto p = Player{0}; p < num_players_; ++p) {
+      allowedDrops += bidseq_[p].back();
+    }
+    allowedDrops -= num_licenses_;
+    SPIEL_CHECK_GE(allowedDrops, 1);
+    if (num_players_ > 2) {
+        SpielFatalError("Unimplemented tiebreaking with > 2 players");  
+    }
 
-    // int aggregateDemand = 0;
-    // for (auto p = Player{0}; p < num_players_; ++p) {
-    //   aggregateDemand += bidseq_[p].back();
-    // }
-    // SPIEL_CHECK_EQ(aggregateDemand, num_licenses_);
-    // finished_ = true;
+    while (allowedDrops > 0) {
+      if (requestedDrops[action] > 0) {
+        requestedDrops[action] -= 1;
+        std::size_t back_idx = bidseq_[action].size() - 1;
+        bidseq_[action][back_idx] -= 1;
+      } else if (requestedDrops[1 - action] > 0) {
+        requestedDrops[1 - action] -= 1;
+        std::size_t back_idx = bidseq_[1 - action].size() - 1;
+        bidseq_[1 - action][back_idx] -= 1;
+      } else {
+        SpielFatalError("Shouldn't reach here");  
+      }
+
+      allowedDrops--;
+    }
+
+    int aggregateDemand = 0;
+    for (auto p = Player{0}; p < num_players_; ++p) {
+      aggregateDemand += bidseq_[p].back();
+    }
+    SPIEL_CHECK_EQ(aggregateDemand, num_licenses_);
+    finished_ = true;
   }
 
   if (budget_.size() == num_players_) {
@@ -255,9 +310,17 @@ bool AuctionState::IsTerminal() const {
 }
 
 std::vector<double> AuctionState::Returns() const {
+  if (undersell_) {
+    SPIEL_CHECK_EQ(this->aggregateDemand(), num_licenses_);
+  } else {
+    SPIEL_CHECK_LE(this->aggregateDemand(), num_licenses_);
+  }
+
   std::vector<double> returns(num_players_, 0.0);
+  double price = undersell_ ? price_.end()[-2] : price_.back(); // If there is undersell, let's assume the drop bids occured at start-of-round, and use the previous round's price
+
   for (auto p = Player{0}; p < num_players_; p++) {
-    returns[p] = (value_[p] - price_.back()) * bidseq_[p].back();
+    returns[p] = (value_[p] - price) * bidseq_[p].back();
   }
   return returns;
 }
