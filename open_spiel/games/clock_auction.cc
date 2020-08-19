@@ -350,7 +350,7 @@ std::vector<int> AuctionGame::ObservationTensorShape() const {
   SpielFatalError("Unimplemented ObservationTensorShape");  
 }
 
-void AuctionState::ObservationTensor(Player player, std:: vector<double>* values) const {
+void AuctionState::ObservationTensor(Player player, absl::Span<float> values) const {
   SpielFatalError("Unimplemented ObservationTensor");
 }
 
@@ -358,7 +358,7 @@ std::vector<int> AuctionGame::InformationStateTensorShape() const {
   SpielFatalError("Unimplemented InformationStateTensorShape");
 }
 
-void AuctionState::InformationStateTensor(Player player, std::vector<double>* values) const {
+void AuctionState::InformationStateTensor(Player player, absl::Span<float> values) const {
   SpielFatalError("Unimplemented InformationStateTensor");
 }
 
