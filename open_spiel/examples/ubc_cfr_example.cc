@@ -51,9 +51,9 @@ if (absl::GetFlag(FLAGS_turn_based)) {
     solver.EvaluateAndUpdatePolicy();
     if (i % absl::GetFlag(FLAGS_report_every) == 0 ||
         i == absl::GetFlag(FLAGS_num_iters) - 1) {
-      double exploitability = open_spiel::algorithms::NashConv(
+      double nash_conv = open_spiel::algorithms::NashConv(
           *game, *solver.AveragePolicy());
-      std::cerr << "Iteration " << i << " NashConv=" << exploitability
+      std::cerr << "Iteration " << i << " NashConv=" << nash_conv
                 << std::endl;
 
       // const std::shared_ptr<open_spiel::Policy> average_policy = solver.AveragePolicy();
