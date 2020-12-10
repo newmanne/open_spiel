@@ -8,6 +8,8 @@ add_executable(cfr_seq_eq_example cfr_seq_eq_example.cc ${OPEN_SPIEL_OBJECTS})
 
 add_executable(cfr_multi_equilibria_example cfr_multi_equilibria_example.cc
                ${OPEN_SPIEL_OBJECTS})
+add_executable(ubc_cfr_example ubc_cfr_example.cc ${OPEN_SPIEL_OBJECTS})
+
 
 add_executable(imperfect_recall_mccfr imperfect_recall_mccfr.cc
                ${OPEN_SPIEL_OBJECTS})
