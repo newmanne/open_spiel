@@ -260,7 +260,7 @@ namespace {
 GameType ConvertType(GameType type) {
   type.dynamics = GameType::Dynamics::kSequential;
   type.information = GameType::Information::kImperfectInformation;
-  type.short_name = kGameType.short_name;
+  type.short_name = "TB " + type.short_name;
   type.long_name = "Turn-based " + type.long_name;
   type.parameter_specification = kGameType.parameter_specification;
   return type;
