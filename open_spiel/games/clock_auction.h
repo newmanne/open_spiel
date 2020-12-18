@@ -34,7 +34,17 @@ class AuctionGame;
 
 class AuctionState : public SimMoveState {
  public:
-  explicit AuctionState(std::shared_ptr<const Game> game, int num_licenses, double increment, double open_price);
+  explicit AuctionState(std::shared_ptr<const Game> game, 
+    int num_players, 
+    int num_licenses, 
+    double increment, 
+    double open_price, 
+    bool undersell_rule_,
+    std::vector<std::vector<double>> values,
+    std::vector<std::vector<double>> values_probs,
+    std::vector<std::vector<double>> budgets,
+    std::vector<std::vector<double>> budgets_probs
+  );
 
   void Reset(const GameParameters& params);
   Player CurrentPlayer() const override;
@@ -54,17 +64,30 @@ class AuctionState : public SimMoveState {
   void DoApplyActions(const std::vector<Action>& actions);
 
  private:
-  std::vector<int> requestedDrops() const;
-  int aggregateDemand() const;
+  std::vector<Player> PlayersThatWantToDrop() const;
+  std::vector<int> RequestedDrops() const;
+  void HandleUndersell(Action action);
  
   // Initialized to invalid values. Use Game::NewInitialState().
   Player cur_player_;  // Player whose turn it is.
   int total_moves_;
   int player_moves_;
 
+  // Param info
+  int num_players_;
+  int num_licenses_;
+  double increment_;
+  double open_price_;
+  bool undersell_rule_;
+  std::vector<std::vector<double>> values_;
+  std::vector<std::vector<double>> values_probs_;
+  std::vector<std::vector<double>> budgets_;
+  std::vector<std::vector<double>> budgets_probs_;
+
   // Used to encode the information state.
   std::vector<std::vector<int>> bidseq_;
-  std::string bidseq_str_;
+  std::vector<int> final_bids_;
+  std::vector<Player> undersell_order_;
   std::vector<double> price_;
   std::vector<double> value_;
   std::vector<double> budget_;
@@ -72,11 +95,6 @@ class AuctionState : public SimMoveState {
   
   bool finished_;
   bool undersell_;
-  
-  int num_licenses_;
-
-  double increment_;
-
 };
 
 class AuctionGame : public Game {
@@ -86,23 +104,27 @@ class AuctionGame : public Game {
   std::unique_ptr<State> NewInitialState() const override;
   int MaxChanceOutcomes() const override;
   int NumPlayers() const override { return num_players_; }
-  double MinUtility() const override { return -1000; } // TODO: Not a real calculation, just assuming we won't use this. You could wind up paying arbitarily much for licenes
-  double MaxUtility() const override { return (150 - open_price_) * num_licenses_; } // Winning all licenses at the opening price with the highest value TODO: Make this depend on values() since I"ll forget to change it
+  double MinUtility() const override { return -max_budget_; } // Not an exact calculation, but a lower bound
+  double MaxUtility() const override { return (max_value_ - open_price_) * num_licenses_; } // Winning all licenses at the opening price with the highest value. This isn't a perfect computation because budgets might constrain you
   std::vector<int> InformationStateTensorShape() const override;
   std::vector<int> ObservationTensorShape() const override;
   int MaxGameLength() const override;
 
-  int NumLicenses() const { return num_licenses_; }
-
  private:
-  // Number of players.
   int num_players_;
-
-  // Total licenses in the game, determines the legal bids.
   int num_licenses_;
-
   double increment_;
   double open_price_;
+  bool undersell_rule_;
+  std::vector<std::vector<double>> values_;
+  std::vector<std::vector<double>> values_probs_;
+  std::vector<std::vector<double>> budgets_;
+  std::vector<std::vector<double>> budgets_probs_;
+  
+
+  int max_chance_outcomes_;
+  double max_value_;
+  double max_budget_;
 
 };
 
