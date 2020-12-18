@@ -28,7 +28,7 @@ constexpr int kSeed = 230398247;
 ABSL_FLAG(std::string, game_name, "kuhn_poker", "Game to run CFR on.");
 ABSL_FLAG(int, num_iters, 1000, "How many iters to run for.");
 ABSL_FLAG(int, report_every, 100, "How often to report exploitability.");
-ABSL_FLAG(bool, turn_based, false, "Is the game turn based?");
+ABSL_FLAG(bool, turn_based, false, "Use the LoadGameAsTurnBased flag");
 
 // Example code for using CFR+ to solve Kuhn Poker.
 int main(int argc, char** argv) {
