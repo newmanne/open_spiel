@@ -204,7 +204,13 @@ void AuctionState::DoApplyAction(Action action) {
     ApplyFlatJointAction(action);
     return;
   }
+  
   SPIEL_CHECK_TRUE(IsChanceNode());
+  if (undersell_) { // Chance node handles undersell
+    HandleUndersell(action);
+    return;
+  }
+
   if (value_.size() < num_players_) { // Chance node assigns a value to a player
     auto player_index = value_.size();
     SPIEL_CHECK_GE(player_index, 0);
@@ -213,9 +219,7 @@ void AuctionState::DoApplyAction(Action action) {
     auto player_index = budget_.size();
     SPIEL_CHECK_GE(player_index, 0);
     budget_.push_back(budgets_[player_index][action]);
-  } else if (undersell_) { // Chance node handles undersell
-    HandleUndersell(action);
-  }
+  } 
 
   if (budget_.size() == num_players_) { // All of the assignments have been made
     cur_player_ = kSimultaneousPlayerId;
