@@ -107,7 +107,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
 std::vector<int> AuctionState::RequestedDrops() const {
     std::vector<int> requested_drops; // Track of how many drops each player wants
     for (auto p = Player{0}; p < num_players_; ++p) {
-      requested_drops.push_back(bidseq_[p].end()[-2] - final_bids_[p]);
+      requested_drops.push_back(final_bids_[p] - bidseq_[p].back());
     }
     return requested_drops;
 }
@@ -155,15 +155,18 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
     double next_price = price_.back() * (1 + increment_);
     price_.push_back(next_price);
   } else {
-    for (auto p = Player{0}; p < num_players_; ++p) {
-      final_bids_.push_back(bidseq_[p].back());
-    }
     if (aggregateDemand == num_licenses_ || (aggregateDemand <= num_licenses_ && (!undersell_rule_ || price_.size() == 1))) {
-     // Demand <= supply. We are finsihed.
+      // Demand <= supply. We are finished.
       // Undersell in the first round is always allowed without penalty, so we won't set the flag
+      for (auto p = Player{0}; p < num_players_; ++p) {
+        final_bids_.push_back(bidseq_[p].back());
+      }
       finished_ = true;
     } else {
       SPIEL_CHECK_TRUE(undersell_rule_);
+      for (auto p = Player{0}; p < num_players_; ++p) {
+        final_bids_.push_back(bidseq_[p].end()[-2]); // Use prev round bids and we'll drop according to chance
+      }
       undersell_ = true;
       cur_player_ = kChancePlayerId; // At least someone wanted to drop. Chance will decide who gets to drop
     }
@@ -268,6 +271,7 @@ std::vector<std::pair<Action, double>> AuctionState::ChanceOutcomes() const {
   if (undersell_) { // Chance node is for undersell
       SPIEL_CHECK_TRUE(undersell_rule_);
       std::vector<Player> want_to_drop = PlayersThatWantToDrop();
+      SPIEL_CHECK_FALSE(want_to_drop.empty());
       for (auto& player : want_to_drop) {
         valuesAndProbs.push_back({player, 1. / want_to_drop.size()});
       }
@@ -318,9 +322,14 @@ std::string AuctionState::ToString() const {
   }
   absl::StrAppend(&result, absl::StrCat("Aggregate demands: ", absl::StrJoin(aggregate_demands_, " ")));
 
-  if (undersell_) {
+  if (!final_bids_.empty()) {
+    absl::StrAppend(&result, absl::StrCat("\nFinal bids: ", absl::StrJoin(final_bids_, " ")));
+  }
+
+  if (!undersell_order_.empty()) {
     absl::StrAppend(&result, absl::StrCat("\nUndersell order: ", absl::StrJoin(undersell_order_, " ")));
   }
+
   return result;
 }
 
