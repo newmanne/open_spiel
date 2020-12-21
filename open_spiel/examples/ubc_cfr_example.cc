@@ -44,7 +44,7 @@ if (absl::GetFlag(FLAGS_turn_based)) {
 }
 
   open_spiel::algorithms::CFRSolver solver(*game);
-  std::cerr << "Starting CFR and CFR+ on " << game->GetType().short_name
+  std::cerr << "Starting CFR on " << game->GetType().short_name
             << "..." << std::endl;
 
   for (int i = 0; i < absl::GetFlag(FLAGS_num_iters); ++i) {
