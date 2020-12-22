@@ -307,31 +307,43 @@ std::string AuctionState::InformationStateString(Player player) const {
   if (budget_.size() > player) {
     absl::StrAppend(&result, absl::StrCat("b", budget_[player]));
   }
-  for (int i = 0; i < bidseq_[player].size(); i++) {
-    absl::StrAppend(&result, absl::StrCat("r", i + 1, " p", player, " b", bidseq_[player][i], " d", aggregate_demands_[i], "\n"));
+  if (!bidseq_[player].empty()) {
+    absl::StrAppend(&result, absl::StrCat("\n", absl::StrJoin(bidseq_[player], ","), "\n"));
+    absl::StrAppend(&result, absl::StrJoin(aggregate_demands_, ","));
   }
   return result;
 }
 
 std::string AuctionState::ToString() const {
   std::string result = "";
-  if (bidseq_[0].empty()) {
-    return result;
+  // Player type storage
+  for (auto p = Player{0}; p < num_players_; p++) {
+      if (value_.size() > p) {
+        absl::StrAppend(&result, absl::StrCat("p", p, "v", value_[p]));  
+      }
+      if (budget_.size() > p) {
+        absl::StrAppend(&result, absl::StrCat("b", budget_[p], "\n"));
+      }
   }
 
   absl::StrAppend(&result, absl::StrCat("Price: ", price_.back(), "\n"));
 
   for (auto p = Player{0}; p < num_players_; p++) {
-    absl::StrAppend(&result, absl::StrCat("Player ", p, " demanded: ", absl::StrJoin(bidseq_[p], " "), "\n"));
+    if (!bidseq_[p].empty()) {
+      absl::StrAppend(&result, absl::StrCat("Player ", p, " demanded: ", absl::StrJoin(bidseq_[p], " "), "\n"));
+    }
   }
-  absl::StrAppend(&result, absl::StrCat("Aggregate demands: ", absl::StrJoin(aggregate_demands_, " ")));
-
+  if (!aggregate_demands_.empty()) {
+    absl::StrAppend(&result, absl::StrCat("Aggregate demands: ", absl::StrJoin(aggregate_demands_, " ")));
+  }
   if (!final_bids_.empty()) {
     absl::StrAppend(&result, absl::StrCat("\nFinal bids: ", absl::StrJoin(final_bids_, " ")));
   }
-
-  if (!undersell_order_.empty()) {
-    absl::StrAppend(&result, absl::StrCat("\nUndersell order: ", absl::StrJoin(undersell_order_, " ")));
+  if (undersell_) {
+    absl::StrAppend(&result, "Undersell\n");
+    if (!undersell_order_.empty()) {
+      absl::StrAppend(&result, absl::StrCat("\nUndersell order: ", absl::StrJoin(undersell_order_, " ")));
+    } 
   }
 
   return result;
