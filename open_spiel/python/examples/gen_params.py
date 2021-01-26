@@ -46,7 +46,7 @@ def main(root, spiel_path):
             with open(f'{root}/{i}/{i}.json', 'w') as f:
                 json.dump(parameterization, f)
                 for solver in ["cfr", "cfrplus", "cfrbr", "mccfr --sampling external", "mccfr --sampling outcome"]:
-                    cmd = f'python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}.json --iterations 10000 --solver={solver} --output {root}/{i}'
+                    cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}.json --iterations 10000 --solver={solver} --output {root}/{i}'
                     cmds.append(cmd)
             i += 1
 
@@ -66,6 +66,10 @@ def main(root, spiel_path):
 #SBATCH --account=rrg-kevinlb
 #SBATCH --time=1-0
 #SBATCH --array=1-{len(cmds)}
+
+export PYTHONPATH=${{PYTHONPATH}}:{root}
+export PYTHONPATH=${{PYTHONPATH}}:{root}/build/python
+
 CMD=`head -n $SLURM_ARRAY_TASK_ID {root}/{CMD_FILE_NAME} | tail -n 1`
 srun $CMD
     """
