@@ -7,7 +7,7 @@ from pathlib import Path
 
 CMD_FILE_NAME = 'cmds.txt'
 
-def main(*, root, spiel_path):
+def main(root, spiel_path):
     Path(f'{root}').mkdir(parents=True, exist_ok=True)
 
     V_L = 150
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     parser.add_argument('--root', default='/home/newmanne/scratch/cfr', type=str)
     parser.add_argument('--spiel_path', default='/project/def-kevinlb/newmanne/cfr/open_spiel/', type=str)
     args = parser.parse_args()
-    main(**args)
+    main(args.root, args.spiel_path)
 
     # SINGULARITY="singularity exec -B /home -B /project -B /scratch -B /localscratch /project/def-kevinlb/newmanne/openspiel.simg"
     # srun $SINGULARITY $CMD
