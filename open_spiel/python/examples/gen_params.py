@@ -77,8 +77,8 @@ srun $CMD
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Queue up a bunch of CFR jobs')
-    parser.add_argument('root', default='/home/newmanne/scratch/cfr')
-    parser.add_argument('spiel_path', default='/project/def-kevinlb/newmanne/cfr/open_spiel/')
+    parser.add_argument('--root', default='/home/newmanne/scratch/cfr', type=str)
+    parser.add_argument('--spiel_path', default='/project/def-kevinlb/newmanne/cfr/open_spiel/', type=str)
     args = parser.parse_args()
     main(**args)
 
