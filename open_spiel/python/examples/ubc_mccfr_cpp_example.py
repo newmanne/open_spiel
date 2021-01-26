@@ -34,7 +34,7 @@ from open_spiel.python.algorithms import cfr, outcome_sampling_mccfr, expected_g
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_bool("python", False, "Use python impl")
+flags.DEFINE_bool("python", False, "Use python CFR impls")
 flags.DEFINE_bool("turn_based", True, "Convert simultaneous to turn based")
 
 flags.DEFINE_enum("solver", "cfr", ["cfr", "cfrplus", "cfrbr", "mccfr"], "CFR solver")
