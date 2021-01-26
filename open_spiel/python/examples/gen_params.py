@@ -67,11 +67,12 @@ def main(root, spiel_path):
 #SBATCH --time=1-0
 #SBATCH --array=1-{len(cmds)}
 
+source {root}/venv/bin/activate
 export PYTHONPATH=${{PYTHONPATH}}:{root}
 export PYTHONPATH=${{PYTHONPATH}}:{root}/build/python
 
 CMD=`head -n $SLURM_ARRAY_TASK_ID {root}/{CMD_FILE_NAME} | tail -n 1`
-srun $CMD
+eval $CMD
     """
     JOB_FILE = 'job_runner.sh'
     with open(f'{root}/{JOB_FILE}', 'w') as f:
