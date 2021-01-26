@@ -9,6 +9,7 @@ CMD_FILE_NAME = 'cmds.txt'
 
 def main(root, spiel_path):
     Path(f'{root}').mkdir(parents=True, exist_ok=True)
+    Path(f'{root}/logs').mkdir(parents=True, exist_ok=True)
 
     V_L = 150
     B_L = 350
@@ -46,7 +47,7 @@ def main(root, spiel_path):
             with open(f'{root}/{i}/{i}.json', 'w') as f:
                 json.dump(parameterization, f)
                 for solver in ["cfr", "cfrplus", "cfrbr", "mccfr --sampling external", "mccfr --sampling outcome"]:
-                    cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}.json --iterations 10000 --solver={solver} --output {root}/{i}'
+                    cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}/{i}.json --iterations 10000 --solver={solver} --output {root}/{i}'
                     cmds.append(cmd)
             i += 1
 
@@ -61,8 +62,8 @@ def main(root, spiel_path):
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=4G
 #SBATCH --job-name={JOB_NAME}
-#SBATCH --output={JOB_NAME}-%A_%a.out-o.txt
-#SBATCH --error={JOB_NAME}-%A_%a.out-e.txt
+#SBATCH --output=logs/{JOB_NAME}-%A_%a.out-o.txt
+#SBATCH --error=logs/{JOB_NAME}-%A_%a.out-e.txt
 #SBATCH --account=rrg-kevinlb
 #SBATCH --time=1-0
 #SBATCH --array=1-{len(cmds)}
