@@ -36,7 +36,7 @@ def main(root, spiel_path):
     }
 
     param_grid = [
-        {'opening_price': [100], 'increment': [0.05, 0.1, 0.2], 'licenses': [3, 4, 5], 'undersell_rule': [False]},
+        {'opening_price': [100], 'increment': [0.05, 0.1, 0.2], 'licenses': [3, 4, 5], 'undersell_rule': [True, False]},
     ]
     i = 1
     cmds = []
@@ -59,8 +59,8 @@ def main(root, spiel_path):
 
     JOB_NAME = 'CFR'
     slurm = f"""#!/bin/sh
-#SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=4G
+#SBATCH --cpus-per-task=4
+#SBATCH --mem-per-cpu=16G
 #SBATCH --job-name={JOB_NAME}
 #SBATCH --output=logs/{JOB_NAME}-%A_%a.out-o.txt
 #SBATCH --error=logs/{JOB_NAME}-%A_%a.out-e.txt
