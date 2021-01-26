@@ -67,9 +67,9 @@ def main(root, spiel_path):
 #SBATCH --time=1-0
 #SBATCH --array=1-{len(cmds)}
 
-source {root}/venv/bin/activate
-export PYTHONPATH=${{PYTHONPATH}}:{root}
-export PYTHONPATH=${{PYTHONPATH}}:{root}/build/python
+source {spiel_path}/venv/bin/activate
+export PYTHONPATH=${{PYTHONPATH}}:{spiel_path}
+export PYTHONPATH=${{PYTHONPATH}}:{spiel_path}/build/python
 
 CMD=`head -n $SLURM_ARRAY_TASK_ID {root}/{CMD_FILE_NAME} | tail -n 1`
 eval $CMD
