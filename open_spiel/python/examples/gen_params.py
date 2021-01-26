@@ -5,12 +5,10 @@ import os
 from pathlib import Path
 
 
-BASE_DIR = 'configs'
 CMD_FILE_NAME = 'cmds.txt'
 
-def main():
-    if not os.path.exists(BASE_DIR):
-        os.mkdir(BASE_DIR)
+def main(*, root, spiel_path):
+    Path(f'{root}').mkdir(parents=True, exist_ok=True)
 
     V_L = 150
     B_L = 350
@@ -44,42 +42,45 @@ def main():
     for players in [(low, mixed), (high, mixed), (mixed, mixed)]:
         for parameterization in ParameterGrid(param_grid):
             parameterization['players'] = players
-            Path(f'{BASE_DIR}/{i}').mkdir(parents=True, exist_ok=True)
-            with open(f'{BASE_DIR}/{i}/{i}.json', 'w') as f:
+            Path(f'{root}/{i}').mkdir(parents=True, exist_ok=True)
+            with open(f'{root}/{i}/{i}.json', 'w') as f:
                 json.dump(parameterization, f)
                 for solver in ["cfr", "cfrplus", "cfrbr", "mccfr --sampling external", "mccfr --sampling outcome"]:
-                    cmd = f'python open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={BASE_DIR}/{i}.json --iterations 10000 --solver={solver} --output {BASE_DIR}/{i}'
+                    cmd = f'python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}.json --iterations 10000 --solver={solver} --output {root}/{i}'
                     cmds.append(cmd)
             i += 1
 
-    print(f"Dumped {i} configs to {BASE_DIR}")
-    with open(f'{BASE_DIR}/{CMD_FILE_NAME}', 'w') as f:
+    print(f"Dumped {i} configs to {root}")
+    with open(f'{root}/{CMD_FILE_NAME}', 'w') as f:
         for cmd in cmds:
             f.write(cmd + '\n')
-    print (f"Commands written to {BASE_DIR}/{CMD_FILE_NAME}")
+    print (f"Commands written to {root}/{CMD_FILE_NAME}")
 
     JOB_NAME = 'CFR'
     slurm = f"""#!/bin/sh
-    #SBATCH --cpus-per-task=1
-    #SBATCH --mem-per-cpu=4G
-    #SBATCH --job-name={JOB_NAME}
-    #SBATCH --output={JOB_NAME}-%A_%a.out-o.txt
-    #SBATCH --error={JOB_NAME}-%A_%a.out-e.txt
-    #SBATCH --account=rrg-kevinlb
-    #SBATCH --time=1-0
-    #SBATCH --array=1-{len(cmds)}
-
-    SINGULARITY="singularity exec -B /home -B /project -B /scratch -B /localscratch /project/def-kevinlb/newmanne/openspiel.simg"
-    CMD=`head -n $SLURM_ARRAY_TASK_ID {BASE_DIR}/{CMD_FILE_NAME} | tail -n 1`
-    srun $SINGULARITY $CMD
+#SBATCH --cpus-per-task=1
+#SBATCH --mem-per-cpu=4G
+#SBATCH --job-name={JOB_NAME}
+#SBATCH --output={JOB_NAME}-%A_%a.out-o.txt
+#SBATCH --error={JOB_NAME}-%A_%a.out-e.txt
+#SBATCH --account=rrg-kevinlb
+#SBATCH --time=1-0
+#SBATCH --array=1-{len(cmds)}
+CMD=`head -n $SLURM_ARRAY_TASK_ID {root}/{CMD_FILE_NAME} | tail -n 1`
+srun $CMD
     """
     JOB_FILE = 'job_runner.sh'
-    with open(f'{BASE_DIR}/{JOB_FILE}', 'w') as f:
+    with open(f'{root}/{JOB_FILE}', 'w') as f:
         f.write(slurm)
-    os.chmod(f"{BASE_DIR}/{JOB_FILE}", 777)
+    os.chmod(f"{root}/{JOB_FILE}", int('777', base=8)) # Octal
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Queue up a bunch of CFR jobs')
+    parser.add_argument('root', default='/home/newmanne/scratch/cfr')
+    parser.add_argument('spiel_path', default='/project/def-kevinlb/newmanne/cfr/open_spiel/')
     args = parser.parse_args()
-    main()
+    main(**args)
+
+    # SINGULARITY="singularity exec -B /home -B /project -B /scratch -B /localscratch /project/def-kevinlb/newmanne/openspiel.simg"
+    # srun $SINGULARITY $CMD
