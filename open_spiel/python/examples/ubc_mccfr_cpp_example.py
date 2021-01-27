@@ -23,7 +23,7 @@ import pickle
 from absl import app
 from absl import flags
 from pathlib import Path
-
+import sys
 import pyspiel
 import pandas as pd
 import json
@@ -50,7 +50,12 @@ flags.DEFINE_string("filename", 'parameters.json', "Filename with parameters")
 
 
 def main(_):
-    logging.basicConfig(filename=f'{FLAGS.solver}.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
+    Path(FLAGS.output).mkdir(parents=True, exist_ok=True)
+    
+    logging.basicConfig(level=logging.INFO, format='%(name)s - %(levelname)s - %(message)s', handlers=[
+        logging.FileHandler(f'{FLAGS.output}/{FLAGS.solver}.log'),
+        logging.StreamHandler(sys.stdout)
+    ])
 
     # LOAD GAME
     load_function = pyspiel.load_game if not FLAGS.turn_based else pyspiel.load_game_as_turn_based
@@ -133,7 +138,6 @@ def main(_):
     with open(f'{FLAGS.output}/{model_name}.pkl', "wb") as f:
         pickle.dump(solver, f, pickle.HIGHEST_PROTOCOL)
 
-    Path(FLAGS.output).mkdir(parents=True, exist_ok=True)
     pd.Series(nash_convs).to_csv(f'{FLAGS.output}/nash_conv.csv')
 
     records = []
