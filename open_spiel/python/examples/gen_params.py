@@ -4,7 +4,6 @@ from sklearn.model_selection import ParameterGrid
 import os
 from pathlib import Path
 
-
 CMD_FILE_NAME = 'cmds.txt'
 
 def main(root, spiel_path):
@@ -13,8 +12,10 @@ def main(root, spiel_path):
 
     V_L = 150
     B_L = 350
-    V_H = 300
-    B_H = 700
+    V_H = 225
+    B_H = 525
+    
+    # TODO: What about an opponent even lower than you?
 
     low = {
       "value": [V_L],
@@ -36,7 +37,7 @@ def main(root, spiel_path):
     }
 
     param_grid = [
-        {'opening_price': [100], 'increment': [0.05, 0.1, 0.2], 'licenses': [3, 4, 5], 'undersell_rule': [True, False]},
+        {'opening_price': [100], 'increment': [0.1, 0.15, 0.2], 'licenses': [3, 4, 5], 'undersell_rule': [True, False]},
     ]
     i = 1
     cmds = []
@@ -47,7 +48,7 @@ def main(root, spiel_path):
             with open(f'{root}/{i}/{i}.json', 'w') as f:
                 json.dump(parameterization, f)
                 for solver in ["cfr", "cfrplus", "cfrbr", "mccfr --sampling external", "mccfr --sampling outcome"]:
-                    cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}/{i}.json --iterations 10000 --solver={solver} --output {root}/{i}'
+                    cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}/{i}.json --iterations 10000 --solver={solver} --output {root}/{i}/{solver}'
                     cmds.append(cmd)
             i += 1
 
@@ -73,8 +74,9 @@ export PYTHONPATH=${{PYTHONPATH}}:{spiel_path}
 export PYTHONPATH=${{PYTHONPATH}}:{spiel_path}/build/python
 
 CMD=`head -n $SLURM_ARRAY_TASK_ID {root}/{CMD_FILE_NAME} | tail -n 1`
+echo $CMD
 eval $CMD
-    """
+"""
     JOB_FILE = 'job_runner.sh'
     with open(f'{root}/{JOB_FILE}', 'w') as f:
         f.write(slurm)

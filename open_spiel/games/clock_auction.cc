@@ -37,7 +37,7 @@ namespace {
 
 // Default Parameters.
 constexpr int kMaxPlayers = 10;
-constexpr int kMoveLimit = 50;
+constexpr int kMoveLimit = 100;
 
 // Facts about the game
 const GameType kGameType{/*short_name=*/"clock_auction",
@@ -151,7 +151,7 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
   aggregate_demands_.push_back(aggregateDemand);
 
   if (aggregateDemand > num_licenses_) {
-    // Normal case: Increment price, since demnad > supply
+    // Normal case: Increment price, since demand > supply
     double next_price = price_.back() * (1 + increment_);
     price_.push_back(next_price);
   } else {
