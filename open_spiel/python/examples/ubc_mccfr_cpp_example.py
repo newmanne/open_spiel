@@ -32,6 +32,7 @@ from open_spiel.python import policy
 from open_spiel.python.algorithms import cfr, outcome_sampling_mccfr, expected_game_score, exploitability, get_all_states
 import logging
 
+logger = logging.getLogger(__name__)
 
 FLAGS = flags.FLAGS
 
@@ -51,11 +52,11 @@ flags.DEFINE_string("filename", 'parameters.json', "Filename with parameters")
 
 def main(_):
     Path(FLAGS.output).mkdir(parents=True, exist_ok=True)
-    
-    logging.basicConfig(level=logging.INFO, format='%(name)s - %(levelname)s - %(message)s', handlers=[
-        logging.FileHandler(f'{FLAGS.output}/{FLAGS.solver}.log'),
-        logging.StreamHandler(sys.stdout)
-    ])
+
+    fh = logging.FileHandler(f'{FLAGS.output}/{FLAGS.solver}.log')
+    fh.setLevel(logging.INFO)
+    fh.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
+    logger.addHandler(fh)
 
     # LOAD GAME
     load_function = pyspiel.load_game if not FLAGS.turn_based else pyspiel.load_game_as_turn_based
@@ -68,42 +69,41 @@ def main(_):
         params,
     )
 
-
     # LOAD SOLVER
     if not FLAGS.python:
-        logging.info("Using C++ implementations")
+        logger.info("Using C++ implementations")
         if FLAGS.solver == "cfr":
-            logging.info("Using CFR solver")
+            logger.info("Using CFR solver")
             solver = pyspiel.CFRSolver(game)
         elif FLAGS.solver == "cfrplus":
-            logging.info("Using CFR+ solver")
+            logger.info("Using CFR+ solver")
             solver = pyspiel.CFRPlusSolver(game)
         elif FLAGS.solver == "cfrbr":
-            logging.info("Using CFR-BR solver")
+            logger.info("Using CFR-BR solver")
             solver = pyspiel.CFRBRSolver(game)
         elif FLAGS.solver == "mccfr":
-            logging.info("Using MCCFR solver")
+            logger.info("Using MCCFR solver")
             if FLAGS.sampling == "external":
-                logging.info("Using external sampling")
+                logger.info("Using external sampling")
                 solver = pyspiel.ExternalSamplingMCCFRSolver(game, avg_type=pyspiel.MCCFRAverageType.FULL)
             elif FLAGS.sampling == "outcome":
-                logging.info("Using outcome sampling")
+                logger.info("Using outcome sampling")
                 solver = pyspiel.OutcomeSamplingMCCFRSolver(game)
     else:
-        logging.info("Using python implementations")
+        logger.info("Using python implementations")
         if FLAGS.solver == "cfr":
-            logging.info("Using CFR solver")
+            logger.info("Using CFR solver")
             solver = cfr.CFRSolver(game)
         elif FLAGS.solver == "cfrplus":
-            logging.info("Using CFR+ solver")
+            logger.info("Using CFR+ solver")
             solver = cfr.CFRPlusSolver(game)
         elif FLAGS.solver == "cfrbr":
-            logging.info("Using CFR-BR solver")
+            logger.info("Using CFR-BR solver")
             solver = cfr.CFRBRSolver(game)
         elif FLAGS.solver == "mccfr":
-            logging.info("Using MCCFR solver")
+            logger.info("Using MCCFR solver")
             if FLAGS.sampling == "outcome":
-                logging.info("Using outcome sampling")
+                logger.info("Using outcome sampling")
                 solver = OutcomeSamplingSolver(game)
             else:
                 raise ValueError("Not external")
@@ -129,16 +129,16 @@ def main(_):
             raise ValueError("NEGATIVE NASH CONV! Is your game not perfect recall? Do two different states have the same AuctionState::ToString() representation?")
 
         nash_convs.append(nash_conv)
-        logging.info("Iteration {} nash_conv: {:.6f}".format(i, nash_conv))
+        logger.info("Iteration {} nash_conv: {:.6f}".format(i, nash_conv))
 
-    logging.info("Persisting the model...")
+    logger.info("Persisting the model...")
     model_name = f'{FLAGS.solver}_{FLAGS.python}'
     if FLAGS.solver == 'mccfr':
         model_name += f'_{FLAGS.sampling}'
     with open(f'{FLAGS.output}/{model_name}.pkl', "wb") as f:
         pickle.dump(solver, f, pickle.HIGHEST_PROTOCOL)
 
-    pd.Series(nash_convs).to_csv(f'{FLAGS.output}/nash_conv.csv')
+    pd.Series(nash_convs, name='nash_conv').to_csv(f'{FLAGS.output}/nash_conv.csv')
 
     records = []
     if FLAGS.python:
@@ -171,7 +171,7 @@ def main(_):
 
     pd.DataFrame.from_records(records).set_index('info_state').to_csv(f'{FLAGS.output}/strategy.csv')
 
-    # logging.info("Loading the model...")
+    # logger.info("Loading the model...")
     # with open(MODEL_FILE_NAME.format(FLAGS.sampling), "rb") as file:
     #   loaded_solver = pickle.load(file)
 
