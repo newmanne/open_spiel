@@ -129,6 +129,7 @@ def main(_):
             raise ValueError("NEGATIVE NASH CONV! Is your game not perfect recall? Do two different states have the same AuctionState::ToString() representation?")
 
         nash_convs.append(nash_conv)
+        # TODO: Should probably append to a file here, or every few iters. Don't think it makes sense to wait until the end
         logger.info("Iteration {} nash_conv: {:.6f}".format(i, nash_conv))
 
     logger.info("Persisting the model...")
@@ -143,33 +144,29 @@ def main(_):
     records = []
     if FLAGS.python:
         raise ValueError("TODO")
-      # # for info_state_str in tabular_policy.state_lookup.keys():
-      # player = -1
-      # for player_info_states in policy.states_per_player:
-      #   player += 1
-      #   for info_state in player_info_states:
-      #     record = dict(player=player, info_state=info_state)
-      #     state_policy = policy.policy_for_key(info_state)
-      #     record.update(state_policy)
-      #     records.append(record)
-
     else:
+        # These are all the STATES. But you want all the INFOSTATES, so make sure to reject duplicates
         all_states = get_all_states.get_all_states(
-        game,
-        depth_limit=-1,
-        include_terminals=False,
-        include_chance_states=False
+            game,
+            depth_limit=-1,
+            include_terminals=False,
+            include_chance_states=False
         )
         records = []
+        seen = set()
         for info_state, state in all_states.items():
             action_probabilities = policy.action_probabilities(state)
             info_state_string = state.information_state_string()
-            info_state_string = info_state_string[18:] # Get rid of "Current Player line"
-            record = dict(info_state=info_state_string, player=state.current_player())
-            record.update(action_probabilities)
-            records.append(record)
+            if info_state_string not in seen:
+                seen.add(info_state_string)
+                info_state_string = info_state_string[18:] # Get rid of "Current Player line"
+                record = dict(info_state=info_state_string, player=state.current_player())
+                record.update(action_probabilities)
+                records.append(record)
 
-    pd.DataFrame.from_records(records).set_index('info_state').to_csv(f'{FLAGS.output}/strategy.csv')
+    df = pd.DataFrame.from_records(records).set_index('info_state')
+    df = df.reindex(sorted(df.columns), axis=1) # Sort columns alphabetically
+    df.to_csv(f'{FLAGS.output}/strategy.csv')
 
     # logger.info("Loading the model...")
     # with open(MODEL_FILE_NAME.format(FLAGS.sampling), "rb") as file:

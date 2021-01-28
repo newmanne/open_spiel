@@ -47,7 +47,8 @@ def main(root, spiel_path):
             Path(f'{root}/{i}').mkdir(parents=True, exist_ok=True)
             with open(f'{root}/{i}/{i}.json', 'w') as f:
                 json.dump(parameterization, f)
-                for solver in ["cfr", "cfrplus", "cfrbr", "mccfr --sampling external", "mccfr --sampling outcome"]:
+                # "mccfr --sampling outcome" Seems to not work
+                for solver in ["cfr", "cfrplus", "cfrbr", "mccfr --sampling external"]:
                     cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}/{i}.json --iterations 10000 --solver={solver} --output {root}/{i}/{solver}'
                     cmds.append(cmd)
             i += 1
