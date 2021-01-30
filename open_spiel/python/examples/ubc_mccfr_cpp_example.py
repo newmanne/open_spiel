@@ -165,7 +165,7 @@ def main(_):
                 records.append(record)
 
     df = pd.DataFrame.from_records(records).set_index('info_state')
-    df = df.reindex(sorted(df.columns), axis=1) # Sort columns alphabetically
+    df = df.reindex(sorted(df.columns, key=str), axis=1) # Sort columns alphabetically
     df.to_csv(f'{FLAGS.output}/strategy.csv')
 
     # logger.info("Loading the model...")
