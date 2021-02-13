@@ -37,19 +37,30 @@ def main(root, spiel_path):
     }
 
     param_grid = [
-        {'opening_price': [100], 'increment': [0.1, 0.15, 0.2], 'licenses': [3, 4, 5], 'undersell_rule': [True, False]},
+        {'opening_price': [100], 'increment': [0.1], 'licenses': [5], 'undersell_rule': [False]},
+        # {'opening_price': [100], 'increment': [0.1, 0.15, 0.2], 'licenses': [3, 4, 5], 'undersell_rule': [True, False]},
     ]
     i = 1
     cmds = []
+
+
+    solver_grid = [
+        # {'solver': ['cfr', 'cfrplus', 'cfrbr']},
+        {'solver': ['mccfr --sampling external'], 'seed': [i for i in range(2,12)]}                 # "mccfr --sampling outcome" Seems to not work
+
+    ]
+
     for players in [(low, mixed), (high, mixed), (mixed, mixed)]:
         for parameterization in ParameterGrid(param_grid):
             parameterization['players'] = players
             Path(f'{root}/{i}').mkdir(parents=True, exist_ok=True)
             with open(f'{root}/{i}/{i}.json', 'w') as f:
                 json.dump(parameterization, f)
-                # "mccfr --sampling outcome" Seems to not work
-                for solver in ["cfr", "cfrplus", "cfrbr", "mccfr --sampling external"]:
-                    cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}/{i}.json --iterations 10000 --solver={solver} --output {root}/{i}/{solver}'
+                for solver_config in ParameterGrid(solver_grid):
+                # for solver in ["cfr", "cfrplus", "cfrbr", "mccfr --sampling external"]:
+                    solver = solver_config['solver']
+                    seed = solver_config.get('seed', 123)
+                    cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}/{i}.json --iterations 10000 --solver={solver} --output {root}/{i}/{solver} --seed {seed}'
                     cmds.append(cmd)
             i += 1
 

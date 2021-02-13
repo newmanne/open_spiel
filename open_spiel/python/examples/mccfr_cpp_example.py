@@ -60,6 +60,7 @@ def main(_):
 
   for i in range(int(FLAGS.iterations / 2)):
     solver.run_iteration()
+    nash_conv = pyspiel.nash_conv(game, solver.average_policy())
     print("Iteration {} exploitability: {:.6f}".format(
         i, pyspiel.exploitability(game, solver.average_policy())))
 

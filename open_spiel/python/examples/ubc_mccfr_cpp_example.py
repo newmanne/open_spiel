@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 FLAGS = flags.FLAGS
 
+flags.DEFINE_bool("persist", False, "Pickle the models")
 flags.DEFINE_bool("python", False, "Use python CFR impls")
 flags.DEFINE_bool("turn_based", True, "Convert simultaneous to turn based")
 
@@ -48,6 +49,7 @@ flags.DEFINE_string("game", "clock_auction", "Name of the game")
 
 # Game params for clock auction
 flags.DEFINE_string("filename", 'parameters.json', "Filename with parameters")
+flags.DEFINE_integer("seed", '123', "Seed for randomized algs")
 
 
 def main(_):
@@ -85,7 +87,7 @@ def main(_):
             logger.info("Using MCCFR solver")
             if FLAGS.sampling == "external":
                 logger.info("Using external sampling")
-                solver = pyspiel.ExternalSamplingMCCFRSolver(game, avg_type=pyspiel.MCCFRAverageType.FULL)
+                solver = pyspiel.ExternalSamplingMCCFRSolver(game, seed=FLAGS.seed, avg_type=pyspiel.MCCFRAverageType.FULL)
             elif FLAGS.sampling == "outcome":
                 logger.info("Using outcome sampling")
                 solver = pyspiel.OutcomeSamplingMCCFRSolver(game)
@@ -132,12 +134,14 @@ def main(_):
         # TODO: Should probably append to a file here, or every few iters. Don't think it makes sense to wait until the end
         logger.info("Iteration {} nash_conv: {:.6f}".format(i, nash_conv))
 
-    logger.info("Persisting the model...")
-    model_name = f'{FLAGS.solver}_{FLAGS.python}'
-    if FLAGS.solver == 'mccfr':
-        model_name += f'_{FLAGS.sampling}'
-    with open(f'{FLAGS.output}/{model_name}.pkl', "wb") as f:
-        pickle.dump(solver, f, pickle.HIGHEST_PROTOCOL)
+    if FLAGS.persist:
+        logger.info("Persisting the model...")
+        model_name = f'{FLAGS.solver}_{FLAGS.python}'
+        if FLAGS.solver == 'mccfr':
+            model_name += f'_{FLAGS.sampling}'
+        
+        with open(f'{FLAGS.output}/{model_name}.pkl', "wb") as f:
+            pickle.dump(solver, f, pickle.HIGHEST_PROTOCOL)
 
     pd.Series(nash_convs, name='nash_conv').to_csv(f'{FLAGS.output}/nash_conv.csv')
 
