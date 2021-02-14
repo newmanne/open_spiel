@@ -74,9 +74,8 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
   double open_price,
   bool undersell_rule_,
   std::vector<std::vector<double>> values,
-  std::vector<std::vector<double>> values_probs,
   std::vector<std::vector<double>> budgets,
-  std::vector<std::vector<double>> budgets_probs
+  std::vector<std::vector<double>> probs
 ) : 
       SimMoveState(game),
       cur_player_(kChancePlayerId), // Chance begins by setting types
@@ -90,9 +89,8 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       open_price_(open_price),
       undersell_rule_(undersell_rule_),
       values_(values),
-      values_probs_(values_probs),
       budgets_(budgets),
-      budgets_probs_(budgets_probs),
+      type_probs_(probs),
       bidseq_(),
       aggregate_demands_(),
       undersell_order_(),
@@ -180,9 +178,7 @@ std::string AuctionState::ActionToString(Player player, Action action_id) const 
     return absl::StrCat("Bid for ", action_id, " licenses @ ", price_.back());
   } else {
     if (value_.size() < num_players_) {
-      return absl::StrCat("Player ", value_.size(), " was assigned a value of ", values_[value_.size()][action_id]);
-    } else if (budget_.size() < num_players_) {
-      return absl::StrCat("Player ", budget_.size(), " was assigned a budget of ", budgets_[budget_.size()][action_id]);
+      return absl::StrCat("Player ", value_.size(), " was assigned a value of ", values_[value_.size()][action_id], " and a budget of ", budgets_[budget_.size()][action_id]);
     } else if (undersell_) {
       return absl::StrCat("Undersell! Allowing player ", action_id, " to drop");
     }
@@ -211,17 +207,14 @@ void AuctionState::DoApplyAction(Action action) {
     return;
   }
 
-  if (value_.size() < num_players_) { // Chance node assigns a value to a player
+  if (value_.size() < num_players_) { // Chance node assigns a value and budget to a player
     auto player_index = value_.size();
     SPIEL_CHECK_GE(player_index, 0);
     value_.push_back(values_[player_index][action]); 
-  } else if (budget_.size() < num_players_) { // Chance node assigns a budget to a player
-    auto player_index = budget_.size();
-    SPIEL_CHECK_GE(player_index, 0);
     budget_.push_back(budgets_[player_index][action]);
   } 
 
-  if (budget_.size() == num_players_) { // All of the assignments have been made
+  if (value_.size() == num_players_) { // All of the assignments have been made
     cur_player_ = kSimultaneousPlayerId;
   }
 }
@@ -283,13 +276,10 @@ std::vector<std::pair<Action, double>> AuctionState::ChanceOutcomes() const {
   }
 
   std::vector<double> probs;
-  if (value_.size() < num_players_) { // Chance node is assigning a value
+  if (value_.size() < num_players_) { // Chance node is assigning a type
     auto player_index = value_.size();
-    probs = values_probs_[player_index];
-  } else if (budget_.size() < num_players_) { // Chance node is assigning a budget
-    auto player_index = budget_.size();
-    probs = budgets_probs_[player_index];
-  }
+    probs = type_probs_[player_index];
+  } 
 
   for(int i = 0; i < probs.size(); i++) {
     valuesAndProbs.push_back({i, probs[i]});
@@ -302,10 +292,7 @@ std::string AuctionState::InformationStateString(Player player) const {
   SPIEL_CHECK_LT(player, num_players_);
   std::string result = absl::StrCat("p", player);
   if (value_.size() > player) {
-    absl::StrAppend(&result, absl::StrCat("v", value_[player]));  
-  }
-  if (budget_.size() > player) {
-    absl::StrAppend(&result, absl::StrCat("b", budget_[player]));
+    absl::StrAppend(&result, absl::StrCat("v", value_[player], "b", budget_[player]));  
   }
   if (!bidseq_[player].empty()) {
     absl::StrAppend(&result, absl::StrCat("\n", absl::StrJoin(bidseq_[player], ","), "\n"));
@@ -319,10 +306,7 @@ std::string AuctionState::ToString() const {
   // Player type storage
   for (auto p = Player{0}; p < num_players_; p++) {
       if (value_.size() > p) {
-        absl::StrAppend(&result, absl::StrCat("p", p, "v", value_[p]));  
-      }
-      if (budget_.size() > p) {
-        absl::StrAppend(&result, absl::StrCat("b", budget_[p], "\n"));
+        absl::StrAppend(&result, absl::StrCat("p", p, "v", value_[p], "b", budget_[p], "\n"));  
       }
   }
 
@@ -427,49 +411,40 @@ AuctionGame::AuctionGame(const GameParameters& params) :
   max_budget_ = 0.;
   for (auto p = Player{0}; p < num_players_; p++) {
     auto player_object = players[p].GetObject();
-    CheckRequiredKey(player_object, "value");
-    auto pv = player_object["value"].GetArray();
-    CheckRequiredKey(player_object, "value_probs");
-    auto pvp = player_object["value_probs"].GetArray();
+    CheckRequiredKey(player_object, "type");
+    auto type_array = player_object["type"].GetArray();
+    std::vector<double> player_budgets;
     std::vector<double> player_values;
-    std::vector<double> player_values_probs;
-    for (int i = 0; i < pv.size(); i++) {
-      double v = ParseDouble(pv[i]);
-      if (v > max_value_) {
-        max_value_ = v;
+    std::vector<double> player_probs;
+    for (auto t = 0; t < type_array.size(); t++) {
+      auto type_object = type_array[t].GetObject();
+      CheckRequiredKey(type_object, "value");
+      CheckRequiredKey(type_object, "budget");
+      CheckRequiredKey(type_object, "prob");
+      double value = ParseDouble(type_object["value"]);
+      if (value > max_value_) {
+        max_value_ = value;
       }
-      player_values.push_back(v);
-      player_values_probs.push_back(ParseDouble(pvp[i]));
+      player_values.push_back(value);
+      double budget = ParseDouble(type_object["budget"]);
+      if (budget > max_budget_) {
+        max_budget_ = budget;
+      }
+      player_budgets.push_back(budget);
+      double prob = ParseDouble(type_object["prob"]);
+      player_probs.push_back(prob);
     }
     values_.push_back(player_values);
-    values_probs_.push_back(player_values_probs);
-
-    CheckRequiredKey(player_object, "budget");
-    auto pb = player_object["budget"].GetArray();
-    CheckRequiredKey(player_object, "budget_probs");
-    auto pbp = player_object["budget_probs"].GetArray();
-    std::vector<double> player_budget;
-    std::vector<double> player_budget_probs;
-    for (int i = 0; i < pb.size(); i++) {
-      double b = ParseDouble(pb[i]);
-      player_budget.push_back(b);
-      if (b > max_budget_) {
-        max_budget_ = b;
-      }
-      player_budget_probs.push_back(ParseDouble(pbp[i]));
-    }
-    budgets_.push_back(player_budget);
-    budgets_probs_.push_back(player_budget_probs);
-
+    budgets_.push_back(player_budgets);
+    type_probs_.push_back(player_probs);
   }
-
+  
   // Compute max chance outcomes
-  // Max of # of value draws, # of budget draws, tie-breaking
+  // Max of # of type draws and tie-breaking
   std::vector<int> lengths;
   lengths.push_back(num_players_);
   for (auto p = Player{0}; p < num_players_; p++) {
-    lengths.push_back(budgets_[p].size());
-    lengths.push_back(values_[p].size());
+    lengths.push_back(type_probs_[p].size());
   }
   max_chance_outcomes_ = *std::max_element(lengths.begin(), lengths.end());
 }
@@ -480,7 +455,7 @@ int AuctionGame::NumDistinctActions() const {
 
 std::unique_ptr<State> AuctionGame::NewInitialState() const {
   std::unique_ptr<AuctionState> state(
-      new AuctionState(shared_from_this(), num_players_, num_licenses_, increment_, open_price_, undersell_rule_, values_, values_probs_, budgets_, budgets_probs_));
+      new AuctionState(shared_from_this(), num_players_, num_licenses_, increment_, open_price_, undersell_rule_, values_,  budgets_, type_probs_));
   return state;
 }
 

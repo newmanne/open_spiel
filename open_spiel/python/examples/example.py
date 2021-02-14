@@ -28,7 +28,7 @@ import pyspiel
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string("game", "tic_tac_toe", "Name of the game")
-flags.DEFINE_integer("players", None, "Number of players")
+flags.DEFINE_string("filename", 'parameters.json', "Filename with parameters")
 flags.DEFINE_string("load_state", None,
                     "A file containing a string to load a specific state")
 
