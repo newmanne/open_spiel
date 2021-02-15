@@ -10,36 +10,49 @@ def main(root, spiel_path):
     Path(f'{root}').mkdir(parents=True, exist_ok=True)
     Path(f'{root}/logs').mkdir(parents=True, exist_ok=True)
 
-    V_L = 150
-    B_L = 350
-    V_H = 225
-    B_H = 525
-    
-    # TODO: What about an opponent even lower than you?
+    V_L = 121
+    B_L = 600
 
+    V_M = 150
+    B_M = 600
+
+    V_H = 180
+    B_H = 600
+    
     low = {
-      "value": [V_L],
-      "value_probs": [1.],
-      "budget": [B_L],
-      "budget_probs": [1.]
+      "value": V_L,
+      "budget": B_L,
+    }
+    medium = {
+        'value': V_M,
+        'budget': B_M,
     }
     high = {
-      "value": [V_H],
-      "value_probs": [1.],
-      "budget": [B_H],
-      "budget_probs": [1.]
-    }
-    mixed = {
-      "value": [V_L, V_H],
-      "value_probs": [0.5, 0.5],
-      "budget": [B_L, B_H],
-      "budget_probs": [0.5, 0.5]
+      "value": V_H,
+      "budget": B_H,
     }
 
+    def make_player(*player_types): 
+        p = dict()
+        p['type'] = []
+        for t, p in player_types:
+            d = dict(t)
+            d['prob'] = p
+            p['type'].append(d)
+        return p
+
     param_grid = [
-        {'opening_price': [100], 'increment': [0.1], 'licenses': [5], 'undersell_rule': [False]},
+        {'opening_price': [100], 'increment': [0.1], 'licenses': [5], 'undersell_rule': [False, True]},
         # {'opening_price': [100], 'increment': [0.1, 0.15, 0.2], 'licenses': [3, 4, 5], 'undersell_rule': [True, False]},
     ]
+
+    player_grid = [
+        {'players': [
+            make_player((low, 0.9), (high, 0.1))),
+            make_player((medium, 1.0))
+        ] }
+    ]
+
     i = 1
     cmds = []
 
@@ -47,17 +60,15 @@ def main(root, spiel_path):
     solver_grid = [
         # {'solver': ['cfr', 'cfrplus', 'cfrbr']},
         {'solver': ['mccfr --sampling external'], 'seed': [i for i in range(2,12)]}                 # "mccfr --sampling outcome" Seems to not work
-
     ]
 
-    for players in [(low, mixed), (high, mixed), (mixed, mixed)]:
-        for parameterization in ParameterGrid(param_grid):
-            parameterization['players'] = players
+    for parameterization in ParameterGrid(param_grid):
+        for players in ParameterGrid(player_grid):
+            parameterization['players'] = players['players']
             Path(f'{root}/{i}').mkdir(parents=True, exist_ok=True)
             with open(f'{root}/{i}/{i}.json', 'w') as f:
                 json.dump(parameterization, f)
                 for solver_config in ParameterGrid(solver_grid):
-                # for solver in ["cfr", "cfrplus", "cfrbr", "mccfr --sampling external"]:
                     solver = solver_config['solver']
                     seed = solver_config.get('seed', 123)
                     cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}/{i}.json --iterations 10000 --solver={solver} --output {root}/{i}/{solver} --seed {seed}'
