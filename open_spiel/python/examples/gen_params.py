@@ -3,10 +3,15 @@ import argparse
 from sklearn.model_selection import ParameterGrid
 import os
 from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
 
 CMD_FILE_NAME = 'cmds.txt'
 
 def main(root, spiel_path):
+    logging.basicConfig()
+
     Path(f'{root}').mkdir(parents=True, exist_ok=True)
     Path(f'{root}/logs').mkdir(parents=True, exist_ok=True)
 
@@ -32,14 +37,16 @@ def main(root, spiel_path):
       "budget": B_H,
     }
 
-    def make_player(*player_types): 
-        p = dict()
-        p['type'] = []
+    def make_player(player_types): 
+        player = dict()
+        player['type'] = []
         for t, p in player_types:
+            logger.info(t)
+            print(t)
             d = dict(t)
             d['prob'] = p
-            p['type'].append(d)
-        return p
+            player['type'].append(d)
+        return player
 
     param_grid = [
         {'opening_price': [100], 'increment': [0.1], 'licenses': [5], 'undersell_rule': [False, True]},
@@ -48,8 +55,8 @@ def main(root, spiel_path):
 
     player_grid = [
         {'players': [
-            make_player((low, 0.9), (high, 0.1))),
-            make_player((medium, 1.0))
+            make_player(((low, 0.9), (high, 0.1))),
+            make_player(((medium, 1.0),))
         ] }
     ]
 
@@ -59,7 +66,8 @@ def main(root, spiel_path):
 
     solver_grid = [
         # {'solver': ['cfr', 'cfrplus', 'cfrbr']},
-        {'solver': ['mccfr --sampling external'], 'seed': [i for i in range(2,12)]}                 # "mccfr --sampling outcome" Seems to not work
+        {'solver': ['cfr']},
+        {'solver': ['mccfr --sampling external'], 'name': ['mccfr_ext'], 'seed': [i for i in range(2,12)]}                 # "mccfr --sampling outcome" Seems to not work
     ]
 
     for parameterization in ParameterGrid(param_grid):
@@ -71,15 +79,16 @@ def main(root, spiel_path):
                 for solver_config in ParameterGrid(solver_grid):
                     solver = solver_config['solver']
                     seed = solver_config.get('seed', 123)
-                    cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}/{i}.json --iterations 10000 --solver={solver} --output {root}/{i}/{solver} --seed {seed}'
+                    name = solver_config.get('name', solver)
+                    cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}/{i}.json --iterations 10000 --solver={solver} --output {root}/{i}/{name}_{seed} --seed {seed}'
                     cmds.append(cmd)
-            i += 1
+                i += 1
 
     print(f"Dumped {i} configs to {root}")
     with open(f'{root}/{CMD_FILE_NAME}', 'w') as f:
         for cmd in cmds:
             f.write(cmd + '\n')
-    print (f"Commands written to {root}/{CMD_FILE_NAME}")
+    print (f"{len(cmds)} commands written to {root}/{CMD_FILE_NAME}")
 
     JOB_NAME = 'CFR'
     slurm = f"""#!/bin/sh
@@ -93,8 +102,6 @@ def main(root, spiel_path):
 #SBATCH --array=1-{len(cmds)}
 
 source {spiel_path}/venv/bin/activate
-export PYTHONPATH=${{PYTHONPATH}}:{spiel_path}
-export PYTHONPATH=${{PYTHONPATH}}:{spiel_path}/build/python
 
 CMD=`head -n $SLURM_ARRAY_TASK_ID {root}/{CMD_FILE_NAME} | tail -n 1`
 echo $CMD
