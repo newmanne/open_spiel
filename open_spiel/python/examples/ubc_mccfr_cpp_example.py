@@ -27,6 +27,7 @@ import sys
 import pyspiel
 import pandas as pd
 import json
+import re
 
 from open_spiel.python import policy
 from open_spiel.python.algorithms import cfr, outcome_sampling_mccfr, expected_game_score, exploitability, get_all_states
@@ -153,24 +154,34 @@ def main(_):
         all_states = get_all_states.get_all_states(
             game,
             depth_limit=-1,
-            include_terminals=False,
+            include_terminals=True,
             include_chance_states=False
         )
         records = []
         seen = set()
-        for info_state, state in all_states.items():
-            action_probabilities = policy.action_probabilities(state)
-            info_state_string = state.information_state_string()
+        pattern = re.compile(r'.*(Final bids:.*)$.*', flags=re.MULTILINE)
+        for state_code, state in all_states.items():
+            if state.is_terminal():
+                action_probabilities = dict()
+                # NOT an infostate string - but a terminal
+                info_state_string = re.findall(pattern, str(state))[0]
+            else:
+                action_probabilities = policy.action_probabilities(state)
+                info_state_string = state.information_state_string()
+                info_state_string = info_state_string[18:] # Get rid of "Current Player line"
             if info_state_string not in seen:
                 seen.add(info_state_string)
-                info_state_string = info_state_string[18:] # Get rid of "Current Player line"
-                record = dict(info_state=info_state_string, player=state.current_player())
+                record = dict(info_state=info_state_string, player=state.current_player(), terminal=state.is_terminal())
                 record.update(action_probabilities)
+                if state.is_terminal():
+                    record.update({f'Utility {n}': u for n, u in enumerate(state.returns())})
                 records.append(record)
 
     df = pd.DataFrame.from_records(records).set_index('info_state')
     df = df.reindex(sorted(df.columns, key=str), axis=1) # Sort columns alphabetically
-    df.to_csv(f'{FLAGS.output}/strategy.csv')
+    output_path = f'{FLAGS.output}/strategy.csv'
+    logger.info(f"Saving strategy to {output_path}")
+    df.to_csv(output_path)
 
     # logger.info("Loading the model...")
     # with open(MODEL_FILE_NAME.format(FLAGS.sampling), "rb") as file:
