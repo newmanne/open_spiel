@@ -306,7 +306,7 @@ std::string AuctionState::ToString() const {
   // Player type storage
   for (auto p = Player{0}; p < num_players_; p++) {
       if (value_.size() > p) {
-        absl::StrAppend(&result, absl::StrCat("p", p, "v", value_[p], "b", budget_[p], "\n"));  
+        absl::StrAppend(&result, absl::StrCat("Player(n=", p, ", Value=", value_[p], ", Budget=", budget_[p], ")\n"));  
       }
   }
 
@@ -324,7 +324,7 @@ std::string AuctionState::ToString() const {
     absl::StrAppend(&result, absl::StrCat("\nFinal bids: ", absl::StrJoin(final_bids_, " ")));
   }
   if (undersell_) {
-    absl::StrAppend(&result, "Undersell\n");
+    absl::StrAppend(&result, "\nUndersell");
     if (!undersell_order_.empty()) {
       absl::StrAppend(&result, absl::StrCat("\nUndersell order: ", absl::StrJoin(undersell_order_, " ")));
     } 
