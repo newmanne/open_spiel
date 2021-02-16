@@ -36,6 +36,27 @@ def main(root, spiel_path):
       "value": V_H,
       "budget": B_H,
     }
+    very_low = {
+        "value": 121,
+        "budget": 400
+    }
+    very_high = {
+        "value": 200,
+        "budget": 600
+    }
+
+    p0 = {
+        'value': 275,
+        'budget': 475
+    }
+    p1_l = {
+        'value': 150,
+        'budget': 400
+    }
+    p1_h = {
+        'value': 300,
+        'budget': 650
+    }
 
     def make_player(player_types): 
         player = dict()
@@ -48,12 +69,16 @@ def main(root, spiel_path):
         return player
 
     param_grid = [
-        {'opening_price': [100], 'increment': [0.1], 'licenses': [5], 'undersell_rule': ["undersell_standard", "undersell_allowed"]},
+        {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard", "undersell_allowed"]},
         # {'opening_price': [100], 'increment': [0.1, 0.15, 0.2], 'licenses': [3, 4, 5], 'undersell_rule': [True, False]},
     ]
 
     player_grid = [
-        [make_player(((low, 0.9), (high, 0.1))), make_player(((medium, 1.0),))]
+        [make_player([(low, 0.9), (high, 0.1)]), make_player([(medium, 1.0)])],
+        [make_player([(low, 0.5), (high, 0.5)]), make_player([(medium, 1.0)])],
+        [make_player(((low, 0.9), (high, 0.1))), make_player(((medium, 1.0),))],
+        [make_player([(very_low, 1.0)]), make_player([(very_high, 1.0)])],
+        [make_player([(p0, 1.0)]), make_player([(p1_l, 0.5), (p1_h, 0.5)])],
     ]
 
     i = 1
@@ -63,7 +88,7 @@ def main(root, spiel_path):
     solver_grid = [
         # {'solver': ['cfr', 'cfrplus', 'cfrbr']},
         {'solver': ['cfr']},
-        {'solver': ['mccfr --sampling external'], 'name': ['mccfr_ext'], 'seed': [i for i in range(2,12)]}                 # "mccfr --sampling outcome" Seems to not work
+        {'solver': ['mccfr --sampling external'], 'name': ['mccfr_ext'], 'seed': [i for i in range(2,4)]}
     ]
 
     for parameterization in ParameterGrid(param_grid):
