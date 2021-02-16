@@ -30,8 +30,9 @@ import json
 import re
 
 from open_spiel.python import policy
-from open_spiel.python.algorithms import cfr, outcome_sampling_mccfr, expected_game_score, exploitability, get_all_states
+from open_spiel.python.algorithms import cfr, outcome_sampling_mccfr, expected_game_score, exploitability, get_all_states_with_policy
 import logging
+from sharpen_solution import sharpen_solution
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +53,27 @@ flags.DEFINE_string("game", "clock_auction", "Name of the game")
 flags.DEFINE_string("filename", 'parameters.json', "Filename with parameters")
 flags.DEFINE_integer("seed", '123', "Seed for randomized algs")
 
+
+price_pattern = re.compile(r'^.*(Price:.*)$', flags=re.MULTILINE)
+allocation_pattern = re.compile(r'.*(Final bids:.*)$.*', flags=re.MULTILINE)
+round_pattern = re.compile(r'.*(Round:.*)$.*', flags=re.MULTILINE)
+
+def state_to_final(game, s):
+    '''Convert a state into unique final outcomes (but not caring about bidding being different in the middle). i.e., the allocation and the types and the price are all the same'''
+    state_str = str(s)
+    info_state_string = '\n'.join(state_str.split('\n')[:game.num_players()]) + '\n' + re.findall(allocation_pattern, state_str)[0] + '\n' + re.findall(price_pattern, state_str)[0] + '\n' + re.findall(round_pattern, state_str)[0]
+    return info_state_string
+
+def parse_state_str(game, state):
+    state_str = str(state)
+    price = float(re.findall(price_pattern, state_str)[0].replace('Price:', ''))
+    round_number = int(re.findall(round_pattern, state_str)[0].replace('Round:', ''))
+    d = dict(price=price, round=round_number)
+    if state.is_terminal():
+        allocation = [int(x) for x in re.findall(allocation_pattern, state_str)[0].replace('Final bids:', '').split()]
+        for i, a in enumerate(allocation):
+            d[f'Allocation {i}'] = a   
+    return d
 
 def main(_):
     Path(FLAGS.output).mkdir(parents=True, exist_ok=True)
@@ -150,31 +172,30 @@ def main(_):
     if FLAGS.python:
         raise ValueError("TODO")
     else:
-        # These are all the STATES. But you want all the INFOSTATES, so make sure to reject duplicates
-        all_states = get_all_states.get_all_states(
+        all_states = get_all_states_with_policy.get_all_info_states_with_policy(
             game,
             depth_limit=-1,
             include_terminals=True,
-            include_chance_states=False
+            policy=policy,
+            to_string=lambda s: state_to_final(game, s),
         )
         records = []
-        seen = set()
-        pattern = re.compile(r'.*(Final bids:.*)$.*', flags=re.MULTILINE)
-        for state_code, state in all_states.items():
+        for info_state_key, state_dict in all_states.items():
+            state = state_dict['state']
+            prob = state_dict['prob']
+            record = dict(terminal=state.is_terminal(), prob=prob, player=state.current_player())
+            record.update(parse_state_str(game, state))
             if state.is_terminal():
-                action_probabilities = dict()
-                # NOT an infostate string - but a terminal
-                info_state_string = re.findall(pattern, str(state))[0]
+                record.update({f'Utility {n}': v for n,v in enumerate(state.returns())})
+                for n, u in enumerate(state.returns()):
+                    # 1 entry per player per terminal state for better filtering
+                    r = dict(record)
+                    r.update(dict(player=n, info_state=info_state_key))
+                    records.append(r)
             else:
                 action_probabilities = policy.action_probabilities(state)
-                info_state_string = state.information_state_string()
-                info_state_string = info_state_string[18:] # Get rid of "Current Player line"
-            if info_state_string not in seen:
-                seen.add(info_state_string)
-                record = dict(info_state=info_state_string, player=state.current_player(), terminal=state.is_terminal())
-                record.update(action_probabilities)
-                if state.is_terminal():
-                    record.update({f'Utility {n}': u for n, u in enumerate(state.returns())})
+                record['info_state'] = info_state_key[18:] # Get rid of "Current Player line"
+                record.update({f'Bid {k}': v for k, v in action_probabilities.items()})
                 records.append(record)
 
     df = pd.DataFrame.from_records(records).set_index('info_state')
@@ -182,6 +203,9 @@ def main(_):
     output_path = f'{FLAGS.output}/strategy.csv'
     logger.info(f"Saving strategy to {output_path}")
     df.to_csv(output_path)
+
+    logger.info(f"Running processing script")
+    sharpen_solution(output_path)
 
     # logger.info("Loading the model...")
     # with open(MODEL_FILE_NAME.format(FLAGS.sampling), "rb") as file:

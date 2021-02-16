@@ -42,22 +42,18 @@ def main(root, spiel_path):
         player['type'] = []
         for t, p in player_types:
             logger.info(t)
-            print(t)
             d = dict(t)
             d['prob'] = p
             player['type'].append(d)
         return player
 
     param_grid = [
-        {'opening_price': [100], 'increment': [0.1], 'licenses': [5], 'undersell_rule': [False, True]},
+        {'opening_price': [100], 'increment': [0.1], 'licenses': [5], 'undersell_rule': ["undersell_standard", "undersell_allowed"]},
         # {'opening_price': [100], 'increment': [0.1, 0.15, 0.2], 'licenses': [3, 4, 5], 'undersell_rule': [True, False]},
     ]
 
     player_grid = [
-        {'players': [
-            make_player(((low, 0.9), (high, 0.1))),
-            make_player(((medium, 1.0),))
-        ] }
+        [make_player(((low, 0.9), (high, 0.1))), make_player(((medium, 1.0),))]
     ]
 
     i = 1
@@ -71,8 +67,10 @@ def main(root, spiel_path):
     ]
 
     for parameterization in ParameterGrid(param_grid):
-        for players in ParameterGrid(player_grid):
-            parameterization['players'] = players['players']
+        for players in player_grid:
+            parameterization['players'] = players
+            if len(players) <= 1:
+                raise ValueError("Fewer than one player?")
             Path(f'{root}/{i}').mkdir(parents=True, exist_ok=True)
             with open(f'{root}/{i}/{i}.json', 'w') as f:
                 json.dump(parameterization, f)
@@ -84,7 +82,7 @@ def main(root, spiel_path):
                     cmds.append(cmd)
                 i += 1
 
-    print(f"Dumped {i} configs to {root}")
+    print(f"Dumped {i-1} configs to {root}")
     with open(f'{root}/{CMD_FILE_NAME}', 'w') as f:
         for cmd in cmds:
             f.write(cmd + '\n')

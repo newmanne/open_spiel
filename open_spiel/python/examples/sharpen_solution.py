@@ -35,47 +35,50 @@ from open_spiel.python.algorithms import cfr, outcome_sampling_mccfr, expected_g
 import logging
 
 logger = logging.getLogger(__name__)
+ 
 
-FLAGS = flags.FLAGS
-
-flags.DEFINE_string("input", "strategy.csv", "Name of the input strategy file")
-flags.DEFINE_string("output", 'reduced_strategy.csv', "Output file")
-
-
-def main(_):
-    f = FLAGS.input
-    o = FLAGS.output
+def sharpen_solution(f, o=None):
+    if o is None:
+        o = f.replace('strategy', 'reduced_strategy')
+        if not o:
+            o = 'reduced_strategy.csv'
 
     logger.info(f"Reading raw strategy from {f}")
     df = pd.read_csv(f)
+    bid_cols = [c for c in df.columns if 'Bid' in c]
 
-    df = df.set_index(['info_state', 'player'])
-    df.columns = [f'Bid {n}' for n in df.columns]
+    terminals = df.query('terminal').copy()
+    is_df = df.query('not terminal')
+    is_df = is_df.set_index(['info_state', 'player'])
 
-    prev_len = len(df)
-    # Get rid of IS's that were never explored 
+    prev_len = len(is_df)
+    # Get rid of IS's that are never explored 
     # Of course, this will remove any IS that actually convereged to a uniform distribution. My expectation is that non-complete convergence will save us here
 
-    # TODO: This will probably cause issues if there is only a single action you might take...  You want to verify there are >1 non-NA numbers
-    df = df.loc[~((df.isna().any(axis=1)) & (df.nunique(axis=1, dropna=False) == 2)) & (df.nunique(axis=1) > 1)]
+    action_matrix = is_df[bid_cols].values
+    na_mask = ~np.isnan(action_matrix)
+    non_null_row_entries = na_mask.sum(axis=1)
+    only_one_unique_non_null = pd.DataFrame(action_matrix).nunique(axis=1).values == 1
+    row_mask = (non_null_row_entries >= 2) & (only_one_unique_non_null)
+
+    is_df = is_df.loc[~row_mask,:]
     
-    new_len = len(df)
+    new_len = len(is_df)
     logger.info(f"Filtered out {prev_len - new_len} infostates")
     
     # Sharpen predictions
-    # Let's kill off any action you take <1% of the time
+    # Let's kill off any action you take really infrequently
     THRESH = 0.001
+    action_matrix = is_df[bid_cols].values
+    am = np.nan_to_num(action_matrix)
+    am[am < THRESH] = 0
+    # Renormalize
+    row_sums = am.sum(axis=1)
+    am = am / row_sums[:, np.newaxis]
 
-    mask = df.isna()
-    df = df.fillna(0)
-    df[df < THRESH] = 0
-    # Rebalance what remains
-    df = df.div(df.sum(axis=1), axis=0)
+    is_df.loc[:, bid_cols] = am
 
-    # Remove those 0's we added to actions you just can't play
-    df = df.where(~mask, other='')
-
-    def s(n):
+    def get_line(n):
         def q(x):
             lines = x.split('\n')
             if len(lines) > n:
@@ -84,17 +87,30 @@ def main(_):
                 return ''
         return q
 
-    df = df.reset_index()
-    types = df['info_state'].apply(s(0))
-    df['value'] = types.str.extract(r'v(.+)b.*').astype(np.float)
-    df['budget'] = types.str.extract(r'.*b(.+)$').astype(np.float)
-    df['my_bids'] = df['info_state'].apply(s(1))
-    df['total_demand'] = df['info_state'].apply(s(2))
-    df['round'] = df['my_bids'].apply(lambda x: 1 if x.strip() == '' else 1 + len(x.split(",")))
-    df = df.sort_values(['player', 'value', 'budget', 'round', 'my_bids', 'total_demand'])
-    df.to_csv(o, index=False)
+    is_df = is_df.reset_index()
+    is_df['my_bids'] = is_df['info_state'].apply(get_line(1))
+    is_df['total_demand'] = is_df['info_state'].apply(get_line(2))
 
-    
+    final_df = pd.concat([is_df, terminals], axis=0)
+    final_df['terminal'] = final_df['terminal'].astype(np.bool)
+
+    types = final_df.apply(lambda r: get_line(0)(r['info_state']) if not r['terminal'] else get_line(r['player'])(r['info_state']), axis=1)
+    final_df['value'] = types.str.extract(r'v(.+)b.*').astype(np.float)
+    final_df['budget'] = types.str.extract(r'.*b(.+)$').astype(np.float)
+
+
+    final_df = final_df.sort_values(['player', 'value', 'budget', 'round', 'my_bids', 'total_demand'])
+    final_df.to_csv(o, index=False)
+
+def main(_):
+    f = FLAGS.input
+    o = FLAGS.output
+    sharpen_solution(f, o)
+
 if __name__ == "__main__":
+    FLAGS = flags.FLAGS
+    flags.DEFINE_string("input", "strategy.csv", "Name of the input strategy file")
+    flags.DEFINE_string("output", 'reduced_strategy.csv', "Output file")
+
     app.run(main)
 

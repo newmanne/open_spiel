@@ -39,7 +39,7 @@ class AuctionState : public SimMoveState {
     int num_licenses, 
     double increment, 
     double open_price, 
-    bool undersell_rule_,
+    int undersell_rule_,
     std::vector<std::vector<double>> values,
     std::vector<std::vector<double>> budgets,
     std::vector<std::vector<double>> type_probs
@@ -77,7 +77,7 @@ class AuctionState : public SimMoveState {
   int num_licenses_;
   double increment_;
   double open_price_;
-  bool undersell_rule_;
+  int undersell_rule_;
   std::vector<std::vector<double>> values_;
   std::vector<std::vector<double>> budgets_;
   std::vector<std::vector<double>> type_probs_;
@@ -113,7 +113,7 @@ class AuctionGame : public Game {
   int num_licenses_;
   double increment_;
   double open_price_;
-  bool undersell_rule_;
+  int undersell_rule_;
   std::vector<std::vector<double>> values_;
   std::vector<std::vector<double>> budgets_;
   std::vector<std::vector<double>> type_probs_;

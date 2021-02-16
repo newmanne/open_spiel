@@ -39,6 +39,11 @@ namespace {
 constexpr int kMaxPlayers = 10;
 constexpr int kMoveLimit = 100;
 
+// Undersell rules
+constexpr int kUndersellAllowed = 1;
+constexpr int kUndersell = 2;
+constexpr int kUndersellPrevClock = 3;
+
 // Facts about the game
 const GameType kGameType{/*short_name=*/"clock_auction",
                          /*long_name=*/"Clock Auction",
@@ -72,7 +77,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
   int num_licenses,
   double increment,
   double open_price,
-  bool undersell_rule_,
+  int undersell_rule_,
   std::vector<std::vector<double>> values,
   std::vector<std::vector<double>> budgets,
   std::vector<std::vector<double>> probs
@@ -153,7 +158,7 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
     double next_price = price_.back() * (1 + increment_);
     price_.push_back(next_price);
   } else {
-    if (aggregateDemand == num_licenses_ || (aggregateDemand <= num_licenses_ && (!undersell_rule_ || price_.size() == 1))) {
+    if (aggregateDemand == num_licenses_ || (aggregateDemand <= num_licenses_ && (undersell_rule_ == kUndersellAllowed || price_.size() == 1))) {
       // Demand <= supply. We are finished.
       // Undersell in the first round is always allowed without penalty, so we won't set the flag
       for (auto p = Player{0}; p < num_players_; ++p) {
@@ -161,7 +166,7 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
       }
       finished_ = true;
     } else {
-      SPIEL_CHECK_TRUE(undersell_rule_);
+      SPIEL_CHECK_TRUE(undersell_rule_ != kUndersellAllowed);
       for (auto p = Player{0}; p < num_players_; ++p) {
         final_bids_.push_back(bidseq_[p].end()[-2]); // Use prev round bids and we'll drop according to chance
       }
@@ -306,11 +311,12 @@ std::string AuctionState::ToString() const {
   // Player type storage
   for (auto p = Player{0}; p < num_players_; p++) {
       if (value_.size() > p) {
-        absl::StrAppend(&result, absl::StrCat("Player(n=", p, ", Value=", value_[p], ", Budget=", budget_[p], ")\n"));  
+        absl::StrAppend(&result, absl::StrCat("p", p, "v", value_[p], "b", budget_[p], "\n"));  
       }
   }
 
   absl::StrAppend(&result, absl::StrCat("Price: ", price_.back(), "\n"));
+  absl::StrAppend(&result, absl::StrCat("Round: ", price_.size(), "\n"));
 
   for (auto p = Player{0}; p < num_players_; p++) {
     if (!bidseq_[p].empty()) {
@@ -349,7 +355,12 @@ std::vector<double> AuctionState::Returns() const {
   }
 
   std::vector<double> returns(num_players_, 0.0);
-  double price = undersell_ ? price_.end()[-2] : price_.back(); // If the undersell flag is triggered, let's assume the drop bids occured at start-of-round, and use the previous round's price. If not using the undersell_rule_, the more intuitive thing happens nad we just use the price
+  double price; 
+  if (undersell_ && undersell_rule_ == kUndersellPrevClock) {
+    price = price_.end()[-2]; // If the undersell flag is triggered, let's assume the drop bids occured at start-of-round, and use the previous round's price. If not using the undersell_rule_, the more intuitive thing happens nad we just use the price
+  } else {
+    price = price_.back();
+  }
 
   for (auto p = Player{0}; p < num_players_; p++) {
     SPIEL_CHECK_GE(final_bids_[p], 0);
@@ -404,7 +415,16 @@ AuctionGame::AuctionGame(const GameParameters& params) :
   CheckRequiredKey(object, "increment");
   increment_ = ParseDouble(object["increment"]);
   CheckRequiredKey(object, "undersell_rule");
-  undersell_rule_ = object["undersell_rule"].GetBool();
+  std::string undersell_rule_string = object["undersell_rule"].GetString();
+  if (undersell_rule_string == "undersell_allowed") {
+    undersell_rule_ = kUndersellAllowed;
+  } else if (undersell_rule_string == "undersell_prev_clock") {
+    undersell_rule_ = kUndersellPrevClock;
+  } else if (undersell_rule_string == "undersell_standard") {
+    undersell_rule_ = kUndersell;
+  } else {
+    SpielFatalError("Unrecognized undersell rule!");  
+  }
 
   // Loop over players, parsing values and budgets
   max_value_ = 0.;
