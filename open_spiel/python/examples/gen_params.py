@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 CMD_FILE_NAME = 'cmds.txt'
 
-def main(root, spiel_path):
+def main(root, spiel_path, job_name):
     logging.basicConfig()
 
     Path(f'{root}').mkdir(parents=True, exist_ok=True)
@@ -38,16 +38,16 @@ def main(root, spiel_path):
     }
     very_low = {
         "value": 121,
-        "budget": 400
+        "budget": 900
     }
     very_high = {
-        "value": 200,
-        "budget": 600
+        "value": 300,
+        "budget": 900
     }
 
     p0 = {
-        'value': 275,
-        'budget': 475
+        'value': 225,
+        'budget': 525
     }
     p1_l = {
         'value': 150,
@@ -74,10 +74,10 @@ def main(root, spiel_path):
     ]
 
     player_grid = [
-        [make_player([(low, 0.9), (high, 0.1)]), make_player([(medium, 1.0)])],
-        [make_player([(low, 0.5), (high, 0.5)]), make_player([(medium, 1.0)])],
-        [make_player(((low, 0.9), (high, 0.1))), make_player(((medium, 1.0),))],
-        [make_player([(very_low, 1.0)]), make_player([(very_high, 1.0)])],
+        # [make_player([(low, 0.9), (high, 0.1)]), make_player([(medium, 1.0)])],
+        # [make_player([(low, 0.5), (high, 0.5)]), make_player([(medium, 1.0)])],
+        # [make_player(((low, 0.1), (high, 0.9))), make_player(((medium, 1.0),))],
+        [make_player([(very_low, 1.0)]), make_player([(very_high, 1.0)])], # Trying to recreate 2b
         [make_player([(p0, 1.0)]), make_player([(p1_l, 0.5), (p1_h, 0.5)])],
     ]
 
@@ -113,7 +113,7 @@ def main(root, spiel_path):
             f.write(cmd + '\n')
     print (f"{len(cmds)} commands written to {root}/{CMD_FILE_NAME}")
 
-    JOB_NAME = 'CFR'
+    JOB_NAME = job_name
     slurm = f"""#!/bin/sh
 #SBATCH --cpus-per-task=4
 #SBATCH --mem-per-cpu=16G
@@ -140,8 +140,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Queue up a bunch of CFR jobs')
     parser.add_argument('--root', default='/home/newmanne/scratch/cfr', type=str)
     parser.add_argument('--spiel_path', default='/project/def-kevinlb/newmanne/cfr/open_spiel/', type=str)
+    parser.add_argument('--job-name', default='CFR', type=str)
     args = parser.parse_args()
-    main(args.root, args.spiel_path)
+    main(args.root, args.spiel_path, args.job_name)
 
     # SINGULARITY="singularity exec -B /home -B /project -B /scratch -B /localscratch /project/def-kevinlb/newmanne/openspiel.simg"
     # srun $SINGULARITY $CMD
