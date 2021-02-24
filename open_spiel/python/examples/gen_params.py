@@ -62,7 +62,7 @@ def grids_to_commands(param_grid, player_grid, solver_grid, root, grid_name, spi
 
 source {spiel_path}/venv/bin/activate
 
-CMD=`head -n $SLURM_ARRAY_TASK_ID {grid_name}/{CMD_FILE_NAME} | tail -n 1`
+CMD=`head -n $SLURM_ARRAY_TASK_ID {CMD_FILE_NAME} | tail -n 1`
 echo $CMD
 eval $CMD
 """
@@ -164,7 +164,7 @@ def main(root, spiel_path, job_name):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Queue up a bunch of CFR jobs')
     parser.add_argument('--root', default='/home/newmanne/scratch/cfr', type=str)
-    parser.add_argument('--spiel_path', default='/project/def-kevinlb/newmanne/cfr/open_spiel/', type=str)
+    parser.add_argument('--spiel_path', default='/project/def-kevinlb/newmanne/cfr/open_spiel', type=str)
     parser.add_argument('--job-name', default='CFR', type=str)
     args = parser.parse_args()
     main(args.root, args.spiel_path, args.job_name)
