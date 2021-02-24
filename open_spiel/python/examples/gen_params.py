@@ -46,16 +46,24 @@ def main(root, spiel_path, job_name):
     }
 
     p0 = {
-        'value': 225,
-        'budget': 525
+        'value': 175,
+        'budget': 675
     }
     p1_l = {
         'value': 150,
-        'budget': 400
+        'budget': 675
     }
     p1_h = {
-        'value': 300,
-        'budget': 650
+        'value': 200,
+        'budget': 675
+    }
+    p1_l2 = {
+        'value': 125,
+        'budget': 675
+    }
+    p1_h2 = {
+        'value': 225,
+        'budget': 675
     }
 
     def make_player(player_types): 
@@ -77,8 +85,9 @@ def main(root, spiel_path, job_name):
         # [make_player([(low, 0.9), (high, 0.1)]), make_player([(medium, 1.0)])],
         # [make_player([(low, 0.5), (high, 0.5)]), make_player([(medium, 1.0)])],
         # [make_player(((low, 0.1), (high, 0.9))), make_player(((medium, 1.0),))],
-        [make_player([(very_low, 1.0)]), make_player([(very_high, 1.0)])], # Trying to recreate 2b
+        # [make_player([(very_low, 1.0)]), make_player([(very_high, 1.0)])], # Trying to recreate 2b
         [make_player([(p0, 1.0)]), make_player([(p1_l, 0.5), (p1_h, 0.5)])],
+        [make_player([(p0, 1.0)]), make_player([(p1_l2, 0.5), (p1_h2, 0.5)])],
     ]
 
     i = 1
@@ -88,7 +97,7 @@ def main(root, spiel_path, job_name):
     solver_grid = [
         # {'solver': ['cfr', 'cfrplus', 'cfrbr']},
         {'solver': ['cfr']},
-        {'solver': ['mccfr --sampling external'], 'name': ['mccfr_ext'], 'seed': [i for i in range(2,4)]}
+        {'solver': ['mccfr --sampling external'], 'name': ['mccfr_ext'], 'seed': [i for i in range(2,20)]}
     ]
 
     for parameterization in ParameterGrid(param_grid):
@@ -103,7 +112,7 @@ def main(root, spiel_path, job_name):
                     solver = solver_config['solver']
                     seed = solver_config.get('seed', 123)
                     name = solver_config.get('name', solver)
-                    cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}/{i}.json --iterations 10000 --solver={solver} --output {root}/{i}/{name}_{seed} --seed {seed}'
+                    cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}/{i}.json --iterations 20000 --solver={solver} --output {root}/{i}/{name}_{seed} --seed {seed}'
                     cmds.append(cmd)
                 i += 1
 

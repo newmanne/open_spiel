@@ -44,6 +44,10 @@ flags.DEFINE_bool("turn_based", True, "Convert simultaneous to turn based")
 
 flags.DEFINE_enum("solver", "cfr", ["cfr", "cfrplus", "cfrbr", "mccfr"], "CFR solver")
 flags.DEFINE_enum("sampling", "external", ["external", "outcome"], "Sampling for the MCCFR solver")
+flags.DEFINE_enum("metric", "max_regret", ["max_regret", "nash_conv"], "Metric to use for stopping condition")
+flags.DEFINE_float("tolerance", 1e-2, "When the metric is below this value, consider the algorithm to be finished")
+
+
 flags.DEFINE_integer("iterations", 50, "Number of iterations")
 flags.DEFINE_string("output", "output", "Name of the output folder")
 
@@ -73,7 +77,22 @@ def parse_state_str(game, state):
         allocation = [int(x) for x in re.findall(allocation_pattern, state_str)[0].replace('Final bids:', '').split()]
         for i, a in enumerate(allocation):
             d[f'Allocation {i}'] = a   
+    else:
+        splits = state_str.splitlines()
+        d['my_bids'] = splits[1]
+        d['total_demand'] = splits[2]
+        d['type'] = splits[0]
     return d
+
+
+def persist_model(solver):
+    logger.info("Persisting the model...")
+    model_name = f'{FLAGS.solver}_{FLAGS.python}'
+    if FLAGS.solver == 'mccfr':
+        model_name += f'_{FLAGS.sampling}'
+    
+    with open(f'{FLAGS.output}/{model_name}_{i}.pkl', "wb") as f:
+        pickle.dump(solver, f, pickle.HIGHEST_PROTOCOL)
 
 def main(_):
     Path(FLAGS.output).mkdir(parents=True, exist_ok=True)
@@ -134,7 +153,7 @@ def main(_):
                 raise ValueError("Not external")
 
     # RUN SOLVER
-    nash_convs = []
+    run_records = []
     for i in range(int(FLAGS.iterations)):
         if FLAGS.solver == "mccfr":
             if FLAGS.python:
@@ -146,27 +165,27 @@ def main(_):
 
         policy = solver.average_policy()
         if FLAGS.python:
-            nash_conv = exploitability.nash_conv(game, policy)
+            metric = exploitability.nash_conv(game, policy)
         else:
-            nash_conv = pyspiel.nash_conv(game, policy)
+            regrets = pyspiel.player_regrets(game, policy)
+            max_regret = max(regrets)
+            nash_conv = sum(regrets)
+        run_records.append({
+            'max_regret': max_regret,
+            'nash_conv': nash_conv
+        })
+        logger.info(f"Iteration {i} NashConv: {nash_conv:.6f} MaxRegret: {max_regret:.6f}")
+        if FLAGS.metric < FLAGS.tolerance:
+            logger.info(f"{FLAGS.metric} is below tolerance of {FLAGS.tolerance}. Stopping.")
+            break
 
-        if nash_conv < 0:
-            raise ValueError("NEGATIVE NASH CONV! Is your game not perfect recall? Do two different states have the same AuctionState::ToString() representation?")
-
-        nash_convs.append(nash_conv)
-        # TODO: Should probably append to a file here, or every few iters. Don't think it makes sense to wait until the end
-        logger.info("Iteration {} nash_conv: {:.6f}".format(i, nash_conv))
+        if FLAGS.persist and i % 5000 == 0 and i > 0:
+            persist_model(solver, i)
 
     if FLAGS.persist:
-        logger.info("Persisting the model...")
-        model_name = f'{FLAGS.solver}_{FLAGS.python}'
-        if FLAGS.solver == 'mccfr':
-            model_name += f'_{FLAGS.sampling}'
-        
-        with open(f'{FLAGS.output}/{model_name}.pkl', "wb") as f:
-            pickle.dump(solver, f, pickle.HIGHEST_PROTOCOL)
+        persist_model(solver, i)
 
-    pd.Series(nash_convs, name='nash_conv').to_csv(f'{FLAGS.output}/nash_conv.csv')
+    pd.DataFrame.from_records(run_records).to_csv(f'{FLAGS.output}/run_metrics.csv')
 
     records = []
     if FLAGS.python:
@@ -187,10 +206,11 @@ def main(_):
             record.update(parse_state_str(game, state))
             if state.is_terminal():
                 record.update({f'Utility {n}': v for n,v in enumerate(state.returns())})
+                splits = info_state_key.splitlines()
                 for n, u in enumerate(state.returns()):
                     # 1 entry per player per terminal state for better filtering
                     r = dict(record)
-                    r.update(dict(player=n, info_state=info_state_key))
+                    r.update(dict(player=n, info_state=info_state_key, type=splits[n]))
                     records.append(r)
             else:
                 action_probabilities = policy.action_probabilities(state)
@@ -199,6 +219,10 @@ def main(_):
                 records.append(record)
 
     df = pd.DataFrame.from_records(records).set_index('info_state')
+    df['value'] = df.type.str.extract(r'v(.+)b.*').astype(np.float)
+    df['budget'] = df.type.str.extract(r'.*b(.+)$').astype(np.float)
+    df = df.drop(['type'], axis=1)
+
     df = df.reindex(sorted(df.columns, key=str), axis=1) # Sort columns alphabetically
     output_path = f'{FLAGS.output}/strategy.csv'
     logger.info(f"Saving strategy to {output_path}")
