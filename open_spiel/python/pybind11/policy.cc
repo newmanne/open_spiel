@@ -39,6 +39,7 @@ namespace {
 using ::open_spiel::ActionsAndProbs;
 using ::open_spiel::algorithms::Exploitability;
 using ::open_spiel::algorithms::NashConv;
+using ::open_spiel::algorithms::PlayerRegrets;
 using ::open_spiel::algorithms::TabularBestResponse;
 <<<<<<< HEAD
 using ::open_spiel::algorithms::TabularBestResponseMDP;
@@ -332,6 +333,13 @@ void init_pyspiel_policy(py::module& m) {
       "that each player could obtain by unilaterally changing their strategy "
       "while the opposing player maintains their current strategy (which "
       "for a Nash equilibrium, this value is 0).");
+
+  m.def(
+      "player_regrets",
+      py::overload_cast<
+          const Game&, const Policy&, bool>(
+          &PlayerRegrets),
+      "Return regret vector");
 
   m.def("num_deterministic_policies",
         &open_spiel::algorithms::NumDeterministicPolicies,
