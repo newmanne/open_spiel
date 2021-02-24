@@ -57,12 +57,12 @@ def grids_to_commands(param_grid, player_grid, solver_grid, root, grid_name, spi
 #SBATCH --output=logs/{grid_name}/{JOB_NAME}-%A_%a.out-o.txt
 #SBATCH --error=logs/{grid_name}/{JOB_NAME}-%A_%a.out-e.txt
 #SBATCH --account=rrg-kevinlb
-#SBATCH --time=2-0
+#SBATCH --time=1-0
 #SBATCH --array=1-{len(cmds)}
 
 source {spiel_path}/venv/bin/activate
 
-CMD=`head -n $SLURM_ARRAY_TASK_ID {root}/{CMD_FILE_NAME} | tail -n 1`
+CMD=`head -n $SLURM_ARRAY_TASK_ID {grid_name}/{CMD_FILE_NAME} | tail -n 1`
 echo $CMD
 eval $CMD
 """
