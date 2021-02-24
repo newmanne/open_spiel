@@ -9,6 +9,69 @@ logger = logging.getLogger(__name__)
 
 CMD_FILE_NAME = 'cmds.txt'
 
+def make_player(player_types): 
+    player = dict()
+    player['type'] = []
+    for t, p in player_types:
+        logger.info(t)
+        d = dict(t)
+        d['prob'] = p
+        player['type'].append(d)
+    return player
+
+
+def grids_to_commands(param_grid, player_grid, solver_grid, root, grid_name, spiel_path, job_name='CFR', submit=True):
+    grid_path = f'{root}/{grid_name}'
+    i = 1
+    cmds = []
+
+    for parameterization in ParameterGrid(param_grid):
+        for players in player_grid:
+            parameterization['players'] = players
+            if len(players) <= 1:
+                raise ValueError("Fewer than one player?")
+            Path(f'{grid_path}/{i}').mkdir(parents=True, exist_ok=True)
+            with open(f'{grid_path}/{i}/{i}.json', 'w') as f:
+                json.dump(parameterization, f)
+                for solver_config in ParameterGrid(solver_grid):
+                    solver = solver_config['solver']
+                    seed = solver_config.get('seed', 123)
+                    name = solver_config.get('name', solver)
+                    cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={grid_path}/{i}/{i}.json --iterations 20000 --solver={solver} --output {grid_path}/{i}/{name}_{seed} --seed {seed}'
+                    cmds.append(cmd)
+                i += 1
+
+    print(f"Dumping {i-1} configs to {grid_path}")
+    with open(f'{grid_path}/{CMD_FILE_NAME}', 'w') as f:
+        for cmd in cmds:
+            f.write(cmd + '\n')
+    print (f"{len(cmds)} commands written to {grid_path}/{CMD_FILE_NAME}")
+
+    Path(f'{grid_path}/logs').mkdir(parents=True, exist_ok=True)
+
+    JOB_NAME = job_name
+    slurm = f"""#!/bin/sh
+#SBATCH --cpus-per-task=4
+#SBATCH --mem-per-cpu=16G
+#SBATCH --job-name={JOB_NAME}-{grid_name}
+#SBATCH --output=logs/{grid_name}/{JOB_NAME}-%A_%a.out-o.txt
+#SBATCH --error=logs/{grid_name}/{JOB_NAME}-%A_%a.out-e.txt
+#SBATCH --account=rrg-kevinlb
+#SBATCH --time=2-0
+#SBATCH --array=1-{len(cmds)}
+
+source {spiel_path}/venv/bin/activate
+
+CMD=`head -n $SLURM_ARRAY_TASK_ID {root}/{CMD_FILE_NAME} | tail -n 1`
+echo $CMD
+eval $CMD
+"""
+    JOB_FILE = 'job_runner.sh'
+    with open(f'{grid_path}/{JOB_FILE}', 'w') as f:
+        f.write(slurm)
+    os.chmod(f"{grid_path}/{JOB_FILE}", int('777', base=8)) # Octal
+    os.system(f'sbatch {grid_path}/{JOB_FILE}')
+
 def main(root, spiel_path, job_name):
     logging.basicConfig()
 
@@ -66,33 +129,15 @@ def main(root, spiel_path, job_name):
         'budget': 675
     }
 
-    def make_player(player_types): 
-        player = dict()
-        player['type'] = []
-        for t, p in player_types:
-            logger.info(t)
-            d = dict(t)
-            d['prob'] = p
-            player['type'].append(d)
-        return player
-
     param_grid = [
-        {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard", "undersell_allowed"]},
-        # {'opening_price': [100], 'increment': [0.1, 0.15, 0.2], 'licenses': [3, 4, 5], 'undersell_rule': [True, False]},
+        {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
+        # {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard", "undersell_allowed"]},
     ]
 
     player_grid = [
-        # [make_player([(low, 0.9), (high, 0.1)]), make_player([(medium, 1.0)])],
-        # [make_player([(low, 0.5), (high, 0.5)]), make_player([(medium, 1.0)])],
-        # [make_player(((low, 0.1), (high, 0.9))), make_player(((medium, 1.0),))],
-        # [make_player([(very_low, 1.0)]), make_player([(very_high, 1.0)])], # Trying to recreate 2b
         [make_player([(p0, 1.0)]), make_player([(p1_l, 0.5), (p1_h, 0.5)])],
         [make_player([(p0, 1.0)]), make_player([(p1_l2, 0.5), (p1_h2, 0.5)])],
     ]
-
-    i = 1
-    cmds = []
-
 
     solver_grid = [
         # {'solver': ['cfr', 'cfrplus', 'cfrbr']},
@@ -100,49 +145,21 @@ def main(root, spiel_path, job_name):
         {'solver': ['mccfr --sampling external'], 'name': ['mccfr_ext'], 'seed': [i for i in range(2,20)]}
     ]
 
-    for parameterization in ParameterGrid(param_grid):
-        for players in player_grid:
-            parameterization['players'] = players
-            if len(players) <= 1:
-                raise ValueError("Fewer than one player?")
-            Path(f'{root}/{i}').mkdir(parents=True, exist_ok=True)
-            with open(f'{root}/{i}/{i}.json', 'w') as f:
-                json.dump(parameterization, f)
-                for solver_config in ParameterGrid(solver_grid):
-                    solver = solver_config['solver']
-                    seed = solver_config.get('seed', 123)
-                    name = solver_config.get('name', solver)
-                    cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={root}/{i}/{i}.json --iterations 20000 --solver={solver} --output {root}/{i}/{name}_{seed} --seed {seed}'
-                    cmds.append(cmd)
-                i += 1
+    grids_to_commands(param_grid, player_grid, solver_grid, root, 'multi', spiel_path, job_name=job_name)
 
-    print(f"Dumped {i-1} configs to {root}")
-    with open(f'{root}/{CMD_FILE_NAME}', 'w') as f:
-        for cmd in cmds:
-            f.write(cmd + '\n')
-    print (f"{len(cmds)} commands written to {root}/{CMD_FILE_NAME}")
+    param_grid = [
+        {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
+    ]
 
-    JOB_NAME = job_name
-    slurm = f"""#!/bin/sh
-#SBATCH --cpus-per-task=4
-#SBATCH --mem-per-cpu=16G
-#SBATCH --job-name={JOB_NAME}
-#SBATCH --output=logs/{JOB_NAME}-%A_%a.out-o.txt
-#SBATCH --error=logs/{JOB_NAME}-%A_%a.out-e.txt
-#SBATCH --account=rrg-kevinlb
-#SBATCH --time=1-0
-#SBATCH --array=1-{len(cmds)}
+    player_grid = [
+        [make_player([(very_low, 1.0)]), make_player([(very_high, 1.0)])],
+    ]
 
-source {spiel_path}/venv/bin/activate
+    solver_grid = [
+        {'solver': ['cfr']},
+    ]
 
-CMD=`head -n $SLURM_ARRAY_TASK_ID {root}/{CMD_FILE_NAME} | tail -n 1`
-echo $CMD
-eval $CMD
-"""
-    JOB_FILE = 'job_runner.sh'
-    with open(f'{root}/{JOB_FILE}', 'w') as f:
-        f.write(slurm)
-    os.chmod(f"{root}/{JOB_FILE}", int('777', base=8)) # Octal
+    grids_to_commands(param_grid, player_grid, solver_grid, root, '2b', spiel_path, job_name=job_name)
 
 
 if __name__ == '__main__':

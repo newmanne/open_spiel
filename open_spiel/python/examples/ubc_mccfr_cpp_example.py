@@ -46,7 +46,7 @@ flags.DEFINE_bool("turn_based", True, "Convert simultaneous to turn based")
 flags.DEFINE_enum("solver", "cfr", ["cfr", "cfrplus", "cfrbr", "mccfr"], "CFR solver")
 flags.DEFINE_enum("sampling", "external", ["external", "outcome"], "Sampling for the MCCFR solver")
 flags.DEFINE_enum("metric", "max_regret", ["max_regret", "nash_conv"], "Metric to use for stopping condition")
-flags.DEFINE_float("tolerance", 1e-2, "When the metric is below this value, consider the algorithm to be finished")
+flags.DEFINE_float("tolerance", 5e-2, "When the metric is below this value, consider the algorithm to be finished")
 
 
 flags.DEFINE_integer("iterations", 50, "Number of iterations")
