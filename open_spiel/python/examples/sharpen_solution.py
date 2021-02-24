@@ -88,16 +88,8 @@ def sharpen_solution(f, o=None):
         return q
 
     is_df = is_df.reset_index()
-    is_df['my_bids'] = is_df['info_state'].apply(get_line(1))
-    is_df['total_demand'] = is_df['info_state'].apply(get_line(2))
-
     final_df = pd.concat([is_df, terminals], axis=0)
     final_df['terminal'] = final_df['terminal'].astype(np.bool)
-
-    types = final_df.apply(lambda r: get_line(0)(r['info_state']) if not r['terminal'] else get_line(r['player'])(r['info_state']), axis=1)
-    final_df['value'] = types.str.extract(r'v(.+)b.*').astype(np.float)
-    final_df['budget'] = types.str.extract(r'.*b(.+)$').astype(np.float)
-
 
     final_df = final_df.sort_values(['player', 'value', 'budget', 'round', 'my_bids', 'total_demand'])
     final_df.to_csv(o, index=False)
