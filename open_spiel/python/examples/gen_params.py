@@ -70,7 +70,7 @@ eval $CMD
     with open(f'{grid_path}/{JOB_FILE}', 'w') as f:
         f.write(slurm)
     os.chmod(f"{grid_path}/{JOB_FILE}", int('777', base=8)) # Octal
-    os.system(f'sbatch {grid_path}/{JOB_FILE}')
+    os.system(f'cd {grid_path} && sbatch {grid_path}/{JOB_FILE}')
 
 def main(root, spiel_path, job_name):
     logging.basicConfig()
