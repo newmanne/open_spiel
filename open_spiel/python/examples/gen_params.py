@@ -37,7 +37,7 @@ def grids_to_commands(param_grid, player_grid, solver_grid, root, grid_name, spi
                     solver = solver_config['solver']
                     seed = solver_config.get('seed', 123)
                     name = solver_config.get('name', solver)
-                    cmd = f'cd {root}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={grid_path}/{i}/{i}.json --iterations 20000 --solver={solver} --output {grid_path}/{i}/{name}_{seed} --seed {seed}'
+                    cmd = f'cd {grid_path}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={grid_path}/{i}/{i}.json --iterations 20000 --solver={solver} --output {grid_path}/{i}/{name}_{seed} --seed {seed}'
                     cmds.append(cmd)
                 i += 1
 
@@ -76,7 +76,6 @@ def main(root, spiel_path, job_name):
     logging.basicConfig()
 
     Path(f'{root}').mkdir(parents=True, exist_ok=True)
-    Path(f'{root}/logs').mkdir(parents=True, exist_ok=True)
 
     V_L = 121
     B_L = 600
