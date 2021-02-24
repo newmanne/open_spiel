@@ -28,6 +28,7 @@ import pyspiel
 import pandas as pd
 import json
 import re
+import numpy as np
 
 from open_spiel.python import policy
 from open_spiel.python.algorithms import cfr, outcome_sampling_mccfr, expected_game_score, exploitability, get_all_states_with_policy
@@ -167,15 +168,16 @@ def main(_):
         if FLAGS.python:
             metric = exploitability.nash_conv(game, policy)
         else:
-            regrets = pyspiel.player_regrets(game, policy)
+            regrets = pyspiel.player_regrets(game, policy, False)
             max_regret = max(regrets)
             nash_conv = sum(regrets)
+            metric = max_regret if FLAGS.metric == 'max_regret' else nash_conv
         run_records.append({
             'max_regret': max_regret,
             'nash_conv': nash_conv
         })
         logger.info(f"Iteration {i} NashConv: {nash_conv:.6f} MaxRegret: {max_regret:.6f}")
-        if FLAGS.metric < FLAGS.tolerance:
+        if metric < FLAGS.tolerance:
             logger.info(f"{FLAGS.metric} is below tolerance of {FLAGS.tolerance}. Stopping.")
             break
 
