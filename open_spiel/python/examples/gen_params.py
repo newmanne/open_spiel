@@ -54,8 +54,8 @@ def grids_to_commands(param_grid, player_grid, solver_grid, root, grid_name, spi
 #SBATCH --cpus-per-task=4
 #SBATCH --mem-per-cpu=16G
 #SBATCH --job-name={JOB_NAME}-{grid_name}
-#SBATCH --output=logs/{grid_name}/{JOB_NAME}-%A_%a.out-o.txt
-#SBATCH --error=logs/{grid_name}/{JOB_NAME}-%A_%a.out-e.txt
+#SBATCH --output=logs/{JOB_NAME}-%A_%a.out-o.txt
+#SBATCH --error=logs/{JOB_NAME}-%A_%a.out-e.txt
 #SBATCH --account=rrg-kevinlb
 #SBATCH --time=1-0
 #SBATCH --array=1-{len(cmds)}
