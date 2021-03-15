@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "open_spiel/abseil-cpp/absl/container/flat_hash_map.h"
+#include "open_spiel/algorithms/expected_returns.h"
 #include "open_spiel/algorithms/history_tree.h"
 #include "open_spiel/policy.h"
 #include "open_spiel/spiel.h"
@@ -41,7 +42,9 @@ namespace algorithms {
 class TabularBestResponse {
  public:
   TabularBestResponse(const Game& game, Player best_responder,
-                      const Policy* policy);
+                      const Policy* policy,
+                      const Policy* my_policy = nullptr,
+                      const ValuesMapT* on_policy_state_values = nullptr);
   TabularBestResponse(
       const Game& game, Player best_responder,
       const std::unordered_map<std::string, ActionsAndProbs>& policy_table);
@@ -123,6 +126,8 @@ class TabularBestResponse {
     SetPolicy(&tabular_policy_container_);
   }
 
+  double max_qv_diff() const { return max_qv_diff_; }
+
  private:
   // For chance nodes, we recursively calculate the value of each child node,
   // and weight them by the probability of reaching each child.
@@ -171,6 +176,10 @@ class TabularBestResponse {
 
   // Keep a cache of an empty policy to avoid recomputing it.
   std::unique_ptr<TabularPolicy> dummy_policy_;
+
+  const Policy* my_policy_ = nullptr;
+  double max_qv_diff_;
+  const ValuesMapT* on_policy_state_values_ = nullptr;
 };
 
 }  // namespace algorithms
