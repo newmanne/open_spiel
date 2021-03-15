@@ -17,6 +17,7 @@
 
 #include <vector>
 
+#include "open_spiel/abseil-cpp/absl/container/flat_hash_map.h"
 #include "open_spiel/policy.h"
 #include "open_spiel/spiel.h"
 
@@ -36,15 +37,19 @@ namespace algorithms {
 // Policy::GetStatePolicy(const std::string&) rather than
 // Policy::GetStatePolicy(const State&) instead for retrieving the policy at
 // each information state; we use a default of true for performance reasons.
+using ValuesMapT = absl::flat_hash_map<std::string, std::vector<double>>;
+
 std::vector<double> ExpectedReturns(const State& state,
                                     const std::vector<const Policy*>& policies,
                                     int depth_limit,
                                     bool use_infostate_get_policy = true,
-                                    float prob_cut_threshold = 0.0);
+                                    float prob_cut_threshold = 0.0,
+                                    ValuesMapT* state_values = nullptr);
 std::vector<double> ExpectedReturns(const State& state,
                                     const Policy& joint_policy, int depth_limit,
                                     bool use_infostate_get_policy = true,
-                                    float prob_cut_threshold = 0.0);
+                                    float prob_cut_threshold = 0.0,
+                                    ValuesMapT* state_values = nullptr);
 
 }  // namespace algorithms
 }  // namespace open_spiel

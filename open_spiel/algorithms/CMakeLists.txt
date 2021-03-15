@@ -27,6 +27,8 @@ add_library (algorithms OBJECT
   evaluate_bots.h
   expected_returns.cc
   expected_returns.h
+  explorative_cfr.cc
+  explorative_cfr.h
   external_sampling_mccfr.cc
   external_sampling_mccfr.h
   fsicfr.cc

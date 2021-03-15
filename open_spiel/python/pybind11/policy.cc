@@ -21,6 +21,7 @@
 #include "open_spiel/algorithms/cfr_br.h"
 #include "open_spiel/algorithms/deterministic_policy.h"
 #include "open_spiel/algorithms/expected_returns.h"
+#include "open_spiel/algorithms/explorative_cfr.h"
 #include "open_spiel/algorithms/external_sampling_mccfr.h"
 #include "open_spiel/algorithms/is_mcts.h"
 #include "open_spiel/algorithms/mcts.h"
@@ -39,8 +40,13 @@ using ::open_spiel::ActionsAndProbs;
 using ::open_spiel::algorithms::Exploitability;
 using ::open_spiel::algorithms::NashConv;
 using ::open_spiel::algorithms::TabularBestResponse;
+<<<<<<< HEAD
 using ::open_spiel::algorithms::TabularBestResponseMDP;
 using ::open_spiel::algorithms::TabularBestResponseMDPInfo;
+=======
+using ::open_spiel::algorithms::ValuesMapT;
+using ::open_spiel::algorithms::EpsilonCFRSolver;
+>>>>>>> Add CFR sequential equilibrium example
 
 namespace py = ::pybind11;
 }  // namespace
@@ -223,6 +229,7 @@ void init_pyspiel_policy(py::module& m) {
                 DeserializeOutcomeSamplingMCCFRSolver(serialized);
           }));
 
+<<<<<<< HEAD
   py::class_<TabularBestResponseMDPInfo>(m, "TabularBestResponseMDPInfo")
       .def_readonly("br_values", &TabularBestResponseMDPInfo::br_values)
       .def_readonly("br_policies", &TabularBestResponseMDPInfo::br_policies)
@@ -242,10 +249,24 @@ void init_pyspiel_policy(py::module& m) {
            &TabularBestResponseMDP::ComputeBestResponse, py::arg("max_player"))
       .def("nash_conv", &TabularBestResponseMDP::NashConv)
       .def("exploitability", &TabularBestResponseMDP::Exploitability);
+=======
+  py::class_<open_spiel::algorithms::EpsilonCFRSolver>(m, "EpsilonCFRSolver")
+      .def(py::init<const Game&, double>(), py::arg("game"),
+           py::arg("epsilon"))
+      .def("epsilon", &EpsilonCFRSolver::epsilon)
+      .def("set_epsilon", &EpsilonCFRSolver::SetEpsilon)
+      .def("evaluate_and_update_policy",
+           &EpsilonCFRSolver::EvaluateAndUpdatePolicy)
+      .def("current_policy", &EpsilonCFRSolver::CurrentPolicy)
+      .def("average_policy", &EpsilonCFRSolver::AveragePolicy)
+      .def("tabular_average_policy", &EpsilonCFRSolver::TabularAveragePolicy);
+
+  m.def("nash_conv_with_eps", &open_spiel::algorithms::NashConvWithEps);
+>>>>>>> Add CFR sequential equilibrium example
 
   m.def("expected_returns",
         py::overload_cast<const State&, const std::vector<const Policy*>&, int,
-                          bool, float>(
+                          bool, ValuesMapT*>(
                               &open_spiel::algorithms::ExpectedReturns),
         "Computes the undiscounted expected returns from a depth-limited "
         "search.",

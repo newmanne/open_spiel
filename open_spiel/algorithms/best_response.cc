@@ -1,3 +1,5 @@
+
+
 // Copyright 2021 DeepMind Technologies Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,10 +29,12 @@
 namespace open_spiel {
 namespace algorithms {
 
-TabularBestResponse::TabularBestResponse(const Game& game,
-                                         Player best_responder,
-                                         const Policy* policy,
-                                         const float prob_cut_threshold)
+TabularBestResponse::TabularBestResponse(
+    const Game& game,
+    Player best_responder,
+    const Policy* policy,
+    const Policy* my_policy,
+    const ValuesMapT* on_policy_state_values)
     : best_responder_(best_responder),
       tabular_policy_container_(),
       policy_(policy),
@@ -40,7 +44,10 @@ TabularBestResponse::TabularBestResponse(const Game& game,
       infosets_(GetAllInfoSets(game.NewInitialState(), best_responder, policy,
                                &tree_)),
       root_(game.NewInitialState()),
-      dummy_policy_(new TabularPolicy(GetUniformPolicy(game))) {
+      dummy_policy_(new TabularPolicy(GetUniformPolicy(game))),
+      my_policy_(my_policy),
+      max_qv_diff_(std::numeric_limits<double>::lowest()),
+      on_policy_state_values_(on_policy_state_values) {
   if (game.GetType().dynamics != GameType::Dynamics::kSequential) {
     SpielFatalError("The game must be turn-based.");
   }
@@ -59,7 +66,8 @@ TabularBestResponse::TabularBestResponse(
       infosets_(GetAllInfoSets(game.NewInitialState(), best_responder, policy_,
                                &tree_)),
       root_(game.NewInitialState()),
-      dummy_policy_(new TabularPolicy(GetUniformPolicy(game))) {
+      dummy_policy_(new TabularPolicy(GetUniformPolicy(game))),
+      max_qv_diff_(std::numeric_limits<double>::lowest()) {
   if (game.GetType().dynamics != GameType::Dynamics::kSequential) {
     SpielFatalError("The game must be turn-based.");
   }
@@ -186,6 +194,23 @@ Action TabularBestResponse::BestResponseAction(const std::string& infostate) {
 
   Action best_action = -1;
   double best_value = std::numeric_limits<double>::lowest();
+  Player player = infoset[0].first->GetState()->CurrentPlayer();
+
+  // For seq. eq. we have to compute the delta between the q-value of the
+  // best response and the expected (v-)value of the policy at this point.
+  double my_exp_value = 0.0;
+
+  // This is \Beta_{-i} from Sec 3.2 of https://arxiv.org/abs/1810.09026
+  double normalizer = 0.0;
+  if (on_policy_state_values_ != nullptr) {
+    ActionsAndProbs my_state_policy = my_policy_->GetStatePolicy(infostate);
+    for (const auto& state_and_prob : infoset) {
+      normalizer += state_and_prob.second;
+      my_exp_value += state_and_prob.second *
+          on_policy_state_values_->at(state_and_prob.first->GetHistory())[player];
+    }
+  }
+
   // The legal actions are the same for all children, so we arbitrarily pick the
   // first one to get the legal actions from.
   for (const auto& action : infoset[0].first->GetChildActions()) {
@@ -198,11 +223,18 @@ Action TabularBestResponse::BestResponseAction(const std::string& infostate) {
       SPIEL_CHECK_TRUE(child_node != nullptr);
       value += state_and_prob.second * Value(child_node->GetHistory());
     }
+
     if (value > best_value) {
       best_value = value;
       best_action = action;
     }
   }
+
+  if (on_policy_state_values_ != nullptr) {
+    double qv_diff = (best_value - my_exp_value) / normalizer;
+    max_qv_diff_ = std::max(max_qv_diff_, qv_diff);
+  }
+
   if (best_action == -1) SpielFatalError("No action was chosen.");
   best_response_actions_[infostate] = best_action;
   return best_action;
