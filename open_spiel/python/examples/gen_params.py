@@ -128,6 +128,15 @@ def main(root, spiel_path, job_name):
         'budget': 675
     }
 
+    small = {
+        'value': 150,
+        'budget': 400
+    }
+    small2 = {
+        'value': 300,
+        'budget': 400
+    }
+
     param_grid = [
         {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
         # {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard", "undersell_allowed"]},
@@ -143,26 +152,26 @@ def main(root, spiel_path, job_name):
         {'solver': ['cfr']},
         {'solver': ['ecfr']},
         {'solver': ['cfrplus']},
-        {'solver': ['mccfr --sampling external'], 'name': ['mccfr_ext'], 'seed': [i for i in range(2,20)]}
+        # {'solver': ['mccfr --sampling external'], 'name': ['mccfr_ext'], 'seed': [i for i in range(2,20)]}
     ]
 
     grids_to_commands(param_grid, player_grid, solver_grid, root, 'multi', spiel_path, job_name=job_name)
 
-    param_grid = [
-        {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
-    ]
+    # param_grid = [
+    #     {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
+    # ]
 
-    player_grid = [
-        [make_player([(very_low, 1.0)]), make_player([(very_high, 1.0)])],
-    ]
+    # player_grid = [
+    #     [make_player([(very_low, 1.0)]), make_player([(very_high, 1.0)])],
+    # ]
 
-    solver_grid = [
-        {'solver': ['cfr']},
-        {'solver': ['ecfr']},
-        {'solver': ['cfrplus']},
-    ]
+    # solver_grid = [
+    #     {'solver': ['cfr']},
+    #     {'solver': ['ecfr']},
+    #     {'solver': ['cfrplus']},
+    # ]
 
-    grids_to_commands(param_grid, player_grid, solver_grid, root, '2b', spiel_path, job_name=job_name)
+    # grids_to_commands(param_grid, player_grid, solver_grid, root, '2b', spiel_path, job_name=job_name)
 
     param_grid = [
         {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
@@ -179,6 +188,22 @@ def main(root, spiel_path, job_name):
     ]
 
     grids_to_commands(param_grid, player_grid, solver_grid, root, '3players', spiel_path, job_name=job_name)
+
+    param_grid = [
+        {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
+    ]
+
+    player_grid = [
+        [make_player([(small, 1.0)]), make_player([(small, 0.5), (small2, 0.5)])],
+    ]
+
+    solver_grid = [
+        {'solver': ['cfr']},
+        {'solver': ['ecfr']},
+        {'solver': ['cfrplus']},
+    ]
+
+    grids_to_commands(param_grid, player_grid, solver_grid, root, 'small', spiel_path, job_name=job_name)
 
 
 
