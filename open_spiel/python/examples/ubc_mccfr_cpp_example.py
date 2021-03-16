@@ -43,10 +43,11 @@ flags.DEFINE_bool("persist", False, "Pickle the models")
 flags.DEFINE_bool("python", False, "Use python CFR impls")
 flags.DEFINE_bool("turn_based", True, "Convert simultaneous to turn based")
 
-flags.DEFINE_enum("solver", "cfr", ["cfr", "cfrplus", "cfrbr", "mccfr"], "CFR solver")
+flags.DEFINE_enum("solver", "cfr", ["cfr", "cfrplus", "cfrbr", "mccfr", "ecfr"], "CFR solver")
 flags.DEFINE_enum("sampling", "external", ["external", "outcome"], "Sampling for the MCCFR solver")
 flags.DEFINE_enum("metric", "max_regret", ["max_regret", "nash_conv"], "Metric to use for stopping condition")
 flags.DEFINE_float("tolerance", 5e-2, "When the metric is below this value, consider the algorithm to be finished")
+flags.DEFINE_float("start_eps", 1e-1, "Starting eps for epsilon solver")
 
 
 flags.DEFINE_integer("iterations", 50, "Number of iterations")
@@ -57,6 +58,12 @@ flags.DEFINE_string("game", "clock_auction", "Name of the game")
 # Game params for clock auction
 flags.DEFINE_string("filename", 'parameters.json', "Filename with parameters")
 flags.DEFINE_integer("seed", '123', "Seed for randomized algs")
+
+# ECFR
+flags.DEFINE_float("initial_eps", 1e-1, "Initial epsilon")
+flags.DEFINE_float("decay_factor", 0.99, "Decay factor")
+flags.DEFINE_integer("decay_freq", 1000, "Decay frequency")
+flags.DEFINE_float("min_eps", 1e-6, "Minimum epsilon")
 
 
 price_pattern = re.compile(r'^.*(Price:.*)$', flags=re.MULTILINE)
@@ -92,8 +99,11 @@ def persist_model(solver):
     if FLAGS.solver == 'mccfr':
         model_name += f'_{FLAGS.sampling}'
     
-    with open(f'{FLAGS.output}/{model_name}_{i}.pkl', "wb") as f:
-        pickle.dump(solver, f, pickle.HIGHEST_PROTOCOL)
+    try:
+        with open(f'{FLAGS.output}/{model_name}_{i}.pkl', "wb") as f:
+            pickle.dump(solver, f, pickle.HIGHEST_PROTOCOL)
+    except:
+        logger.warning("Error pickling solver!!!")
 
 def main(_):
     Path(FLAGS.output).mkdir(parents=True, exist_ok=True)
@@ -134,6 +144,13 @@ def main(_):
             elif FLAGS.sampling == "outcome":
                 logger.info("Using outcome sampling")
                 solver = pyspiel.OutcomeSamplingMCCFRSolver(game)
+        elif FLAGS.solver == "ecfr":
+            logger.info("Using EpsilonCFR solver")
+            initial_eps = FLAGS.initial_eps
+            decay_factor = FLAGS.decay_factor
+            decay_freq = FLAGS.decay_freq
+            min_eps = FLAGS.min_eps
+            solver = pyspiel.EpsilonCFRSolver(game, initial_eps)
     else:
         logger.info("Using python implementations")
         if FLAGS.solver == "cfr":
@@ -164,22 +181,32 @@ def main(_):
         else:
             solver.evaluate_and_update_policy()
 
-        policy = solver.average_policy()
+        policy = solver.average_policy() if FLAGS.solver != 'ecfr' else solver.tabular_average_policy()
         if FLAGS.python:
             metric = exploitability.nash_conv(game, policy)
         else:
+            record = dict()
             regrets = pyspiel.player_regrets(game, policy, False)
             max_regret = max(regrets)
             nash_conv = sum(regrets)
-            metric = max_regret if FLAGS.metric == 'max_regret' else nash_conv
-        run_records.append({
-            'max_regret': max_regret,
-            'nash_conv': nash_conv
-        })
-        logger.info(f"Iteration {i} NashConv: {nash_conv:.6f} MaxRegret: {max_regret:.6f}")
-        if metric < FLAGS.tolerance:
-            logger.info(f"{FLAGS.metric} is below tolerance of {FLAGS.tolerance}. Stopping.")
-            break
+            record['max_on_path_regret'] = max_regret
+            record['nash_conv'] = nash_conv
+            logger.info(f"Iteration {i} NashConv: {nash_conv:.6f} MaxRegret: {max_regret:.6f}")
+
+            if FLAGS.solver == 'ecfr':
+                nc, max_qv_diff = pyspiel.nash_conv_with_eps(game, policy)
+                record['max_qv_diff'] = max_qv_diff
+                logger.info(f"Max qv diff is {max_qv_diff}")
+                if i > 0 and i % FLAGS.decay_freq == 0:
+                    new_eps = max(eps_solver.epsilon() * decay_factor, min_eps)
+                    solver.set_epsilon(new_eps)
+                    logger.info(f"Setting new epsilon to {new_eps}")
+
+            # metric = max_regret if FLAGS.metric == 'max_regret' else nash_conv
+        
+        # if metric < FLAGS.tolerance:
+        #     logger.info(f"{FLAGS.metric} is below tolerance of {FLAGS.tolerance}. Stopping.")
+        #     break
 
         if FLAGS.persist and i % 5000 == 0 and i > 0:
             persist_model(solver, i)
