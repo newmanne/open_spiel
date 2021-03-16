@@ -37,7 +37,7 @@ def grids_to_commands(param_grid, player_grid, solver_grid, root, grid_name, spi
                     solver = solver_config['solver']
                     seed = solver_config.get('seed', 123)
                     name = solver_config.get('name', solver)
-                    cmd = f'cd {grid_path}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={grid_path}/{i}/{i}.json --iterations 20000 --solver={solver} --output {grid_path}/{i}/{name}_{seed} --seed {seed}'
+                    cmd = f'cd {grid_path}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={grid_path}/{i}/{i}.json --iterations 15000 --solver={solver} --output {grid_path}/{i}/{name}_{seed} --seed {seed}'
                     cmds.append(cmd)
                 i += 1
 
@@ -57,7 +57,7 @@ def grids_to_commands(param_grid, player_grid, solver_grid, root, grid_name, spi
 #SBATCH --output=logs/{JOB_NAME}-%A_%a.out-o.txt
 #SBATCH --error=logs/{JOB_NAME}-%A_%a.out-e.txt
 #SBATCH --account=rrg-kevinlb
-#SBATCH --time=1-0
+#SBATCH --time=3-0
 #SBATCH --array=1-{len(cmds)}
 
 source {spiel_path}/venv/bin/activate
@@ -141,6 +141,8 @@ def main(root, spiel_path, job_name):
     solver_grid = [
         # {'solver': ['cfr', 'cfrplus', 'cfrbr']},
         {'solver': ['cfr']},
+        {'solver': ['ecfr']},
+        {'solver': ['cfrplus']},
         {'solver': ['mccfr --sampling external'], 'name': ['mccfr_ext'], 'seed': [i for i in range(2,20)]}
     ]
 
@@ -156,9 +158,28 @@ def main(root, spiel_path, job_name):
 
     solver_grid = [
         {'solver': ['cfr']},
+        {'solver': ['ecfr']},
+        {'solver': ['cfrplus']},
     ]
 
     grids_to_commands(param_grid, player_grid, solver_grid, root, '2b', spiel_path, job_name=job_name)
+
+    param_grid = [
+        {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
+    ]
+
+    player_grid = [
+        [make_player([(p0, 1.0)]), make_player([(p1_l, 0.5), (p1_h, 0.5)]), make_player([(p1_l2, 0.5), (p1_h2, 0.5)])],
+    ]
+
+    solver_grid = [
+        {'solver': ['cfr']},
+        {'solver': ['ecfr']},
+        {'solver': ['cfrplus']},
+    ]
+
+    grids_to_commands(param_grid, player_grid, solver_grid, root, '3players', spiel_path, job_name=job_name)
+
 
 
 if __name__ == '__main__':
