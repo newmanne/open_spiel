@@ -219,7 +219,7 @@ def main(_):
                     logger.info(f"Max qv diff is {max_qv_diff}")
 
             logger.info(f"Iteration {i}")
-            for k, v in record:
+            for k, v in record.items():
                 logger.info(f"{k}={v:.6f}")
             # TODO: Appending would be better...
             pd.DataFrame.from_records(run_records).to_csv(f'{FLAGS.output}/run_metrics.csv')
