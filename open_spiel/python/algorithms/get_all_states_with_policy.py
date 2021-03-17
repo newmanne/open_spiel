@@ -22,7 +22,7 @@ from __future__ import print_function
 
 def _get_subgames_states(state, all_states, depth_limit, depth,
                          include_terminals, to_string,
-                         policy, curr_prob=1.0):
+                         policy, curr_prob=1.0, max_depth=0):
   """Extract non-chance states for a subgame into the all_states dict."""
   if state.is_terminal():
     if include_terminals:
@@ -32,10 +32,10 @@ def _get_subgames_states(state, all_states, depth_limit, depth,
         all_states[state_str] = dict(state=state.clone(), prob=curr_prob)
       else:
         all_states[state_str]['prob'] += curr_prob
-    return
+    return max_depth
 
   if depth > depth_limit >= 0:
-    return
+    return max_depth
 
   if not state.is_chance_node():
     # Add only if not already present
@@ -45,15 +45,19 @@ def _get_subgames_states(state, all_states, depth_limit, depth,
       all_states[info_state_string] = dict(state=state.clone(), prob=curr_prob)
     else:
       all_states[info_state_string]['prob'] += curr_prob
-
-  action_probabilities = policy.action_probabilities(state) if not state.is_chance_node() else dict(state.chance_outcomes())
+      
+  if policy is not None:
+    action_probabilities = policy.action_probabilities(state) if not state.is_chance_node() else dict(state.chance_outcomes())
+  else:
+    action_probabilities = dict()
   for action in state.legal_actions():
     prob = curr_prob * action_probabilities.get(action, 1)
     state_for_search = state.child(action)
-    _get_subgames_states(state_for_search, all_states, depth_limit, depth + 1,
+    md = _get_subgames_states(state_for_search, all_states, depth_limit, depth + 1,
                          include_terminals, to_string,
-                         policy, prob)
-
+                         policy, prob, max(depth + 1, max_depth))
+    md = max(md, max_depth)
+  return md
  
 
 def get_all_info_states_with_policy(game,
@@ -68,14 +72,18 @@ def get_all_info_states_with_policy(game,
   all_states = dict()
 
   # Then, do a recursive tree walk to fill up the map.
-  _get_subgames_states(
+  max_depth = _get_subgames_states(
       state=state,
       all_states=all_states,
       depth_limit=depth_limit,
       depth=0,
       include_terminals=include_terminals,
       to_string=to_string,
-      policy=policy)
+      policy=policy,
+      curr_prob=1.0,
+      max_depth=1)
+
+  print(max_depth)
 
   if not all_states:
     raise ValueError("GetSubgameStates returned 0 states!")
