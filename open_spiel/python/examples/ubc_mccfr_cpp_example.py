@@ -181,8 +181,9 @@ def main(_):
                 solver = OutcomeSamplingSolver(game)
             else:
                 raise ValueError("Not external")
-
-    json.dump(solver_config, f'{FLAGS.output}/solver.json')
+            
+    with open(f'{FLAGS.output}/solver.json', 'w') as f:
+        json.dump(solver_config, f)
 
     # RUN SOLVER
     run_records = []
