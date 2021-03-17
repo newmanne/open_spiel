@@ -201,7 +201,7 @@ def main(root, spiel_path, job_name, submit):
 
     solver_grid = [
         {'solver': ['cfr']},
-        {'solver': ['ecfr'], 'solver_args': ['--initial_eps 0.2', '--initial_eps 0.1', '--initial_eps 0.01']},
+        {'solver': ['ecfr'], 'solver_args': ['--initial_eps 0.2', '--initial_eps 0.1', '--initial_eps 0.01', '--initial_eps 0.001']},
         {'solver': ['cfrplus']},
     ]
 
