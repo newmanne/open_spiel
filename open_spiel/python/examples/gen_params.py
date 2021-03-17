@@ -37,7 +37,7 @@ def grids_to_commands(param_grid, player_grid, solver_grid, root, grid_name, spi
                     solver = solver_config['solver']
                     seed = solver_config.get('seed', 123)
                     name = solver_config.get('name', f'{solver}_{j}')
-                    solver_args = = solver_config.get('solver_args', '')
+                    solver_args = solver_config.get('solver_args', '')
                     cmd = f'cd {grid_path}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={grid_path}/{i}/{i}.json --iterations 15000 --solver={solver} {solver_args} --output {grid_path}/{i}/{name}_{seed} --seed {seed}'
                     cmds.append(cmd)
                 i += 1
@@ -71,9 +71,10 @@ eval $CMD
     with open(f'{grid_path}/{JOB_FILE}', 'w') as f:
         f.write(slurm)
     os.chmod(f"{grid_path}/{JOB_FILE}", int('777', base=8)) # Octal
-    os.system(f'cd {grid_path} && sbatch {grid_path}/{JOB_FILE}')
+    if submit:
+        os.system(f'cd {grid_path} && sbatch {grid_path}/{JOB_FILE}')
 
-def main(root, spiel_path, job_name):
+def main(root, spiel_path, job_name, submit):
     logging.basicConfig()
 
     Path(f'{root}').mkdir(parents=True, exist_ok=True)
@@ -138,25 +139,25 @@ def main(root, spiel_path, job_name):
         'budget': 400
     }
 
-    param_grid = [
-        {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
-        # {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard", "undersell_allowed"]},
-    ]
+    # param_grid = [
+    #     {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
+    #     # {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard", "undersell_allowed"]},
+    # ]
 
-    player_grid = [
-        [make_player([(p0, 1.0)]), make_player([(p1_l, 0.5), (p1_h, 0.5)])],
-        [make_player([(p0, 1.0)]), make_player([(p1_l2, 0.5), (p1_h2, 0.5)])],
-    ]
+    # player_grid = [
+    #     [make_player([(p0, 1.0)]), make_player([(p1_l, 0.5), (p1_h, 0.5)])],
+    #     [make_player([(p0, 1.0)]), make_player([(p1_l2, 0.5), (p1_h2, 0.5)])],
+    # ]
 
-    solver_grid = [
-        # {'solver': ['cfr', 'cfrplus', 'cfrbr']},
-        {'solver': ['cfr']},
-        {'solver': ['ecfr'], 'solver_args': ['--initial_eps 0.5', '--initial_eps 0.1', '--initial_eps 0.01']},
-        {'solver': ['cfrplus']},
-        # {'solver': ['mccfr --sampling external'], 'name': ['mccfr_ext'], 'seed': [i for i in range(2,20)]}
-    ]
+    # solver_grid = [
+    #     # {'solver': ['cfr', 'cfrplus', 'cfrbr']},
+    #     {'solver': ['cfr']},
+    #     {'solver': ['ecfr'], 'solver_args': ['--initial_eps 0.5', '--initial_eps 0.1', '--initial_eps 0.01']},
+    #     {'solver': ['cfrplus']},
+    #     # {'solver': ['mccfr --sampling external'], 'name': ['mccfr_ext'], 'seed': [i for i in range(2,20)]}
+    # ]
 
-    grids_to_commands(param_grid, player_grid, solver_grid, root, 'multi', spiel_path, job_name=job_name)
+    # grids_to_commands(param_grid, player_grid, solver_grid, root, 'multi', spiel_path, job_name=job_name)
 
     # param_grid = [
     #     {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
@@ -172,39 +173,39 @@ def main(root, spiel_path, job_name):
     #     {'solver': ['cfrplus']},
     # ]
 
-    # grids_to_commands(param_grid, player_grid, solver_grid, root, '2b', spiel_path, job_name=job_name)
+    # grids_to_commands(param_grid, player_grid, solver_grid, root, '2b', spiel_path, job_name=job_name, submit=submit)
+
+    # param_grid = [
+    #     {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
+    # ]
+
+    # player_grid = [
+    #     [make_player([(small, 1.0)]), make_player([(small, 0.5), (small2, 0.5)]), make_player([(small, 0.5), (small2, 0.5)])],
+    # ]
+
+    # solver_grid = [
+    #     {'solver': ['cfr']},
+    #     {'solver': ['ecfr'], 'solver_args': ['--initial_eps 0.5', '--initial_eps 0.1', '--initial_eps 0.01']},
+    #     {'solver': ['cfrplus']},
+    # ]
+
+    # grids_to_commands(param_grid, player_grid, solver_grid, root, '3players', spiel_path, job_name=job_name)
 
     param_grid = [
         {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
     ]
 
     player_grid = [
-        [make_player([(small, 1.0)]), make_player([(small, 0.5), (small2, 0.5)]), make_player([(small, 0.5), (small2, 0.5)])],
+        [make_player([(small, 1.0)]), make_player([(small, 0.9), (small2, 0.1)])],
     ]
 
     solver_grid = [
         {'solver': ['cfr']},
-        {'solver': ['ecfr'], 'solver_args': ['--initial_eps 0.5', '--initial_eps 0.1', '--initial_eps 0.01']},
+        {'solver': ['ecfr'], 'solver_args': ['--initial_eps 0.2', '--initial_eps 0.1', '--initial_eps 0.01']},
         {'solver': ['cfrplus']},
     ]
 
-    grids_to_commands(param_grid, player_grid, solver_grid, root, '3players', spiel_path, job_name=job_name)
-
-    param_grid = [
-        {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
-    ]
-
-    player_grid = [
-        [make_player([(small, 1.0)]), make_player([(small, 0.5), (small2, 0.5)])],
-    ]
-
-    solver_grid = [
-        {'solver': ['cfr']},
-        {'solver': ['ecfr'], 'solver_args': ['--initial_eps 0.5', '--initial_eps 0.1', '--initial_eps 0.01']},
-        {'solver': ['cfrplus']},
-    ]
-
-    grids_to_commands(param_grid, player_grid, solver_grid, root, 'small', spiel_path, job_name=job_name)
+    grids_to_commands(param_grid, player_grid, solver_grid, root, 'small', spiel_path, job_name=job_name, submit=submit)
 
 
 
@@ -213,8 +214,9 @@ if __name__ == '__main__':
     parser.add_argument('--root', default='/home/newmanne/scratch/cfr', type=str)
     parser.add_argument('--spiel_path', default='/project/def-kevinlb/newmanne/cfr/open_spiel', type=str)
     parser.add_argument('--job-name', default='CFR', type=str)
+    parser.add_argument('--submit', default=False, action='store_true')
     args = parser.parse_args()
-    main(args.root, args.spiel_path, args.job_name)
+    main(args.root, args.spiel_path, args.job_name, args.submit)
 
     # SINGULARITY="singularity exec -B /home -B /project -B /scratch -B /localscratch /project/def-kevinlb/newmanne/openspiel.simg"
     # srun $SINGULARITY $CMD

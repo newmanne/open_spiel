@@ -62,7 +62,7 @@ flags.DEFINE_integer("seed", '123', "Seed for randomized algs")
 # ECFR
 flags.DEFINE_float("initial_eps", 1e-1, "Initial epsilon")
 flags.DEFINE_float("decay_factor", 0.99, "Decay factor")
-flags.DEFINE_integer("decay_freq", 1000, "Decay frequency")
+flags.DEFINE_integer("decay_freq", 500, "Decay frequency")
 flags.DEFINE_float("min_eps", 1e-6, "Minimum epsilon")
 
 
@@ -110,7 +110,7 @@ def main(_):
 
     fh = logging.FileHandler(f'{FLAGS.output}/{FLAGS.solver}.log')
     fh.setLevel(logging.INFO)
-    fh.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
+    fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
     logger.addHandler(fh)
 
     # LOAD GAME
