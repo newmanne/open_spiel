@@ -41,7 +41,7 @@ FLAGS = flags.FLAGS
 
 flags.DEFINE_integer("report_freq", 100, "Report frequency")
 flags.DEFINE_bool("persist", False, "Pickle the models")
-flags.DEFINE_bool("persist_freq", 5000, "Pickle the models every this many iterations")
+flags.DEFINE_integer("persist_freq", 5000, "Pickle the models every this many iterations")
 
 flags.DEFINE_bool("python", False, "Use python CFR impls")
 flags.DEFINE_bool("turn_based", True, "Convert simultaneous to turn based")
@@ -212,7 +212,7 @@ def main(_):
                 nash_conv = sum(regrets)
                 record['max_on_path_regret'] = max_regret
                 record['nash_conv'] = nash_conv
-                if FLAGS.solver == 'ecfr'
+                if FLAGS.solver == 'ecfr':
                     nc, max_qv_diff = pyspiel.nash_conv_with_eps(game, policy)
                     record['max_qv_diff'] = max_qv_diff
                     logger.info(f"Max qv diff is {max_qv_diff}")
