@@ -198,7 +198,7 @@ def main(_):
                 record['max_qv_diff'] = max_qv_diff
                 logger.info(f"Max qv diff is {max_qv_diff}")
                 if i > 0 and i % FLAGS.decay_freq == 0:
-                    new_eps = max(eps_solver.epsilon() * decay_factor, min_eps)
+                    new_eps = max(solver.epsilon() * decay_factor, min_eps)
                     solver.set_epsilon(new_eps)
                     logger.info(f"Setting new epsilon to {new_eps}")
 
