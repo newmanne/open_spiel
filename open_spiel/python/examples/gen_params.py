@@ -214,7 +214,7 @@ if __name__ == '__main__':
     parser.add_argument('--root', default='/home/newmanne/scratch/cfr', type=str)
     parser.add_argument('--spiel_path', default='/project/def-kevinlb/newmanne/cfr/open_spiel', type=str)
     parser.add_argument('--job-name', default='CFR', type=str)
-    parser.add_argument('--submit', default=False, action='store_true')
+    parser.add_argument('--submit', default=True)
     args = parser.parse_args()
     main(args.root, args.spiel_path, args.job_name, args.submit)
 
