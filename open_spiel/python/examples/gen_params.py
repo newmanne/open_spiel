@@ -4,6 +4,7 @@ from sklearn.model_selection import ParameterGrid
 import os
 from pathlib import Path
 import logging
+import itertools
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ def grids_to_commands(param_grid, player_grid, solver_grid, root, grid_name, spi
                     seed = solver_config.get('seed', 123)
                     name = solver_config.get('name', f'{solver}_{j}')
                     solver_args = solver_config.get('solver_args', '')
-                    cmd = f'cd {grid_path}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={grid_path}/{i}/{i}.json --iterations 15000 --solver={solver} {solver_args} --output {grid_path}/{i}/{name}_{seed} --seed {seed}'
+                    cmd = f'cd {grid_path}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={grid_path}/{i}/{i}.json --iterations 10000 --solver={solver} {solver_args} --output {grid_path}/{i}/{name}_{seed} --seed {seed}'
                     cmds.append(cmd)
                 i += 1
 
@@ -196,18 +197,18 @@ def main(root, spiel_path, job_name, submit):
     ]
 
     player_grid = [
-        [make_player([(small, 1.0)]), make_player([(small, 0.9), (small2, 0.1)])],
+#        [make_player([(small, 1.0)]), make_player([(small, 0.9), (small2, 0.1)])],
+        [make_player([(p0, 1.0)]), make_player([(p1_l, 0.5), (p1_h, 0.5)])]
     ]
 
     solver_grid = [
         {'solver': ['cfr']},
         {'solver': ['cfrplus']},
-        {'solver': ['ecfr'], 'name': ['ecfr'], 'solver_args': [f'--initial_eps {initial_eps} --decay_freq {freq} --decay_factor {decay_factor}' for (initial_eps, freq, decay_factor) in itertools.product([0.1, 0.01, 0.001], [500, 1000, 2500], [0.9, 0.99, 0.999])},
+        {'solver': ['ecfr'],'solver_args': [f'--initial_eps {initial_eps} --decay_freq {freq} --decay_factor {decay_factor}' for (initial_eps, freq, decay_factor) in itertools.product([0.1, 0.01, 0.001], [500, 1000, 2500], [0.9, 0.99, 0.999])]},
     ]
 
-    grids_to_commands(param_grid, player_grid, solver_grid, root, 'small', spiel_path, job_name=job_name, submit=submit)
-
-
+#    grids_to_commands(param_grid, player_grid, solver_grid, root, 'small', spiel_path, job_name=job_name, submit=submit)
+    grids_to_commands(param_grid, player_grid, solver_grid, root, 'medium', spiel_path, job_name=job_name, submit=submit)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Queue up a bunch of CFR jobs')
