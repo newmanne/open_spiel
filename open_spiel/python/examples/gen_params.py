@@ -201,8 +201,8 @@ def main(root, spiel_path, job_name, submit):
 
     solver_grid = [
         {'solver': ['cfr']},
-        {'solver': ['ecfr'], 'solver_args': ['--initial_eps 0.2', '--initial_eps 0.1', '--initial_eps 0.01', '--initial_eps 0.001']},
         {'solver': ['cfrplus']},
+        {'solver': ['ecfr'], 'name': ['ecfr'], 'solver_args': [f'--initial_eps {initial_eps} --decay_freq {freq} --decay_factor {decay_factor}' for (initial_eps, freq, decay_factor) in itertools.product([0.1, 0.01, 0.001], [500, 1000, 2500], [0.9, 0.99, 0.999])},
     ]
 
     grids_to_commands(param_grid, player_grid, solver_grid, root, 'small', spiel_path, job_name=job_name, submit=submit)

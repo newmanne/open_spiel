@@ -29,6 +29,7 @@ import pandas as pd
 import json
 import re
 import numpy as np
+import time
 
 from open_spiel.python import policy
 from open_spiel.python.algorithms import cfr, outcome_sampling_mccfr, expected_game_score, exploitability, get_all_states_with_policy
@@ -108,6 +109,7 @@ def persist_model(solver):
         logger.warning("Error pickling solver!!!")
 
 def main(_):
+    start_time = time.time()
     Path(FLAGS.output).mkdir(parents=True, exist_ok=True)
 
     fh = logging.FileHandler(f'{FLAGS.output}/{FLAGS.solver}.log')
@@ -204,7 +206,7 @@ def main(_):
 
         if i % FLAGS.report_freq == 0:
             policy = solver.average_policy() if FLAGS.solver != 'ecfr' else solver.tabular_average_policy()
-            record = dict()
+            record = dict(iteration=i, walltime=time.time() - start_time)
             if FLAGS.python:
                 metric = exploitability.nash_conv(game, policy)
             else:
@@ -216,8 +218,8 @@ def main(_):
                 if FLAGS.solver == 'ecfr':
                     nc, max_qv_diff = pyspiel.nash_conv_with_eps(game, policy)
                     record['max_qv_diff'] = max_qv_diff
-                    logger.info(f"Max qv diff is {max_qv_diff}")
 
+            run_records.append(record)
             logger.info(f"Iteration {i}")
             for k, v in record.items():
                 logger.info(f"{k}={v:.6f}")
