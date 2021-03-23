@@ -44,7 +44,8 @@ TabularBestResponse::TabularBestResponse(
       dummy_policy_(new TabularPolicy(GetUniformPolicy(game))),
       my_policy_(my_policy),
       max_qv_diff_(std::numeric_limits<double>::lowest()),
-      on_policy_state_values_(on_policy_state_values) {
+      on_policy_state_values_(on_policy_state_values),
+      cvtable_(game.NumPlayers()) {
   if (game.GetType().dynamics != GameType::Dynamics::kSequential) {
     SpielFatalError("The game must be turn-based.");
   }
@@ -62,7 +63,8 @@ TabularBestResponse::TabularBestResponse(
                                &tree_)),
       root_(game.NewInitialState()),
       dummy_policy_(new TabularPolicy(GetUniformPolicy(game))),
-      max_qv_diff_(std::numeric_limits<double>::lowest()) {
+      max_qv_diff_(std::numeric_limits<double>::lowest()),
+      cvtable_(game.NumPlayers()) {
   if (game.GetType().dynamics != GameType::Dynamics::kSequential) {
     SpielFatalError("The game must be turn-based.");
   }
@@ -193,6 +195,20 @@ Action TabularBestResponse::BestResponseAction(const std::string& infostate) {
   // best response and the expected (v-)value of the policy at this point.
   double my_exp_value = 0.0;
 
+  // struct ConditionalValuesEntry {
+    // Player player;
+    // std::string info_state_key;
+    // double value;
+    // double max_qv_diff;
+    // std::vector<Action> legal_actions;
+    // std::vector<double> action_values;
+  // };
+  ConditionalValuesEntry entry;
+  entry.player = player;
+  entry.info_state_key = infostate;
+  entry.legal_actions.resize(infoset[0].first->GetChildActions().size());
+  entry.action_values.resize(infoset[0].first->GetChildActions().size());
+
   // This is \Beta_{-i} from Sec 3.2 of https://arxiv.org/abs/1810.09026
   double normalizer = 0.0;
   if (on_policy_state_values_ != nullptr) {
@@ -206,6 +222,7 @@ Action TabularBestResponse::BestResponseAction(const std::string& infostate) {
 
   // The legal actions are the same for all children, so we arbitrarily pick the
   // first one to get the legal actions from.
+  int aidx = 0;
   for (const auto& action : infoset[0].first->GetChildActions()) {
     double value = 0;
     // Prob here is the counterfactual reach-weighted probability.
@@ -216,15 +233,23 @@ Action TabularBestResponse::BestResponseAction(const std::string& infostate) {
       value += state_and_prob.second * Value(child_node->GetHistory());
     }
 
+    entry.legal_actions[aidx] = action;
+    entry.action_values[aidx] = value / normalizer;
+
     if (value > best_value) {
       best_value = value;
       best_action = action;
     }
+
+    aidx++;
   }
 
   if (on_policy_state_values_ != nullptr) {
+    entry.value = my_exp_value / normalizer;
     double qv_diff = (best_value - my_exp_value) / normalizer;
+    entry.max_qv_diff = qv_diff;
     max_qv_diff_ = std::max(max_qv_diff_, qv_diff);
+    cvtable_.add_entry(entry);
   }
 
   if (best_action == -1) SpielFatalError("No action was chosen.");
@@ -285,6 +310,37 @@ TabularBestResponse::BestResponseActionValues(const std::string& infostate) {
   }
 
   return action_values;
+}
+
+double ConditionalValuesTable::max_qv_diff() const {
+  double max_value = std::numeric_limits<double>::lowest();
+  for (const auto& key_and_entry : table_) {
+    max_value = std::max(max_value, key_and_entry.second.max_qv_diff);
+  }
+  return max_value;
+}
+
+double ConditionalValuesTable::avg_qv_diff() const {
+  double sum = 0;
+  int num = 0;
+  for (const auto& key_and_entry : table_) {
+    sum += key_and_entry.second.max_qv_diff;
+    num++;
+  }
+  return sum / num;
+}
+
+void ConditionalValuesTable::Import(const ConditionalValuesTable& table) {
+  table_.insert(table.table_.begin(), table.table_.end());
+}
+
+ConditionalValuesTable
+MergeTables(const std::vector<ConditionalValuesTable>& tables) {
+  ConditionalValuesTable merged_table(tables[0].num_players());
+  for (auto& table : tables) {
+    merged_table.Import(table);
+  }
+  return merged_table;
 }
 
 }  // namespace algorithms

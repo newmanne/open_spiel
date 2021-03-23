@@ -31,6 +31,42 @@
 namespace open_spiel {
 namespace algorithms {
 
+struct ConditionalValuesEntry {
+  Player player;
+  std::string info_state_key;
+  double value;
+  double max_qv_diff;
+  std::vector<Action> legal_actions;
+  std::vector<double> action_values;
+};
+
+// A helper class for storing information about conditional values.
+class ConditionalValuesTable {
+ public:
+  ConditionalValuesTable(int num_players) : num_players_(num_players) {}
+
+  void add_entry(const ConditionalValuesEntry& entry) {
+    table_[entry.info_state_key] = entry;
+  }
+
+  int num_players() const { return num_players_; }
+  double max_qv_diff() const;
+  double avg_qv_diff() const;
+  void Import(const ConditionalValuesTable& table);
+
+  const std::unordered_map<std::string, ConditionalValuesEntry>& table() const {
+    return table_;
+  }
+
+ private:
+  std::unordered_map<std::string, ConditionalValuesEntry> table_;
+  int num_players_;
+};
+
+ConditionalValuesTable
+MergeTables(const std::vector<ConditionalValuesTable>& tables);
+
+
 // Calculates the best response to every state in the game against the given
 // policy, where the best responder plays as player_id.
 // This only works for two player, zero- or constant-sum sequential games, and
@@ -127,6 +163,7 @@ class TabularBestResponse {
   }
 
   double max_qv_diff() const { return max_qv_diff_; }
+  const ConditionalValuesTable& cvtable() const { return cvtable_; }
 
  private:
   // For chance nodes, we recursively calculate the value of each child node,
@@ -180,6 +217,7 @@ class TabularBestResponse {
   const Policy* my_policy_ = nullptr;
   double max_qv_diff_;
   const ValuesMapT* on_policy_state_values_ = nullptr;
+  ConditionalValuesTable cvtable_;
 };
 
 }  // namespace algorithms

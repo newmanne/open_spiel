@@ -16,6 +16,7 @@
 #define OPEN_SPIEL_ALGORITHMS_EXPLORATIVE_CFR_H_
 
 #include "open_spiel/algorithms/cfr.h"
+#include "open_spiel/algorithms/best_response.h"
 #include "open_spiel/policy.h"
 #include "open_spiel/spiel.h"
 
@@ -39,8 +40,17 @@ class EpsilonCFRSolver : public CFRSolver {
   double epsilon_;
 };
 
-std::pair<double, double> NashConvWithEps(const Game& game,
-                                          const Policy& policy);
+struct BRInfo {
+  double nash_conv;
+  // Indexed by player.
+  std::vector<double> on_policy_values;
+  std::vector<double> deviation_incentives;
+  std::vector<ConditionalValuesTable> cvtables;
+};
+
+BRInfo NashConvWithEps(const Game& game,
+                       const Policy& policy);
+
 
 }  // namespace algorithms
 }  // namespace open_spiel

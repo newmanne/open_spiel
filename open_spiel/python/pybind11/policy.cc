@@ -40,6 +40,9 @@ using ::open_spiel::algorithms::PlayerRegrets;
 using ::open_spiel::algorithms::TabularBestResponse;
 using ::open_spiel::algorithms::ValuesMapT;
 using ::open_spiel::algorithms::EpsilonCFRSolver;
+using ::open_spiel::algorithms::ConditionalValuesEntry;
+using ::open_spiel::algorithms::ConditionalValuesTable;
+using ::open_spiel::algorithms::BRInfo;
 
 namespace py = ::pybind11;
 }  // namespace
@@ -197,6 +200,30 @@ void init_pyspiel_policy(py::module& m) {
                 DeserializeOutcomeSamplingMCCFRSolver(serialized);
           }));
 
+  // Start Explorative CFR stuff
+  py::class_<ConditionalValuesEntry> cventry(m, "ConditionalValuesEntry");
+  cventry.def_readonly("player", &ConditionalValuesEntry::player)
+      .def_readonly("info_state_key", &ConditionalValuesEntry::info_state_key)
+      .def_readonly("value", &ConditionalValuesEntry::value)
+      .def_readonly("max_qv_diff", &ConditionalValuesEntry::max_qv_diff)
+      .def_readonly("legal_actions", &ConditionalValuesEntry::legal_actions)
+      .def_readonly("action_values", &ConditionalValuesEntry::action_values);
+
+  py::class_<BRInfo> br_info(m, "BRInfo");
+  br_info.def_readonly("nash_conv", &BRInfo::nash_conv)
+      .def_readonly("on_policy_values", &BRInfo::on_policy_values)
+      .def_readonly("deviation_incentives", &BRInfo::deviation_incentives)
+      .def_readonly("cvtables", &BRInfo::cvtables);
+
+  py::class_<ConditionalValuesTable>(m, "ConditionalValuesTable")
+      .def(py::init<int>(), py::arg("num_players"))
+      .def("add_entry", &ConditionalValuesTable::add_entry)
+      .def("num_players", &ConditionalValuesTable::num_players)
+      .def("max_qv_diff", &ConditionalValuesTable::max_qv_diff)
+      .def("avg_qv_diff", &ConditionalValuesTable::avg_qv_diff)
+      .def("import", &ConditionalValuesTable::Import)
+      .def("table", &ConditionalValuesTable::table);
+
   py::class_<open_spiel::algorithms::EpsilonCFRSolver>(m, "EpsilonCFRSolver")
       .def(py::init<const Game&, double>(), py::arg("game"),
            py::arg("epsilon"))
@@ -208,7 +235,10 @@ void init_pyspiel_policy(py::module& m) {
       .def("average_policy", &EpsilonCFRSolver::AveragePolicy)
       .def("tabular_average_policy", &EpsilonCFRSolver::TabularAveragePolicy);
 
+  m.def("merge_tables", &open_spiel::algorithms::MergeTables);
+
   m.def("nash_conv_with_eps", &open_spiel::algorithms::NashConvWithEps);
+  // End Explorative CFR stuff
 
   m.def("expected_returns",
         py::overload_cast<const State&, const std::vector<const Policy*>&, int,
