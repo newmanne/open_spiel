@@ -69,9 +69,13 @@ def main(_):
       eps_solver.set_epsilon(max(eps_solver.epsilon() * decay_factor, min_eps))
     if i % FLAGS.report_freq == 0:
       avg_policy = eps_solver.tabular_average_policy()
-      nash_conv, max_qv_diff = pyspiel.nash_conv_with_eps(game, avg_policy)
-      print(f"Iter {i} Eps: {eps_solver.epsilon()} nash_conv: {nash_conv} " +
-            f"max_qv_diff: {max_qv_diff}")
+      br_info = pyspiel.nash_conv_with_eps(game, avg_policy)
+      merged_table = pyspiel.merge_tables(br_info.cvtables)
+      print(f"Iter {i} Eps: {eps_solver.epsilon()} nash_conv: {br_info.nash_conv} " +
+            f"max_qv_diff: {merged_table.max_qv_diff()} " +
+            f"avg_qv_diff: {merged_table.avg_qv_diff()} ")
+      # to get the underlying table as a dict of
+      # info_state_keys -> ConditionalValuesEntry: merged_table.table()
 
 
 if __name__ == "__main__":

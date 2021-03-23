@@ -41,13 +41,13 @@ using ::open_spiel::algorithms::Exploitability;
 using ::open_spiel::algorithms::NashConv;
 using ::open_spiel::algorithms::PlayerRegrets;
 using ::open_spiel::algorithms::TabularBestResponse;
-<<<<<<< HEAD
 using ::open_spiel::algorithms::TabularBestResponseMDP;
 using ::open_spiel::algorithms::TabularBestResponseMDPInfo;
-=======
 using ::open_spiel::algorithms::ValuesMapT;
 using ::open_spiel::algorithms::EpsilonCFRSolver;
->>>>>>> Add CFR sequential equilibrium example
+using ::open_spiel::algorithms::ConditionalValuesEntry;
+using ::open_spiel::algorithms::ConditionalValuesTable;
+using ::open_spiel::algorithms::BRInfo;
 
 namespace py = ::pybind11;
 }  // namespace
@@ -59,178 +59,6 @@ void init_pyspiel_policy(py::module& m) {
                                              open_spiel::ActionsAndProbs>&>())
       .def(py::init<const open_spiel::Game&, int, const open_spiel::Policy*>())
       .def("value",
-           py::overload_cast<const std::string&>(&TabularBestResponse::Value))
-      .def("value_from_state", py::overload_cast<const open_spiel::State&>(
-                                   &TabularBestResponse::Value))
-      .def("get_best_response_policy",
-           &TabularBestResponse::GetBestResponsePolicy)
-      .def("get_best_response_actions",
-           &TabularBestResponse::GetBestResponseActions)
-      .def("set_policy", py::overload_cast<const std::unordered_map<
-                             std::string, open_spiel::ActionsAndProbs>&>(
-                             &TabularBestResponse::SetPolicy))
-      .def("set_policy",
-           py::overload_cast<const Policy*>(&TabularBestResponse::SetPolicy));
-
-  py::class_<open_spiel::Policy, std::shared_ptr<open_spiel::Policy>>(m,
-                                                                      "Policy")
-      .def("action_probabilities",
-           (std::unordered_map<Action, double>(open_spiel::Policy::*)(
-               const open_spiel::State&) const) &
-               open_spiel::Policy::GetStatePolicyAsMap)
-      .def("get_state_policy", (ActionsAndProbs(open_spiel::Policy::*)(
-                                   const open_spiel::State&) const) &
-                                   open_spiel::Policy::GetStatePolicy)
-      .def("get_state_policy_as_map",
-           (std::unordered_map<Action, double>(open_spiel::Policy::*)(
-               const std::string&) const) &
-               open_spiel::Policy::GetStatePolicyAsMap);
-
-  // A tabular policy represented internally as a map. Note that this
-  // implementation is not directly compatible with the Python TabularPolicy
-  // implementation; the latter is implemented as a table of size
-  // [num_states, num_actions], while this is implemented as a map. It is
-  // non-trivial to convert between the two, but we have a function that does so
-  // in the open_spiel/python/policy.py file.
-  py::class_<open_spiel::TabularPolicy,
-             std::shared_ptr<open_spiel::TabularPolicy>, open_spiel::Policy>(
-      m, "TabularPolicy")
-      .def(py::init<const std::unordered_map<std::string, ActionsAndProbs>&>())
-      .def("get_state_policy", &open_spiel::TabularPolicy::GetStatePolicy)
-      .def("policy_table",
-           py::overload_cast<>(&open_spiel::TabularPolicy::PolicyTable));
-
-  py::class_<open_spiel::PartialTabularPolicy,
-             std::shared_ptr<open_spiel::PartialTabularPolicy>,
-             open_spiel::TabularPolicy>(
-      m, "PartialTabularPolicy")
-      .def(py::init<>())
-      .def(py::init<const std::unordered_map<std::string, ActionsAndProbs>&>())
-      .def(py::init<const std::unordered_map<std::string, ActionsAndProbs>&,
-                    std::shared_ptr<Policy>>())
-      .def("get_state_policy",
-          (ActionsAndProbs(open_spiel::Policy::*)(const State&) const)
-          &open_spiel::PartialTabularPolicy::GetStatePolicy)
-      .def("get_state_policy",
-          (ActionsAndProbs(open_spiel::Policy::*)(const State&, Player) const)
-          &open_spiel::PartialTabularPolicy::GetStatePolicy)
-      .def("get_state_policy",
-           (ActionsAndProbs(open_spiel::Policy::*)(const std::string&) const)
-          &open_spiel::PartialTabularPolicy::GetStatePolicy)
-      .def("set_prob", &open_spiel::PartialTabularPolicy::SetProb)
-      .def("set_state_policy",
-           &open_spiel::PartialTabularPolicy::SetStatePolicy)
-      .def("policy_table",
-           py::overload_cast<>(&open_spiel::PartialTabularPolicy::PolicyTable));
-
-  m.def("UniformRandomPolicy", &open_spiel::GetUniformPolicy);
-  py::class_<open_spiel::UniformPolicy,
-             std::shared_ptr<open_spiel::UniformPolicy>, open_spiel::Policy>(
-      m, "UniformPolicy")
-      .def(py::init<>())
-      .def("get_state_policy", &open_spiel::UniformPolicy::GetStatePolicy);
-
-  py::class_<open_spiel::PreferredActionPolicy,
-             std::shared_ptr<open_spiel::PreferredActionPolicy>,
-             open_spiel::Policy>(m, "PreferredActionPolicy")
-      .def(py::init<const std::vector<Action>&>())
-      .def("get_state_policy",
-           &open_spiel::PreferredActionPolicy::GetStatePolicy);
-
-  py::class_<open_spiel::algorithms::CFRSolver>(m, "CFRSolver")
-      .def(py::init<const Game&>())
-      .def("evaluate_and_update_policy",
-           &open_spiel::algorithms::CFRSolver::EvaluateAndUpdatePolicy)
-      .def("current_policy", &open_spiel::algorithms::CFRSolver::CurrentPolicy)
-      .def("average_policy", &open_spiel::algorithms::CFRSolver::AveragePolicy)
-      .def("tabular_average_policy",
-           &open_spiel::algorithms::CFRSolver::TabularAveragePolicy)
-      .def(py::pickle(
-          [](const open_spiel::algorithms::CFRSolver& solver) {  // __getstate__
-            return solver.Serialize();
-          },
-          [](const std::string& serialized) {  // __setstate__
-            return open_spiel::algorithms::DeserializeCFRSolver(serialized);
-          }));
-
-  py::class_<open_spiel::algorithms::CFRPlusSolver>(m, "CFRPlusSolver")
-      .def(py::init<const Game&>())
-      .def("evaluate_and_update_policy",
-           &open_spiel::algorithms::CFRPlusSolver::EvaluateAndUpdatePolicy)
-      .def("current_policy", &open_spiel::algorithms::CFRSolver::CurrentPolicy)
-      .def("average_policy",
-           &open_spiel::algorithms::CFRPlusSolver::AveragePolicy)
-      .def(py::pickle(
-          [](const open_spiel::algorithms::CFRPlusSolver&
-                 solver) {  // __getstate__
-            return solver.Serialize();
-          },
-          [](const std::string& serialized) {  // __setstate__
-            return open_spiel::algorithms::DeserializeCFRPlusSolver(serialized);
-          }));
-
-  py::class_<open_spiel::algorithms::CFRBRSolver>(m, "CFRBRSolver")
-      .def(py::init<const Game&>())
-      .def("evaluate_and_update_policy",
-           &open_spiel::algorithms::CFRPlusSolver::EvaluateAndUpdatePolicy)
-      .def("current_policy", &open_spiel::algorithms::CFRSolver::CurrentPolicy)
-      .def("average_policy",
-           &open_spiel::algorithms::CFRPlusSolver::AveragePolicy)
-      .def(py::pickle(
-          [](const open_spiel::algorithms::CFRBRSolver&
-                 solver) {  // __getstate__
-            return solver.Serialize();
-          },
-          [](const std::string& serialized) {  // __setstate__
-            return open_spiel::algorithms::DeserializeCFRBRSolver(serialized);
-          }));
-
-  py::enum_<open_spiel::algorithms::AverageType>(m, "MCCFRAverageType")
-      .value("SIMPLE", open_spiel::algorithms::AverageType::kSimple)
-      .value("FULL", open_spiel::algorithms::AverageType::kFull);
-
-  py::class_<open_spiel::algorithms::ExternalSamplingMCCFRSolver>(
-      m, "ExternalSamplingMCCFRSolver")
-      .def(py::init<const Game&, int, open_spiel::algorithms::AverageType>(),
-           py::arg("game"), py::arg("seed") = 0,
-           py::arg("avg_type") = open_spiel::algorithms::AverageType::kSimple)
-      .def("run_iteration",
-           py::overload_cast<>(&open_spiel::algorithms::
-                                   ExternalSamplingMCCFRSolver::RunIteration))
-      .def("average_policy",
-           &open_spiel::algorithms::ExternalSamplingMCCFRSolver::AveragePolicy)
-      .def(py::pickle(
-          [](const open_spiel::algorithms::ExternalSamplingMCCFRSolver&
-                 solver) {  // __getstate__
-            return solver.Serialize();
-          },
-          [](const std::string& serialized) {  // __setstate__
-            return open_spiel::algorithms::
-                DeserializeExternalSamplingMCCFRSolver(serialized);
-          }));
-
-  py::class_<open_spiel::algorithms::OutcomeSamplingMCCFRSolver>(
-      m, "OutcomeSamplingMCCFRSolver")
-      .def(py::init<const Game&, double, int>(), py::arg("game"),
-           py::arg("epsilon") = open_spiel::algorithms::
-               OutcomeSamplingMCCFRSolver::kDefaultEpsilon,
-           py::arg("seed") = -1)
-      .def("run_iteration",
-           py::overload_cast<>(&open_spiel::algorithms::
-                                   OutcomeSamplingMCCFRSolver::RunIteration))
-      .def("average_policy",
-           &open_spiel::algorithms::OutcomeSamplingMCCFRSolver::AveragePolicy)
-      .def(py::pickle(
-          [](const open_spiel::algorithms::OutcomeSamplingMCCFRSolver&
-                 solver) {  // __getstate__
-            return solver.Serialize();
-          },
-          [](const std::string& serialized) {  // __setstate__
-            return open_spiel::algorithms::
-                DeserializeOutcomeSamplingMCCFRSolver(serialized);
-          }));
-
-<<<<<<< HEAD
   py::class_<TabularBestResponseMDPInfo>(m, "TabularBestResponseMDPInfo")
       .def_readonly("br_values", &TabularBestResponseMDPInfo::br_values)
       .def_readonly("br_policies", &TabularBestResponseMDPInfo::br_policies)
@@ -250,7 +78,30 @@ void init_pyspiel_policy(py::module& m) {
            &TabularBestResponseMDP::ComputeBestResponse, py::arg("max_player"))
       .def("nash_conv", &TabularBestResponseMDP::NashConv)
       .def("exploitability", &TabularBestResponseMDP::Exploitability);
-=======
+  // Start Explorative CFR stuff
+  py::class_<ConditionalValuesEntry> cventry(m, "ConditionalValuesEntry");
+  cventry.def_readonly("player", &ConditionalValuesEntry::player)
+      .def_readonly("info_state_key", &ConditionalValuesEntry::info_state_key)
+      .def_readonly("value", &ConditionalValuesEntry::value)
+      .def_readonly("max_qv_diff", &ConditionalValuesEntry::max_qv_diff)
+      .def_readonly("legal_actions", &ConditionalValuesEntry::legal_actions)
+      .def_readonly("action_values", &ConditionalValuesEntry::action_values);
+
+  py::class_<BRInfo> br_info(m, "BRInfo");
+  br_info.def_readonly("nash_conv", &BRInfo::nash_conv)
+      .def_readonly("on_policy_values", &BRInfo::on_policy_values)
+      .def_readonly("deviation_incentives", &BRInfo::deviation_incentives)
+      .def_readonly("cvtables", &BRInfo::cvtables);
+
+  py::class_<ConditionalValuesTable>(m, "ConditionalValuesTable")
+      .def(py::init<int>(), py::arg("num_players"))
+      .def("add_entry", &ConditionalValuesTable::add_entry)
+      .def("num_players", &ConditionalValuesTable::num_players)
+      .def("max_qv_diff", &ConditionalValuesTable::max_qv_diff)
+      .def("avg_qv_diff", &ConditionalValuesTable::avg_qv_diff)
+      .def("import", &ConditionalValuesTable::Import)
+      .def("table", &ConditionalValuesTable::table);
+
   py::class_<open_spiel::algorithms::EpsilonCFRSolver>(m, "EpsilonCFRSolver")
       .def(py::init<const Game&, double>(), py::arg("game"),
            py::arg("epsilon"))
@@ -262,8 +113,9 @@ void init_pyspiel_policy(py::module& m) {
       .def("average_policy", &EpsilonCFRSolver::AveragePolicy)
       .def("tabular_average_policy", &EpsilonCFRSolver::TabularAveragePolicy);
 
+  m.def("merge_tables", &open_spiel::algorithms::MergeTables);
+
   m.def("nash_conv_with_eps", &open_spiel::algorithms::NashConvWithEps);
->>>>>>> Add CFR sequential equilibrium example
 
   m.def("expected_returns",
         py::overload_cast<const State&, const std::vector<const Policy*>&, int,

@@ -49,8 +49,7 @@ void EpsilonCFRSolver::ApplyEpsilonRegretMatching() {
   }
 }
 
-std::pair<double, double> NashConvWithEps(const Game& game,
-                                          const Policy& policy) {
+BRInfo NashConvWithEps(const Game& game, const Policy& policy) {
   GameType game_type = game.GetType();
   if (game_type.dynamics != GameType::Dynamics::kSequential) {
     SpielFatalError("The game must be turn-based.");
@@ -58,32 +57,38 @@ std::pair<double, double> NashConvWithEps(const Game& game,
 
   std::unique_ptr<State> root = game.NewInitialState();
   absl::flat_hash_map<std::string, std::vector<double>> state_values;
-  std::vector<double> on_policy_values =
-      ExpectedReturns(*root, policy, -1, false, &state_values);
 
-  double max_qv_diff = 0.0;
+  BRInfo br_info;
+  br_info.on_policy_values =
+      ExpectedReturns(*root, policy, -1, false, &state_values);
+  br_info.deviation_incentives.resize(game.NumPlayers());
+  br_info.cvtables.reserve(game.NumPlayers());
+
   std::vector<double> best_response_values(game.NumPlayers());
   for (auto p = Player{0}; p < game.NumPlayers(); ++p) {
     TabularBestResponse best_response(game, p, &policy, &policy, &state_values);
     best_response_values[p] = best_response.Value(*root);
-    max_qv_diff = std::max(best_response.max_qv_diff(), max_qv_diff);
+    br_info.cvtables.push_back(best_response.cvtable());
   }
 
-  SPIEL_CHECK_EQ(best_response_values.size(), on_policy_values.size());
-  double nash_conv = 0;
+  SPIEL_CHECK_EQ(best_response_values.size(), br_info.on_policy_values.size());
+  br_info.nash_conv = 0;
   for (auto p = Player{0}; p < game.NumPlayers(); ++p) {
-    double deviation_incentive = best_response_values[p] - on_policy_values[p];
-    if (deviation_incentive < -FloatingPointDefaultThresholdRatio()) {
+    br_info.deviation_incentives[p] =
+        best_response_values[p] - br_info.on_policy_values[p];
+    if (br_info.deviation_incentives[p] <
+        -FloatingPointDefaultThresholdRatio()) {
       SpielFatalError(
           absl::StrCat("Negative Nash deviation incentive for player ", p, ": ",
-                       deviation_incentive, ". Does you game have imperfect ",
+                       br_info.deviation_incentives[p],
+                       ". Does you game have imperfect ",
                        "recall, or does State::ToString() not distinguish ",
                        "between unique states?"));
     }
-    nash_conv += deviation_incentive;
+    br_info.nash_conv += br_info.deviation_incentives[p];
   }
 
-  return {nash_conv, max_qv_diff};
+  return br_info;
 }
 
 }  // namespace algorithms

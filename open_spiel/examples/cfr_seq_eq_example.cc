@@ -30,6 +30,10 @@
 ABSL_FLAG(int, num_iters, 1000000, "How many iters to run for.");
 ABSL_FLAG(int, report_every, 100000, "How often to report.");
 
+namespace open_spiel {
+namespace algorithms {
+namespace {
+
 const char* kSeqEqCounterexampleEFG = R"###(
 EFG 2 R "Counterexample by Rich Gibson" { "Player 1" "Player 2" } ""
 
@@ -58,19 +62,18 @@ c "ROOT" 1 "ROOT" { "OOT" 51/52 "ASOT" 1/52 } 0
     t "ASOT-dnp" 6 "Outcome ASOT-dnp" { 0.0 0.0 }
 )###";
 
-int main(int argc, char** argv) {
-  absl::ParseCommandLine(argc, argv);
+void RunCFRSeqEqExample() {
   std::shared_ptr<const open_spiel::Game> game =
-      // open_spiel::efg_game::LoadEFGGame(kSeqEqCounterexampleEFG);
-      // open_spiel::efg_game::LoadEFGGame(kGuessTheAceEFG);
-      // open_spiel::LoadGame("kuhn_poker");
-      open_spiel::LoadGame("kuhn_poker(players=3)");
-      // open_spiel::LoadGame("leduc_poker");
-  open_spiel::algorithms::CFRSolver solver(*game);
+      // efg_game::LoadEFGGame(kSeqEqCounterexampleEFG);
+      // efg_game::LoadEFGGame(kGuessTheAceEFG);
+      // LoadGame("kuhn_poker");
+      LoadGame("kuhn_poker(players=3)");
+      // LoadGame("leduc_poker");
+  CFRSolver solver(*game);
   std::cerr << "Starting.. "<< std::endl;
 
   std::cout << std::endl;
-  open_spiel::algorithms::EpsilonCFRSolver eps_solver(*game, 0.1);
+  EpsilonCFRSolver eps_solver(*game, 0.1);
 
   // Explorative CFR
   int decay_freq = 1000;
@@ -85,15 +88,15 @@ int main(int argc, char** argv) {
 
     if (i % absl::GetFlag(FLAGS_report_every) == 0 ||
         i == absl::GetFlag(FLAGS_num_iters) - 1) {
-      open_spiel::TabularPolicy avg_policy =
-          eps_solver.TabularAveragePolicy();
-      auto [nash_conv, max_qv_diff] =
-          open_spiel::algorithms::NashConvWithEps(*game, avg_policy);
+      TabularPolicy avg_policy = eps_solver.TabularAveragePolicy();
+      BRInfo br_info = NashConvWithEps(*game, avg_policy);
+      ConditionalValuesTable merged_table = MergeTables(br_info.cvtables);
 
       std::cout << "Eps-CFR Iteration " << i
                 << " epsilon=" << eps_solver.epsilon()
-                << " nash_conv=" << nash_conv
-                << " max_qv_diff=" << max_qv_diff
+                << " nash_conv=" << br_info.nash_conv
+                << " max_qv_diff=" << merged_table.max_qv_diff()
+                << " avg_qv_diff=" << merged_table.avg_qv_diff()
                 << std::endl;
 
       // Print the policy to inspect it.
@@ -101,3 +104,14 @@ int main(int argc, char** argv) {
     }
   }
 }
+
+}  // namespace
+}  // namespace algorithms
+}  // namespace open_spiel
+
+
+int main(int argc, char** argv) {
+  absl::ParseCommandLine(argc, argv);
+  open_spiel::algorithms::RunCFRSeqEqExample();
+}
+
