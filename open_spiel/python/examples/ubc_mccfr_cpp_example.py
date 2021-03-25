@@ -79,7 +79,7 @@ def state_to_final(game, s):
     info_state_string = '\n'.join(state_str.split('\n')[:game.num_players()]) + '\n' + re.findall(allocation_pattern, state_str)[0] + '\n' + re.findall(price_pattern, state_str)[0] + '\n' + re.findall(round_pattern, state_str)[0]
     return info_state_string
 
-def parse_state_str(game, state):
+def parse_state_str(game, state, info_state_str):
     state_str = str(state)
     price = float(re.findall(price_pattern, state_str)[0].replace('Price:', ''))
     round_number = int(re.findall(round_pattern, state_str)[0].replace('Round:', ''))
@@ -89,10 +89,10 @@ def parse_state_str(game, state):
         for i, a in enumerate(allocation):
             d[f'Allocation {i}'] = a   
     else:
-        splits = state_str.splitlines()
-        d['my_bids'] = splits[1]
-        d['total_demand'] = splits[2]
-        d['type'] = splits[0]
+        splits = info_state_str.splitlines()
+        d['my_bids'] = splits[2] if round_number > 1 else ''
+        d['total_demand'] = splits[3] if round_number > 1 else ''
+        d['type'] = splits[1]
     return d
 
 
@@ -189,7 +189,7 @@ def main(_):
 
     # RUN SOLVER
     run_records = []
-    for i in range(int(FLAGS.iterations)):
+    for i in range(FLAGS.iterations):
         if FLAGS.solver == "mccfr":
             if FLAGS.python:
                 solver.iteration()
@@ -204,7 +204,7 @@ def main(_):
             solver.set_epsilon(new_eps)
             logger.info(f"Changing epsilon from {old_eps} to {new_eps}")
 
-        if i % FLAGS.report_freq == 0:
+        if i % FLAGS.report_freq == 0 or i == FLAGS.iterations - 1:
             policy = solver.average_policy() if FLAGS.solver != 'ecfr' else solver.tabular_average_policy()
             record = dict(iteration=i, walltime=time.time() - start_time)
             if FLAGS.python:
@@ -216,15 +216,19 @@ def main(_):
                 record['max_on_path_regret'] = max_regret
                 record['nash_conv'] = nash_conv
                 if FLAGS.solver == 'ecfr':
-                    nc, max_qv_diff = pyspiel.nash_conv_with_eps(game, policy)
-                    record['max_qv_diff'] = max_qv_diff
+                    br_info = pyspiel.nash_conv_with_eps(game, policy)
+                    merged_table = pyspiel.merge_tables(br_info.cvtables)
+                    record['max_qv_diff'] = merged_table.max_qv_diff()
+                    record['avg_qv_diff'] = merged_table.avg_qv_diff()
 
             run_records.append(record)
             logger.info(f"Iteration {i}")
             for k, v in record.items():
+                if k == 'iteration':
+                    continue
                 logger.info(f"{k}={v:.6f}")
             # TODO: Appending would be better...
-            pd.DataFrame.from_records(run_records).to_csv(f'{FLAGS.output}/run_metrics.csv')
+            pd.DataFrame.from_records(run_records).to_csv(f'{FLAGS.output}/run_metrics.csv', index=False)
 
 
         if FLAGS.persist and i % FLAGS.persist_freq == 0 and i > 0:
@@ -233,9 +237,14 @@ def main(_):
     if FLAGS.persist:
         persist_model(solver, i)
 
-    pd.DataFrame.from_records(run_records).to_csv(f'{FLAGS.output}/run_metrics.csv')
+    pd.DataFrame.from_records(run_records).to_csv(f'{FLAGS.output}/run_metrics.csv', index=False)
 
     records = []
+    if FLAGS.solver == 'ecfr':
+        info_state_to_cve = merged_table.table()
+    else:
+        info_state_to_cve = None
+
     if FLAGS.python:
         raise ValueError("TODO")
     else:
@@ -251,7 +260,7 @@ def main(_):
             state = state_dict['state']
             prob = state_dict['prob']
             record = dict(terminal=state.is_terminal(), prob=prob, player=state.current_player())
-            record.update(parse_state_str(game, state))
+            record.update(parse_state_str(game, state, info_state_key))
             if state.is_terminal():
                 record.update({f'Utility {n}': v for n,v in enumerate(state.returns())})
                 splits = info_state_key.splitlines()
@@ -264,6 +273,9 @@ def main(_):
                 action_probabilities = policy.action_probabilities(state)
                 record['info_state'] = info_state_key[18:] # Get rid of "Current Player line"
                 record.update({f'Bid {k}': v for k, v in action_probabilities.items()})
+                if info_state_to_cve is not None:
+                    max_qv_diff = info_state_to_cve[info_state_key].max_qv_diff
+                    record['max_qv_diff'] = max_qv_diff
                 records.append(record)
 
     df = pd.DataFrame.from_records(records).set_index('info_state')
