@@ -248,6 +248,9 @@ class CFRSolverBase {
   // Update the current policy for all information states.
   void ApplyRegretMatching();
 
+  // Reset all the regrets to zero.
+  void ApplyRegretMatchingPlusReset();
+
   // This method should return the type of itself so that it can be checked
   // in different deserialization methods; one method for each subtype.
   // For an example take a look at the CFRSolver::SerializeThisType() and
@@ -278,8 +281,6 @@ class CFRSolverBase {
   // the same order as legal_actions.
   std::vector<double> GetPolicy(const std::string& info_state,
                                 const std::vector<Action>& legal_actions);
-
-  void ApplyRegretMatchingPlusReset();
 
   std::vector<double> RegretMatching(const std::string& info_state,
                                      const std::vector<Action>& legal_actions);

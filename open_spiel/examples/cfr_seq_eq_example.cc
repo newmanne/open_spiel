@@ -73,7 +73,7 @@ void RunCFRSeqEqExample() {
   std::cerr << "Starting.. "<< std::endl;
 
   std::cout << std::endl;
-  EpsilonCFRSolver eps_solver(*game, 0.1);
+  EpsilonCFRSolver eps_solver(*game, 0.001);
 
   // Explorative CFR
   int decay_freq = 1000;

@@ -19,6 +19,13 @@
 namespace open_spiel {
 namespace algorithms {
 
+EpsilonCFRSolver::EpsilonCFRSolver(const Game& game, double initial_epsilon)
+  : CFRSolverBase(game,
+                  /*alternating_updates=*/true,
+                  /*linear_averaging=*/true,
+                  /*regret_matching_plus=*/true),
+    epsilon_(initial_epsilon) {}
+
 void EpsilonCFRSolver::EvaluateAndUpdatePolicy() {
   ++iteration_;
 
@@ -27,6 +34,7 @@ void EpsilonCFRSolver::EvaluateAndUpdatePolicy() {
                                 nullptr);
   }
 
+  ApplyRegretMatchingPlusReset();
   ApplyEpsilonRegretMatching();
 
   // epsilon_ -=
