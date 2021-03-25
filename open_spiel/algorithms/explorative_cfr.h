@@ -23,10 +23,9 @@
 namespace open_spiel {
 namespace algorithms {
 
-class EpsilonCFRSolver : public CFRSolver {
+class EpsilonCFRSolver : public CFRSolverBase {
  public:
-  EpsilonCFRSolver(const Game& game, double initial_epsilon)
-      : CFRSolver(game), epsilon_(initial_epsilon) {}
+  EpsilonCFRSolver(const Game& game, double initial_epsilon);
 
   void EvaluateAndUpdatePolicy() override;
 
