@@ -60,10 +60,15 @@ def run_iterations(game, solver, start_iteration=0):
 
 
 def main(_):
-  game = pyspiel.load_game(
-      FLAGS.game,
-      {"players": FLAGS.players},
-  )
+  # game = pyspiel.load_game(
+  #     FLAGS.game,
+  #     {"players": pyspiel.GameParameter(FLAGS.players)},
+  # )
+
+  params = dict()
+  params['filename'] = pyspiel.GameParameter('/Users/newmanne/research/cfr/open_spiel/config/medium/1/1.json')
+  game = pyspiel.load_game_as_turn_based('clock_auction', params)
+
 
   if FLAGS.sampling == "external":
     solver = pyspiel.ExternalSamplingMCCFRSolver(
@@ -73,7 +78,11 @@ def main(_):
   elif FLAGS.sampling == "outcome":
     solver = pyspiel.OutcomeSamplingMCCFRSolver(game)
 
-  run_iterations(game, solver)
+  for i in range(int(FLAGS.iterations / 2)):
+    solver.run_iteration()
+    nash_conv = pyspiel.nash_conv(game, solver.average_policy())
+    # print("Iteration {} exploitability: {:.6f}".format(
+    #     i, pyspiel.exploitability(game, solver.average_policy())))
 
   print("Persisting the model...")
   with open(MODEL_FILE_NAME.format(FLAGS.sampling), "wb") as file:
@@ -82,10 +91,14 @@ def main(_):
   print("Loading the model...")
   with open(MODEL_FILE_NAME.format(FLAGS.sampling), "rb") as file:
     loaded_solver = pickle.load(file)
-  print("Exploitability of the loaded model: {:.6f}".format(
-      pyspiel.exploitability(game, loaded_solver.average_policy())))
+  # print("Exploitability of the loaded model: {:.6f}".format(
+  #     pyspiel.exploitability(game, loaded_solver.average_policy())))
 
-  run_iterations(game, solver, start_iteration=int(FLAGS.iterations / 2))
+  # for i in range(int(FLAGS.iterations / 2)):
+  #   solver.run_iteration()
+  #   print("Iteration {} exploitability: {:.6f}".format(
+  #       int(FLAGS.iterations / 2) + i,
+  #       pyspiel.exploitability(game, solver.average_policy())))
 
 
 if __name__ == "__main__":
