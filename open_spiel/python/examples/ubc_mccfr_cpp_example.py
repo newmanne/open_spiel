@@ -90,9 +90,12 @@ def parse_state_str(game, state, info_state_str):
             d[f'Allocation {i}'] = a   
     else:
         splits = info_state_str.splitlines()
-        d['my_bids'] = splits[2] if round_number > 1 else ''
-        d['total_demand'] = splits[3] if round_number > 1 else ''
         d['type'] = splits[1]
+        d['my_bids'] = splits[2] if round_number > 1 else ''
+        if len(splits) > 3:
+            d['total_demand'] = splits[3] if round_number > 1 else ''
+        else:
+            d['total_demand'] = '?' if round_number > 1 else ''
     return d
 
 
