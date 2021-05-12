@@ -44,6 +44,10 @@ constexpr int kUndersellAllowed = 1;
 constexpr int kUndersell = 2;
 constexpr int kUndersellPrevClock = 3;
 
+// Information policies
+constexpr int kShowDemand = 1;
+constexpr int kHideDemand = 2;
+
 // Facts about the game
 const GameType kGameType{/*short_name=*/"clock_auction",
                          /*long_name=*/"Clock Auction",
@@ -78,6 +82,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
   double increment,
   double open_price,
   int undersell_rule_,
+  int information_policy_,
   std::vector<std::vector<double>> values,
   std::vector<std::vector<double>> budgets,
   std::vector<std::vector<double>> probs
@@ -93,6 +98,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       increment_(increment),
       open_price_(open_price),
       undersell_rule_(undersell_rule_),
+      information_policy_(information_policy_),
       values_(values),
       budgets_(budgets),
       type_probs_(probs),
@@ -292,6 +298,7 @@ std::vector<std::pair<Action, double>> AuctionState::ChanceOutcomes() const {
   return valuesAndProbs;
 }
 
+
 std::string AuctionState::InformationStateString(Player player) const {
   SPIEL_CHECK_GE(player, 0);
   SPIEL_CHECK_LT(player, num_players_);
@@ -301,7 +308,9 @@ std::string AuctionState::InformationStateString(Player player) const {
   }
   if (!bidseq_[player].empty()) {
     absl::StrAppend(&result, absl::StrCat("\n", absl::StrJoin(bidseq_[player], ","), "\n"));
-    absl::StrAppend(&result, absl::StrJoin(aggregate_demands_, ","));
+    if (information_policy_ == kShowDemand) {
+      absl::StrAppend(&result, absl::StrJoin(aggregate_demands_, ","));  
+    }
   }
   return result;
 }
@@ -426,6 +435,17 @@ AuctionGame::AuctionGame(const GameParameters& params) :
     SpielFatalError("Unrecognized undersell rule!");  
   }
 
+  CheckRequiredKey(object, "information_policy");
+  std::string information_policy_string = object["information_policy"].GetString();
+  if (information_policy_string == "show_demand") {
+    information_policy_ = kShowDemand;
+  } else if (information_policy_string == "hide_demand") {
+    information_policy_ = kHideDemand;
+  } else {
+    SpielFatalError("Unrecognized information policy rule!");  
+  }
+
+
   // Loop over players, parsing values and budgets
   max_value_ = 0.;
   max_budget_ = 0.;
@@ -475,7 +495,7 @@ int AuctionGame::NumDistinctActions() const {
 
 std::unique_ptr<State> AuctionGame::NewInitialState() const {
   std::unique_ptr<AuctionState> state(
-      new AuctionState(shared_from_this(), num_players_, num_licenses_, increment_, open_price_, undersell_rule_, values_,  budgets_, type_probs_));
+      new AuctionState(shared_from_this(), num_players_, num_licenses_, increment_, open_price_, undersell_rule_, information_policy_, values_,  budgets_, type_probs_));
   return state;
 }
 
