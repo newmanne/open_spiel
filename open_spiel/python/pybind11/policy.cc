@@ -242,7 +242,7 @@ void init_pyspiel_policy(py::module& m) {
 
   m.def("expected_returns",
         py::overload_cast<const State&, const std::vector<const Policy*>&, int,
-                          bool, ValuesMapT*>(
+                          bool, float, ValuesMapT*>(
                               &open_spiel::algorithms::ExpectedReturns),
         "Computes the undiscounted expected returns from a depth-limited "
         "search.",
@@ -250,11 +250,12 @@ void init_pyspiel_policy(py::module& m) {
         py::arg("policies"),
         py::arg("depth_limit"),
         py::arg("use_infostate_get_policy"),
-        py::arg("prob_cut_threshold") = 0.0);
+        py::arg("prob_cut_threshold") = 0.0,
+        py::arg("state_values") = nullptr);
 
   m.def("expected_returns",
         py::overload_cast<const State&, const Policy&, int,
-                          bool, float>(
+                          bool, float, ValuesMapT*>(
                               &open_spiel::algorithms::ExpectedReturns),
         "Computes the undiscounted expected returns from a depth-limited "
         "search.",
@@ -262,7 +263,8 @@ void init_pyspiel_policy(py::module& m) {
         py::arg("joint_policy"),
         py::arg("depth_limit"),
         py::arg("use_infostate_get_policy"),
-        py::arg("prob_cut_threshold") = 0.0);
+        py::arg("prob_cut_threshold") = 0.0,
+        py::arg("state_values") = nullptr);
 
   m.def("exploitability",
         py::overload_cast<const Game&, const Policy&>(&Exploitability),
