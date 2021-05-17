@@ -46,7 +46,8 @@ std::vector<double> ExpectedReturns(const State& state,
                                     float prob_cut_threshold = 0.0,
                                     ValuesMapT* state_values = nullptr);
 std::vector<double> ExpectedReturns(const State& state,
-                                    const Policy& joint_policy, int depth_limit,
+                                    const Policy& joint_policy, 
+                                    int depth_limit,
                                     bool use_infostate_get_policy = true,
                                     float prob_cut_threshold = 0.0,
                                     ValuesMapT* state_values = nullptr);
