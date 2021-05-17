@@ -68,7 +68,7 @@ BRInfo NashConvWithEps(const Game& game, const Policy& policy) {
 
   BRInfo br_info;
   br_info.on_policy_values =
-      ExpectedReturns(*root, policy, -1, false, &state_values);
+      ExpectedReturns(*root, policy, -1, false, 0, &state_values);
   br_info.deviation_incentives.resize(game.NumPlayers());
   br_info.cvtables.reserve(game.NumPlayers());
 
