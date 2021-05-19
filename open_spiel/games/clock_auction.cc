@@ -317,7 +317,7 @@ std::string AuctionState::InformationStateString(Player player) const {
 
 std::string AuctionState::ToString() const {
   std::string result = "";
-  // Player type storage
+  // Player types
   for (auto p = Player{0}; p < num_players_; p++) {
       if (value_.size() > p) {
         absl::StrAppend(&result, absl::StrCat("p", p, "v", value_[p], "b", budget_[p], "\n"));  
@@ -391,6 +391,40 @@ void CheckRequiredKey(json::Object obj, std::string key) {
   if (obj.find(key) == obj.end()) {
     SpielFatalError(absl::StrCat("Missing JSON key: ", key));
   }
+}
+
+int AuctionGame::NumDistinctActions() const {
+  return num_licenses_ + 1; // Bid for any number of licenes, including 0
+}
+
+std::unique_ptr<State> AuctionGame::NewInitialState() const {
+  std::unique_ptr<AuctionState> state(
+      new AuctionState(shared_from_this(), num_players_, num_licenses_, increment_, open_price_, undersell_rule_, information_policy_, values_,  budgets_, type_probs_));
+  return state;
+}
+
+int AuctionGame::MaxChanceOutcomes() const { 
+  return max_chance_outcomes_;
+}
+
+int AuctionGame::MaxGameLength() const {
+  return kMoveLimit; // In theory, this game is bounded only by the budgets and can go on much longer
+}
+
+std::vector<int> AuctionGame::ObservationTensorShape() const {
+  SpielFatalError("Unimplemented ObservationTensorShape");  
+}
+
+void AuctionState::ObservationTensor(Player player, absl::Span<float> values) const {
+  SpielFatalError("Unimplemented ObservationTensor");
+}
+
+std::vector<int> AuctionGame::InformationStateTensorShape() const {
+  SpielFatalError("Unimplemented InformationStateTensorShape");
+}
+
+void AuctionState::InformationStateTensor(Player player, absl::Span<float> values) const {
+  SpielFatalError("Unimplemented InformationStateTensor");
 }
 
 AuctionGame::AuctionGame(const GameParameters& params) :
@@ -487,40 +521,6 @@ AuctionGame::AuctionGame(const GameParameters& params) :
     lengths.push_back(type_probs_[p].size());
   }
   max_chance_outcomes_ = *std::max_element(lengths.begin(), lengths.end());
-}
-
-int AuctionGame::NumDistinctActions() const {
-  return num_licenses_ + 1; // Bid for any number of licenes, including 0
-}
-
-std::unique_ptr<State> AuctionGame::NewInitialState() const {
-  std::unique_ptr<AuctionState> state(
-      new AuctionState(shared_from_this(), num_players_, num_licenses_, increment_, open_price_, undersell_rule_, information_policy_, values_,  budgets_, type_probs_));
-  return state;
-}
-
-int AuctionGame::MaxChanceOutcomes() const { 
-  return max_chance_outcomes_;
-}
-
-int AuctionGame::MaxGameLength() const {
-  return kMoveLimit; // In theory, this game is bounded only by the budgets and can go on much longer
-}
-
-std::vector<int> AuctionGame::ObservationTensorShape() const {
-  SpielFatalError("Unimplemented ObservationTensorShape");  
-}
-
-void AuctionState::ObservationTensor(Player player, absl::Span<float> values) const {
-  SpielFatalError("Unimplemented ObservationTensor");
-}
-
-std::vector<int> AuctionGame::InformationStateTensorShape() const {
-  SpielFatalError("Unimplemented InformationStateTensorShape");
-}
-
-void AuctionState::InformationStateTensor(Player player, absl::Span<float> values) const {
-  SpielFatalError("Unimplemented InformationStateTensor");
 }
 
 }  // namespace clock_auction
