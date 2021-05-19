@@ -101,114 +101,23 @@ def main(root, spiel_path, job_name, submit):
       "value": V_H,
       "budget": B_H,
     }
-    very_low = {
-        "value": 121,
-        "budget": 900
-    }
-    very_high = {
-        "value": 300,
-        "budget": 900
-    }
-
-    p0 = {
-        'value': 175,
-        'budget': 675
-    }
-    p1_l = {
-        'value': 150,
-        'budget': 675
-    }
-    p1_h = {
-        'value': 200,
-        'budget': 675
-    }
-    p1_l2 = {
-        'value': 125,
-        'budget': 675
-    }
-    p1_h2 = {
-        'value': 225,
-        'budget': 675
-    }
-
-    small = {
-        'value': 150,
-        'budget': 400
-    }
-    small2 = {
-        'value': 300,
-        'budget': 400
-    }
-
-    # param_grid = [
-    #     {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
-    #     # {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard", "undersell_allowed"]},
-    # ]
-
-    # player_grid = [
-    #     [make_player([(p0, 1.0)]), make_player([(p1_l, 0.5), (p1_h, 0.5)])],
-    #     [make_player([(p0, 1.0)]), make_player([(p1_l2, 0.5), (p1_h2, 0.5)])],
-    # ]
-
-    # solver_grid = [
-    #     # {'solver': ['cfr', 'cfrplus', 'cfrbr']},
-    #     {'solver': ['cfr']},
-    #     {'solver': ['ecfr'], 'solver_args': ['--initial_eps 0.5', '--initial_eps 0.1', '--initial_eps 0.01']},
-    #     {'solver': ['cfrplus']},
-    #     # {'solver': ['mccfr --sampling external'], 'name': ['mccfr_ext'], 'seed': [i for i in range(2,20)]}
-    # ]
-
-    # grids_to_commands(param_grid, player_grid, solver_grid, root, 'multi', spiel_path, job_name=job_name)
-
-    # param_grid = [
-    #     {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
-    # ]
-
-    # player_grid = [
-    #     [make_player([(very_low, 1.0)]), make_player([(very_high, 1.0)])],
-    # ]
-
-    # solver_grid = [
-    #     {'solver': ['cfr']},
-    #     {'solver': ['ecfr']},
-    #     {'solver': ['cfrplus']},
-    # ]
-
-    # grids_to_commands(param_grid, player_grid, solver_grid, root, '2b', spiel_path, job_name=job_name, submit=submit)
-
-    # param_grid = [
-    #     {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
-    # ]
-
-    # player_grid = [
-    #     [make_player([(small, 1.0)]), make_player([(small, 0.5), (small2, 0.5)]), make_player([(small, 0.5), (small2, 0.5)])],
-    # ]
-
-    # solver_grid = [
-    #     {'solver': ['cfr']},
-    #     {'solver': ['ecfr'], 'solver_args': ['--initial_eps 0.5', '--initial_eps 0.1', '--initial_eps 0.01']},
-    #     {'solver': ['cfrplus']},
-    # ]
-
-    # grids_to_commands(param_grid, player_grid, solver_grid, root, '3players', spiel_path, job_name=job_name)
 
     param_grid = [
-        {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"]},
+        {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"], "information_policy": ["hide_demand"]},
     ]
 
     player_grid = [
-#        [make_player([(small, 1.0)]), make_player([(small, 0.9), (small2, 0.1)])],
-        [make_player([(p0, 1.0)]), make_player([(p1_l, 0.5), (p1_h, 0.5)])]
+        [make_player([(low, 1.0)]), (low, 1.0)]), make_player([(low, 0.5), (high, 0.5)])]
     ]
 
     solver_grid = [
         {'solver': ['cfr']},
         {'solver': ['cfrplus']},
-        {'solver': ['ecfr'],'solver_args': [f'--initial_eps {initial_eps} --decay_freq {freq} --decay_factor {decay_factor}' for (initial_eps, freq, decay_factor) in itertools.product([0.1, 0.01, 0.001], [500, 1000, 2500], [0.9, 0.99, 0.999])]},
+        {'solver': ['ecfr'],'solver_args': [f'--initial_eps {initial_eps} --decay_freq {freq} --decay_factor {decay_factor}' for (initial_eps, freq, decay_factor) in itertools.product([0.01, 0.001], [1000, 2500], [0.9, 0.99])]},
     ]
 
 #    grids_to_commands(param_grid, player_grid, solver_grid, root, 'small', spiel_path, job_name=job_name, submit=submit)
-    grids_to_commands(param_grid, player_grid, solver_grid, root, 'medium', spiel_path, job_name=job_name, submit=submit)
+    grids_to_commands(param_grid, player_grid, solver_grid, root, '3playershidden', spiel_path, job_name=job_name, submit=submit)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Queue up a bunch of CFR jobs')
