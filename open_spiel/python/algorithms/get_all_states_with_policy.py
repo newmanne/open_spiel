@@ -83,7 +83,7 @@ def get_all_info_states_with_policy(game,
       curr_prob=1.0,
       max_depth=1)
 
-  print(max_depth)
+  print(f'Max Depth: {max_depth}')
 
   if not all_states:
     raise ValueError("GetSubgameStates returned 0 states!")
