@@ -81,8 +81,9 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
   int num_licenses,
   double increment,
   double open_price,
-  int undersell_rule_,
-  int information_policy_,
+  int undersell_rule,
+  int information_policy,
+  bool allow_negative_profit_bids,
   std::vector<std::vector<double>> values,
   std::vector<std::vector<double>> budgets,
   std::vector<std::vector<double>> probs
@@ -97,8 +98,9 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       num_players_(num_players),
       increment_(increment),
       open_price_(open_price),
-      undersell_rule_(undersell_rule_),
-      information_policy_(information_policy_),
+      undersell_rule_(undersell_rule),
+      information_policy_(information_policy),
+      allow_negative_profit_bids_(allow_negative_profit_bids),
       values_(values),
       budgets_(budgets),
       type_probs_(probs),
@@ -262,11 +264,16 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
 
   int limit = bidseq_[player].empty() ? num_licenses_ : bidseq_[player].back();
   double price = price_.back();
-  for (int b = 0; b <= limit; b++) {
-    if (price * b > budget_[player]) {
-      break;
+  double value = value_[player];
+  if (price > value && !allow_negative_profit_bids_) {
+    actions.push_back(0);
+  } else {
+    for (int b = 0; b <= limit; b++) {
+        if (price * b > budget_[player]) {
+          break;
+        }
+        actions.push_back(b);
     }
-    actions.push_back(b);
   }
 
   return actions;
@@ -399,7 +406,7 @@ int AuctionGame::NumDistinctActions() const {
 
 std::unique_ptr<State> AuctionGame::NewInitialState() const {
   std::unique_ptr<AuctionState> state(
-      new AuctionState(shared_from_this(), num_players_, num_licenses_, increment_, open_price_, undersell_rule_, information_policy_, values_,  budgets_, type_probs_));
+      new AuctionState(shared_from_this(), num_players_, num_licenses_, increment_, open_price_, undersell_rule_, information_policy_, allow_negative_profit_bids_, values_,  budgets_, type_probs_));
   return state;
 }
 
@@ -479,6 +486,15 @@ AuctionGame::AuctionGame(const GameParameters& params) :
     SpielFatalError("Unrecognized information policy rule!");  
   }
 
+  CheckRequiredKey(object, "bidding");
+  std::string bidding_string = object["bidding"].GetString();
+  if (bidding_string == "unrestricted") {
+    allow_negative_profit_bids_ = true;
+  } else if (bidding_string == "weakly_positive_profit") {
+    allow_negative_profit_bids_ = false;
+  } else {
+    SpielFatalError("Unrecognized bidding restrictions!");  
+  }
 
   // Loop over players, parsing values and budgets
   max_value_ = 0.;
