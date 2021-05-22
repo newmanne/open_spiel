@@ -41,8 +41,8 @@ logger = logging.getLogger(__name__)
 FLAGS = flags.FLAGS
 
 flags.DEFINE_integer("report_freq", 100, "Report frequency")
-flags.DEFINE_bool("persist", False, "Pickle the models")
-flags.DEFINE_integer("persist_freq", 5000, "Pickle the models every this many iterations")
+flags.DEFINE_bool("persist", True, "Pickle the models")
+flags.DEFINE_integer("persist_freq", -1, "Pickle the models every this many iterations")
 
 flags.DEFINE_bool("python", False, "Use python CFR impls")
 flags.DEFINE_bool("turn_based", True, "Convert simultaneous to turn based")
@@ -99,9 +99,9 @@ def parse_state_str(game, state, info_state_str):
     return d
 
 
-def persist_model(solver):
+def persist_model(solver, i):
     logger.info("Persisting the model...")
-    model_name = f'{FLAGS.solver}_{FLAGS.python}'
+    model_name = f'{FLAGS.solver}'
     if FLAGS.solver == 'mccfr':
         model_name += f'_{FLAGS.sampling}'
     
@@ -234,7 +234,7 @@ def main(_):
             pd.DataFrame.from_records(run_records).to_csv(f'{FLAGS.output}/run_metrics.csv', index=False)
 
 
-        if FLAGS.persist and i % FLAGS.persist_freq == 0 and i > 0:
+        if FLAGS.persist and FLAGS.persist_freq > 0 and i % FLAGS.persist_freq == 0 and i > 0:
             persist_model(solver, i)
 
     if FLAGS.persist:
@@ -282,8 +282,8 @@ def main(_):
                 records.append(record)
 
     df = pd.DataFrame.from_records(records).set_index('info_state')
-    df['value'] = df.type.str.extract(r'v(.+)b.*').astype(np.float)
-    df['budget'] = df.type.str.extract(r'.*b(.+)$').astype(np.float)
+    df['value'] = df.type.str.extract(r'v(.+)b.*').astype(float)
+    df['budget'] = df.type.str.extract(r'.*b(.+)$').astype(float)
     df = df.drop(['type'], axis=1)
 
     df = df.reindex(sorted(df.columns, key=str), axis=1) # Sort columns alphabetically
