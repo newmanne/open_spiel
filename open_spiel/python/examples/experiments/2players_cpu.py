@@ -1,3 +1,5 @@
+from open_spiel.python.examples.gen_params import *
+
 V_L = 121
 B_L = 600
 
@@ -21,11 +23,11 @@ high = {
 }
 
 param_grid = [
-    {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"], "information_policy": ["hide_demand"]},
+    {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"], "information_policy": ["hide_demand", "show_demand"], "bidding": ["weakly_positive_profit"]},
 ]
 
 player_grid = [
-    [make_player([(low, 1.0)]), (low, 1.0)]), make_player([(low, 0.5), (high, 0.5)])]
+    [make_player([(low, 1.0)]), make_player([(low, 1.0)]), make_player([(low, 0.5), (high, 0.5)])]
 ]
 
 solver_grid = [
