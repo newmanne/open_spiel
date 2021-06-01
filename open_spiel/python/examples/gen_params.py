@@ -25,6 +25,7 @@ def make_player(player_types):
 def grids_to_commands(param_grid, player_grid, solver_grid, grid_name, job_name='CFR', submit=True, mem=16, time_limit='3-0'):
     SPIEL_PATH = os.environ.get('OPENSPIEL_PATH', '/project/def-kevinlb/newmanne/cfr/open_spiel')
     ROOT = os.environ.get('SPIEL_ROOT', '/home/newmanne/scratch/cfr')
+    CONFIG_DIR = os.environ.get('CLOCK_AUCTION_CONFIG_DIR', '/home/newmanne/scratch/cfr/configs')
 
     grid_path = f'{ROOT}/{grid_name}'
     i = 1
@@ -36,7 +37,7 @@ def grids_to_commands(param_grid, player_grid, solver_grid, grid_name, job_name=
             if len(players) <= 1:
                 raise ValueError("Less than one player?")
             Path(f'{grid_path}/{i}').mkdir(parents=True, exist_ok=True)
-            with open(f'{grid_path}/{i}/{i}.json', 'w') as f:
+            with open(f'{CONFIG_DIR}/{job_name}_{i}.json', 'w') as f:
                 json.dump(parameterization, f)
                 for j, solver_config in enumerate(ParameterGrid(solver_grid)):
                     solver = solver_config['solver']
