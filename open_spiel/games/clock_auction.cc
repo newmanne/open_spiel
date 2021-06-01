@@ -445,8 +445,14 @@ AuctionGame::AuctionGame(const GameParameters& params) :
     filename = "parameters.json";
   }
 
-  std::cerr << "Parsing configuration from " << filename << std::endl;
-  std::string string_data = file::ReadContentsFromFile(filename, "r");
+  std::cerr << "Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble." << std::endl;
+  std::string configDir(std::getenv("CLOCK_AUCTION_CONFIG_DIR"));
+  std::cerr << "CLOCK_AUCTION_CONFIG_DIR=" << configDir << std::endl;
+
+  std::string fullPath = configDir + '/' + filename;
+
+  std::cerr << "Parsing configuration from " << fullPath << std::endl;
+  std::string string_data = file::ReadContentsFromFile(fullPath, "r");
   SPIEL_CHECK_GT(string_data.size(), 0);
 
   absl::optional<json::Value> v = json::FromString(string_data);
