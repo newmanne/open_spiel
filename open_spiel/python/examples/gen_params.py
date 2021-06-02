@@ -27,7 +27,7 @@ def grids_to_commands(param_grid, player_grid, solver_grid, grid_name, job_name=
     ROOT = os.environ.get('SPIEL_ROOT', '/home/newmanne/scratch/cfr')
     CONFIG_DIR = os.environ.get('CLOCK_AUCTION_CONFIG_DIR', '/home/newmanne/scratch/cfr/configs')
 
-    grid_path = f'{root}/{grid_name}'
+    grid_path = f'{ROOT}/{grid_name}'
     i = 1
     cmds = []
     outputs = []
@@ -47,7 +47,7 @@ def grids_to_commands(param_grid, player_grid, solver_grid, grid_name, job_name=
                     solver_args = solver_config.get('solver_args', '')
                     output = f'{grid_path}/{i}/{name}_{seed}'
                     outputs.append(output)
-                    cmd = f'cd {grid_path}/{i} && python {spiel_path}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={job_name}_{i}.json --iterations {iterations} --solver={solver} {solver_args} --output {output} --seed {seed}'
+                    cmd = f'cd {grid_path}/{i} && python {SPIEL_PATH}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={job_name}_{i}.json --iterations {iterations} --solver={solver} {solver_args} --output {output} --seed {seed}'
                     cmds.append(cmd)
                 i += 1
 
@@ -74,7 +74,7 @@ def grids_to_commands(param_grid, player_grid, solver_grid, grid_name, job_name=
 #SBATCH --time={time_limit}
 #SBATCH --array=1-{len(cmds)}
 
-source {spiel_path}/venv/bin/activate
+source {SPIEL_PATH}/venv/bin/activate
 
 CMD=`head -n $SLURM_ARRAY_TASK_ID {CMD_FILE_NAME} | tail -n 1`
 echo $CMD
