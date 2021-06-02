@@ -108,8 +108,8 @@ def persist_model(solver, i):
     try:
         with open(f'{FLAGS.output}/{model_name}_{i}.pkl', "wb") as f:
             pickle.dump(solver, f, pickle.HIGHEST_PROTOCOL)
-    except:
-        logger.warning("Error pickling solver!!!")
+    except Exception as e:
+        logger.exception("Error pickling solver!!!")
 
 def main(_):
     start_time = time.time()
@@ -193,6 +193,9 @@ def main(_):
     # RUN SOLVER
     run_records = []
     for i in range(FLAGS.iterations):
+        if i % 100 == 0:
+            logger.info(f"Starting iteration {i}")
+
         if FLAGS.solver == "mccfr":
             if FLAGS.python:
                 solver.iteration()
