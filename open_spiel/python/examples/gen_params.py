@@ -75,12 +75,12 @@ def grids_to_commands(param_grid, player_grid, solver_grid, grid_name, job_name=
 
 source {SPIEL_PATH}/venv/bin/activate
 
-CMD=`head -n $SLURM_ARRAY_TASK_ID {CMD_FILE_NAME} | tail -n 1`
+CMD=`head -n ${{SLURM_ARRAY_TASK_ID}} {CMD_FILE_NAME} | tail -n 1`
 echo $CMD
 eval $CMD
-OUTPUT=`head -n $SLURM_ARRAY_TASK_ID {OUTPUT_FILE_NAME} | tail -n 1`
-ln -s logs/{JOB_NAME}-$SLURM_ARRAY_JOB_ID_$SLURM_ARRAY_TASK_ID.out-o.txt $OUTPUT/cfr-o.log
-ln -s logs/{JOB_NAME}-$SLURM_ARRAY_JOB_ID_$SLURM_ARRAY_TASK_ID.out-e.txt $OUTPUT/cfr-e.log
+OUTPUT=`head -n ${{SLURM_ARRAY_TASK_ID}} {OUTPUT_FILE_NAME} | tail -n 1`
+ln -s logs/{JOB_NAME}-${{SLURM_ARRAY_JOB_ID}}_${{SLURM_ARRAY_TASK_ID}}.out-o.txt ${{OUTPUT}}/cfr-o.log
+ln -s logs/{JOB_NAME}-${{SLURM_ARRAY_JOB_ID}}_${{SLURM_ARRAY_TASK_ID}}.out-e.txt ${{OUTPUT}}/cfr-e.log
 """
     JOB_FILE = 'job_runner.sh'
     with open(f'{grid_path}/{JOB_FILE}', 'w') as f:
