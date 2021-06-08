@@ -20,6 +20,8 @@ flags.DEFINE_string("game", "clock_auction", "Name of the game")
 
 def main(_):
 
+    print(f"Reading pickled solver from {FLAGS.solver}")
+
     with open(FLAGS.solver, "rb") as f:
         solver = pickle.load(f)
 
