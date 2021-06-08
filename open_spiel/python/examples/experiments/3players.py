@@ -1,3 +1,6 @@
+from open_spiel.python.examples.gen_params import *
+
+
 V_L = 121
 B_L = 600
 
@@ -21,17 +24,17 @@ high = {
 }
 
 param_grid = [
-    {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"], "information_policy": ["hide_demand"], "bidding": ["weakly_positive_profit"]},
+    {'opening_price': [100], 'increment': [0.1], 'licenses': [3], 'undersell_rule': ["undersell_standard"], "information_policy": ["hide_demand", "show_demand"], "bidding": ["weakly_positive_profit"]},
 ]
 
 player_grid = [
-    [make_player([(low, 1.0)]), (low, 1.0)]), make_player([(low, 0.5), (high, 0.5)])]
+    [make_player([(medium, 1.0)]), make_player([(medium, 1.0)]), make_player([(low, 0.5), (medium, 0.5)])],
 ]
 
 solver_grid = [
     {'solver': ['cfr']},
     {'solver': ['cfrplus']},
-    {'solver': ['ecfr'],'solver_args': [f'--initial_eps {initial_eps} --decay_freq {freq} --decay_factor {decay_factor}' for (initial_eps, freq, decay_factor) in itertools.product([0.01, 0.001], [1000, 2500], [0.9, 0.99])]},
+    {'solver': ['ecfr'],'solver_args': [f'--initial_eps {initial_eps} --decay_freq {freq} --decay_factor {decay_factor}' for (initial_eps, freq, decay_factor) in itertools.product([0.01], [2500], [0.99])]},
 ]
 
-grids_to_commands(param_grid, player_grid, solver_grid, '3playershidden_2')
+grids_to_commands(param_grid, player_grid, solver_grid, job_name='3playershidden_v3', mem=64, time_limit='3-0')
