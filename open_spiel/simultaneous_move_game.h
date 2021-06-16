@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+
 #include "open_spiel/spiel.h"
 
 // This is the generic superclass for simultaneous move games. A simultaneous

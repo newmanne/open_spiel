@@ -29,7 +29,7 @@ FLAGS = flags.FLAGS
 
 flags.DEFINE_string("game", "clock_auction", "Name of the game")
 flags.DEFINE_string("filename", 'parameters.json', "Filename with parameters")
-flags.DEFINE_bool("turn_based", True, "Convert simultaneous to turn based")
+flags.DEFINE_bool("turn_based", False, "Convert simultaneous to turn based")
 
 flags.DEFINE_string("load_state", None,
                     "A file containing a string to load a specific state")
@@ -67,6 +67,7 @@ def main(_):
   # Print the initial state
   print(str(state))
 
+
   while not state.is_terminal():
     # The state can be three different types: chance node,
     # simultaneous node, or decision node
@@ -81,7 +82,8 @@ def main(_):
             state.action_to_string(state.current_player(), action))
       state.apply_action(action)
 
-    elif state.is_simultaneous_node():
+    # elif state.is_simultaneous_node():
+    else:
       # Simultaneous node: sample actions for all players.
       chosen_actions = [
           random.choice(state.legal_actions(pid))
@@ -93,13 +95,13 @@ def main(_):
       ])
       state.apply_actions(chosen_actions)
 
-    else:
-      # Decision node: sample action for the single current player
-      action = random.choice(state.legal_actions(state.current_player()))
-      action_string = state.action_to_string(state.current_player(), action)
-      print("Player ", state.current_player(), ", randomly sampled action: ",
-            action_string)
-      state.apply_action(action)
+    # else:
+    #   # Decision node: sample action for the single current player
+    #   action = random.choice(state.legal_actions(state.current_player()))
+    #   action_string = state.action_to_string(state.current_player(), action)
+    #   print("Player ", state.current_player(), ", randomly sampled action: ",
+    #         action_string)
+    #   state.apply_action(action)
 
     print(str(state))
 
