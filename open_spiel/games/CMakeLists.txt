@@ -264,17 +264,6 @@ add_executable(clock_auction_test clock_auction_test.cc ${OPEN_SPIEL_OBJECTS}
 add_test(clock_auction_test clock_auction_test)
 
 
-
-add_executable(dark_chess_test dark_chess_test.cc ${OPEN_SPIEL_OBJECTS}
-        $<TARGET_OBJECTS:tests>)
-add_test(dark_chess_test dark_chess_test)
-add_executable(dark_hex_test dark_hex_test.cc ${OPEN_SPIEL_OBJECTS}
-               $<TARGET_OBJECTS:tests>)
-add_test(dark_hex_test dark_hex_test)
-add_executable(kriegspiel_test kriegspiel_test.cc ${OPEN_SPIEL_OBJECTS}
-        $<TARGET_OBJECTS:tests>)
-add_test(kriegspiel_test kriegspiel_test)
-
 if (${OPEN_SPIEL_BUILD_WITH_ACPC})
   add_executable(universal_poker_test universal_poker_test.cc ${OPEN_SPIEL_OBJECTS}
           $<TARGET_OBJECTS:tests>
