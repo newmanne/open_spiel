@@ -17,6 +17,7 @@
 #include <memory>
 #include <random>
 
+
 #include "open_spiel/abseil-cpp/absl/flags/flag.h"
 #include "open_spiel/abseil-cpp/absl/flags/parse.h"
 #include "open_spiel/abseil-cpp/absl/random/uniform_int_distribution.h"
@@ -103,15 +104,16 @@ int main(int argc, char** argv) {
                 << std::endl;
       state->ApplyAction(action);
     } else if (state->IsSimultaneousNode()) {
+
       // open_spiel::Players choose simultaneously?
       std::vector<open_spiel::Action> joint_action;
-      std::vector<float> infostate(game->InformationStateTensorSize());
 
       // Sample a action for each player
       for (auto player = open_spiel::Player{0}; player < game->NumPlayers();
            ++player) {
         if (show_infostate) {
           if (game->GetType().provides_information_state_tensor) {
+            std::vector<float> infostate(game->InformationStateTensorSize());
             state->InformationStateTensor(player, absl::MakeSpan(infostate));
             std::cerr << "player " << player << ": "
                       << absl::StrJoin(infostate, " ") << std::endl;
@@ -162,7 +164,7 @@ int main(int argc, char** argv) {
                 << std::endl;
       state->ApplyAction(action);
     }
-
+    
     std::cerr << "State: " << std::endl << state->ToString() << std::endl;
   }
 
