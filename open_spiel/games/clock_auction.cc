@@ -205,7 +205,7 @@ std::vector<Player> AuctionState::PlayersThatWantToDrop() const {
 
 
 
-int AuctionState::BidToActivity(std::vector<int> bid) {
+int AuctionState::BidToActivity(std::vector<int> const &bid) {
   return DotProduct(product_activity_, bid);
 }
 
@@ -237,7 +237,7 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
   for (auto p = Player{0}; p < num_players_; ++p) {
     std::vector<int> bid = bidseq_[p].back();
 
-    activity_[p] = DotProduct(bid, product_activity_);
+    activity_[p] = all_bids_activity_[actions[p]];
 
     for (int j = 0; j < num_products_; ++j) {
       aggregateDemand[j] += bid[j];
@@ -251,11 +251,9 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
 
 
   if (any_excess) {
-
-    std::cerr << "Raising prices" << std::endl;
-
     // Normal case: Increment price for overdemanded items, leave other items alone
-    std::vector<double> next_price = price_.back();
+    std::vector<double> current_price = price_.back();
+    std::vector<double> next_price = current_price;
     for (int j = 0; j < num_products_; ++j) {
       if (excess_demand[j]) {
         next_price[j] *= (1 + increment_);
@@ -416,7 +414,7 @@ std::string AuctionState::InformationStateString(Player player) const {
       for (int i = 0; i < aggregate_demands_.size(); i++) {
         absl::StrAppend(&result, absl::StrJoin(aggregate_demands_[i], ","));  
       }
-    } else {
+    } else if (information_policy_ == kHideDemand) {
       for (int i = 0; i < aggregate_demands_.size(); i++) {
         std::vector<int> ad = aggregate_demands_[i];
         std::vector<std::string> hidden_demands;
@@ -425,7 +423,8 @@ std::string AuctionState::InformationStateString(Player player) const {
         }
         absl::StrAppend(&result, absl::StrJoin(hidden_demands, ","));  
       }
-      
+    } else {
+      SPIEL_FATAL_ERROR("Unknown info policy");
     }
   }
   return result;
