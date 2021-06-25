@@ -62,7 +62,7 @@ int DotProduct(std::vector<int> const &a, std::vector<int> const &b) {
   return dp;
 }
 
-int DotProduct(std::vector<int> const &a, std::vector<double> const &b) {
+double DotProduct(std::vector<int> const &a, std::vector<double> const &b) {
   int dp = 0;
   for (int i = 0; i < a.size(); i++) {
     dp += a[i] * b[i];
@@ -71,11 +71,9 @@ int DotProduct(std::vector<int> const &a, std::vector<double> const &b) {
 }
 
 // Cartesian product helper functions
-void CartesianRecurse(std::vector<std::vector<int>> &accum, std::vector<int> stack,
-    std::vector<std::vector<int>> sequences, int index) {
+void CartesianRecurse(std::vector<std::vector<int>> &accum, std::vector<int> stack, std::vector<std::vector<int>> sequences, int index) {
     std::vector<int> sequence = sequences[index];
-    for (int i : sequence)
-    {       
+    for (int i : sequence) {       
         stack.push_back(i);
         if (index == 0)
             accum.push_back(stack);
@@ -205,7 +203,7 @@ std::vector<Player> AuctionState::PlayersThatWantToDrop() const {
 
 
 
-int AuctionState::BidToActivity(std::vector<int> const &bid) {
+int AuctionState::BidToActivity(std::vector<int> const& bid) {
   return DotProduct(product_activity_, bid);
 }
 
@@ -357,13 +355,14 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
 
   for (int b = 0; b < all_bids_.size(); b++) {
     std::vector<int> bid = all_bids_[b];
+    double bid_price = DotProduct(bid, price);
     if (activity_on && activity_budget != -1 && activity_budget < all_bids_activity_[b]) {
       continue;
     }
-    if (hard_budget_on && budget < DotProduct(bid, price)) {
+    if (hard_budget_on && budget < bid_price) {
       continue;
     }
-    if (positive_profit_on && DotProduct(bid, value) < 0) {
+    if (positive_profit_on && DotProduct(bid, value) - bid_price < 0) {
       continue;
     }
     actions.push_back(b);
@@ -398,33 +397,36 @@ std::vector<std::pair<Action, double>> AuctionState::ChanceOutcomes() const {
   return valuesAndProbs;
 }
 
+std::vector<std::string> AuctionState::ToHidden(const std::vector<int>& demand) const {
+  std::vector<std::string> hidden_demands;
+  for (int j = 0; j < demand.size(); j++) {
+    hidden_demands.push_back(demand[j] == num_licenses_[j] ? "=" : (demand[j] > num_licenses_[j] ? "+" : "-"));
+  }
+  return hidden_demands;
+}
 
 std::string AuctionState::InformationStateString(Player player) const {
   SPIEL_CHECK_GE(player, 0);
   SPIEL_CHECK_LT(player, num_players_);
-  std::string result = absl::StrCat("p", player, "|");
+  std::string result = absl::StrCat("p", player);
   if (value_.size() > player) {
-    absl::StrAppend(&result, absl::StrCat("v", absl::StrJoin(value_[player], ", "), "|b", budget_[player]));  
+    absl::StrAppend(&result, absl::StrCat("v", absl::StrJoin(value_[player], ", "), "b", budget_[player]), "\n");  
   }
   if (!bidseq_[player].empty()) {
     for (int i = 0; i < bidseq_[player].size(); i++) {
-      absl::StrAppend(&result, absl::StrCat("\n", absl::StrJoin(bidseq_[player][i], ", "), "\n"));
+      absl::StrAppend(&result, absl::StrCat(absl::StrJoin(bidseq_[player][i], ", "), i == bidseq_[player].size() - 1 ? "" : "|"));
     }
+    absl::StrAppend(&result, "\n");
     if (information_policy_ == kShowDemand) {
       for (int i = 0; i < aggregate_demands_.size(); i++) {
-        absl::StrAppend(&result, absl::StrJoin(aggregate_demands_[i], ","));  
+        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(aggregate_demands_[i], ","), i == aggregate_demands_.size() - 1 ? "" : "|"));  
       }
     } else if (information_policy_ == kHideDemand) {
       for (int i = 0; i < aggregate_demands_.size(); i++) {
-        std::vector<int> ad = aggregate_demands_[i];
-        std::vector<std::string> hidden_demands;
-        for (int j = 0; j < ad.size(); j++) {
-          hidden_demands.push_back(ad[j] == num_licenses_[j] ? "=" : (ad[j] > num_licenses_[j] ? "+" : "-"));
-        }
-        absl::StrAppend(&result, absl::StrJoin(hidden_demands, ","));  
+        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(ToHidden(aggregate_demands_[i]), ","), i == aggregate_demands_.size() - 1 ? "" : "|"));  
       }
     } else {
-      SPIEL_FATAL_ERROR("Unknown info policy");
+      SpielFatalError("Unknown info policy");
     }
   }
   return result;
@@ -433,7 +435,7 @@ std::string AuctionState::InformationStateString(Player player) const {
 std::string DemandString(std::vector<std::vector<int>> const &demands) {
   std::string ds = "";
   for (int i = 0; i < demands.size(); i++) {
-    absl::StrAppend(&ds, absl::StrJoin(demands[i], ", "), "|");
+    absl::StrAppend(&ds, absl::StrJoin(demands[i], ", "), i == demands.size() - 1 ? "" : "|");
   }
   return ds;
 }

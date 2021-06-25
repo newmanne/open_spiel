@@ -30,6 +30,8 @@ import json
 import re
 import numpy as np
 import time
+import os
+import itertools
 
 from open_spiel.python import policy
 from open_spiel.python.algorithms import cfr, outcome_sampling_mccfr, expected_game_score, exploitability, get_all_states_with_policy
@@ -73,6 +75,27 @@ price_pattern = re.compile(r'^.*(Price:.*)$', flags=re.MULTILINE)
 allocation_pattern = re.compile(r'.*(Final bids:.*)$.*', flags=re.MULTILINE)
 round_pattern = re.compile(r'.*(Round:.*)$.*', flags=re.MULTILINE)
 
+def num_to_char(i):
+    return chr(ord("@")+i+1)
+
+def pretty_bid(b):
+    s = ''
+    for i, a in enumerate(b):
+        s += str(a) + ' ' + num_to_char(i) + (', ' if i != len(b) - 1 else '')
+    return s
+    
+def action_to_bids(licenses):
+    ### TODO: HUGE ASSUMPTION HERE THAT THE ORDER PYTHON AND C USE ARE THE SAME
+    bids = []
+    for n in licenses:
+        b = []
+        for i in range(n + 1):
+            b.append(i)
+        bids.append(b)
+    actions = list(itertools.product(*bids))
+    return {i: pretty_bid(a) for i, a in enumerate(actions)}
+
+
 def state_to_final(game, s):
     '''Convert a state into unique final outcomes (but not caring about bidding being different in the middle). i.e., the allocation and the types and the price are all the same'''
     state_str = str(s)
@@ -80,14 +103,18 @@ def state_to_final(game, s):
     return info_state_string
 
 def parse_state_str(game, state, info_state_str):
+    d = dict()
     state_str = str(state)
-    price = float(re.findall(price_pattern, state_str)[0].replace('Price:', ''))
+    price = re.findall(price_pattern, state_str)[0].replace('Price:', '')
+    for i, p in enumerate(price.split(',')):
+        d[f'Price {num_to_char(i)}'] = p
     round_number = int(re.findall(round_pattern, state_str)[0].replace('Round:', ''))
-    d = dict(price=price, round=round_number)
+    d['round'] = round_number
     if state.is_terminal():
-        allocation = [int(x) for x in re.findall(allocation_pattern, state_str)[0].replace('Final bids:', '').split()]
-        for i, a in enumerate(allocation):
-            d[f'Allocation {i}'] = a   
+        allocation = [x for x in re.findall(allocation_pattern, state_str)[0].replace('Final bids:', '').strip().split('|')]
+        for i, player_alloc in enumerate(allocation):
+            for j, a in enumerate(player_alloc.split(',')):
+                d[f'Allocation {i} {num_to_char(j)}'] = a
     else:
         splits = info_state_str.splitlines()
         d['type'] = splits[1]
@@ -261,31 +288,33 @@ def main(_):
             policy=policy,
             to_string=lambda s: state_to_final(game, s),
         )
-        records = []
-        for info_state_key, state_dict in all_states.items():
-            state = state_dict['state']
-            prob = state_dict['prob']
-            record = dict(terminal=state.is_terminal(), prob=prob, player=state.current_player())
-            record.update(parse_state_str(game, state, info_state_key))
-            if state.is_terminal():
-                record.update({f'Utility {n}': v for n,v in enumerate(state.returns())})
-                splits = info_state_key.splitlines()
-                for n, u in enumerate(state.returns()):
-                    # 1 entry per player per terminal state for better filtering
-                    r = dict(record)
-                    r.update(dict(player=n, info_state=info_state_key, type=splits[n]))
-                    records.append(r)
-            else:
-                action_probabilities = policy.action_probabilities(state)
-                record['info_state'] = info_state_key[18:] # Get rid of "Current Player line"
-                record.update({f'Bid {k}': v for k, v in action_probabilities.items()})
-                if info_state_to_cve is not None:
-                    max_qv_diff = info_state_to_cve[info_state_key].max_qv_diff
-                    record['max_qv_diff'] = max_qv_diff
-                records.append(record)
+
+    with open(os.getenv('CLOCK_AUCTION_CONFIG_DIR') + f'/{FLAGS.filename}', 'r') as f:
+        params = json.load(f)
+    a2b = action_to_bids(params['licenses'])
+
+    records = []
+    for info_state_key, state_dict in all_states.items():
+        state = state_dict['state']
+        prob = state_dict['prob']
+        record = dict(terminal=state.is_terminal(), prob=prob, player=state.current_player())
+        record.update(parse_state_str(game, state, info_state_key))
+        if state.is_terminal():
+            record.update({f'Utility {n}': v for n,v in enumerate(state.returns())})
+            splits = info_state_key.splitlines()
+            for n, u in enumerate(state.returns()):
+                # 1 entry per player per terminal state for better filtering
+                r = dict(record)
+                r.update(dict(player=n, info_state=info_state_key, type=splits[n]))
+                records.append(r)
+        else:
+            action_probabilities = policy.action_probabilities(state)
+            record['info_state'] = info_state_key[18:] # Get rid of "Current Player line"
+            record.update({f'Bid ({a2b[k]})': v for k, v in action_probabilities.items()})
+            records.append(record)
 
     df = pd.DataFrame.from_records(records).set_index('info_state')
-    df['value'] = df.type.str.extract(r'v(.+)b.*').astype(float)
+    df['value'] = df.type.str.extract(r'v(.+)b.*')
     df['budget'] = df.type.str.extract(r'.*b(.+)$').astype(float)
     df = df.drop(['type'], axis=1)
 
