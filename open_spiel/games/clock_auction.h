@@ -32,25 +32,25 @@ namespace clock_auction {
 
 class AuctionGame;
 
-class Bidder {
-  public:
+// class Bidder {
+//   public:
 
-    virtual const double Valuation(std::vector<int> package);
+//     virtual const double Valuation(std::vector<int> package);
 
-};
+// };
 
-class BasicBidder : Bidder {
-  public:
+// class BasicBidder : Bidder {
+//   public:
 
-    double valuation(std::vector<int> const &package) {
-      // Additive valuations
-      return DotProduct(package, values_);
-    }
+//     double valuation(std::vector<int> const &package) {
+//       // Additive valuations
+//       return DotProduct(package, values_);
+//     }
 
-  private:
-    std::vector<double> values_;
+//   private:
+//     std::vector<double> values_;
 
-};
+// };
 
 
 class AuctionState : public SimMoveState {
@@ -87,10 +87,11 @@ class AuctionState : public SimMoveState {
   void DoApplyActions(const std::vector<Action>& actions) override;
 
  private:
+  std::vector<std::string> ToHidden(const std::vector<int>& demand) const;
   std::vector<Player> PlayersThatWantToDrop() const;
   std::vector<int> RequestedDrops() const;
   std::vector<int> ActionToBid(Action action) const;
-  int BidToActivity(std::vector<int> bid);
+  int BidToActivity(const std::vector<int>& bid);
   void HandleUndersell(Action action);
  
   // Initialized to invalid values. Use Game::NewInitialState().
