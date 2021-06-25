@@ -353,19 +353,32 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
   bool hard_budget_on = true;
   bool positive_profit_on = false;
 
+  bool all_bad = true;
+
   for (int b = 0; b < all_bids_.size(); b++) {
     std::vector<int> bid = all_bids_[b];
     double bid_price = DotProduct(bid, price);
+    bool non_negative_profit = DotProduct(bid, value) - bid_price >= 0;
+    if (non_negative_profit) {
+      all_bad = false;
+    }
+
     if (activity_on && activity_budget != -1 && activity_budget < all_bids_activity_[b]) {
       continue;
     }
     if (hard_budget_on && budget < bid_price) {
       continue;
     }
-    if (positive_profit_on && DotProduct(bid, value) - bid_price < 0) {
+    if (positive_profit_on && !non_negative_profit) {
       continue;
     }
     actions.push_back(b);
+  }
+
+  if (all_bad) {
+    // If you have no way to make a profit, just drop out. Helps minimize game size
+    actions.clear();
+    actions.push_back(0);
   }
 
   return actions;
