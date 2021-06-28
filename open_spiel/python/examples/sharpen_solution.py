@@ -78,15 +78,6 @@ def sharpen_solution(f, o=None):
 
     is_df.loc[:, bid_cols] = am
 
-    def get_line(n):
-        def q(x):
-            lines = x.split('\n')
-            if len(lines) > n:
-                return lines[n]
-            else:
-                return ''
-        return q
-
     is_df = is_df.reset_index()
     final_df = pd.concat([is_df, terminals], axis=0)
     final_df['terminal'] = final_df['terminal'].astype(np.bool)
