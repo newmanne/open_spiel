@@ -34,7 +34,7 @@ from open_spiel.python import policy
 import logging
 
 def round_probs(df):
-    df['type'] = df['value'].astype(str) + 'b' + df['budget'].astype(str)
+    df['type'] = 'v' + df['value'].astype(str) + 'b' + df['budget'].astype(str)
     # TODO: This double counts
     df.query('terminal and player == 0').groupby('round')['prob'].sum().plot(kind='bar')
     plt.ylabel('P(ending on round)')
@@ -48,11 +48,15 @@ def ea(df, player):
     return df['prob'] @ df[f'Allocation {player}']
 
 
-def compute_expectations(x):
-    player = x['player'].unique()[0]
-    allocation = x['prob'] @ x[f'Allocation {player}']
-    utility = x['prob'] @ x[f'Utility {player}']
-    return pd.Series({'Expected Allocation': allocation, 'Expected Utility': utility})
+def compute_expectations(df):
+    output = dict()
+    player = df['player'].unique()[0]
+    alloc_cols = [c for c in df.columns if 'Allocation' in c]
+    goods = set([re.match(r'Allocation \d ([A-Z])', g).groups()[0] for g in alloc_cols])
+    for g in goods:
+        output[f'Expected Allocation {g}'] = df['prob'] @ df[f'Allocation {player} {g}']
+    output['Expected Utility'] = df['prob'] @ df[f'Utility {player}']
+    return pd.Series(output)
 
 def expected_values_over_types(df):
     return df.query('terminal').groupby(['player', 'type']).apply(compute_expectations)

@@ -36,7 +36,7 @@ import logging
 
 logger = logging.getLogger(__name__)
  
-
+ 
 def sharpen_solution(f, o=None):
     if o is None:
         o = f.replace('strategy', 'reduced_strategy')
@@ -80,11 +80,11 @@ def sharpen_solution(f, o=None):
 
     is_df = is_df.reset_index()
     final_df = pd.concat([is_df, terminals], axis=0)
-    final_df['terminal'] = final_df['terminal'].astype(np.bool)
+    final_df['terminal'] = final_df['terminal'].astype(bool)
 
     final_df = final_df.sort_values(['player', 'value', 'budget', 'round', 'my_bids', 'total_demand'])
     final_df.to_csv(o, index=False)
-
+ 
 def main(_):
     f = FLAGS.input
     o = FLAGS.output

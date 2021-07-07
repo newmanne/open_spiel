@@ -82,8 +82,7 @@ def main(_):
             state.action_to_string(state.current_player(), action))
       state.apply_action(action)
 
-    # elif state.is_simultaneous_node():
-    else:
+    elif state.is_simultaneous_node():
       # Simultaneous node: sample actions for all players.
       chosen_actions = [
           random.choice(state.legal_actions(pid))
@@ -95,13 +94,13 @@ def main(_):
       ])
       state.apply_actions(chosen_actions)
 
-    # else:
-    #   # Decision node: sample action for the single current player
-    #   action = random.choice(state.legal_actions(state.current_player()))
-    #   action_string = state.action_to_string(state.current_player(), action)
-    #   print("Player ", state.current_player(), ", randomly sampled action: ",
-    #         action_string)
-    #   state.apply_action(action)
+    else:
+      # Decision node: sample action for the single current player
+      action = random.choice(state.legal_actions(state.current_player()))
+      action_string = state.action_to_string(state.current_player(), action)
+      print("Player ", state.current_player(), ", randomly sampled action: ",
+            action_string)
+      state.apply_action(action)
 
     print(str(state))
 
