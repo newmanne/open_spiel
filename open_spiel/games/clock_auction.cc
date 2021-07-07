@@ -63,7 +63,7 @@ int DotProduct(std::vector<int> const &a, std::vector<int> const &b) {
 }
 
 double DotProduct(std::vector<int> const &a, std::vector<double> const &b) {
-  int dp = 0;
+  double dp = 0;
   for (int i = 0; i < a.size(); i++) {
     dp += a[i] * b[i];
   }
@@ -216,6 +216,7 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
   // Check the actions are valid.
   SPIEL_CHECK_EQ(actions.size(), num_players_);
   for (auto p = Player{0}; p < num_players_; ++p) {
+    SPIEL_CHECK_EQ(price_.size() - 1, bidseq_[p].size());
     const Action action = actions[p];
     std::vector<int> bid = ActionToBid(action);
     // TODO: If activity rule is on, you probably want to SPIEL_CHECK it here
