@@ -27,13 +27,13 @@ param_grid = [
 ]
 
 player_grid = [
-    [make_player([(low, 1.0)]), make_player([(low, 1.0)]), make_player([(low, 0.5), (high, 0.5)])]
+    [make_player([(low, 0.5), (high, 0.5)]), make_player([(low, 0.5), (high, 0.5)])]
 ]
 
 solver_grid = [
     {'solver': ['cfr']},
     {'solver': ['cfrplus']},
-    {'solver': ['ecfr'],'solver_args': [f'--initial_eps {initial_eps} --decay_freq {freq} --decay_factor {decay_factor}' for (initial_eps, freq, decay_factor) in itertools.product([0.01, 0.001], [1000, 2500], [0.9, 0.99])]},
+    {'solver': ['ecfr'],'solver_args': [f'--initial_eps {initial_eps} --decay_freq {freq} --decay_factor {decay_factor}' for (initial_eps, freq, decay_factor) in itertools.product([0.01], [2500], [0.99])]},
 ]
 
-grids_to_commands(param_grid, player_grid, solver_grid, '2players_CPU')
+grids_to_commands(param_grid, player_grid, solver_grid, job_name='2players_CPU_v3')

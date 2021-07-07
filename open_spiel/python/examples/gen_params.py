@@ -22,12 +22,12 @@ def make_player(player_types):
     return player
 
 
-def grids_to_commands(param_grid, player_grid, solver_grid, grid_name, job_name='CFR', submit=True, mem=16, time_limit='3-0'):
+def grids_to_commands(param_grid, player_grid, solver_grid, job_name='CFR', submit=True, mem=16, time_limit='3-0'):
     SPIEL_PATH = os.environ.get('OPENSPIEL_PATH', '/project/def-kevinlb/newmanne/cfr/open_spiel')
     ROOT = os.environ.get('SPIEL_ROOT', '/home/newmanne/scratch/cfr')
     CONFIG_DIR = os.environ.get('CLOCK_AUCTION_CONFIG_DIR', '/home/newmanne/scratch/cfr/configs')
 
-    grid_path = f'{ROOT}/{grid_name}'
+    grid_path = f'{ROOT}/{job_name}'
     i = 1
     cmds = []
     outputs = []
@@ -67,7 +67,7 @@ def grids_to_commands(param_grid, player_grid, solver_grid, grid_name, job_name=
     slurm = f"""#!/bin/sh
 #SBATCH --cpus-per-task={int(mem/4)}
 #SBATCH --mem-per-cpu={mem}G
-#SBATCH --job-name={JOB_NAME}-{grid_name}
+#SBATCH --job-name={JOB_NAME}
 #SBATCH --output=logs/{JOB_NAME}-%A_%a.out-o.txt
 #SBATCH --error=logs/{JOB_NAME}-%A_%a.out-e.txt
 #SBATCH --account=rrg-kevinlb
@@ -76,12 +76,12 @@ def grids_to_commands(param_grid, player_grid, solver_grid, grid_name, job_name=
 
 source {SPIEL_PATH}/venv/bin/activate
 
-CMD=`head -n $SLURM_ARRAY_TASK_ID {CMD_FILE_NAME} | tail -n 1`
+CMD=`head -n ${{SLURM_ARRAY_TASK_ID}} {CMD_FILE_NAME} | tail -n 1`
 echo $CMD
 eval $CMD
-OUTPUT=`head -n $SLURM_ARRAY_TASK_ID {OUTPUT_FILE_NAME} | tail -n 1`
-ln -s logs/{JOB_NAME}-$SLURM_ARRAY_JOB_ID_$SLURM_ARRAY_TASK_ID.out-o.txt $OUTPUT/cfr-o.log
-ln -s logs/{JOB_NAME}-$SLURM_ARRAY_JOB_ID_$SLURM_ARRAY_TASK_ID.out-e.txt $OUTPUT/cfr-e.log
+OUTPUT=`head -n ${{SLURM_ARRAY_TASK_ID}} {OUTPUT_FILE_NAME} | tail -n 1`
+ln -s logs/{JOB_NAME}-${{SLURM_ARRAY_JOB_ID}}_${{SLURM_ARRAY_TASK_ID}}.out-o.txt ${{OUTPUT}}/cfr-o.log
+ln -s logs/{JOB_NAME}-${{SLURM_ARRAY_JOB_ID}}_${{SLURM_ARRAY_TASK_ID}}.out-e.txt ${{OUTPUT}}/cfr-e.log
 """
     JOB_FILE = 'job_runner.sh'
     with open(f'{grid_path}/{JOB_FILE}', 'w') as f:
