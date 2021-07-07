@@ -48,6 +48,7 @@ flags.DEFINE_integer("persist_freq", -1, "Pickle the models every this many iter
 
 flags.DEFINE_bool("python", False, "Use python CFR impls")
 flags.DEFINE_bool("turn_based", True, "Convert simultaneous to turn based")
+flags.DEFINE_bool("use_best",True,"Use best iterate and not last iterate")
 
 flags.DEFINE_enum("solver", "cfr", ["cfr", "cfrplus", "cfrbr", "mccfr", "ecfr"], "CFR solver")
 flags.DEFINE_enum("sampling", "external", ["external", "outcome"], "Sampling for the MCCFR solver")
@@ -236,6 +237,8 @@ def main(_):
 
     # RUN SOLVER
     run_records = []
+    best_policy = None
+    best_metric_value = float("inf")
     for i in range(FLAGS.iterations):
         if i % 100 == 0:
             logger.info(f"Starting iteration {i}")
@@ -270,6 +273,12 @@ def main(_):
                     merged_table = pyspiel.merge_tables(br_info.cvtables)
                     record['max_qv_diff'] = merged_table.max_qv_diff()
                     record['avg_qv_diff'] = merged_table.avg_qv_diff()
+                if FLAGS.use_best:
+                    curr_metric_value = max_regret if FLAGS.metric=="max_regret" else nash_conv
+                    if best_policy == None or curr_metric_value < best_metric_value:
+                        best_policy = policy
+                        best_metric_value = curr_metric_value
+                        logger.info(f"Updated best policy on iteration {i}")
 
             run_records.append(record)
             logger.info(f"Iteration {i}")
@@ -283,6 +292,9 @@ def main(_):
 
         if FLAGS.persist and FLAGS.persist_freq > 0 and i % FLAGS.persist_freq == 0 and i > 0:
             persist_model(solver, i)
+
+    if FLAGS.use_best:
+        policy = best_policy
 
     if FLAGS.persist:
         persist_model(solver, i)
