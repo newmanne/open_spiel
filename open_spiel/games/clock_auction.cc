@@ -342,6 +342,12 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
 
   // Any move weakly lower than a previous bid is allowed if it fits in budget
   std::vector<Action> actions;
+
+  if (bidseq_[player].size() > 0 && std::all_of(bidseq_[player].back().begin(), bidseq_[player].back().end(), [](int i) { return i==0; })) {
+    actions.push_back(0);
+    return actions;
+  }
+
   int activity_budget = activity_[player];
   
   // TODO: Are these making copies? 
@@ -376,7 +382,7 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
   }
 
   if (all_bad) {
-    // If you have no way to make a profit, just drop out. Helps minimize game size
+    // If you have no way to make a profit ever going forwards, just drop out. Helps minimize game size
     actions.clear();
     actions.push_back(0);
   }
