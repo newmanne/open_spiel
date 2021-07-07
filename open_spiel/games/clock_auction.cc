@@ -350,24 +350,22 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
 
   int activity_budget = activity_[player];
   
-  // TODO: Are these making copies? 
+  // TODO: Are these making copies? I don't want them to
   std::vector<double> price = price_.back();
   std::vector<double> value = value_[player];
   double budget = budget_[player];
 
   bool activity_on = true;
   bool hard_budget_on = true;
-  bool positive_profit_on = false;
+  // bool positive_profit_on = false;
 
   bool all_bad = true;
 
   for (int b = 0; b < all_bids_.size(); b++) {
     std::vector<int> bid = all_bids_[b];
     double bid_price = DotProduct(bid, price);
-    bool non_negative_profit = DotProduct(bid, value) - bid_price >= 0;
-    if (non_negative_profit) {
-      all_bad = false;
-    }
+    // bool non_negative_profit = DotProduct(bid, value) - bid_price >= 0;
+    bool positive_profit = DotProduct(bid, value) - bid_price > 0;
 
     if (activity_on && activity_budget != -1 && activity_budget < all_bids_activity_[b]) {
       continue;
@@ -375,9 +373,14 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
     if (hard_budget_on && budget < bid_price) {
       continue;
     }
-    if (positive_profit_on && !non_negative_profit) {
-      continue;
+    // if (positive_profit_on && !non_negative_profit) {
+    //   continue;
+    // }
+    if (positive_profit) {
+      // There is some legal bid you can make that would benefit you
+      all_bad = false;
     }
+
     actions.push_back(b);
   }
 
@@ -496,6 +499,9 @@ std::string AuctionState::ToString() const {
 bool AuctionState::IsTerminal() const { 
   if (player_moves_ >= kMoveLimit) {
     std::cerr << "Number of player moves exceeded move limit of " << kMoveLimit << "! Terminating prematurely...\n" << std::endl;
+    for (auto p = Player{0}; p < num_players_; p++) {
+      std::cerr << "Player " << p << " moves: " << bidseq_[p] << std::endl;
+    }
   }
   return finished_ || player_moves_ >= kMoveLimit; 
 }
