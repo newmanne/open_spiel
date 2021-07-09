@@ -24,7 +24,7 @@
 #include "open_spiel/spiel.h"
 
 // First-Price Sealed-Bid Auction:
-// https://en.wikipedia.org/wiki/First-price_sealed-bid_auction
+// https://en.wikipedia.org/wiki/First-posted_price_sealed-bid_auction
 //
 // Each player has a valuation of the target object from 1 to K, according to a
 // uniform distribution, and places bids from 0 to (valuation - 1). The highest
