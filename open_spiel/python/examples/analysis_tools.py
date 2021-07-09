@@ -39,6 +39,7 @@ def round_probs(df):
     df.query('terminal and player == 0').groupby('round')['prob'].sum().plot(kind='bar')
     plt.ylabel('P(ending on round)')
     plt.xlabel("Round")
+    plt.ylim(ymin=0, ymax=1)
 
 
 def eu(df, player):
