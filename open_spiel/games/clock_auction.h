@@ -124,7 +124,9 @@ class AuctionState : public SimMoveState {
   std::vector<std::vector<std::vector<int>>> processed_demand_;
 
   // Prices by round
-  std::vector<std::vector<double>> price_;
+  std::vector<std::vector<double>> sor_price_;
+  std::vector<std::vector<double>> clock_price_;
+  std::vector<std::vector<double>> posted_price_;
 
   // Value by player by product
   std::vector<std::vector<double>> value_;

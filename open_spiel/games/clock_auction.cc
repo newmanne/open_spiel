@@ -150,7 +150,9 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       
       submitted_demand_ = std::vector<std::vector<std::vector<int>>>(num_players_, std::vector<std::vector<int>>());
       processed_demand_ = std::vector<std::vector<std::vector<int>>>(num_players_, std::vector<std::vector<int>>());
-      price_.push_back(open_price_);
+      sor_price_.push_back(open_price);
+      clock_price_.push_back(open_price);
+      posted_price_.push_back(open_price);
 
       // Enumerate bids and store a map for fast computation
       std::vector<std::vector<int>> sequences(num_products_, std::vector<int>());
@@ -177,7 +179,7 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
   // Check the actions are valid.
   SPIEL_CHECK_EQ(actions.size(), num_players_);
   for (auto p = Player{0}; p < num_players_; ++p) {
-    SPIEL_CHECK_EQ(price_.size() - 1, submitted_demand_[p].size());
+    SPIEL_CHECK_EQ(round_ - 1, submitted_demand_[p].size());
     const Action action = actions[p];
     auto bid = ActionToBid(action);
     SPIEL_CHECK_GE(activity_[p], all_bids_activity_[action]);
@@ -291,13 +293,19 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
 
   if (any_excess) {
     // Normal case: Increment price for overdemanded items, leave other items alone
-    std::vector<double> next_price = price_.back();
+    std::vector<double> next_price(num_products_, 0);
+    std::vector<double> next_clock(num_products_, 0);
     for (int j = 0; j < num_products_; ++j) {
       if (excess_demand[j]) {
-        next_price[j] *= (1 + increment_);
+        next_price[j] = clock_price_.back()[j];
+      } else {
+        next_price[j] = sor_price_.back()[j];
       }
+      next_clock[j] = next_price[j] * (1 + increment_);
     }
-    price_.push_back(next_price);
+    posted_price_.push_back(next_price);
+    sor_price_.push_back(next_price);
+    clock_price_.push_back(next_clock);
     round_++;
   } else {
     // Demand <= supply for each item. We are finished.
@@ -310,7 +318,7 @@ std::string AuctionState::ActionToString(Player player, Action action_id) const 
     return FlatJointActionToString(action_id);
   if (player != kChancePlayerId) {
     std::vector<int> bid = ActionToBid(action_id);
-    return absl::StrCat("Bid for ", absl::StrJoin(bid, ","), " licenses @ $", DotProduct(bid, price_.back()), " with activity ", all_bids_activity_[action_id]);
+    return absl::StrCat("Bid for ", absl::StrJoin(bid, ","), " licenses @ $", DotProduct(bid, posted_price_.back()), " with activity ", all_bids_activity_[action_id]);
   } else {
     if (value_.size() < num_players_) {
       return absl::StrCat("Player ", value_.size(), " was assigned values: ", absl::StrJoin(values_[value_.size()][action_id], ", "), " and a budget of ", budgets_[budget_.size()][action_id]);
@@ -367,7 +375,7 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
 
   int activity_budget = activity_[player];
   
-  auto& price = price_.back();
+  auto& price = posted_price_.back();
   auto& value = value_[player];
   double budget = budget_[player];
 
@@ -379,6 +387,8 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
 
   for (int b = 0; b < all_bids_.size(); b++) {
     auto& bid = all_bids_[b];
+
+    // TODO: DROP BIDS SHOULD BE HANDLED AT SoR prices, so you need to assemble a clock vector based on the bid and how it pertains to your previous bid
     double bid_price = DotProduct(bid, price);
     double profit = DotProduct(bid, value) - bid_price;
     // TODO: Here is another place where linear valuations creep in, might be better to abstract into a class
@@ -489,8 +499,8 @@ std::string AuctionState::ToString() const {
       }
   }
 
-  absl::StrAppend(&result, absl::StrCat("Price: ", absl::StrJoin(price_.back(), ","), "\n"));
-  absl::StrAppend(&result, absl::StrCat("Round: ", price_.size(), "\n"));
+  absl::StrAppend(&result, absl::StrCat("Price: ", absl::StrJoin(posted_price_.back(), ","), "\n"));
+  absl::StrAppend(&result, absl::StrCat("Round: ", round_, "\n"));
 
   for (auto p = Player{0}; p < num_players_; p++) {
     if (!processed_demand_[p].empty()) {
@@ -518,11 +528,8 @@ bool AuctionState::IsTerminal() const {
 }
 
 std::vector<double> AuctionState::Returns() const {
-
-  // TODO: Does this make any sense when paired with undersell drops? Might need to set some items to SoR
-
   std::vector<double> returns(num_players_, 0.0);
-  auto& final_price = price_.back();
+  auto& final_price = posted_price_.back();
 
   for (auto p = Player{0}; p < num_players_; p++) {
     auto& final_bid = processed_demand_[p].back();
