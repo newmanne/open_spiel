@@ -88,10 +88,7 @@ class AuctionState : public SimMoveState {
 
  private:
   std::vector<std::string> ToHidden(const std::vector<int>& demand) const;
-  std::vector<Player> PlayersThatWantToDrop() const;
-  std::vector<int> RequestedDrops() const;
   std::vector<int> ActionToBid(Action action) const;
-  int BidToActivity(const std::vector<int>& bid);
   void HandleUndersell(Action action);
  
   // Initialized to invalid values. Use Game::NewInitialState().
@@ -101,32 +98,50 @@ class AuctionState : public SimMoveState {
 
   // Param info
   int num_players_;
-  std::vector<int> num_licenses_;
   int num_products_;
+  int round_;
+  std::vector<int> num_licenses_;
   double increment_;
   std::vector<double> open_price_;
   std::vector<int> product_activity_;
+
+  std::vector<int> final_bids_;
+
   int undersell_rule_;
   int information_policy_;
   bool allow_negative_profit_bids_;
+
+  // Type info
   std::vector<std::vector<std::vector<double>>> values_;
   std::vector<std::vector<double>> budgets_;
   std::vector<std::vector<double>> type_probs_;
 
   // Used to encode the information state.
-  std::vector<std::vector<std::vector<int>>> bidseq_;
-  std::vector<std::vector<int>> final_bids_;
-  std::vector<Player> undersell_order_;
+
+  // What the bidder submits: Player X Round X Product
+  std::vector<std::vector<std::vector<int>>> submitted_demand_;
+  // What the bidder is allocated: Player X Round X Product
+  std::vector<std::vector<std::vector<int>>> processed_demand_;
+
+  // Prices by round
   std::vector<std::vector<double>> price_;
+
+  // Value by player by product
   std::vector<std::vector<double>> value_;
+  // Budget by player
   std::vector<double> budget_;
+  // Activity by player
   std::vector<int> activity_;
+
+  // Processed aggregate demand for each product
   std::vector<std::vector<int>> aggregate_demands_;
+
+  // Mapping from ActionID -> Bid
   std::vector<std::vector<int>> all_bids_;
+  // Mapping from ActionID -> Activity
   std::vector<int> all_bids_activity_;
 
   bool finished_;
-  bool undersell_;
 };
 
 class AuctionGame : public SimMoveGame {
@@ -146,22 +161,31 @@ class AuctionGame : public SimMoveGame {
 
  private:
   int num_players_;
-  std::vector<int> num_licenses_;
+
+  // Number of products
   int num_products_;
+  // Number of licenses per product
+  std::vector<int> num_licenses_;
+  // Clock increment
   double increment_;
+  // Opening prices for each product
   std::vector<double> open_price_;
-  int undersell_rule_;
-  int information_policy_;
-  bool allow_negative_profit_bids_;
+  // Activity for each product
+  std::vector<int> product_activity_;
+
+  // Type information
   std::vector<std::vector<std::vector<double>>> values_;
   std::vector<std::vector<double>> budgets_;
   std::vector<std::vector<double>> type_probs_;
-  std::vector<int> product_activity_;
+  
+
+  int undersell_rule_;
+  int information_policy_;
+  bool allow_negative_profit_bids_;
 
   int max_chance_outcomes_;
   double max_value_;
   double max_budget_;
-
 };
 
 }  // namespace clock_auction
