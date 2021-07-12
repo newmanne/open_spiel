@@ -375,6 +375,7 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
 
   int activity_budget = activity_[player];
   
+  auto& price = posted_price_.back();
   auto& value = value_[player];
   double budget = budget_[player];
 
@@ -387,18 +388,8 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
   for (int b = 0; b < all_bids_.size(); b++) {
     auto& bid = all_bids_[b];
 
-    // Drop bids are at SoR for budget calc since you won't pay more than that.
-    std::vector<double> demand_prices = clock_price_.back();
-    if (round_ > 1) {
-      for (int j = 0; j < bid.size(); j++) {
-        if (bid[j] < processed_demand_[player].back()[j]) {
-          demand_prices[j] = sor_price_.back()[j];
-        }
-      }
-    }
-    
-
-    double bid_price = DotProduct(bid, demand_prices);
+    // TODO: DROP BIDS SHOULD BE HANDLED AT SoR prices, so you need to assemble a clock vector based on the bid and how it pertains to your previous bid
+    double bid_price = DotProduct(bid, price);
     double profit = DotProduct(bid, value) - bid_price;
     // TODO: Here is another place where linear valuations creep in, might be better to abstract into a class
     bool non_negative_profit = profit >= 0;
