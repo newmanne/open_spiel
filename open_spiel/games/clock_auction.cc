@@ -151,7 +151,11 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       submitted_demand_ = std::vector<std::vector<std::vector<int>>>(num_players_, std::vector<std::vector<int>>());
       processed_demand_ = std::vector<std::vector<std::vector<int>>>(num_players_, std::vector<std::vector<int>>());
       sor_price_.push_back(open_price);
-      clock_price_.push_back(open_price);
+      std::vector<double> cp(num_products_, 0.);
+      for (int j = 0; j < num_products_; j++) {
+        cp[j] = open_price[j] *  (1 + increment_);
+      }
+      clock_price_.push_back(cp);
       posted_price_.push_back(open_price);
 
       // Enumerate bids and store a map for fast computation
@@ -167,7 +171,6 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
         all_bids_activity_.push_back(DotProduct(bid, product_activity_));
       }
       
-      std::cerr << "Done constructor" << std::endl;
 }
 
 std::vector<int> AuctionState::ActionToBid(Action action) const {
@@ -195,25 +198,24 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
     }
   } else if (undersell_rule_ == kUndersell) {
     /*
-     * This is one particular implementation of undersell that always moves over players and products in the same order. Usually randomization is involved, but this would blow up the game.
-     */
+    * This is one particular implementation of undersell that always moves over players and products in the same order. Usually randomization is involved, but this would blow up the game.
+    */
 
     auto current_agg = aggregate_demands_.back();
 
-    // Copy over submitted bids
+    // Copy over current processed demand
     std::vector<std::vector<int>> bids;
-    for (auto p = Player{0}; p < num_players_; ++p) {
-      auto bid = submitted_demand_[p].back();
-      bids.push_back(bid);
-    }
-
     std::vector<std::vector<int>> requested_changes;
+
     for (auto p = Player{0}; p < num_players_; ++p) {
+      auto last_round_holdings = processed_demand_[p].back();
+
+      bids.push_back(last_round_holdings);
+      
       std::vector<int> rq(num_products_, 0);
-      auto& last_round_holdings = processed_demand_[p].back();
       for (int j = 0; j < num_products_; ++j) {
-        int delta = bids[p][j] - last_round_holdings[j];
-        rq.push_back(delta);
+        int delta = submitted_demand_[p].back()[j] - last_round_holdings[j];
+        rq[j] = delta;
       }
       requested_changes.push_back(rq);
     }
@@ -224,7 +226,6 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
     while (changed) {
       changed = false;
       for (auto p = Player{0}; p < num_players_; ++p) {
-        auto& last_round_holdings = processed_demand_[p].back();
         auto& bid = bids[p];
         auto& changes = requested_changes[p];
 
@@ -266,9 +267,9 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
       }      
       processed_demand_[p].push_back(bids[p]);
     }
-    } else {
-        SpielFatalError("Unknown undersell");  
-    }
+  } else {
+      SpielFatalError("Unknown undersell");  
+  }
 
   // Calculate aggregate demand, excess demand
   bool any_excess = false;  
@@ -289,7 +290,6 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
     }
   }
   aggregate_demands_.push_back(aggregateDemand);
-
 
   if (any_excess) {
     // Normal case: Increment price for overdemanded items, leave other items alone
@@ -491,7 +491,7 @@ std::string DemandString(std::vector<std::vector<int>> const &demands) {
 
 
 std::string AuctionState::ToString() const {
-  std::string result = "";
+  std::string result = "\n";
   // Player types
   for (auto p = Player{0}; p < num_players_; p++) {
       if (value_.size() > p) {
@@ -511,7 +511,11 @@ std::string AuctionState::ToString() const {
     absl::StrAppend(&result, absl::StrCat("Aggregate demands: ", absl::StrJoin(aggregate_demands_.back(), ", ")), "\n");
   }
   if (finished_) {
-    absl::StrAppend(&result, absl::StrCat("Final bids: ", DemandString(processed_demand_.back())));
+    std::vector<std::vector<int>> fb;
+    for (auto p = Player{0}; p < num_players_; p++) {
+      fb.push_back(processed_demand_[p].back());
+    }
+    absl::StrAppend(&result, absl::StrCat("Final bids: ", DemandString(fb)));
   }
 
   return result;
