@@ -491,7 +491,7 @@ std::string DemandString(std::vector<std::vector<int>> const &demands) {
 
 
 std::string AuctionState::ToString() const {
-  std::string result = "\n";
+  std::string result = "";
   // Player types
   for (auto p = Player{0}; p < num_players_; p++) {
       if (value_.size() > p) {
