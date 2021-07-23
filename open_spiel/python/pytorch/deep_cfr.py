@@ -336,7 +336,7 @@ class DeepCFRSolver(policy.Policy):
     policy_loss = self._learn_strategy_network()
     return self._policy_network, advantage_losses, policy_loss
 
-  def _traverse_game_tree(self, state, player):
+  def _traverse_game_tree(self, state, player, depth=0):
     """Performs a traversal of the game tree.
 
     Over a traversal the advantage and strategy memories are populated with
@@ -349,6 +349,10 @@ class DeepCFRSolver(policy.Policy):
     Returns:
       (float) Recursively returns expected payoffs for each action.
     """
+    # if depth > 200 and not state.is_terminal():
+    #   print(state)
+    #   raise
+
     expected_payoff = collections.defaultdict(float)
     if state.is_terminal():
       # Terminal state get returns.
@@ -363,7 +367,7 @@ class DeepCFRSolver(policy.Policy):
       _, strategy = self._sample_action_from_advantage(state, player)
       for action in state.legal_actions():
         expected_payoff[action] = self._traverse_game_tree(
-            state.child(action), player)
+            state.child(action), player, depth + 1)
       cfv = 0
       for a_ in state.legal_actions():
         cfv += strategy[a_] * expected_payoff[a_]
@@ -388,7 +392,7 @@ class DeepCFRSolver(policy.Policy):
           StrategyMemory(
               state.information_state_tensor(other_player), self._iteration,
               strategy))
-      return self._traverse_game_tree(state.child(sampled_action), player)
+      return self._traverse_game_tree(state.child(sampled_action), player, depth + 1)
 
   def _sample_action_from_advantage(self, state, player):
     """Returns an info state policy by applying regret-matching.
