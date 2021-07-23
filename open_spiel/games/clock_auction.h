@@ -57,6 +57,7 @@ class AuctionState : public SimMoveState {
  public:
   explicit AuctionState(std::shared_ptr<const Game> game, 
     int num_players, 
+    int max_rounds_,
     std::vector<int> num_licenses, 
     double increment, 
     std::vector<double> open_price, 
@@ -144,6 +145,9 @@ class AuctionState : public SimMoveState {
   std::vector<int> all_bids_activity_;
 
   bool finished_;
+
+  // Used for tensor
+  int max_rounds_;
 };
 
 class AuctionGame : public SimMoveGame {
@@ -188,6 +192,9 @@ class AuctionGame : public SimMoveGame {
   int max_chance_outcomes_;
   double max_value_;
   double max_budget_;
+
+    // Used for tensor
+  int max_rounds_;
 };
 
 }  // namespace clock_auction
