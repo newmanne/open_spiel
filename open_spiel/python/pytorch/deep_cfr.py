@@ -331,6 +331,7 @@ class DeepCFRSolver(policy.Policy):
         # Re-initialize advantage networks and train from scratch.
         advantage_losses[p].append(self._learn_advantage_network(p))
       self._iteration += 1
+      print(self._iteration)
       # Train policy network.
     policy_loss = self._learn_strategy_network()
     return self._policy_network, advantage_losses, policy_loss

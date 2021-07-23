@@ -92,7 +92,7 @@ const GameType kGameType{/*short_name=*/"clock_auction",
                          /*max_num_players=*/kMaxPlayers,
                          /*min_num_players=*/1,
                          /*provides_information_state_string=*/true,
-                         /*provides_information_state_tensor=*/false,
+                         /*provides_information_state_tensor=*/true,
                          /*provides_observation_string=*/false,
                          /*provides_observation_tensor=*/false,
                          /*parameter_specification=*/
@@ -112,6 +112,7 @@ REGISTER_SPIEL_GAME(kGameType, Factory);
 
 AuctionState::AuctionState(std::shared_ptr<const Game> game, 
   int num_players,
+  int max_rounds,
   std::vector<int> num_licenses,
   double increment,
   std::vector<double> open_price,
@@ -126,6 +127,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       cur_player_(kChancePlayerId), // Chance begins by setting types
       total_moves_(0),
       player_moves_(0),
+      max_rounds_(max_rounds),
       finished_(false),
       num_licenses_(num_licenses),
       num_players_(num_players),
@@ -170,7 +172,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       for (auto& bid: all_bids_) {
         all_bids_activity_.push_back(DotProduct(bid, product_activity_));
       }
-      
+
 }
 
 std::vector<int> AuctionState::ActionToBid(Action action) const {
@@ -561,7 +563,7 @@ int AuctionGame::NumDistinctActions() const {
 
 std::unique_ptr<State> AuctionGame::NewInitialState() const {
   std::unique_ptr<AuctionState> state(
-      new AuctionState(shared_from_this(), num_players_, num_licenses_, increment_, open_price_, product_activity_, undersell_rule_, information_policy_, allow_negative_profit_bids_, values_,  budgets_, type_probs_));
+      new AuctionState(shared_from_this(), num_players_, max_rounds_, num_licenses_, increment_, open_price_, product_activity_, undersell_rule_, information_policy_, allow_negative_profit_bids_, values_,  budgets_, type_probs_));
   return state;
 }
 
@@ -582,11 +584,84 @@ void AuctionState::ObservationTensor(Player player, absl::Span<float> values) co
 }
 
 std::vector<int> AuctionGame::InformationStateTensorShape() const {
-  SpielFatalError("Unimplemented InformationStateTensorShape");
+  return { 
+    num_players_ + // player encoding
+    1 + // budget
+    num_products_ + // values
+    num_products_ * max_rounds_ + // submitted demand
+    num_products_ * max_rounds_ + // proceseed demand
+    num_products_ * max_rounds_ + // aggregate demand
+    num_products_ * max_rounds_  // posted price
+  };
 }
 
 void AuctionState::InformationStateTensor(Player player, absl::Span<float> values) const {
-  SpielFatalError("Unimplemented InformationStateTensor");
+  SPIEL_CHECK_GE(player, 0);
+  SPIEL_CHECK_LT(player, num_players_);
+
+  SPIEL_CHECK_LE(round_, max_rounds_);
+
+  int offset = 0;
+  std::fill(values.begin(), values.end(), 0.);
+
+  // 1-hot player encoding
+  values[player] = 1;
+  offset += num_players_;
+
+  // Budget encoding - player's budget
+  if (budget_.size() > player) {
+    values[offset] = budget_[player];
+  }
+  offset += 1;
+
+  // Values encoding - player's value for each item
+  if (value_.size() > player) {
+    for (int i = 0; i < value_[player].size(); i++) {
+      values[offset + i] = value_[player][i];
+    }
+  }
+  offset += num_products_;
+
+  // Submitted demand encoding - demand submitted in each round
+  if (!submitted_demand_[player].empty()) {
+    for (int i = 0; i < submitted_demand_[player].size(); i++) {
+      for (int j = 0; j < num_products_; j++) {
+        values[offset + i * num_products_ + j] = submitted_demand_[player][i][j];
+      } 
+    }
+  }
+  offset += max_rounds_ * num_products_;
+
+  // Processed demand encoding (could turn this off w/o undersell)
+  if (!processed_demand_[player].empty()) {
+    for (int i = 0; i < processed_demand_[player].size(); i++) {
+      for (int j = 0; j < num_products_; j++) {
+        values[offset + i * num_products_ + j] = processed_demand_[player][i][j];
+      } 
+    }
+  }
+  offset += max_rounds_ * num_products_;
+
+  // History encoding - what you observed after each round
+  for (int i = 0; i < aggregate_demands_.size(); i++) {
+    for (int j = 0; j < num_products_; j++) {
+        int val = aggregate_demands_[i][j];
+        if (information_policy_ == kHideDemand) {
+          val = val > num_licenses_[j] ? 1 : val == num_licenses_[j] ? 0 : -1;
+        }
+        values[offset + i * num_products_ + j] = val;
+    }
+  }
+  offset += max_rounds_ * num_products_;
+
+  // Price encoding - (this is derivable, but let's give it to the NN). Just posted for now
+  // std::vector<std::vector<double>> posted_price_;
+  for (int i = 0; i < posted_price_.size(); i++) {
+    for (int j = 0; j < num_products_; j++) {
+      values[offset + i * num_products_ + j] = posted_price_[i][j];
+    } 
+  }
+
 }
 
 /**** JSON PARSING ***/
@@ -731,6 +806,9 @@ AuctionGame::AuctionGame(const GameParameters& params) :
   }
   max_chance_outcomes_ = *std::max_element(lengths.begin(), lengths.end());
   
+  // Actually hard to calculate, so let's just do this (clearly wrong) thing for now
+  max_rounds_ = 15;
+
   std::cerr << "Done config parsing" << std::endl;
 }
 
