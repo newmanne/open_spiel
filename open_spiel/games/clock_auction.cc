@@ -37,7 +37,7 @@ namespace {
 
 // Default Parameters.
 constexpr int kMaxPlayers = 10;
-constexpr int kMoveLimit = 100;
+constexpr int kMoveLimit = 1000;
 
 // Undersell rules
 constexpr int kUndersellAllowed = 1;
@@ -687,8 +687,12 @@ std::vector<int> ParseIntArray(json::Array a) {
   return d;
 }
 
+bool ContainsKey(json::Object obj, std::string key) {
+  return obj.find(key) != obj.end();
+}
+
 void CheckRequiredKey(json::Object obj, std::string key) {
-  if (obj.find(key) == obj.end()) {
+  if (!ContainsKey(obj, key)) {
     SpielFatalError(absl::StrCat("Missing JSON key: ", key));
   }
 }
@@ -730,12 +734,23 @@ AuctionGame::AuctionGame(const GameParameters& params) :
   num_licenses_ = ParseIntArray(object["licenses"].GetArray());
   num_products_ = num_licenses_.size();
 
+  if (open_price_.size() != num_products_) {
+    SpielFatalError("Mistmatched size of open price and number of licences!");  
+  }
+
   CheckRequiredKey(object, "activity");
   product_activity_ = ParseIntArray(object["activity"].GetArray());
 
   CheckRequiredKey(object, "increment");
   increment_ = ParseDouble(object["increment"]);
-  
+
+  // Actually hard to calculate, so let's just do this (clearly wrong) thing for now and ask you to supply it. If you aren't using deep CFR, this does nothing
+  if (ContainsKey(object, "max_rounds")) {
+    max_rounds_ = ParseDouble(object["max_rounds"]);
+  } else {
+    max_rounds_ = 1; // Doesn't really matter for anything
+  }
+
   CheckRequiredKey(object, "undersell_rule");
   std::string undersell_rule_string = object["undersell_rule"].GetString();
   if (undersell_rule_string == "undersell_allowed") {
@@ -756,16 +771,6 @@ AuctionGame::AuctionGame(const GameParameters& params) :
     SpielFatalError("Unrecognized information policy rule!");  
   }
 
-  CheckRequiredKey(object, "bidding");
-  std::string bidding_string = object["bidding"].GetString();
-  if (bidding_string == "unrestricted") {
-    allow_negative_profit_bids_ = true;
-  } else if (bidding_string == "weakly_positive_profit") {
-    allow_negative_profit_bids_ = false;
-  } else {
-    SpielFatalError("Unrecognized bidding restrictions!");  
-  }
-
   // Loop over players, parsing values and budgets
   std::vector<double> max_value_ = std::vector<double>(num_products_, 0.); // TODO: Fix if using
   max_budget_ = 0.;
@@ -782,6 +787,10 @@ AuctionGame::AuctionGame(const GameParameters& params) :
       CheckRequiredKey(type_object, "budget");
       CheckRequiredKey(type_object, "prob");
       std::vector<double> value = ParseDoubleArray(type_object["value"].GetArray());
+      if (value.size() != num_products_) {
+        SpielFatalError("Mistmatched size of value and number of licences!");  
+      }
+
 
       player_values.push_back(value);
       double budget = ParseDouble(type_object["budget"]);
@@ -806,8 +815,6 @@ AuctionGame::AuctionGame(const GameParameters& params) :
   }
   max_chance_outcomes_ = *std::max_element(lengths.begin(), lengths.end());
   
-  // Actually hard to calculate, so let's just do this (clearly wrong) thing for now
-  max_rounds_ = 15;
 
   std::cerr << "Done config parsing" << std::endl;
 }
