@@ -82,6 +82,7 @@ class TabularBestResponse {
  public:
   TabularBestResponse(const Game& game, Player best_responder,
                       const Policy* policy,
+                      const float prob_cut_threshold = -1.0,
                       const Policy* my_policy = nullptr,
                       const ValuesMapT* on_policy_state_values = nullptr);
   TabularBestResponse(

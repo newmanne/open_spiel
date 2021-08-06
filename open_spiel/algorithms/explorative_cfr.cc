@@ -74,7 +74,7 @@ BRInfo NashConvWithEps(const Game& game, const Policy& policy) {
 
   std::vector<double> best_response_values(game.NumPlayers());
   for (auto p = Player{0}; p < game.NumPlayers(); ++p) {
-    TabularBestResponse best_response(game, p, &policy, &policy, &state_values);
+    TabularBestResponse best_response(game, p, &policy, -1.0, &policy, &state_values);
     best_response_values[p] = best_response.Value(*root);
     br_info.cvtables.push_back(best_response.cvtable());
   }
