@@ -86,3 +86,4 @@ endif()
 
 add_subdirectory (alpha_zero)
 add_subdirectory (alpha_zero_torch)
+add_subdirectory (dqn_torch)

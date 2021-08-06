@@ -23,8 +23,8 @@ for prototyping or for small games.
 
 It is possible to run C++ algorithms on Python implemented games, This is likely
 to have good performance if the algorithm simply extracts a game tree and then
-works with that (e.g. CFR algorithms). It is likely to be poor if the algorithm
-relies on processing and updating states as it goes, e.g. MCTS.
+works with that. It is likely to be poor if the algorithm relies on processing
+and updating states as it goes, e.g. MCTS.
 """
 
 import enum
@@ -109,15 +109,12 @@ class KuhnPokerState(pyspiel.State):
 
   def _legal_actions(self, player):
     """Returns a list of legal actions, sorted in ascending order."""
-    if player == pyspiel.PlayerId.CHANCE:
-      return sorted(_DECK - set(self.cards))
-    else:
-      return [Action.PASS, Action.BET]
+    assert player >= 0
+    return [Action.PASS, Action.BET]
 
   def chance_outcomes(self):
     """Returns the possible chance outcomes and their probabilities."""
-    if not self.is_chance_node():
-      raise ValueError("chance_outcomes called on a non-chance state.")
+    assert self.is_chance_node()
     outcomes = sorted(_DECK - set(self.cards))
     p = 1.0 / len(outcomes)
     return [(o, p) for o in outcomes]

@@ -40,6 +40,19 @@ std::unique_ptr<State> PyGame::NewInitialState() const {
                               NewInitialState);
 }
 
+std::unique_ptr<State> PyGame::NewInitialStateForPopulation(
+    int population) const {
+  PYBIND11_OVERLOAD_PURE_NAME(std::unique_ptr<State>, Game,
+                              "new_initial_state_for_population",
+                              NewInitialStateForPopulation, population);
+}
+
+int PyGame::MaxChanceNodesInHistory() const {
+  PYBIND11_OVERLOAD_PURE_NAME(int, Game,
+                              "max_chance_nodes_in_history",
+                              MaxChanceNodesInHistory);
+}
+
 const Observer& PyGame::default_observer() const {
   if (!default_observer_) default_observer_ = MakeObserver(kDefaultObsType, {});
   return *default_observer_;
@@ -63,6 +76,7 @@ std::vector<Action> PyState::LegalActions() const {
 
 std::vector<Action> PyState::LegalActions(Player player) const {
   if (IsTerminal()) return {};
+  if (IsChanceNode()) return LegalChanceOutcomes();
   if ((player == CurrentPlayer()) || (player >= 0 && IsSimultaneousNode())) {
     PYBIND11_OVERLOAD_PURE_NAME(std::vector<Action>, State, "_legal_actions",
                                 LegalActions, player);
@@ -132,11 +146,26 @@ std::unique_ptr<State> PyState::Clone() const {
   return rv;
 }
 
+std::vector<std::string> PyState::DistributionSupport() {
+  PYBIND11_OVERLOAD_PURE_NAME(std::vector<std::string>, State,
+                              "distribution_support", DistributionSupport);
+}
+void PyState::UpdateDistribution(const std::vector<double>& distribution) {
+  PYBIND11_OVERLOAD_PURE_NAME(void, State, "update_distribution",
+                              UpdateDistribution, distribution);
+}
+
 // Register a Python game.
 void RegisterPyGame(const GameType& game_type, py::function creator) {
   GameRegisterer::RegisterGame(
       game_type, [game_type, creator](const GameParameters& game_parameters) {
-        auto py_game = creator(game_parameters);
+        py::dict params = py::cast(game_parameters);
+        for (const auto& [k, v] : game_type.parameter_specification) {
+          if (game_parameters.count(k) == 0) {
+            params[pybind11::str(k)] = v;
+          }
+        }
+        auto py_game = creator(params);
         return py::cast<std::shared_ptr<Game>>(py_game);
       });
 }
@@ -178,8 +207,8 @@ void PyObserver::WriteTensor(const State& state, int player,
     const int dims = a.ndim();
     absl::InlinedVector<int, 4> shape(dims);
     for (int i = 0; i < dims; ++i) shape[i] = a.shape(i);
-    auto out = allocator->Get(k.cast<std::string>(), shape);
-    std::copy(a.data(), a.data() + a.size(), out.data.data());
+    SpanTensor out = allocator->Get(k.cast<std::string>(), shape);
+    std::copy(a.data(), a.data() + a.size(), out.data().begin());
   }
 }
 
@@ -224,16 +253,15 @@ void PyState::InformationStateTensor(Player player,
 
 namespace {
 std::vector<int> TensorShape(const TrackingVectorAllocator& allocator) {
-  switch (allocator.tensors.size()) {
+  switch (allocator.tensors_info().size()) {
     case 0:
       return {};
     case 1:
-      return allocator.tensors.front().shape;
+      return allocator.tensors_info().front().vector_shape();
     default: {
       int size = 0;
-      for (auto tensor : allocator.tensors) {
-        size += std::accumulate(tensor.shape.begin(), tensor.shape.end(), 1,
-                                std::multiplies<int>());
+      for (const auto& info : allocator.tensors_info()) {
+        size += info.size();
       }
       return {size};
     }
@@ -338,6 +366,14 @@ std::string PyState::Serialize() const {
       "\n", kTagMoveNumber, move_number_, "\n",
       // Python attributes
       kTagDict, encode_dict(PyDict(*this)));
+}
+
+int PyState::MeanFieldPopulation() const {
+  // Use a python population() implementation if available.
+  PYBIND11_OVERRIDE_IMPL(int, State, "mean_field_population");
+
+  // Otherwise, default to behavior from the base class.
+  return State::MeanFieldPopulation();
 }
 
 }  // namespace open_spiel

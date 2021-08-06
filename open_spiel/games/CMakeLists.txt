@@ -86,6 +86,10 @@ set(GAME_SOURCES
   matching_pennies_3p.cc
   matching_pennies_3p.h
   matrix_games.cc
+  mfg/crowd_modelling.cc
+  mfg/crowd_modelling.h
+  mfg/crowd_modelling_2d.cc
+  mfg/crowd_modelling_2d.h
   negotiation.cc
   negotiation.h
   nfg_game.cc
@@ -108,6 +112,8 @@ set(GAME_SOURCES
   pig.h
   quoridor.cc
   quoridor.h
+  rbc.cc
+  rbc.h
   sheriff.cc
   sheriff.h
   skat.cc
@@ -225,6 +231,18 @@ add_executable(clock_auction_test clock_auction_test.cc ${OPEN_SPIEL_OBJECTS}
                $<TARGET_OBJECTS:tests>)
 add_test(clock_auction_test clock_auction_test)
 
+add_executable(crowd_modelling_test mfg/crowd_modelling_test.cc ${OPEN_SPIEL_OBJECTS}
+               $<TARGET_OBJECTS:tests>)
+add_test(crowd_modelling_test crowd_modelling_test)
+
+add_executable(crowd_modelling_2d_test mfg/crowd_modelling_2d_test.cc ${OPEN_SPIEL_OBJECTS}
+               $<TARGET_OBJECTS:tests>)
+add_test(crowd_modelling_2d_test crowd_modelling_2d_test)
+
+add_executable(rbc_test rbc_test.cc ${OPEN_SPIEL_OBJECTS}
+               $<TARGET_OBJECTS:tests>)
+add_test(rbc_test rbc_test)
+
 
 if (${OPEN_SPIEL_BUILD_WITH_ACPC})
   add_executable(universal_poker_test universal_poker_test.cc ${OPEN_SPIEL_OBJECTS}
@@ -237,3 +255,4 @@ endif()
 add_executable(y_test y_test.cc ${OPEN_SPIEL_OBJECTS}
                $<TARGET_OBJECTS:tests>)
 add_test(y_test y_test)
+

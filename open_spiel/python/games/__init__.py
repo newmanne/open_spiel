@@ -16,7 +16,7 @@
 
 These games are registered as they are imported. It's perfectly possible to
 import just a single game if you prefer. There is no need to add new games here,
-so long as they register themselves and you import them when wanting to uise
+so long as they register themselves and you import them when wanting to use
 them. However, adding them here will make them available for playthroughs and
 for automated API testing.
 

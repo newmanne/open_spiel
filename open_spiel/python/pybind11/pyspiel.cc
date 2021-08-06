@@ -81,53 +81,9 @@ class SpielException : public std::exception {
   std::string message_;
 };
 
-// Python representation of GameParameter objects
-namespace {
-py::object GameParameterToPython(const GameParameter& gp) {
-  if (gp.has_bool_value()) {
-    return py::bool_(gp.bool_value());
-  } else if (gp.has_double_value()) {
-    return py::float_(gp.double_value());
-  } else if (gp.has_string_value()) {
-    return py::str(gp.string_value());
-  } else if (gp.has_int_value()) {
-    return py::int_(gp.int_value());
-  } else if (gp.has_game_value()) {
-    py::dict dict;
-    for (const auto& [k, v] : gp.game_value()) {
-      dict[py::str(k)] = GameParameterToPython(v);
-    }
-    return dict;
-  } else {
-    return py::none();
-  }
-}
-}  // namespace
-
 // Definintion of our Python module.
 PYBIND11_MODULE(pyspiel, m) {
   m.doc() = "Open Spiel";
-
-  py::enum_<open_spiel::GameParameter::Type>(m, "GameParameterType")
-      .value("UNSET", open_spiel::GameParameter::Type::kUnset)
-      .value("INT", open_spiel::GameParameter::Type::kInt)
-      .value("DOUBLE", open_spiel::GameParameter::Type::kDouble)
-      .value("STRING", open_spiel::GameParameter::Type::kString)
-      .value("BOOL", open_spiel::GameParameter::Type::kBool);
-
-  py::class_<GameParameter> game_parameter(m, "GameParameter");
-  game_parameter.def(py::init<double>())
-      .def(py::init<std::string>())
-      .def(py::init<bool>())
-      .def(py::init<int>())
-      .def(py::init<GameParameters>())
-      .def("is_mandatory", &GameParameter::is_mandatory)
-      .def("value", &GameParameterToPython)
-      .def("__str__", &GameParameter::ToString)
-      .def("__repr__", &GameParameter::ToReprString)
-      .def("__eq__", [](const GameParameter& value, GameParameter* value2) {
-        return value2 && value.ToReprString() == value2->ToReprString();
-      });
 
   m.def("game_parameters_from_string", GameParametersFromString,
         "Parses a string as a GameParameter dictionary.");
@@ -156,6 +112,7 @@ PYBIND11_MODULE(pyspiel, m) {
       .value("TERMINAL", open_spiel::StateType::kTerminal)
       .value("CHANCE", open_spiel::StateType::kChance)
       .value("DECISION", open_spiel::StateType::kDecision)
+      .value("MEAN_FIELD", open_spiel::StateType::kMeanField)
       .export_values();
 
   py::class_<GameType> game_type(m, "GameType");
@@ -163,7 +120,7 @@ PYBIND11_MODULE(pyspiel, m) {
       .def(py::init<std::string, std::string, GameType::Dynamics,
                     GameType::ChanceMode, GameType::Information,
                     GameType::Utility, GameType::RewardModel, int, int, bool,
-                    bool, bool, bool, std::map<std::string, GameParameter>,
+                    bool, bool, bool, GameParameters,
                     bool, bool>(),
            py::arg("short_name"), py::arg("long_name"), py::arg("dynamics"),
            py::arg("chance_mode"), py::arg("information"), py::arg("utility"),
@@ -174,7 +131,7 @@ PYBIND11_MODULE(pyspiel, m) {
            py::arg("provides_observation_string"),
            py::arg("provides_observation_tensor"),
            py::arg("parameter_specification") =
-               std::map<std::string, GameParameter>(),
+               GameParameters(),
            py::arg("default_loadable") = true,
            py::arg("provides_factored_observation_string") = false)
       .def(py::init<const GameType&>())
@@ -280,12 +237,14 @@ PYBIND11_MODULE(pyspiel, m) {
   player_action.def_readonly("player", &State::PlayerAction::player)
       .def_readonly("action", &State::PlayerAction::action);
 
-  // TODO(author11) Remove py::dynamic_attr when
-  // https://github.com/pybind/pybind11/pull/2972 is submitted
-  py::classh<State, PyState> state(m, "State", py::dynamic_attr());
+  // https://github.com/pybind/pybind11/blob/smart_holder/README_smart_holder.rst
+  py::classh<State, PyState> state(m, "State");
   state.def(py::init<std::shared_ptr<const Game>>())
       .def("current_player", &State::CurrentPlayer)
       .def("apply_action", &State::ApplyAction)
+      .def("apply_action_with_legality_check",
+           py::overload_cast<Action>(
+               &State::ApplyActionWithLegalityCheck))
       .def("legal_actions",
            (std::vector<open_spiel::Action>(State::*)(int) const) &
                State::LegalActions)
@@ -315,6 +274,7 @@ PYBIND11_MODULE(pyspiel, m) {
       .def("player_reward", &State::PlayerReward)
       .def("player_return", &State::PlayerReturn)
       .def("is_chance_node", &State::IsChanceNode)
+      .def("is_mean_field_node", &State::IsMeanFieldNode)
       .def("is_simultaneous_node", &State::IsSimultaneousNode)
       .def("is_player_node", &State::IsPlayerNode)
       .def("history", &State::History)
@@ -341,6 +301,8 @@ PYBIND11_MODULE(pyspiel, m) {
       .def("child", &State::Child)
       .def("undo_action", &State::UndoAction)
       .def("apply_actions", &State::ApplyActions)
+      .def("apply_actions_with_legality_checks",
+           &State::ApplyActionsWithLegalityChecks)
       .def("num_distinct_actions", &State::NumDistinctActions)
       .def("num_players", &State::NumPlayers)
       .def("chance_outcomes", &State::ChanceOutcomes)
@@ -358,17 +320,21 @@ PYBIND11_MODULE(pyspiel, m) {
             return std::make_pair(std::move(state), pydict);
           }))
       .def("distribution_support", &State::DistributionSupport)
-      .def("update_distribution", &State::UpdateDistribution);
+      .def("update_distribution", &State::UpdateDistribution)
+      .def("mean_field_population", &State::MeanFieldPopulation);
 
   py::classh<Game, PyGame> game(m, "Game");
   game.def(py::init<GameType, GameInfo, GameParameters>())
       .def("num_distinct_actions", &Game::NumDistinctActions)
+      .def("new_initial_states", &Game::NewInitialStates)
       .def("new_initial_state",
            [](const Game* self) { return self->NewInitialState(); })
       .def("new_initial_state",
            [](const Game* self, const std::string& s) {
              return self->NewInitialState(s);
            })
+      .def("new_initial_state_for_population",
+           &Game::NewInitialStateForPopulation)
       .def("max_chance_outcomes", &Game::MaxChanceOutcomes)
       .def("get_parameters", &Game::GetParameters)
       .def("num_players", &Game::NumPlayers)
@@ -391,14 +357,14 @@ PYBIND11_MODULE(pyspiel, m) {
       .def("max_move_number", &Game::MaxMoveNumber)
       .def("max_history_length", &Game::MaxHistoryLength)
       .def("make_observer",
-          [](const Game& game, IIGObservationType iig_obs_type,
-             const GameParameters& params) {
+           [](const Game& game, IIGObservationType iig_obs_type,
+              const GameParameters& params) {
              return game.MakeObserver(iig_obs_type, params);
-          })
+           })
       .def("make_observer",
-          [](const Game& game, const GameParameters& params) {
+           [](const Game& game, const GameParameters& params) {
              return game.MakeObserver(absl::nullopt, params);
-          })
+           })
       .def("__str__", &Game::ToString)
       .def("__repr__", &Game::ToString)
       .def("__eq__",
@@ -623,13 +589,15 @@ PYBIND11_MODULE(pyspiel, m) {
         py::arg("mask_test") = true,
         py::arg("state_checker_fn") =
             py::cpp_function(&testing::DefaultStateChecker),
-        "Run the C++ tests on a game");
+        py::arg("mean_field_population") = -1, "Run the C++ tests on a game");
 
   // Set an error handler that will raise exceptions. These exceptions are for
   // the Python interface only. When used from C++, OpenSpiel will never raise
   // exceptions - the process will be terminated instead.
-  open_spiel::SetErrorHandler(
-      [](const std::string& string) { throw SpielException(string); });
+  open_spiel::SetErrorHandler([](const std::string& string) {
+    std::cerr << "OpenSpiel exception: " << string << std::endl << std::flush;
+    throw SpielException(string);
+  });
   py::register_exception<SpielException>(m, "SpielError", PyExc_RuntimeError);
 
   // Register other bits of the API.

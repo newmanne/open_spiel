@@ -27,6 +27,7 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 
 # Set default build type.
+set (BUILD_TYPE $ENV{BUILD_TYPE})
 if(NOT BUILD_TYPE)
    set(BUILD_TYPE Testing
        CACHE STRING "Choose the type of build: Debug Release Testing."
@@ -34,20 +35,20 @@ if(NOT BUILD_TYPE)
 endif()
 message("${BoldYellow}Current build type is: ${BUILD_TYPE}${ColourReset}")
 
-if(${BUILD_TYPE} EQUAL "Debug")
+if(${BUILD_TYPE} STREQUAL "Debug")
   # Basic build for debugging (default).
   # -Og enables optimizations that do not interfere with debugging.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Og")
 endif()
 
-if(${BUILD_TYPE} EQUAL "Testing")
+if(${BUILD_TYPE} STREQUAL "Testing")
   # A build used for running tests: keep all runtime checks (assert,
   # SPIEL_CHECK_*, SPIEL_DCHECK_*), but turn on some speed optimizations,
   # otherwise tests run for too long.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 endif()
 
-if(${BUILD_TYPE} EQUAL "Release")
+if(${BUILD_TYPE} STREQUAL "Release")
   # Optimized release build: turn off debug runtime checks (assert,
   # SPIEL_DCHECK_*) and turn on highest speed optimizations.
   # The difference in perfomance can be up to 10x higher.
@@ -106,6 +107,8 @@ openspiel_optional_dependency(OPEN_SPIEL_BUILD_WITH_HANABI         OFF
   "Build against the Hanabi game.")
 openspiel_optional_dependency(OPEN_SPIEL_BUILD_WITH_JULIA          OFF
   "Build binary for Julia.")
+openspiel_optional_dependency(OPEN_SPIEL_BUILD_WITH_LIBNOP         OFF
+  "Build with support for libnop.")
 openspiel_optional_dependency(OPEN_SPIEL_BUILD_WITH_LIBTORCH       OFF
   "Build with support for libtorch.")
 openspiel_optional_dependency(OPEN_SPIEL_BUILD_WITH_TENSORFLOW_CC  OFF
@@ -188,6 +191,7 @@ set (OPEN_SPIEL_CORE_OBJECTS $<TARGET_OBJECTS:open_spiel_core>)
 
 set (OPEN_SPIEL_OBJECTS
   $<TARGET_OBJECTS:open_spiel_core>
+  $<TARGET_OBJECTS:bots>
   $<TARGET_OBJECTS:games>
   $<TARGET_OBJECTS:game_transforms>
   $<TARGET_OBJECTS:bridge_double_dummy_solver>
@@ -218,6 +222,10 @@ if (OPEN_SPIEL_BUILD_WITH_XINXIN)
 endif()
 if (OPEN_SPIEL_BUILD_WITH_ROSHAMBO)
   set(OPEN_SPIEL_OBJECTS ${OPEN_SPIEL_OBJECTS} $<TARGET_OBJECTS:roshambo>)
+endif()
+if (OPEN_SPIEL_BUILD_WITH_LIBNOP)
+  include_directories(libnop/libnop/include)
+  add_subdirectory(libnop)
 endif()
 if (OPEN_SPIEL_BUILD_WITH_LIBTORCH)
   list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libtorch/libtorch")

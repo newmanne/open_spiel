@@ -75,15 +75,20 @@ MergeTables(const std::vector<ConditionalValuesTable>& tables);
 // This implementation requires that InformationStateString for the game has
 // perfect recall. Otherwise, the algorithm will still run, but the value
 // returned will be wrong.
+//
+// A partially computed best-response can be computed when using a
+// prob_cut_threshold >= 0.
 class TabularBestResponse {
  public:
   TabularBestResponse(const Game& game, Player best_responder,
                       const Policy* policy,
                       const Policy* my_policy = nullptr,
+                      const float prob_cut_threshold = -1.0,
                       const ValuesMapT* on_policy_state_values = nullptr);
   TabularBestResponse(
       const Game& game, Player best_responder,
-      const std::unordered_map<std::string, ActionsAndProbs>& policy_table);
+      const std::unordered_map<std::string, ActionsAndProbs>& policy_table,
+      const float prob_cut_threshold = -1.0);
 
   TabularBestResponse(TabularBestResponse&&) = default;
 
@@ -191,6 +196,9 @@ class TabularBestResponse {
 
   HistoryTree tree_;
   int num_players_;
+
+  // The probability tolerance for truncating value estimation.
+  float prob_cut_threshold_;
 
   // Maps infoset strings (from the State::InformationState method) to
   // the HistoryNodes that represent all histories with
