@@ -31,8 +31,8 @@ TabularBestResponse::TabularBestResponse(
     const Game& game,
     Player best_responder,
     const Policy* policy,
+    const float prob_cut_threshold,
     const Policy* my_policy,
-    const float prob_cut_threshold
     const ValuesMapT* on_policy_state_values)
     : best_responder_(best_responder),
       tabular_policy_container_(),
