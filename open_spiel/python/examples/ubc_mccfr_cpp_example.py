@@ -263,7 +263,7 @@ def main(_):
             if FLAGS.python:
                 metric = exploitability.nash_conv(game, policy)
             else:
-                regrets = pyspiel.player_regrets(game, policy, False)
+                regrets = pyspiel.player_regrets(game, policy, True)
                 max_regret = max(regrets)
                 nash_conv = sum(regrets)
                 record['max_on_path_regret'] = max_regret
