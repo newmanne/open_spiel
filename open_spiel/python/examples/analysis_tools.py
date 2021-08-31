@@ -61,3 +61,21 @@ def compute_expectations(df):
 
 def expected_values_over_types(df):
     return df.query('terminal').groupby(['player', 'type']).apply(compute_expectations)
+
+def to_action_df(df):
+    bid_cols = [c for c in df.columns if 'Bid' in c]
+    action_df = df.query('~terminal')[bid_cols  + ['prob', 'round', 'player', 'type']].copy()
+    action_df['Player'] = 'p' + action_df['player'].astype(str) + 't' + action_df['type']
+    action_df.drop(['player', 'type'], inplace=True, axis='columns')
+    action_df = action_df.rename(columns={'round': 'Round'})
+    for i in range(len(bid_cols)):
+        action_df.iloc[:, i] *= action_df['prob']
+    action_df.drop('prob', inplace=True, axis='columns')
+    action_df = action_df.groupby(['Player', 'Round']).sum().reset_index().melt(id_vars=['Round', 'Player'], value_name='% Played', var_name='Bid')
+    return action_df
+
+def normalized_action_df(df):
+    action_df = to_action_df(df).copy()
+    normalizer = action_df['% Played'].sum()
+    action_df['% Played'] /= normalizer
+    return action_df
