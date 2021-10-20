@@ -42,7 +42,7 @@ def main(unused_argv):
   load_function = pyspiel.load_game if not FLAGS.turn_based else pyspiel.load_game_as_turn_based
   params = dict()
   if FLAGS.game_name == 'clock_auction':
-      params['filename'] = pyspiel.GameParameter(FLAGS.filename)
+      params['filename'] = FLAGS.filename
 
   game = load_function(
       FLAGS.game_name,
