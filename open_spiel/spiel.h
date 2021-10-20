@@ -136,6 +136,15 @@ struct GameType {
   // This is similar to observation fields before, but adds additional
   // distinction between public and private observations.
   bool provides_factored_observation_string = false;
+
+  bool provides_information_state() const {
+    return provides_information_state_tensor
+        || provides_information_state_string;
+  }
+  bool provides_observation() const {
+    return provides_observation_tensor
+        || provides_observation_string;
+  }
 };
 
 // Information about a concrete Game instantiation.
@@ -681,6 +690,8 @@ class State {
   // representation. In multi-population mean field nodes, the support will
   // typically include states for all the populations.
   // This should only be called when when CurrentPlayer() == kMeanFieldPlayerId.
+  // This can return an empty list in case the distribution is not needed at
+  // this time.
   virtual std::vector<std::string> DistributionSupport() {
     SpielFatalError("DistributionSupport has not been implemented");
   }

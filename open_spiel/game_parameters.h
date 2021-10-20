@@ -21,6 +21,7 @@
 #include <utility>
 
 #include "open_spiel/spiel_utils.h"
+#include "open_spiel/abseil-cpp/absl/types/optional.h"
 
 namespace open_spiel {
 
@@ -138,6 +139,9 @@ class GameParameter {
   template <typename T>
   T value() const;
 
+  template <typename T>
+  T value_with_default(T default_value) const;
+
   bool operator==(const GameParameter& rhs) const {
     switch (type_) {
       case Type::kInt:
@@ -194,6 +198,22 @@ GameParameter DeserializeGameParameter(
 inline bool IsParameterSpecified(const GameParameters& table,
                                  const std::string& key) {
   return table.find(key) != table.end();
+}
+
+template <typename T>
+T ParameterValue(const GameParameters& params, const std::string& key,
+                 absl::optional<T> default_value = absl::nullopt) {
+  auto iter = params.find(key);
+  if (iter == params.end()) {
+    if (!default_value.has_value()) {
+      SpielFatalError(absl::StrCat("Cannot find parameter and no default "
+                                   "value passed for key: ", key));
+    }
+
+    return *default_value;
+  } else {
+    return iter->second.value<T>();
+  }
 }
 
 }  // namespace open_spiel

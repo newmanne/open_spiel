@@ -18,12 +18,27 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from typing import List, Union
+
 import numpy as np
 
-PROBABILITY_THRESHOLD = 0
+from open_spiel.python import policy
 
 
-def policy_value(state, policies):
+def _transitions(state, policies):
+  """Returns iterator over (action, prob) from the given state."""
+  if state.is_chance_node():
+    return state.chance_outcomes()
+  elif state.is_simultaneous_node():
+    return policy.joint_action_probabilities(state, policies)
+  else:
+    player = state.current_player()
+    return policies[player].action_probabilities(state).items()
+
+
+def policy_value(state,
+                 policies: Union[List[policy.Policy], policy.Policy],
+                 probability_threshold: float = 0):
   """Returns the expected values for the state for players following `policies`.
 
   Computes the expected value of the`state` for each player, assuming player `i`
@@ -31,32 +46,17 @@ def policy_value(state, policies):
 
   Args:
     state: A `pyspiel.State`.
-    policies: A `list` of `policy.Policy` objects, one per player.
+    policies: A `list` of `policy.Policy` objects, one per player for sequential
+      games, one policy for simulatenous games.
+    probability_threshold: only sum over entries with prob greater than this
+      (default: 0).
 
   Returns:
     A `numpy.array` containing the expected value for each player.
   """
-  assert not state.is_simultaneous_node()
-
-  num_players = len(policies)
-
   if state.is_terminal():
-    values = np.array(state.returns())
-  elif state.is_chance_node():
-    values = np.zeros(shape=num_players)
-    for action, action_prob in state.chance_outcomes():
-      child = state.child(action)
-      values += action_prob * policy_value(child, policies)
-    return values
-  elif state.is_simultaneous_node():
-    raise NotImplementedError(
-        "Policy Value is not implemented for simultaneous games")
+    return np.array(state.returns())
   else:
-    player = state.current_player()
-    values = np.zeros(shape=num_players)
-    for action, probability in policies[player].action_probabilities(
-        state).items():
-      if probability > PROBABILITY_THRESHOLD:
-        child = state.child(action)
-        values += probability * policy_value(child, policies)
-  return values
+    return sum(prob * policy_value(policy.child(state, action), policies)
+               for action, prob in _transitions(state, policies)
+               if prob > probability_threshold)
