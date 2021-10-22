@@ -133,6 +133,9 @@ openspiel_optional_dependency(OPEN_SPIEL_ENABLE_TENSORFLOW        AUTO
 openspiel_optional_dependency(OPEN_SPIEL_ENABLE_PYTHON_MISC       OFF
   "Enable miscellaneous Python dependencies.")
 
+openspiel_optional_dependency(OPEN_SPIEL_BUILDING_WHEEL           OFF
+  "Building a Python wheel?")
+
 
 # Needed to disable Abseil tests.
 set (BUILD_TESTING OFF)
@@ -194,6 +197,7 @@ set (OPEN_SPIEL_OBJECTS
   $<TARGET_OBJECTS:bots>
   $<TARGET_OBJECTS:games>
   $<TARGET_OBJECTS:game_transforms>
+  $<TARGET_OBJECTS:higc>
   $<TARGET_OBJECTS:bridge_double_dummy_solver>
   $<TARGET_OBJECTS:algorithms>
   $<TARGET_OBJECTS:utils>
@@ -278,6 +282,9 @@ endif()
 
 if (OPEN_SPIEL_BUILD_WITH_PYTHON)
   add_subdirectory (python)
+  # HIGC needs pyspiel.so and corresponding PYTHONPATH to be set
+  # in order to run its tests.
+  add_subdirectory (higc)
 endif()
 
 add_subdirectory (utils)
