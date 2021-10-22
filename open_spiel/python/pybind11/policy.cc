@@ -164,6 +164,13 @@ void init_pyspiel_policy(py::module& m) {
       .value("SIMPLE", open_spiel::algorithms::AverageType::kSimple)
       .value("FULL", open_spiel::algorithms::AverageType::kFull);
 
+
+  py::class_<open_spiel::algorithms::CFRInfoStateValues> CFRInfoStateValues(m, "CFRInfoStateValues");
+  CFRInfoStateValues.def_readonly("legal_actions", &open_spiel::algorithms::CFRInfoStateValues::legal_actions)
+                    .def_readonly("cumulative_regrets", &open_spiel::algorithms::CFRInfoStateValues::cumulative_regrets)
+                    .def_readonly("cumulative_policy", &open_spiel::algorithms::CFRInfoStateValues::cumulative_policy)
+                    .def_readonly("current_policy", &open_spiel::algorithms::CFRInfoStateValues::current_policy);
+
   py::class_<open_spiel::algorithms::ExternalSamplingMCCFRSolver>(
       m, "ExternalSamplingMCCFRSolver")
       .def(py::init<const Game&, int, open_spiel::algorithms::AverageType>(),
@@ -174,6 +181,8 @@ void init_pyspiel_policy(py::module& m) {
                                    ExternalSamplingMCCFRSolver::RunIteration))
       .def("average_policy",
            &open_spiel::algorithms::ExternalSamplingMCCFRSolver::AveragePolicy)
+      .def("info_state_values_table",
+           &open_spiel::algorithms::ExternalSamplingMCCFRSolver::InfoStateValuesTable)
       .def(py::pickle(
           [](const open_spiel::algorithms::ExternalSamplingMCCFRSolver&
                  solver) {  // __getstate__
@@ -195,6 +204,8 @@ void init_pyspiel_policy(py::module& m) {
                                    OutcomeSamplingMCCFRSolver::RunIteration))
       .def("average_policy",
            &open_spiel::algorithms::OutcomeSamplingMCCFRSolver::AveragePolicy)
+      .def("info_state_values_table",
+           &open_spiel::algorithms::OutcomeSamplingMCCFRSolver::InfoStateValuesTable)
       .def(py::pickle(
           [](const open_spiel::algorithms::OutcomeSamplingMCCFRSolver&
                  solver) {  // __getstate__
