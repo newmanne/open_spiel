@@ -36,7 +36,7 @@ import itertools
 from open_spiel.python import policy
 from open_spiel.python.algorithms import cfr, outcome_sampling_mccfr, expected_game_score, exploitability, get_all_states_with_policy
 import logging
-from sharpen_solution import sharpen_solution
+from open_spiel.python.examples.sharpen_solution import sharpen_solution
 
 logger = logging.getLogger(__name__)
 

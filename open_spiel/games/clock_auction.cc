@@ -208,7 +208,8 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
     // Copy over current processed demand
     std::vector<std::vector<int>> bids;
     std::vector<std::vector<int>> requested_changes;
-
+    // TODO: For now points is a zero vector, but possible grace period implementations would change that
+    std::vector<int> points = activity_;
     for (auto p = Player{0}; p < num_players_; ++p) {
       auto last_round_holdings = processed_demand_[p].back();
 
@@ -218,11 +219,11 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
       for (int j = 0; j < num_products_; ++j) {
         int delta = submitted_demand_[p].back()[j] - last_round_holdings[j];
         rq[j] = delta;
+        points[p] -= last_round_holdings[j] * product_activity_[j];
       }
       requested_changes.push_back(rq);
     }
 
-    std::vector<int> points = activity_;
     bool changed = true;
 
     while (changed) {
