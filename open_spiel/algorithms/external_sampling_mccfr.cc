@@ -167,6 +167,7 @@ double ExternalSamplingMCCFRSolver::UpdateRegrets(const State& state,
     // Update regrets
     for (int aidx = 0; aidx < legal_actions.size(); ++aidx) {
       info_state.cumulative_regrets[aidx] += (child_values[aidx] - value);
+      info_state.instantaneous_regrets[aidx] = child_values[aidx] - value;
     }
   }
 

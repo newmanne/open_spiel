@@ -94,6 +94,13 @@ class ExternalSamplingMCCFRSolver {
     return std::make_shared<CFRAveragePolicy>(info_states_, default_policy_);
   }
 
+  std::shared_ptr<Policy> CurrentPolicy() {
+    for (auto& is : info_states_) {
+      is.second.ApplyRegretMatching();
+    }
+    return std::make_shared<CFRCurrentPolicy>(info_states_, default_policy_);
+  }
+
   // See comments above CFRInfoStateValues::Serialize(double_precision) for
   // notes about the double_precision parameter.
   std::string Serialize(int double_precision = -1,

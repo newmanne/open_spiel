@@ -22,7 +22,7 @@ def make_player(player_types):
     return player
 
 
-def grids_to_commands(param_grid, player_grid, solver_grid, job_name='CFR', submit=True, mem=16):
+def grids_to_commands(param_grid, player_grid, solver_grid, job_name='CFR', submit=True, mem=16, extra_args=''):
     SPIEL_PATH = os.environ.get('OPENSPIEL_PATH', '/project/def-kevinlb/newmanne/cfr/open_spiel')
     ROOT = '/shared/cfr/' #os.environ.get('SPIEL_ROOT', '/home/newmanne/scratch/cfr')
     CONFIG_DIR = os.environ.get('CLOCK_AUCTION_CONFIG_DIR', '/home/newmanne/scratch/cfr/configs')
@@ -48,6 +48,7 @@ def grids_to_commands(param_grid, player_grid, solver_grid, job_name='CFR', subm
                     output = f'{grid_path}/{i}/{name}_{seed}'
                     outputs.append(output)
                     cmd = f'cd {grid_path}/{i} && python {SPIEL_PATH}/open_spiel/python/examples/ubc_mccfr_cpp_example.py --filename={job_name}_{i}.json --iterations {iterations} --solver={solver} {solver_args} --output {output} --seed {seed}'
+                    cmd += ' ' + extra_args
                     cmds.append(cmd)
                 i += 1
 
