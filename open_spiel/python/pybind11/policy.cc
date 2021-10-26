@@ -118,6 +118,8 @@ void init_pyspiel_policy(py::module& m) {
       .def(py::init<const Game&>())
       .def("evaluate_and_update_policy",
            &open_spiel::algorithms::CFRSolver::EvaluateAndUpdatePolicy)
+      .def("info_state_values_table",
+           &open_spiel::algorithms::CFRSolver::InfoStateValuesTable)
       .def("current_policy", &open_spiel::algorithms::CFRSolver::CurrentPolicy)
       .def("average_policy", &open_spiel::algorithms::CFRSolver::AveragePolicy)
       .def("tabular_average_policy",
@@ -171,7 +173,11 @@ void init_pyspiel_policy(py::module& m) {
   CFRInfoStateValues.def_readonly("legal_actions", &open_spiel::algorithms::CFRInfoStateValues::legal_actions)
                     .def_readonly("cumulative_regrets", &open_spiel::algorithms::CFRInfoStateValues::cumulative_regrets)
                     .def_readonly("cumulative_policy", &open_spiel::algorithms::CFRInfoStateValues::cumulative_policy)
-                    .def_readonly("current_policy", &open_spiel::algorithms::CFRInfoStateValues::current_policy);
+                    .def_readonly("current_policy", &open_spiel::algorithms::CFRInfoStateValues::current_policy)
+                    .def_readonly("instantaneous_regrets", &open_spiel::algorithms::CFRInfoStateValues::instantaneous_regrets)
+                    .def("apply_regret_matching", &open_spiel::algorithms::CFRInfoStateValues::ApplyRegretMatching)
+                    ;
+
 
   py::class_<open_spiel::algorithms::ExternalSamplingMCCFRSolver>(
       m, "ExternalSamplingMCCFRSolver")
@@ -183,6 +189,8 @@ void init_pyspiel_policy(py::module& m) {
                                    ExternalSamplingMCCFRSolver::RunIteration))
       .def("average_policy",
            &open_spiel::algorithms::ExternalSamplingMCCFRSolver::AveragePolicy)
+      .def("current_policy",
+           &open_spiel::algorithms::ExternalSamplingMCCFRSolver::CurrentPolicy)
       .def("info_state_values_table",
            &open_spiel::algorithms::ExternalSamplingMCCFRSolver::InfoStateValuesTable)
       .def(py::pickle(

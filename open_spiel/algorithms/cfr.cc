@@ -385,10 +385,11 @@ std::vector<double> CFRSolverBase::ComputeCounterFactualRegret(
 
     for (int aidx = 0; aidx < legal_actions.size(); ++aidx) {
       // Update regrets.
-      double cfr_regret = cfr_reach_prob *
-                          (child_utilities[aidx] - state_value[current_player]);
+      double instantaneous_regret = child_utilities[aidx] - state_value[current_player];
+      double cfr_regret = cfr_reach_prob * instantaneous_regret;
 
       is_vals.cumulative_regrets[aidx] += cfr_regret;
+      is_vals.instantaneous_regrets[aidx] = instantaneous_regret;
 
       // Update average policy.
       if (linear_averaging_) {
@@ -502,12 +503,15 @@ std::string CFRInfoStateValues::ToString() const {
   absl::StrAppend(&str,
                   "Cumulative policy: ", absl::StrJoin(cumulative_policy, ", "),
                   "\n");
+  absl::StrAppend(&str,
+                  "Instantaneous regret: ", absl::StrJoin(instantaneous_regrets, ", "),
+                  "\n");
   return str;
 }
 
 std::string CFRInfoStateValues::Serialize(int double_precision) const {
   std::string str = "";
-  std::string cumulative_regrets_str, cumulative_policy_str, current_policy_str;
+  std::string cumulative_regrets_str, cumulative_policy_str, current_policy_str, instantaneous_regret_str;
   if (double_precision == -1) {
     cumulative_regrets_str =
         absl::StrJoin(cumulative_regrets, ",", HexDoubleFormatter());
@@ -515,6 +519,8 @@ std::string CFRInfoStateValues::Serialize(int double_precision) const {
         absl::StrJoin(cumulative_policy, ",", HexDoubleFormatter());
     current_policy_str =
         absl::StrJoin(current_policy, ",", HexDoubleFormatter());
+    instantaneous_regret_str =
+        absl::StrJoin(instantaneous_regrets, ",", HexDoubleFormatter());
   } else {
     cumulative_regrets_str = absl::StrJoin(
         cumulative_regrets, ",", SimpleDoubleFormatter(double_precision));
@@ -522,11 +528,15 @@ std::string CFRInfoStateValues::Serialize(int double_precision) const {
         cumulative_policy, ",", SimpleDoubleFormatter(double_precision));
     current_policy_str = absl::StrJoin(current_policy, ",",
                                        SimpleDoubleFormatter(double_precision));
+    instantaneous_regret_str = absl::StrJoin(instantaneous_regrets, ",",
+                                       SimpleDoubleFormatter(double_precision));
+
   }
   absl::StrAppend(&str, absl::StrJoin(legal_actions, ","), ";");
   absl::StrAppend(&str, cumulative_regrets_str, ";");
   absl::StrAppend(&str, cumulative_policy_str, ";");
-  absl::StrAppend(&str, current_policy_str);
+  absl::StrAppend(&str, current_policy_str, ";");
+  absl::StrAppend(&str, instantaneous_regret_str);
   return str;
 }
 
@@ -545,10 +555,11 @@ CFRInfoStateValues DeserializeCFRInfoStateValues(absl::string_view serialized) {
   res.cumulative_regrets.reserve(num_elements);
   res.cumulative_policy.reserve(num_elements);
   res.current_policy.reserve(num_elements);
+  res.instantaneous_regrets.reserve(num_elements);
 
   // Insert the actual values
   int la_value;
-  double cumu_regret_value, cumu_policy_value, curr_policy_value;
+  double cumu_regret_value, cumu_policy_value, curr_policy_value, instantaneous_regret_value;
   for (int i = 0; i < num_elements; i++) {
     SPIEL_CHECK_TRUE(absl::SimpleAtoi(str_values.at(0).at(i), &la_value));
     absl::from_chars(
@@ -563,11 +574,17 @@ CFRInfoStateValues DeserializeCFRInfoStateValues(absl::string_view serialized) {
         str_values.at(3).at(i).data(),
         str_values.at(3).at(i).data() + str_values.at(3).at(i).size(),
         curr_policy_value);
+    absl::from_chars(
+        str_values.at(4).at(i).data(),
+        str_values.at(4).at(i).data() + str_values.at(4).at(i).size(),
+        instantaneous_regret_value);
 
     res.legal_actions.push_back(la_value);
     res.cumulative_regrets.push_back(cumu_regret_value);
     res.cumulative_policy.push_back(cumu_policy_value);
     res.current_policy.push_back(curr_policy_value);
+    res.instantaneous_regrets.push_back(instantaneous_regret_value);
+
   }
   return res;
 }

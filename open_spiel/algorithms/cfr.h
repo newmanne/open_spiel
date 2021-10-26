@@ -45,7 +45,8 @@ struct CFRInfoStateValues {
       : legal_actions(la),
         cumulative_regrets(la.size(), init_value),
         cumulative_policy(la.size(), init_value),
-        current_policy(la.size(), 1.0 / la.size()) {}
+        current_policy(la.size(), 1.0 / la.size()),
+        instantaneous_regrets(la.size(), 0) {}
   CFRInfoStateValues(std::vector<Action> la) : CFRInfoStateValues(la, 0) {}
 
   // For randomized initial regrets.
@@ -95,6 +96,8 @@ struct CFRInfoStateValues {
   std::vector<double> cumulative_regrets;
   std::vector<double> cumulative_policy;
   std::vector<double> current_policy;
+  std::vector<double> instantaneous_regrets;
+
 };
 
 CFRInfoStateValues DeserializeCFRInfoStateValues(absl::string_view serialized);
