@@ -60,3 +60,6 @@ Package.resolved
 
 # PDFS
 *.pdf
+*.png
+# Pickles
+*.pkl
