@@ -62,3 +62,6 @@ open_spiel/.vs
 
 # PDFS
 *.pdf
+*.png
+# Pickles
+*.pkl
