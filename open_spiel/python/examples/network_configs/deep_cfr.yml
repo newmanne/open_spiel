@@ -1,0 +1,12 @@
+policy_network_layers: [128]
+advantage_network_layers: [128]
+num_iterations: 300
+num_traversals: 40
+learning_rate: 0.00001
+batch_size_advantage: null
+batch_size_strategy: null
+policy_network_train_steps: 1
+advantage_network_train_steps: 1
+reinitialize_advantage_networks: true
+memory_capacity: 10_000_000
+seed: 1234
