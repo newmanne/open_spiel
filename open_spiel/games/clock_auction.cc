@@ -60,6 +60,10 @@ double DotProduct(std::vector<int> const &a, std::vector<double> const &b) {
   return std::inner_product(std::begin(a), std::end(a), std::begin(b), 0.0);
 }
 
+int Factorial(int x) {
+  return (x == 0) || (x == 1) ? 1 : x * Factorial(x-1);
+}
+
 // Cartesian product helper functions
 void CartesianRecurse(std::vector<std::vector<int>> &accum, std::vector<int> stack, std::vector<std::vector<int>> sequences, int index) {
     std::vector<int> sequence = sequences[index];
@@ -120,6 +124,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
   int undersell_rule,
   int information_policy,
   bool allow_negative_profit_bids,
+  bool tiebreaks,
   std::vector<std::vector<std::vector<double>>> values,
   std::vector<std::vector<double>> budgets,
   std::vector<std::vector<double>> probs
@@ -129,6 +134,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       player_moves_(0),
       max_rounds_(max_rounds),
       finished_(false),
+      tiebreaks_(tiebreaks),
       num_licenses_(num_licenses),
       num_players_(num_players),
       increment_(increment),
@@ -173,107 +179,98 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
         all_bids_activity_.push_back(DotProduct(bid, product_activity_));
       }
 
+      tie_breaks_needed_ = std::vector<std::vector<Player>>(num_products_, std::vector<Player>());
+      selected_order_ = std::vector<std::vector<Player>>(num_products_, std::vector<Player>());
+      default_player_order_ = std::vector<std::vector<Player>>(num_products_, std::vector<Player>(num_players_, 0));
+      for (int j = 0; j < num_products_; ++j) {
+        for (auto p = Player{0}; p < num_players_; ++p) {
+          default_player_order_[j][p] = p;
+        }
+      }
+
 }
 
 std::vector<int> AuctionState::ActionToBid(Action action) const {
   return all_bids_[action];
 }
 
-void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
 
-  // Check the actions are valid.
-  SPIEL_CHECK_EQ(actions.size(), num_players_);
-  for (auto p = Player{0}; p < num_players_; ++p) {
-    SPIEL_CHECK_EQ(round_ - 1, submitted_demand_[p].size());
-    const Action action = actions[p];
-    auto bid = ActionToBid(action);
-    SPIEL_CHECK_GE(activity_[p], all_bids_activity_[action]);
-    submitted_demand_[p].push_back(bid);
-    player_moves_++;
+void AuctionState::ProcessBids(const std::vector<std::vector<Player>> player_order) {
+  SPIEL_CHECK_EQ(player_order.size(), num_products_);
+  for (int j = 0; j < num_products_; j++) {
+    SPIEL_CHECK_EQ(player_order[j].size(), num_players_);
   }
 
-  // Demand processing
-  if (round_ == 1 || undersell_rule_ == kUndersellAllowed) {
-    // Just copy it straight over
-    for (auto p = Player{0}; p < num_players_; ++p) {
-      processed_demand_[p].push_back(submitted_demand_[p].back());
+  auto current_agg = aggregate_demands_.back();
+
+  // Copy over current processed demand
+  std::vector<std::vector<int>> bids;
+  std::vector<std::vector<int>> requested_changes;
+  // TODO: For now points is a zero vector, but possible grace period implementations would change that
+  std::vector<int> points = activity_;
+  for (auto p = Player{0}; p < num_players_; ++p) {
+    auto last_round_holdings = processed_demand_[p].back();
+
+    bids.push_back(last_round_holdings);
+    
+    std::vector<int> rq(num_products_, 0);
+    for (int j = 0; j < num_products_; ++j) {
+      int delta = submitted_demand_[p].back()[j] - last_round_holdings[j];
+      rq[j] = delta;
+      points[p] -= last_round_holdings[j] * product_activity_[j];
     }
-  } else if (undersell_rule_ == kUndersell) {
-    /*
-    * This is one particular implementation of undersell that always moves over players and products in the same order. Usually randomization is involved, but this would blow up the game.
-    */
+    requested_changes.push_back(rq);
+  }
 
-    auto current_agg = aggregate_demands_.back();
+  bool changed = true;
 
-    // Copy over current processed demand
-    std::vector<std::vector<int>> bids;
-    std::vector<std::vector<int>> requested_changes;
-    // TODO: For now points is a zero vector, but possible grace period implementations would change that
-    std::vector<int> points = activity_;
-    for (auto p = Player{0}; p < num_players_; ++p) {
-      auto last_round_holdings = processed_demand_[p].back();
-
-      bids.push_back(last_round_holdings);
-      
-      std::vector<int> rq(num_products_, 0);
-      for (int j = 0; j < num_products_; ++j) {
-        int delta = submitted_demand_[p].back()[j] - last_round_holdings[j];
-        rq[j] = delta;
-        points[p] -= last_round_holdings[j] * product_activity_[j];
-      }
-      requested_changes.push_back(rq);
-    }
-
-    bool changed = true;
-
-    while (changed) {
-      changed = false;
-      for (auto p = Player{0}; p < num_players_; ++p) {
+  while (changed) {
+    changed = false;
+    for (int j = 0; j < num_products_; ++j) {
+      for (auto p : player_order[j]) {
         auto& bid = bids[p];
         auto& changes = requested_changes[p];
 
         // Process drops
-        for (int j = 0; j < num_products_; ++j) {
-          if (changes[j] < 0) {
-            int drop_room = current_agg[j] - num_licenses_[j];
-            if (drop_room > 0) {
-              int amount = std::min(drop_room, -changes[j]);
-              bid[j] -= amount;
-              SPIEL_CHECK_GE(bid[j], 0);
-              changed = true;
-              points[p] += amount * product_activity_[j];
-              current_agg[j] -= amount;
-              changes[j] += amount;
-            }
+        if (changes[j] < 0) {
+          int drop_room = current_agg[j] - num_licenses_[j];
+          if (drop_room > 0) {
+            int amount = std::min(drop_room, -changes[j]);
+            bid[j] -= amount;
+            SPIEL_CHECK_GE(bid[j], 0);
+            changed = true;
+            points[p] += amount * product_activity_[j];
+            current_agg[j] -= amount;
+            changes[j] += amount;
           }
         }
         
         // Process pickups
-        for (int j = 0; j < num_products_; ++j) {
-          while (changes[j] > 0 && points[p] >= product_activity_[j]) {
-            bid[j]++;
-            SPIEL_CHECK_LE(bid[j], num_licenses_[j]);
-            current_agg[j]++;
-            changed = true;
-            points[p] -= product_activity_[j];
-            changes[j]--;
-          }
+        while (changes[j] > 0 && points[p] >= product_activity_[j]) {
+          bid[j]++;
+          SPIEL_CHECK_LE(bid[j], num_licenses_[j]);
+          current_agg[j]++;
+          changed = true;
+          points[p] -= product_activity_[j];
+          changes[j]--;
         }
-
       }
     }
-
-    // Finally, copy over submitted -> processed
-    for (auto p = Player{0}; p < num_players_; ++p) {
-      for (int j = 0; j < num_products_; ++j) {
-        SPIEL_CHECK_GE(bids[p][j], 0);
-      }      
-      processed_demand_[p].push_back(bids[p]);
-    }
-  } else {
-      SpielFatalError("Unknown undersell");  
   }
 
+  // Finally, copy over submitted -> processed
+  for (auto p = Player{0}; p < num_players_; ++p) {
+    for (int j = 0; j < num_products_; ++j) {
+      SPIEL_CHECK_GE(bids[p][j], 0);
+    }      
+    processed_demand_[p].push_back(bids[p]);
+  }
+
+  cur_player_ = kSimultaneousPlayerId;
+  PostProcess();
+}
+
+void AuctionState::PostProcess() {
   // Calculate aggregate demand, excess demand
   bool any_excess = false;  
   std::vector<bool> excess_demand(num_products_, false);
@@ -316,6 +313,83 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
   }
 }
 
+bool AuctionState::DetermineTiebreaks() {
+  /* Step 1: Figure out for each product whether we may be in a tie-breaking situation. Note that we can have false positives, they "just" make the game bigger. 
+    *         One necessary condition: At least two people want to drop the same product AND the combined dropping will take the product below supply
+              Note that this doesn't consider demand that might be added to the product - this could resolve the issue, but if that pick-up can only be processed conditional on another drop, it gets more complicated... We ignore this for now.
+    */
+  tie_breaks_needed_.clear();
+  selected_order_.clear();
+  tie_break_index_ = 0;
+  bool tie_breaking_not_needed = true;
+  std::vector<std::vector<int>> drops_per_product; // First index is product, second is player. Positive numbers. 0 if not a drop
+  auto current_agg = aggregate_demands_.back();
+
+  for (int j = 0; j < num_products_; ++j) {
+    std::vector<int> drops;
+    for (auto p = Player{0}; p < num_players_; ++p) {
+      int delta = submitted_demand_[p].back()[j] - processed_demand_[p].back()[j];   
+      drops.push_back(delta < 0 ? -delta : 0);
+    }
+    drops_per_product.push_back(drops);
+  }
+
+  for (int j = 0; j < num_products_; ++j) {
+    std::vector<Player> tiebreaks;
+    if (current_agg[j] - Sum(drops_per_product[j]) < num_licenses_[j]) {
+      for (auto p = Player{0}; p < num_players_; ++p) {
+        if (drops_per_product[j][p] > 0) {
+          tiebreaks.push_back(p);
+        }
+      }
+    }
+    if (tiebreaks.size() <= 1) {
+      tiebreaks.clear(); // No tie-breaking if only one person dropping
+    } else {
+      if (tie_breaking_not_needed) { // First time we've realized we'll need to tie-break. Set the intial index appropriately
+        tie_breaking_not_needed = false; 
+        tie_break_index_ = j;
+      }
+    }
+    tie_breaks_needed_.push_back(tiebreaks);
+  }
+  return tie_breaking_not_needed;
+}
+
+void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
+  // Check the actions are valid.
+  SPIEL_CHECK_EQ(actions.size(), num_players_);
+  for (auto p = Player{0}; p < num_players_; ++p) {
+    SPIEL_CHECK_EQ(round_ - 1, submitted_demand_[p].size());
+    const Action action = actions[p];
+    auto bid = ActionToBid(action);
+    SPIEL_CHECK_GE(activity_[p], all_bids_activity_[action]);
+    submitted_demand_[p].push_back(bid);
+    player_moves_++;
+  }
+
+  // Demand processing
+  if (round_ == 1 || undersell_rule_ == kUndersellAllowed) {
+    // Just copy it straight over
+    for (auto p = Player{0}; p < num_players_; ++p) {
+      processed_demand_[p].push_back(submitted_demand_[p].back());
+    }
+    PostProcess();
+  } else if (undersell_rule_ == kUndersell) {
+    bool tiebreaks_not_needed = true;
+    if (tiebreaks_ && round_ > 1) {
+      tiebreaks_not_needed = DetermineTiebreaks();
+    }
+    if (tiebreaks_not_needed) { // No chance node required. Just get on with the game
+      ProcessBids(default_player_order_); 
+} else {
+      cur_player_ = kChancePlayerId;
+    }
+  } else {
+      SpielFatalError("Unknown undersell");  
+  }
+}
+
 std::string AuctionState::ActionToString(Player player, Action action_id) const {
   if (player == kSimultaneousPlayerId)
     return FlatJointActionToString(action_id);
@@ -325,7 +399,9 @@ std::string AuctionState::ActionToString(Player player, Action action_id) const 
   } else {
     if (value_.size() < num_players_) {
       return absl::StrCat("Player ", value_.size(), " was assigned values: ", absl::StrJoin(values_[value_.size()][action_id], ", "), " and a budget of ", budgets_[budget_.size()][action_id]);
-    } 
+    } else {
+      return "Solving a tie-breaker";
+    }
   }
 }
 
@@ -352,6 +428,46 @@ void AuctionState::DoApplyAction(Action action) {
   if (value_.size() == num_players_) { // All of the assignments have been made
     cur_player_ = kSimultaneousPlayerId;
   }
+
+  if (round_ > 1) { // Only reason for a chance node here is tie-breaking
+    // Pad if needed
+    while (selected_order_.size() < tie_break_index_) {
+      std::vector<Player> order;
+      for (auto p = Player{0}; p < num_players_; ++p) {
+        order.push_back(p);    
+      }
+      selected_order_.push_back(order);
+    }
+
+
+    std::vector<Player> order = tie_breaks_needed_[tie_break_index_];
+    // Assign ordering for this index
+    for (int i = 0; i < action; i++) {
+      std::next_permutation(order.begin(), order.end());
+    }
+
+    // Pad with players that aren't in the list
+    for (auto p = Player{0}; p < num_players_; ++p) {
+      if (std::find(order.begin(), order.end(), p) == order.end()) { // Not in vector
+        order.push_back(p);    
+      }
+    }
+    selected_order_.push_back(order);
+ 
+    tie_break_index_++;
+    while (tie_break_index_ < num_products_) {
+      if (tie_breaks_needed_[tie_break_index_].size() == 0) {
+        std::vector<Player> order = default_player_order_[tie_break_index_];
+        selected_order_.push_back(order);
+        tie_break_index_++;
+      } else {
+        break; // We need to actually do this one and it will require another chance node
+      }
+    }
+    if (tie_break_index_ == num_products_) { // Done with chance nodes
+      ProcessBids(selected_order_);
+    }
+  }
 }
 
 bool IsZeroBid(std::vector<int> const &bid) {
@@ -377,7 +493,7 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
   }
 
   int activity_budget = activity_[player];
-  
+
   auto& price = posted_price_.back();
   auto& value = value_[player];
   double budget = budget_[player];
@@ -387,12 +503,15 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
   bool positive_profit_on = false;
 
   bool all_bad = true;
-
   for (int b = 0; b < all_bids_.size(); b++) {
     auto& bid = all_bids_[b];
 
-    // TODO: DROP BIDS SHOULD BE HANDLED AT SoR prices, so you need to assemble a clock vector based on the bid and how it pertains to your previous bid
-    double bid_price = DotProduct(bid, price);
+    /* Note we a) use posted prices and b) assume all drops go through. A more sophisticated bidder might think differently (e.g., try to fulfill budget in expectation)
+     * Consider e.g. if you drop a product you might get stuck! So you can wind up over your budget if your drop fails
+     * Also consider that if you drop a product and get stuck, you only pay SoR on that product
+     */
+
+    double bid_price = DotProduct(bid, price); 
     double profit = DotProduct(bid, value) - bid_price;
     // TODO: Here is another place where linear valuations creep in, might be better to abstract into a class
     bool non_negative_profit = profit >= 0;
@@ -421,7 +540,6 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
     actions.clear();
     actions.push_back(0);
   }
-
   return actions;
 }
 
@@ -433,7 +551,12 @@ std::vector<std::pair<Action, double>> AuctionState::ChanceOutcomes() const {
   if (value_.size() < num_players_) { // Chance node is assigning a type
     auto player_index = value_.size();
     probs = type_probs_[player_index];
-  } 
+  } else { // Chance node is breaking a tie
+    int chance_outcomes_required = Factorial(tie_breaks_needed_[tie_break_index_].size());
+    for (int i = 0; i < chance_outcomes_required; i++) {
+      probs.push_back(1. / chance_outcomes_required);
+    }
+  }
 
   for(int i = 0; i < probs.size(); i++) {
     valuesAndProbs.push_back({i, probs[i]});
@@ -564,7 +687,7 @@ int AuctionGame::NumDistinctActions() const {
 
 std::unique_ptr<State> AuctionGame::NewInitialState() const {
   std::unique_ptr<AuctionState> state(
-      new AuctionState(shared_from_this(), num_players_, max_rounds_, num_licenses_, increment_, open_price_, product_activity_, undersell_rule_, information_policy_, allow_negative_profit_bids_, values_,  budgets_, type_probs_));
+      new AuctionState(shared_from_this(), num_players_, max_rounds_, num_licenses_, increment_, open_price_, product_activity_, undersell_rule_, information_policy_, allow_negative_profit_bids_, tiebreaks_, values_,  budgets_, type_probs_));
   return state;
 }
 
@@ -752,6 +875,12 @@ AuctionGame::AuctionGame(const GameParameters& params) :
     max_rounds_ = 1; // Doesn't really matter for anything
   }
 
+  if (ContainsKey(object, "tiebreaks")) {
+    tiebreaks_ = object["tiebreaks"].GetBool();
+  } else {
+    tiebreaks_ = true;
+  }
+
   CheckRequiredKey(object, "undersell_rule");
   std::string undersell_rule_string = object["undersell_rule"].GetString();
   if (undersell_rule_string == "undersell_allowed") {
@@ -792,7 +921,6 @@ AuctionGame::AuctionGame(const GameParameters& params) :
         SpielFatalError("Mistmatched size of value and number of licences!");  
       }
 
-
       player_values.push_back(value);
       double budget = ParseDouble(type_object["budget"]);
       if (budget > max_budget_) {
@@ -814,6 +942,7 @@ AuctionGame::AuctionGame(const GameParameters& params) :
   for (auto p = Player{0}; p < num_players_; p++) {
     lengths.push_back(type_probs_[p].size());
   }
+  lengths.push_back(Factorial(num_players_) * num_products_);
   max_chance_outcomes_ = *std::max_element(lengths.begin(), lengths.end());
   
 
