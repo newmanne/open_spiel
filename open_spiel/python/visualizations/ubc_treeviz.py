@@ -34,6 +34,7 @@ from __future__ import print_function
 
 import collections
 import pyspiel
+from absl import logging
 
 # pylint: disable=g-import-not-at-top
 try:
@@ -146,7 +147,6 @@ class GameTree(pygraphviz.AGraph):
                state_prob_limit=None,
                action_prob_limit=None,
                **kwargs):
-
     kwargs["directed"] = kwargs.get("directed", True)
     super(GameTree, self).__init__(**kwargs)
 
@@ -159,6 +159,9 @@ class GameTree(pygraphviz.AGraph):
     self._node_decorator = node_decorator
     self._edge_decorator = edge_decorator
     self.policy = policy
+    if self.policy is None and state_prob_limit or action_prob_limit:
+      raise ValueError("Must supply policy to use state/action prob limits!")
+
     self.state_prob_limit = state_prob_limit
 
     self._group_infosets = group_infosets
@@ -180,7 +183,9 @@ class GameTree(pygraphviz.AGraph):
 
     root = game.new_initial_state()
     self.add_node(self.state_to_str(root), **self._node_decorator(root))
+    logging.info("Building tree...")
     self._build_tree(root, 0, depth_limit, state_prob_limit=state_prob_limit, state_prob=1., action_prob_limit=action_prob_limit)
+    logging.info("Built tree!")
 
     for (player, info_state), sibblings in self._infosets.items():
       cluster_name = "cluster_{}_{}".format(player, info_state)
@@ -223,10 +228,6 @@ class GameTree(pygraphviz.AGraph):
     if depth > depth_limit >= 0:
       return
 
-    if state_prob_limit is not None and state_prob < state_prob_limit:
-      # The probability of reaching this state is so low, we quit
-      return
-
     if self.policy:
       action_probs = self.policy.action_probabilities(state) if not state.is_chance_node() else dict(state.chance_outcomes())
 
@@ -238,6 +239,10 @@ class GameTree(pygraphviz.AGraph):
           # This action is never chosen, so we'll just not draw it or it's descendents
           continue
         kwargs['state_prob'] *= action_prob
+
+        if state_prob_limit is not None and kwargs['state_prob'] < state_prob_limit:
+          # The probability of reaching this state is so low, we quit
+          continue
 
       child = state.child(action)
       child_str = self.state_to_str(child)
