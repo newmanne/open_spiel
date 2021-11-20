@@ -65,6 +65,7 @@ class AuctionState : public SimMoveState {
     int undersell_rule,
     int information_policy,
     bool allow_negative_profit_bids,
+    bool tiebreaks,
     std::vector<std::vector<std::vector<double>>> values,
     std::vector<std::vector<double>> budgets,
     std::vector<std::vector<double>> type_probs
@@ -90,7 +91,11 @@ class AuctionState : public SimMoveState {
  private:
   std::vector<std::string> ToHidden(const std::vector<int>& demand) const;
   std::vector<int> ActionToBid(Action action) const;
-  void HandleUndersell(Action action);
+  void PostProcess();
+  void ProcessBids(const std::vector<std::vector<Player>> player_order);
+  void ChanceOutcomeToOrdering();
+  bool DetermineTiebreaks();
+
  
   // Initialized to invalid values. Use Game::NewInitialState().
   Player cur_player_;  // Player whose turn it is.
@@ -111,6 +116,7 @@ class AuctionState : public SimMoveState {
   int undersell_rule_;
   int information_policy_;
   bool allow_negative_profit_bids_;
+  bool tiebreaks_;
 
   // Type info
   std::vector<std::vector<std::vector<double>>> values_;
@@ -143,6 +149,11 @@ class AuctionState : public SimMoveState {
   std::vector<std::vector<int>> all_bids_;
   // Mapping from ActionID -> Activity
   std::vector<int> all_bids_activity_;
+
+  std::vector<std::vector<Player>> default_player_order_;
+  std::vector<std::vector<Player>> tie_breaks_needed_;
+  std::vector<std::vector<Player>> selected_order_;
+  int tie_break_index_; // What product are we currently on a chance node for?
 
   bool finished_;
 
@@ -188,6 +199,7 @@ class AuctionGame : public SimMoveGame {
   int undersell_rule_;
   int information_policy_;
   bool allow_negative_profit_bids_;
+  bool tiebreaks_;
 
   int max_chance_outcomes_;
   double max_value_;
