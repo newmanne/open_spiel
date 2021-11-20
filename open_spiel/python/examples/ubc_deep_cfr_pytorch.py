@@ -20,6 +20,7 @@ from __future__ import print_function
 
 from absl import app, flags, logging
 import time
+import yaml
 
 from open_spiel.python import policy
 from open_spiel.python.algorithms import expected_game_score
@@ -48,8 +49,8 @@ flags.DEFINE_integer("seed", None, "Seed")
 def main(unused_argv):
 
   logging.info("Loading network parameters from %s", FLAGS.nn_file)
-  with open(FLAGS.nn_file, 'r') as f:
-    network_params = json.load(f)
+  with open(FLAGS.nn_file, 'rb') as fh:
+      network_params = yaml.load(fh,Loader=yaml.FullLoader)
 
   if FLAGS.num_iterations:
     network_params['num_iterations'] = FLAGS.num_iterations
