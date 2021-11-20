@@ -154,7 +154,7 @@ def main(argv):
         )
         agents.append(agent)
 
-    expl_policies_avg = NFSPPolicies(env, agents, ubc_nfsp.MODE.MODE_AVERAGE_POLICY)
+    expl_policies_avg = NFSPPolicies(env, agents, ubc_nfsp.MODE.average_policy)
 
     for ep in range(config['num_training_episodes']):
         time_step = env.reset()
@@ -176,9 +176,9 @@ def main(argv):
             logging.info("[%s] NashConv AVG %s", ep + 1, n_conv)
             logging.info("_____________________________________________")
 
-            checkpoint_path = os.path.join(args.checkpoint_dir, 'checkpoint_latest.pkl')
-            with open(checkpoint_path, 'wb') as f:
-                pickle.dump(expl_policies_avg, f)
+            # checkpoint_path = os.path.join(args.checkpoint_dir, 'checkpoint_latest.pkl')
+            # with open(checkpoint_path, 'wb') as f:
+            #     pickle.dump(expl_policies_avg, f)
 
 
 

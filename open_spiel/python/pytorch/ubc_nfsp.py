@@ -32,7 +32,7 @@ import torch
 import torch.nn.functional as F
 
 from open_spiel.python import rl_agent
-from open_spiel.python.pytorch import dqn
+from open_spiel.python.pytorch import ubc_dqn
 
 
 Transition = collections.namedtuple(
@@ -87,14 +87,14 @@ class NFSP(rl_agent.AbstractAgent):
         "min_buffer_size_to_learn": min_buffer_size_to_learn,
         "optimizer_str": optimizer_str,
     })
-    self._rl_agent = dqn.DQN(player_id, state_representation_size,
+    self._rl_agent = ubc_dqn.DQN(player_id, state_representation_size,
                              num_actions, hidden_layers_sizes, **kwargs)
 
     # Keep track of the last training loss achieved in an update step.
     self._last_sl_loss_value = None
 
     # Average policy network.
-    self._avg_network = dqn.MLP(state_representation_size,
+    self._avg_network = ubc_dqn.MLP(state_representation_size,
                                 self._layer_sizes, num_actions)
 
     self._savers = [
