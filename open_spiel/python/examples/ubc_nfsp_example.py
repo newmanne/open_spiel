@@ -148,11 +148,13 @@ def main(argv):
             rl_learning_rate=config['rl_learning_rate'],
             batch_size=config['batch_size'],
             min_buffer_size_to_learn=config['min_buffer_size_to_learn'],
+            learn_every=config['learn_every'],
+            optimizer_str=config['optimizer_str'],
             **dqn_kwargs
         )
         agents.append(agent)
 
-    expl_policies_avg = NFSPPolicies(env, agents, ubc_nfsp.NFSP.MODE_AVERAGE_POLICY)
+    expl_policies_avg = NFSPPolicies(env, agents, ubc_nfsp.MODE.MODE_AVERAGE_POLICY)
 
     for ep in range(config['num_training_episodes']):
         time_step = env.reset()
