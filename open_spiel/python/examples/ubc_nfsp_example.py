@@ -40,12 +40,12 @@ import json
 class NFSPPolicies(policy.Policy):
     """Joint policy to be evaluated."""
 
-    def __init__(self, env, nfsp_policies, mode):
+    def __init__(self, env, nfsp_policies, best_response_mode):
         game = env.game
         player_ids = list(range(len(nfsp_policies)))
         super(NFSPPolicies, self).__init__(game, player_ids)
         self._policies = nfsp_policies
-        self._mode = mode
+        self._best_response_mode = best_response_mode
         self._obs = {"info_state": [None] * len(player_ids), "legal_actions": [None] * len(player_ids)}
 
     def action_probabilities(self, state, player_id=None):
@@ -59,7 +59,7 @@ class NFSPPolicies(policy.Policy):
         info_state = rl_environment.TimeStep(
             observations=self._obs, rewards=None, discounts=None, step_type=None)
 
-        with self._policies[cur_player].temp_mode_as(self._mode):
+        with self._policies[cur_player].temp_mode_as(self._best_response_mode):
             p = self._policies[cur_player].step(info_state, is_evaluation=True).probs
         prob_dict = {action: p[action] for action in legal_actions}
         return prob_dict
@@ -200,7 +200,7 @@ def main(argv):
         )
         agents.append(agent)
 
-    expl_policies_avg = NFSPPolicies(env, agents, ubc_nfsp.MODE.average_policy)
+    expl_policies_avg = NFSPPolicies(env, agents, False)
 
     for ep in range(config['num_training_episodes']):
         time_step = env.reset()
@@ -222,9 +222,9 @@ def main(argv):
             logging.info("[%s] NashConv AVG %s", ep + 1, n_conv)
             logging.info("_____________________________________________")
 
-            # checkpoint_path = os.path.join(args.checkpoint_dir, 'checkpoint_latest.pkl')
-            # with open(checkpoint_path, 'wb') as f:
-            #     pickle.dump(expl_policies_avg, f)
+            checkpoint_path = os.path.join(args.checkpoint_dir, 'checkpoint_latest.pkl')
+            with open(checkpoint_path, 'wb') as f:
+                pickle.dump(expl_policies_avg, f)
 
 
 

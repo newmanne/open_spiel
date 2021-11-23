@@ -40,7 +40,7 @@ Transition = collections.namedtuple(
 
 ILLEGAL_ACTION_LOGITS_PENALTY = -1e9
 
-MODE = enum.Enum("mode", "best_response average_policy")
+# MODE = enum.Enum("mode", "best_response average_policy")
 
 
 class NFSP(rl_agent.AbstractAgent):
@@ -120,18 +120,18 @@ class NFSP(rl_agent.AbstractAgent):
     self._sample_episode_policy()
 
   @contextlib.contextmanager
-  def temp_mode_as(self, mode):
+  def temp_mode_as(self, best_response_mode):
     """Context manager to temporarily overwrite the mode."""
-    previous_mode = self._mode
-    self._mode = mode
+    previous_mode = self._best_response_mode
+    self._best_response_mode = best_response_mode
     yield
-    self._mode = previous_mode
+    self._best_response_mode = previous_mode
 
   def _sample_episode_policy(self):
     if np.random.rand() < self._anticipatory_param:
-      self._mode = MODE.best_response
+      self._best_response_mode = True
     else:
-      self._mode = MODE.average_policy
+      self._best_response_mode = False
 
   def _act(self, info_state, legal_actions):
     info_state = np.reshape(info_state, [1, -1])
@@ -166,12 +166,12 @@ class NFSP(rl_agent.AbstractAgent):
     Returns:
       A `rl_agent.StepOutput` containing the action probs and chosen action.
     """
-    if self._mode == MODE.best_response:
+    if self._best_response_mode == True:
       agent_output = self._rl_agent.step(time_step, is_evaluation)
       if not is_evaluation and not time_step.last():
         self._add_transition(time_step, agent_output)
 
-    elif self._mode == MODE.average_policy:
+    elif self._best_response_mode == False:
       # Act step: don't act at terminal info states.
       if not time_step.last():
         info_state = time_step.observations["info_state"][self.player_id]
@@ -183,7 +183,7 @@ class NFSP(rl_agent.AbstractAgent):
         self._rl_agent.add_transition(self._prev_timestep, self._prev_action,
                                       time_step)
     else:
-      raise ValueError("Invalid mode ({})".format(self._mode))
+      raise ValueError("Invalid mode ({})".format(self._best_response_mode))
 
     if not is_evaluation:
       self._step_counter += 1
@@ -191,7 +191,7 @@ class NFSP(rl_agent.AbstractAgent):
       if self._step_counter % self._learn_every == 0:
         self._last_sl_loss_value = self._learn()
         # If learn step not triggered by rl policy, learn.
-        if self._mode == MODE.average_policy:
+        if self._best_response_mode == False:
           self._rl_agent.learn()
 
       # Prepare for the next episode.

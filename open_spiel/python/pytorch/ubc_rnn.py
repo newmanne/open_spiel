@@ -91,8 +91,8 @@ class AuctionRNN(nn.Module):
         # split tensor into (per-auction, per-round) features
         prefix = infostate_tensor[:prefix_len]
         suffix = infostate_tensor[prefix_len:]
-        suffix_reshaped = suffix.reshape(4, -1, self.num_products)
-        suffix_expanded = torch.permute(suffix_reshaped, (1, 0, 2)).reshape(-1, 4*self.num_products)
+        suffix_reshaped = suffix.reshape(4, -1, self.num_products) # (features, rounds, products)
+        suffix_expanded = torch.permute(suffix_reshaped, (1, 0, 2)).reshape(-1, 4*self.num_products) # (rounds, features x products)
 
         # hack: look at non-zero prices to figure out which rounds actually happened 
         current_round = (suffix_expanded[:, -1] > 0).sum()
