@@ -85,39 +85,22 @@ class AuctionRNN(nn.Module):
         """
         offset = 0
         
-        # players: 3x 1-hot vectors for (current player in turn-based game, observer, player)
-        players = infostate_tensor[offset:offset+3*self.num_players]
-        offset += 3*self.num_players
+        prefix_len = 3*self.num_players + 1 + self.num_products
+        suffix_len_per_round = 4 * self.num_products
         
-        budget = infostate_tensor[offset:offset+1]
-        offset += 1
-        
-        values = infostate_tensor[offset:offset+self.num_products]
-        offset += self.num_products
-        
-        max_rounds = len(infostate_tensor[offset:]) // (4 * self.num_products)
-        
-        submitted_demands = infostate_tensor[offset:offset+max_rounds*self.num_products].reshape((max_rounds, self.num_products))
-        offset += max_rounds*self.num_products
-        
-        processed_demands = infostate_tensor[offset:offset+max_rounds*self.num_products].reshape((max_rounds, self.num_products))
-        offset += max_rounds*self.num_products
-        
-        observed_demands = infostate_tensor[offset:offset+max_rounds*self.num_products].reshape((max_rounds, self.num_products))
-        offset += max_rounds*self.num_products
-        
-        prices = infostate_tensor[offset:offset+max_rounds*self.num_products].reshape((max_rounds, self.num_products))
+        # split tensor into (per-auction, per-round) features
+        prefix = infostate_tensor[:prefix_len]
+        suffix = infostate_tensor[prefix_len:]
+        suffix_reshaped = suffix.reshape(4, -1, self.num_products)
+        suffix_expanded = torch.permute(suffix_reshaped, (1, 0, 2)).reshape(-1, 4*self.num_products)
 
-        current_round = (prices[:, 0] > 0).sum()
-        
+        # hack: look at non-zero prices to figure out which rounds actually happened 
+        current_round = (suffix_expanded[:, -1] > 0).sum()
+
+        # stack
         expanded_infostate = torch.hstack([
-            torch.tile(players, (current_round, 1)),
-            torch.tile(budget, (current_round, 1)),
-            torch.tile(values, (current_round, 1)),
-            submitted_demands[:current_round, :],
-            processed_demands[:current_round, :],
-            observed_demands[:current_round, :], 
-            prices[:current_round, :]
+            torch.tile(prefix, (current_round, 1)),
+            suffix_expanded[:current_round, :]
         ])
         return expanded_infostate
 
