@@ -19,7 +19,8 @@ from __future__ import division
 from __future__ import print_function
 
 from open_spiel.python import rl_environment, policy
-from open_spiel.python.pytorch import ubc_nfsp
+from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game
 from open_spiel.python.algorithms.exploitability import nash_conv
 import pyspiel
 import numpy as np
@@ -34,6 +35,7 @@ import sys
 import time
 import pickle
 import os
+import json
 
 class NFSPPolicies(policy.Policy):
     """Joint policy to be evaluated."""
@@ -62,7 +64,32 @@ class NFSPPolicies(policy.Policy):
         prob_dict = {action: p[action] for action in legal_actions}
         return prob_dict
 
+def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_products):
+    """
+    lookup table from (model name) to (function, default args)
+    TODO: cleaner way to do this?
+    """
 
+    if model_name == 'mlp': 
+        model_class = ubc_dqn.MLP
+        default_model_args = {
+            'input_size': state_size,
+            'hidden_sizes': [128],
+            'output_size': num_actions,
+        }
+    elif model_name == 'rnn':
+        model_class = ubc_rnn.AuctionRNN
+        default_model_args = {
+            'num_players': num_players,
+            'num_products': num_products, 
+            'input_size': state_size,
+            'hidden_size': 128,
+            'output_size': num_actions,
+        }
+    else: 
+        raise ValueError(f'Unrecognized model {model_name}')
+    
+    return model_class, default_model_args
 
 def main(argv):
     parser = argparse.ArgumentParser()
@@ -113,20 +140,29 @@ def main(argv):
     logging.info("Loading %s", args.game_name)
 
     # LOAD GAME
-    load_function = pyspiel.load_game if not args.turn_based else pyspiel.load_game_as_turn_based
     params = dict()
     if args.game_name == 'clock_auction':
         params['filename'] = args.filename
-
-    game = load_function(args.game_name, params)
-
+    game = smart_load_sequential_game(args.game_name, params)
+    # load_function = pyspiel.load_game if not args.turn_based else pyspiel.load_game_as_turn_based
+    
+    # print(load_function)
+    # print(params)
+    # game = load_function(args.game_name, params)
     logging.info("Game loaded")
+
+    # additionally, load game params to set up models
+    game_config_path = os.path.join(os.environ['CLOCK_AUCTION_CONFIG_DIR'], args.filename)
+    with open(game_config_path, 'r') as f:
+        game_config = json.load(f)
 
     env = rl_environment.Environment(game)
     state_size = env.observation_spec()["info_state"][0]
     num_actions = env.action_spec()["num_actions"]
     num_players = game.num_players()
+    num_products = len(game_config['activity'])
     logging.info(f"Game has a state size of {state_size}, {num_actions} distinct actions, and {num_players} players")
+    logging.info(f"Game has {num_products} products")
 
     dqn_kwargs = {
       "replay_buffer_capacity": config['replay_buffer_capacity'],
@@ -135,13 +171,23 @@ def main(argv):
       "epsilon_end": config['epsilon_end'],
     }
 
+    # Get models and default args
+    sl_model, sl_model_args = lookup_model_and_args(config['sl_model'], state_size, num_actions, num_players, num_products)
+    rl_model, rl_model_args = lookup_model_and_args(config['rl_model'], state_size, num_actions, num_players, num_products)
+
+    # Override with any user-supplied args
+    sl_model_args.update(config['sl_model_args'])
+    rl_model_args.update(config['rl_model_args'])
+
     agents = []
     for player_id in range(game.num_players()):
         agent = ubc_nfsp.NFSP(
             player_id,
-            state_representation_size=state_size,
             num_actions=num_actions,
-            hidden_layers_sizes=config['hidden_layers_sizes'],
+            sl_model=sl_model,
+            sl_model_args=sl_model_args,
+            rl_model=rl_model,
+            rl_model_args=rl_model_args,
             reservoir_buffer_capacity=config['reservoir_buffer_capacity'],
             anticipatory_param=config['anticipatory_param'],
             sl_learning_rate=config['sl_learning_rate'],

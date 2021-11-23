@@ -1,0 +1,24 @@
+sl_model: 'rnn'
+sl_model_args: {
+  hidden_size: 128,
+  num_layers: 2
+}
+rl_model: 'rnn'
+rl_model_args: {
+  hidden_size: 128,
+  num_layers: 2
+}
+num_training_episodes: 3_000_000
+eval_every: 10_000
+replay_buffer_capacity: 20_000
+reservoir_buffer_capacity: 2_000_000
+anticipatory_param: 0.1
+seed: 1234
+batch_size: 128
+rl_learning_rate: 0.00001
+sl_learning_rate: 0.01
+min_buffer_size_to_learn: 1000
+learn_every: 8
+optimizer_str: 'sgd'
+epsilon_start: 0.01
+epsilon_end: 0.001
