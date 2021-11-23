@@ -51,9 +51,11 @@ class NFSP(rl_agent.AbstractAgent):
 
   def __init__(self,
                player_id,
-               state_representation_size,
                num_actions,
-               hidden_layers_sizes,
+               sl_model,
+               sl_model_args,
+               rl_model,
+               rl_model_args,
                reservoir_buffer_capacity,
                anticipatory_param,
                batch_size=128,
@@ -66,7 +68,6 @@ class NFSP(rl_agent.AbstractAgent):
     """Initialize the `NFSP` agent."""
     self.player_id = player_id
     self._num_actions = num_actions
-    self._layer_sizes = hidden_layers_sizes
     self._batch_size = batch_size
     self._learn_every = learn_every
     self._anticipatory_param = anticipatory_param
@@ -87,15 +88,20 @@ class NFSP(rl_agent.AbstractAgent):
         "min_buffer_size_to_learn": min_buffer_size_to_learn,
         "optimizer_str": optimizer_str,
     })
-    self._rl_agent = ubc_dqn.DQN(player_id, state_representation_size,
-                             num_actions, hidden_layers_sizes, **kwargs)
+    self._rl_agent = ubc_dqn.DQN(
+      player_id,
+      num_actions, 
+      q_network_model=rl_model,
+      q_network_args=rl_model_args,
+      **kwargs
+    )
 
     # Keep track of the last training loss achieved in an update step.
     self._last_sl_loss_value = None
 
     # Average policy network.
-    self._avg_network = ubc_dqn.MLP(state_representation_size,
-                                self._layer_sizes, num_actions)
+    self._avg_network = sl_model(**sl_model_args)
+    # self._avg_network = ubc_dqn.MLP(state_representation_size, self._layer_sizes, num_actions)
 
     self._savers = [
         ("q_network", self._rl_agent._q_network),

@@ -176,9 +176,9 @@ class DQN(rl_agent.AbstractAgent):
 
   def __init__(self,
                player_id,
-               state_representation_size,
                num_actions,
-               hidden_layers_sizes=128,
+               q_network_model=MLP,
+               q_network_args={},
                replay_buffer_capacity=10000,
                batch_size=128,
                replay_buffer_class=ReplayBuffer,
@@ -200,9 +200,6 @@ class DQN(rl_agent.AbstractAgent):
 
     self.player_id = player_id
     self._num_actions = num_actions
-    if isinstance(hidden_layers_sizes, int):
-      hidden_layers_sizes = [hidden_layers_sizes]
-    self._layer_sizes = hidden_layers_sizes
     self._batch_size = batch_size
     self._update_target_network_every = update_target_network_every
     self._learn_every = learn_every
@@ -227,11 +224,8 @@ class DQN(rl_agent.AbstractAgent):
     self._last_loss_value = torch.tensor([0])
 
     # Create the Q-network instances
-    self._q_network = MLP(state_representation_size, self._layer_sizes,
-                          num_actions)
-
-    self._target_q_network = MLP(state_representation_size, self._layer_sizes,
-                                 num_actions)
+    self._q_network = q_network_model(**q_network_args)
+    self._target_q_network = q_network_model(**q_network_args)
 
     if loss_str == "mse":
       self.loss_class = F.mse_loss
