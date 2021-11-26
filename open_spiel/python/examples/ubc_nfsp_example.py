@@ -25,7 +25,7 @@ from open_spiel.python.algorithms.exploitability import nash_conv
 import pyspiel
 import numpy as np
 import pandas as pd
-
+import copy
 import absl
 import argparse
 from absl import app, logging, flags
@@ -36,6 +36,9 @@ import time
 import pickle
 import os
 import json
+import shutil
+
+CHECKPOINT_FOLDER = 'solving_checkpoints' # Don't use "checkpoints" because jupyter bug
 
 class NFSPPolicies(policy.Policy):
     """Joint policy to be evaluated."""
@@ -64,6 +67,16 @@ class NFSPPolicies(policy.Policy):
         prob_dict = {action: p[action] for action in legal_actions}
         return prob_dict
 
+    def save(self):
+        output = dict()
+        for player, policy in enumerate(self._policies):
+            output[player] = policy.save()
+        return output
+
+    def restore(self, restore_dict):
+        for player, policy in enumerate(self._policies):
+            policy.restore(restore_dict[player])
+
 def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_products):
     """
     lookup table from (model name) to (function, default args)
@@ -77,7 +90,7 @@ def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_
             'hidden_sizes': [128],
             'output_size': num_actions,
         }
-    elif model_name == 'rnn':
+    elif model_name == 'recurrent':
         model_class = ubc_rnn.AuctionRNN
         default_model_args = {
             'num_players': num_players,
@@ -95,9 +108,10 @@ def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('--filename', type=str, default='parameters.json')
     parser.add_argument('--network_config_file', type=str, default='network.yml')
-    parser.add_argument('--checkpoint_dir', type=str, default='checkpoints')
+    parser.add_argument('--output_dir', type=str, default='output') # Note: DONT NAME THIS "checkpoints" because of a jupyter notebook
     parser.add_argument('--game_name', type=str, default='clock_auction')
-    parser.add_argument('--turn_based', type=bool, default=True)
+    parser.add_argument('--job_name', type=str, default='auction')
+    parser.add_argument('--warn_on_overwrite', type=bool, default=False)
 
     # Optional Overrides
     parser.add_argument('--num_training_episodes', type=int, default=None)
@@ -115,7 +129,21 @@ def main(argv):
     parser.add_argument('--epsilon_end', type=float, default=None)
 
     args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
+    output_dir = args.output_dir
 
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    else:
+        if args.warn_on_overwrite:
+            raise ValueError("You are overwriting a folder!")
+        shutil.rmtree(output_dir)
+        os.makedirs(output_dir)
+    
+    os.makedirs(os.path.join(output_dir, CHECKPOINT_FOLDER))
+
+    logging.get_absl_handler().use_absl_log_file(args.job_name, output_dir) 
+    logging.set_verbosity(logging.INFO)
+    
     logging.info("Loading network parameters from %s", args.network_config_file)
 
     with open(args.network_config_file, 'rb') as fh:
@@ -129,6 +157,10 @@ def main(argv):
 
             if name in config:
                 config[name] = value
+
+    # Save the final overridden config so there's no confusion later if you need to cross-reference
+    with open(f'{output_dir}/{args.job_name}.yml', 'w') as outfile:
+        yaml.dump(config, outfile)
 
     logging.info(f"Setting numpy and torch seed to {config['seed']}")
     np.random.seed(config['seed'])
@@ -144,11 +176,7 @@ def main(argv):
     if args.game_name == 'clock_auction':
         params['filename'] = args.filename
     game = smart_load_sequential_game(args.game_name, params)
-    # load_function = pyspiel.load_game if not args.turn_based else pyspiel.load_game_as_turn_based
     
-    # print(load_function)
-    # print(params)
-    # game = load_function(args.game_name, params)
     logging.info("Game loaded")
 
     # additionally, load game params to set up models
@@ -202,6 +230,10 @@ def main(argv):
 
     expl_policies_avg = NFSPPolicies(env, agents, False)
 
+    nash_conv_history = []
+    min_nash_conv = None
+
+    alg_start_time = time.time()
     for ep in range(config['num_training_episodes']):
         time_step = env.reset()
         while not time_step.last():
@@ -222,10 +254,23 @@ def main(argv):
             logging.info("[%s] NashConv AVG %s", ep + 1, n_conv)
             logging.info("_____________________________________________")
 
-            checkpoint_path = os.path.join(args.checkpoint_dir, 'checkpoint_latest.pkl')
-            with open(checkpoint_path, 'wb') as f:
-                pickle.dump(expl_policies_avg, f)
+            nash_conv_history.append((ep+1, time.time() - alg_start_time, n_conv))
 
+            checkpoint = {
+                    'name': args.job_name,
+                    'walltime': time.time() - alg_start_time,
+                    'policy': expl_policies_avg.save(),
+                    'nash_conv_history': nash_conv_history,
+                }
+
+            checkpoint_path = os.path.join(output_dir, CHECKPOINT_FOLDER, 'checkpoint_latest.pkl')
+            with open(checkpoint_path, 'wb') as f:
+                pickle.dump(checkpoint, f)
+
+            best_checkpoint_path = os.path.join(output_dir, CHECKPOINT_FOLDER, 'checkpoint_best.pkl')
+            if min_nash_conv is None or n_conv <= min_nash_conv:
+                min_nash_conv = n_conv
+                shutil.copyfile(checkpoint_path, best_checkpoint_path)
 
 
 if __name__ == "__main__":

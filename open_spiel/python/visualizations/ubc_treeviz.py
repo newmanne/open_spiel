@@ -159,7 +159,7 @@ class GameTree(pygraphviz.AGraph):
     self._node_decorator = node_decorator
     self._edge_decorator = edge_decorator
     self.policy = policy
-    if self.policy is None and state_prob_limit or action_prob_limit:
+    if self.policy is None and (state_prob_limit or action_prob_limit):
       raise ValueError("Must supply policy to use state/action prob limits!")
 
     self.state_prob_limit = state_prob_limit
