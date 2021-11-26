@@ -93,6 +93,9 @@ class ReplayBuffer(object):
   def __iter__(self):
     return iter(self._data)
 
+  def clear(self):
+    self._data = []
+    self._next_entry_index = 0
 
 class SonnetLinear(nn.Module):
   """A Sonnet linear module.
@@ -453,3 +456,6 @@ class DQN(rl_agent.AbstractAgent):
         for tq_model in target_q_network.model:
           tq_model.weight *= (1 + sigma * torch.randn(tq_model.weight.shape))
     return copied_object
+
+  def clear_buffer(self):
+    self._replay_buffer.clear()

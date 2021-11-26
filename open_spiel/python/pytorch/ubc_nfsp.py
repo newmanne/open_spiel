@@ -256,7 +256,7 @@ class NFSP(rl_agent.AbstractAgent):
     checkpoint_filename = "_".join([name, "pid" + str(self.player_id)])
     return checkpoint_filename + "_latest"
 
-  def save(self, checkpoint_dir):
+  def save(self):
     """Saves the average policy network and the inner RL agent's q-network.
 
     Note that this does not save the experience replay buffers and should
@@ -265,10 +265,10 @@ class NFSP(rl_agent.AbstractAgent):
     Args:
       checkpoint_dir: directory where checkpoints will be saved.
     """
+    restore_dict = dict()
     for name, model in self._savers:
-      path = self._full_checkpoint_name(checkpoint_dir, name)
-      torch.save(model.state_dict(), path)
-      logging.info("Saved to path: %s", path)
+      restore_dict[name] = model.state_dict()
+    return restore_dict
 
   def has_checkpoint(self, checkpoint_dir):
     for name, _ in self._savers:
@@ -277,7 +277,7 @@ class NFSP(rl_agent.AbstractAgent):
         return True
     return False
 
-  def restore(self, checkpoint_dir):
+  def restore(self, restore_dict):
     """Restores the average policy network and the inner RL agent's q-network.
 
     Note that this does not restore the experience replay buffers and should
@@ -287,10 +287,11 @@ class NFSP(rl_agent.AbstractAgent):
       checkpoint_dir: directory from which checkpoints will be restored.
     """
     for name, model in self._savers:
-      full_checkpoint_dir = self._full_checkpoint_name(checkpoint_dir, name)
-      logging.info("Restoring checkpoint: %s", full_checkpoint_dir)
-      model.load_state_dict(torch.load(full_checkpoint_dir))
+      model.load_state_dict(restore_dict['name'])
 
+  def clear_buffer(self):
+    self._reservoir_buffer.clear()
+    self._rl_agent.clear_buffer()
 
 class ReservoirBuffer(object):
   """Allows uniform sampling over a stream of data.
