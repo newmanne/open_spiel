@@ -6,12 +6,13 @@ import os
 from pathlib import Path
 
 
-def dispatch_experiments(yml_config_dir, base_job_name='auctions', submit=True, mem=16, overrides='', cfr_also=True):
+def dispatch_experiments(yml_config_dir, base_job_name='auctions', game_name='parking_1', submit=True, mem=16, overrides='', cfr_also=True):
     experiments = glob.glob(f'{yml_config_dir}/*.yml')
     experiments = [ # Reserving the ability for a nicer format later
         {
             'name': Path(experiment).stem,
-            'config': Path(experiment).stem
+            'config': Path(experiment).stem,
+            'game_name': game_name,
         }
         for experiment in experiments
     ]
@@ -60,7 +61,7 @@ CMD=`{command}`
 echo $CMD
 eval $CMD
 """
-        job_file = f'{experiment_output_dir}/{slurm_job_name}.sh'
+        job_file = f'{experiment_output_dir}/{experiment_name}.sh'
         with open(job_file, 'w') as f:
             f.write(slurm)
         os.chmod(job_file, int('777', base=8)) # Octal
