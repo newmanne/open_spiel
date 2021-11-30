@@ -43,6 +43,9 @@ if (absl::GetFlag(FLAGS_turn_based)) {
   game = open_spiel::LoadGame(absl::GetFlag(FLAGS_game_name));
 }
 
+auto state = game->NewInitialState();
+state->InformationStateTensor();
+
   open_spiel::algorithms::CFRSolver solver(*game);
   std::cerr << "Starting CFR on " << game->GetType().short_name
             << "..." << std::endl;
