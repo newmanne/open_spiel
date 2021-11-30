@@ -287,7 +287,7 @@ class NFSP(rl_agent.AbstractAgent):
       checkpoint_dir: directory from which checkpoints will be restored.
     """
     for name, model in self._savers:
-      model.load_state_dict(restore_dict['name'])
+      model.load_state_dict(restore_dict[name])
 
   def clear_buffer(self):
     self._reservoir_buffer.clear()

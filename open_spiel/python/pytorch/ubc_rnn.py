@@ -9,7 +9,7 @@ class AuctionRNN(nn.Module):
     """
     An RNN model designed for our auction games.
     """
-    def __init__(self, num_players, num_products, input_size, output_size, hidden_size=128, num_layers=1, rnn_model='lstm'):
+    def __init__(self, num_players, num_products, input_size, output_size, hidden_size=128, num_layers=1, rnn_model='lstm', nonlinearity='tanh'):
         """
         Initialize the model.
 
@@ -31,20 +31,22 @@ class AuctionRNN(nn.Module):
         # - (submitted demands, processed demands, observed demands, prices) for each product
         # (if not, we won't know how to unroll the infostate tensors)
         features_per_product = 4
-        num_rounds = (input_size - (3*num_players + 1 + num_products)) // (features_per_product * num_products)
+        num_rounds = (input_size - (3 * num_players + 1 + num_products)) // (features_per_product * num_products)
         # confirm that this gives an integral number of rounds...
-        expected_input_size = 3*num_players + 1 + num_products + features_per_product * num_products * num_rounds 
+        expected_input_size = 3 * num_players + 1 + num_products + features_per_product * num_products * num_rounds 
         assert (input_size == expected_input_size), "Expected input_size = %d, but got %d" % (expected_input_size, input_size) 
 
         self.num_players = num_players
         self.num_products = num_products
 
-        input_size_per_round = 3*num_players + 1 + (features_per_product + 1) * num_products 
+        input_size_per_round = 3 * num_players + 1 + (features_per_product + 1) * num_products 
         
         if rnn_model == 'lstm':
             self.rnn = nn.LSTM(input_size=input_size_per_round, hidden_size=hidden_size, num_layers=num_layers, batch_first=True)
         elif rnn_model == 'rnn':
-            self.rnn = nn.RNN(input_size=input_size_per_round, hidden_size=hidden_size, num_layers=num_layers, batch_first=True)
+            self.rnn = nn.RNN(input_size=input_size_per_round, hidden_size=hidden_size, num_layers=num_layers, batch_first=True, nonlinearity=nonlinearity) 
+        elif rnn_model == 'gru':
+            self.rnn = nn.GRU(input_size=input_size_per_round, hidden_size=hidden_size, num_layers=num_layers, batch_first=True)
         else:
             raise ValueError('unrecognized RNN model %s' % rnn_model) 
 
@@ -85,14 +87,14 @@ class AuctionRNN(nn.Module):
         """
         offset = 0
         
-        prefix_len = 3*self.num_players + 1 + self.num_products
+        prefix_len = 3 * self.num_players + 1 + self.num_products
         suffix_len_per_round = 4 * self.num_products
         
         # split tensor into (per-auction, per-round) features
         prefix = infostate_tensor[:prefix_len]
         suffix = infostate_tensor[prefix_len:]
         suffix_reshaped = suffix.reshape(4, -1, self.num_products) # (features, rounds, products)
-        suffix_expanded = torch.permute(suffix_reshaped, (1, 0, 2)).reshape(-1, 4*self.num_products) # (rounds, features x products)
+        suffix_expanded = torch.permute(suffix_reshaped, (1, 0, 2)).reshape(-1, 4 * self.num_products) # (rounds, features x products)
 
         # hack: look at non-zero prices to figure out which rounds actually happened 
         current_round = (suffix_expanded[:, -1] > 0).sum()

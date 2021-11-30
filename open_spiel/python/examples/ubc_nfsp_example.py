@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from dataclasses import dataclass
 from open_spiel.python import rl_environment, policy
 from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn
 from open_spiel.python.examples.ubc_utils import smart_load_sequential_game
@@ -37,6 +38,7 @@ import pickle
 import os
 import json
 import shutil
+from typing import List
 
 CHECKPOINT_FOLDER = 'solving_checkpoints' # Don't use "checkpoints" because jupyter bug
 
@@ -95,94 +97,48 @@ def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_
         default_model_args = {
             'num_players': num_players,
             'num_products': num_products, 
-            'input_size': state_size,
+            'input_size': state_size, 
             'hidden_size': 128,
             'output_size': num_actions,
+            'nonlinearity': 'tanh',
         }
     else: 
         raise ValueError(f'Unrecognized model {model_name}')
     
     return model_class, default_model_args
 
-def main(argv):
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--filename', type=str, default='parameters.json')
-    parser.add_argument('--network_config_file', type=str, default='network.yml')
-    parser.add_argument('--output_dir', type=str, default='output') # Note: DONT NAME THIS "checkpoints" because of a jupyter notebook
-    parser.add_argument('--game_name', type=str, default='clock_auction')
-    parser.add_argument('--job_name', type=str, default='auction')
-    parser.add_argument('--warn_on_overwrite', type=bool, default=False)
 
-    # Optional Overrides
-    parser.add_argument('--num_training_episodes', type=int, default=None)
-    parser.add_argument('--replay_buffer_capacity', type=int, default=None)
-    parser.add_argument('--eval_every', type=int, default=None)
-    parser.add_argument('--reservoir_buffer_capacity', type=int, default=None)
-    parser.add_argument('--seed', type=int, default=None)
-    parser.add_argument('--batch_size', type=int, default=None)
-    parser.add_argument('--rl_learning_rate', type=float, default=None)
-    parser.add_argument('--sl_learning_rate', type=float, default=None)
-    parser.add_argument('--min_buffer_size_to_learn', type=int, default=None)
-    parser.add_argument('--learn_every', type=int, default=None)
-    parser.add_argument('--optimizer_str', type=str, default=None)
-    parser.add_argument('--epsilon_start', type=float, default=None)
-    parser.add_argument('--epsilon_end', type=float, default=None)
+def policy_from_checkpoint(experiment_dir, checkpoint_suffix='best'):
+    with open(f'{experiment_dir}/config.yml', 'rb') as fh:
+        config = yaml.load(fh, Loader=yaml.FullLoader)
 
-    args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
-    output_dir = args.output_dir
+    nfsp_policies = setup(experiment_dir, config).nfsp_policies
 
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    else:
-        if args.warn_on_overwrite:
-            raise ValueError("You are overwriting a folder!")
-        shutil.rmtree(output_dir)
-        os.makedirs(output_dir)
-    
-    os.makedirs(os.path.join(output_dir, CHECKPOINT_FOLDER))
+    with open(f'{experiment_dir}/{CHECKPOINT_FOLDER}/checkpoint_{checkpoint_suffix}.pkl', 'rb') as f:
+        checkpoint = pickle.load(f)
 
-    logging.get_absl_handler().use_absl_log_file(args.job_name, output_dir) 
-    logging.set_verbosity(logging.INFO)
-    
-    logging.info("Loading network parameters from %s", args.network_config_file)
+    nfsp_policies.restore(checkpoint['policy'])
+    return nfsp_policies
 
-    with open(args.network_config_file, 'rb') as fh:
-        config = yaml.load(fh,Loader=yaml.FullLoader)
+@dataclass
+class EnvAndModel:
+    env: rl_environment.Environment
+    nfsp_policies: NFSPPolicies
+    agents: List[ubc_nfsp.NFSP]
+    game: pyspiel.Game
 
-    # Override any top-level yaml args with command line arguments
-    for arg in vars(args):
-        if f'--{arg}' in sys.argv:
-            name = arg
-            value = getattr(args, arg)
+def setup(experiment_dir, config):
+    if experiment_dir.endswith('/'):
+        experiment_dir = experiment_dir[:-1]
 
-            if name in config:
-                config[name] = value
-
-    # Save the final overridden config so there's no confusion later if you need to cross-reference
-    with open(f'{output_dir}/{args.job_name}.yml', 'w') as outfile:
-        yaml.dump(config, outfile)
-
-    logging.info(f"Setting numpy and torch seed to {config['seed']}")
-    np.random.seed(config['seed'])
-    torch.manual_seed(config['seed'])
-
-    logging.info(f'Network params: {config}')
-
-    start_time = time.time()
-    logging.info("Loading %s", args.game_name)
-
-    # LOAD GAME
-    params = dict()
-    if args.game_name == 'clock_auction':
-        params['filename'] = args.filename
-    game = smart_load_sequential_game(args.game_name, params)
-    
-    logging.info("Game loaded")
-
-    # additionally, load game params to set up models
-    game_config_path = os.path.join(os.environ['CLOCK_AUCTION_CONFIG_DIR'], args.filename)
+    # Load game config
+    game_config_path = f'{experiment_dir}/game.json'
     with open(game_config_path, 'r') as f:
         game_config = json.load(f)
+
+    # Load game
+    game = smart_load_sequential_game('clock_auction', dict(filename=game_config_path))
+    logging.info("Game loaded")
 
     env = rl_environment.Environment(game)
     state_size = env.observation_spec()["info_state"][0]
@@ -229,6 +185,92 @@ def main(argv):
         agents.append(agent)
 
     expl_policies_avg = NFSPPolicies(env, agents, False)
+    return EnvAndModel(env=env, nfsp_policies=expl_policies_avg, agents=agents, game=game)
+
+
+def main(argv):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--filename', type=str, default='parameters.json')
+    parser.add_argument('--network_config_file', type=str, default='network.yml')
+    parser.add_argument('--output_dir', type=str, default='output') # Note: DONT NAME THIS "checkpoints" because of a jupyter notebook
+    parser.add_argument('--game_name', type=str, default='clock_auction')
+    parser.add_argument('--job_name', type=str, default='auction')
+    parser.add_argument('--warn_on_overwrite', type=bool, default=False)
+
+    # Optional Overrides
+    parser.add_argument('--num_training_episodes', type=int, default=None)
+    parser.add_argument('--replay_buffer_capacity', type=int, default=None)
+    parser.add_argument('--eval_every', type=int, default=None)
+    parser.add_argument('--reservoir_buffer_capacity', type=int, default=None)
+    parser.add_argument('--seed', type=int, default=None)
+    parser.add_argument('--batch_size', type=int, default=None)
+    parser.add_argument('--rl_learning_rate', type=float, default=None)
+    parser.add_argument('--sl_learning_rate', type=float, default=None)
+    parser.add_argument('--min_buffer_size_to_learn', type=int, default=None)
+    parser.add_argument('--learn_every', type=int, default=None)
+    parser.add_argument('--optimizer_str', type=str, default=None)
+    parser.add_argument('--epsilon_start', type=float, default=None)
+    parser.add_argument('--epsilon_end', type=float, default=None)
+
+    args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
+    output_dir = args.output_dir
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    else:
+        if args.warn_on_overwrite:
+            raise ValueError("You are overwriting a folder!")
+        shutil.rmtree(output_dir)
+        os.makedirs(output_dir)
+    
+    os.makedirs(os.path.join(output_dir, CHECKPOINT_FOLDER))
+
+    logging.get_absl_handler().use_absl_log_file('nfsp', output_dir) 
+    logging.set_verbosity(logging.INFO)
+    
+    logging.info("Loading network parameters from %s", args.network_config_file)
+
+    with open(args.network_config_file, 'rb') as fh:
+        config = yaml.load(fh,Loader=yaml.FullLoader)
+
+    # Override any top-level yaml args with command line arguments
+    for arg in vars(args):
+        if f'--{arg}' in sys.argv:
+            name = arg
+            value = getattr(args, arg)
+
+            if name in config:
+                config[name] = value
+
+    # Save the final overridden config so there's no confusion later if you need to cross-reference
+    with open(f'{output_dir}/config.yml', 'w') as outfile:
+        yaml.dump(config, outfile)
+
+    logging.info(f"Setting numpy and torch seed to {config['seed']}")
+    np.random.seed(config['seed'])
+    torch.manual_seed(config['seed'])
+
+    logging.info(f'Network params: {config}')
+
+    start_time = time.time()
+
+    # additionally, load game params to set up models
+    game_config_path = os.path.join(os.environ['CLOCK_AUCTION_CONFIG_DIR'], args.filename)
+    with open(game_config_path, 'r') as f:
+        game_config = json.load(f)
+    # Save the game config so there's no confusion later if you need to cross-reference
+    with open(f'{output_dir}/game.json', 'w') as outfile:
+        json.dump(game_config, outfile)
+
+    logging.info("Loading %s", args.game_name)
+
+    env_and_model = setup(output_dir, config)
+    env = env_and_model.env
+    agents = env_and_model.agents
+    nfsp_policies = env_and_model.nfsp_policies
+    game = env_and_model.game
+
+    ### NFSP ALGORITHM
 
     nash_conv_history = []
     min_nash_conv = None
@@ -250,7 +292,7 @@ def main(argv):
             losses = [agent.loss for agent in agents]
             logging.info("Losses: %s", losses)
             # pyspiel_policy = policy.python_policy_to_pyspiel_policy(expl_policies_avg)
-            n_conv = nash_conv(game, expl_policies_avg, use_cpp_br=True)
+            n_conv = nash_conv(game, nfsp_policies, use_cpp_br=True)
             logging.info("[%s] NashConv AVG %s", ep + 1, n_conv)
             logging.info("_____________________________________________")
 
@@ -259,7 +301,7 @@ def main(argv):
             checkpoint = {
                     'name': args.job_name,
                     'walltime': time.time() - alg_start_time,
-                    'policy': expl_policies_avg.save(),
+                    'policy': nfsp_policies.save(),
                     'nash_conv_history': nash_conv_history,
                 }
 
