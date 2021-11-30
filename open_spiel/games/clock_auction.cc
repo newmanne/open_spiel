@@ -725,11 +725,6 @@ std::vector<int> AuctionGame::InformationStateTensorShape() const {
   return {SizeHelper(max_rounds_)};
 }
 
-int AuctionState::InformationStateTensorSize() const {
-  std::cerr << "YAY YAY" << std::endl;
-  return std::dynamic_pointer_cast<const AuctionGame>(game_)->SizeHelper(max_rounds_);
-}
-
 void AuctionState::InformationStateTensor(Player player, absl::Span<float> values) const {
   SPIEL_CHECK_GE(player, 0);
   SPIEL_CHECK_LT(player, num_players_);

@@ -79,7 +79,6 @@ class AuctionState : public SimMoveState {
   std::vector<double> Returns() const override;
   std::string InformationStateString(Player player) const override;
   void InformationStateTensor(Player player, absl::Span<float> values) const override;
-  int InformationStateTensorSize() const override;
 
   void ObservationTensor(Player player, absl::Span<float> values) const override;
   std::unique_ptr<State> Clone() const override;
