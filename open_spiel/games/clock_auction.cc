@@ -21,7 +21,6 @@
 #include <cstring>
 #include <fstream>
 
-
 #include "open_spiel/abseil-cpp/absl/strings/str_cat.h"
 #include "open_spiel/game_parameters.h"
 #include "open_spiel/spiel.h"
@@ -37,7 +36,7 @@ namespace {
 
 // Default Parameters.
 constexpr int kMaxPlayers = 10;
-constexpr int kMoveLimit = 1000;
+constexpr int kMoveLimit = 2000;
 
 // Undersell rules
 constexpr int kUndersellAllowed = 1;
@@ -47,6 +46,7 @@ constexpr int kUndersell = 2;
 constexpr int kShowDemand = 1;
 constexpr int kHideDemand = 2;
 
+constexpr int kDefaultMaxRounds = 500;
 
 int Sum(std::vector<int> v) {
   return std::accumulate(v.begin(), v.end(), 0);
@@ -400,7 +400,7 @@ std::string AuctionState::ActionToString(Player player, Action action_id) const 
     if (value_.size() < num_players_) {
       return absl::StrCat("Player ", value_.size(), " was assigned values: ", absl::StrJoin(values_[value_.size()][action_id], ", "), " and a budget of ", budgets_[budget_.size()][action_id]);
     } else {
-      return "Solving a tie-breaker";
+      return "Tie-break";
     }
   }
 }
@@ -707,24 +707,36 @@ void AuctionState::ObservationTensor(Player player, absl::Span<float> values) co
   SpielFatalError("Unimplemented ObservationTensor");
 }
 
+
+int AuctionGame::SizeHelper(int rounds) const {
+    int size_required = 
+      num_players_ + // player encoding
+      1 + // budget
+      num_products_ + // values
+      num_products_ * rounds + // submitted demand
+      num_products_ * rounds + // proceseed demand
+      num_products_ * rounds + // aggregate demand
+      num_products_ * rounds;  // posted price;
+      return size_required;
+}
+
+
 std::vector<int> AuctionGame::InformationStateTensorShape() const {
-  return { 
-    num_players_ + // player encoding
-    1 + // budget
-    num_products_ + // values
-    num_products_ * max_rounds_ + // submitted demand
-    num_products_ * max_rounds_ + // proceseed demand
-    num_products_ * max_rounds_ + // aggregate demand
-    num_products_ * max_rounds_  // posted price
-  };
+  return {SizeHelper(max_rounds_)};
 }
 
 void AuctionState::InformationStateTensor(Player player, absl::Span<float> values) const {
   SPIEL_CHECK_GE(player, 0);
   SPIEL_CHECK_LT(player, num_players_);
 
-  SPIEL_CHECK_LE(round_, max_rounds_);
-
+  int highest_round;
+  if (max_rounds_ != kDefaultMaxRounds) {
+    SPIEL_CHECK_LE(round_, max_rounds_);
+    highest_round = max_rounds_;
+  } else {
+    highest_round = round_;
+  }
+  
   int offset = 0;
   std::fill(values.begin(), values.end(), 0.);
 
@@ -754,7 +766,7 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
       } 
     }
   }
-  offset += max_rounds_ * num_products_;
+  offset += highest_round * num_products_;
 
   // Processed demand encoding (could turn this off w/o undersell)
   if (!processed_demand_[player].empty()) {
@@ -764,7 +776,7 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
       } 
     }
   }
-  offset += max_rounds_ * num_products_;
+  offset += highest_round * num_products_;
 
   // History encoding - what you observed after each round
   for (int i = 0; i < aggregate_demands_.size(); i++) {
@@ -776,7 +788,7 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
         values[offset + i * num_products_ + j] = val;
     }
   }
-  offset += max_rounds_ * num_products_;
+  offset += highest_round * num_products_;
 
   // Price encoding - (this is derivable, but let's give it to the NN). Just posted for now
   // std::vector<std::vector<double>> posted_price_;
@@ -836,7 +848,12 @@ AuctionGame::AuctionGame(const GameParameters& params) :
   std::string configDir(std::getenv("CLOCK_AUCTION_CONFIG_DIR"));
   std::cerr << "CLOCK_AUCTION_CONFIG_DIR=" << configDir << std::endl;
 
-  std::string fullPath = configDir + '/' + filename;
+  std::string fullPath;
+  if (!filename.rfind("/", 0) == 0) {
+    fullPath = configDir + '/' + filename;
+  } else {
+    fullPath = filename;
+  }
 
   std::cerr << "Parsing configuration from " << fullPath << std::endl;
   std::string string_data = file::ReadContentsFromFile(fullPath, "r");
@@ -872,7 +889,7 @@ AuctionGame::AuctionGame(const GameParameters& params) :
   if (ContainsKey(object, "max_rounds")) {
     max_rounds_ = ParseDouble(object["max_rounds"]);
   } else {
-    max_rounds_ = 1; // Doesn't really matter for anything
+    max_rounds_ = kDefaultMaxRounds; // Doesn't really matter for anything
   }
 
   if (ContainsKey(object, "tiebreaks")) {

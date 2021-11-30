@@ -79,6 +79,7 @@ class AuctionState : public SimMoveState {
   std::vector<double> Returns() const override;
   std::string InformationStateString(Player player) const override;
   void InformationStateTensor(Player player, absl::Span<float> values) const override;
+
   void ObservationTensor(Player player, absl::Span<float> values) const override;
   std::unique_ptr<State> Clone() const override;
   std::vector<std::pair<Action, double>> ChanceOutcomes() const override;
@@ -175,6 +176,7 @@ class AuctionGame : public SimMoveGame {
   std::vector<int> InformationStateTensorShape() const override;
   std::vector<int> ObservationTensorShape() const override;
   int MaxGameLength() const override;
+  int SizeHelper(int max_rounds) const;
 
  private:
   int num_players_;
