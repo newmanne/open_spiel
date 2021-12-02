@@ -134,8 +134,8 @@ class NFSP(rl_agent.AbstractAgent):
       self._best_response_mode = False
 
   def _act(self, info_state, legal_actions):
-    info_state = np.reshape(info_state, [1, -1])
-    action_values = self._avg_network(torch.Tensor(info_state))
+    info_state = self._avg_network.prep_batch([info_state])
+    action_values = self._avg_network(info_state)
     self._last_action_values = action_values[0]
 
     legal_values = action_values[0][legal_actions]
@@ -174,7 +174,9 @@ class NFSP(rl_agent.AbstractAgent):
     elif self._best_response_mode == False:
       # Act step: don't act at terminal info states.
       if not time_step.last():
-        info_state = time_step.observations["info_state"][self.player_id]
+        info_state_flat = time_step.observations["info_state"][self.player_id]
+        info_state = self._avg_network.reshape_infostate(info_state_flat)
+
         legal_actions = time_step.observations["legal_actions"][self.player_id]
         action, probs = self._act(info_state, legal_actions)
         agent_output = rl_agent.StepOutput(action=action, probs=probs)
@@ -218,8 +220,12 @@ class NFSP(rl_agent.AbstractAgent):
     legal_actions = time_step.observations["legal_actions"][self.player_id]
     legal_actions_mask = np.zeros(self._num_actions)
     legal_actions_mask[legal_actions] = 1.0
+
+    info_state_flat = time_step.observations["info_state"][self.player_id][:]
+    info_state = self._avg_network.reshape_infostate(info_state_flat)
+
     transition = Transition(
-        info_state=(time_step.observations["info_state"][self.player_id][:]),
+        info_state=info_state,
         action_probs=agent_output.probs,
         legal_actions_mask=legal_actions_mask)
     self._reservoir_buffer.add(transition)
@@ -238,7 +244,10 @@ class NFSP(rl_agent.AbstractAgent):
       return None
 
     transitions = self._reservoir_buffer.sample(self._batch_size)
-    info_states = torch.Tensor(np.array([t.info_state for t in transitions]))
+
+    info_state_list = [t.info_state for t in transitions]
+    info_states = self._avg_network.prep_batch(info_state_list)
+
     action_probs = torch.Tensor(np.array([t.action_probs for t in transitions]))
 
     self.optimizer.zero_grad()
