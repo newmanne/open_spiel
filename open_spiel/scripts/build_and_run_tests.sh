@@ -58,13 +58,14 @@ set -e  # exit when any command fails
 MYDIR="$(dirname "$(realpath "$0")")"
 source "${MYDIR}/global_variables.sh"
 
-CXX=${CXX:-`which clang++`}
-if [ ! -x $CXX ]
-then
-  echo -n "clang++ not found (the clang C++ compiler is needed to "
-  echo "compile OpenSpiel). Exiting..."
-  exit 1
-fi
+CXX=clang++-10
+#CXX=${CXX:-`which clang++`}
+#if [ ! -x $CXX ]
+#then
+#  echo -n "clang++ not found (the clang C++ compiler is needed to "
+#  echo "compile OpenSpiel). Exiting..."
+#  exit 1
+#fi
 
 if [ "$ARG_num_threads" -eq -1 ]; then
   NPROC="nproc"
