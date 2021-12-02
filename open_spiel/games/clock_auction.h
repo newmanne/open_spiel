@@ -100,8 +100,6 @@ class AuctionState : public SimMoveState {
  
   // Initialized to invalid values. Use Game::NewInitialState().
   Player cur_player_;  // Player whose turn it is.
-  int total_moves_;
-  int player_moves_;
 
   // Param info
   int num_players_;

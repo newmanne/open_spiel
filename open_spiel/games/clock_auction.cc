@@ -36,7 +36,6 @@ namespace {
 
 // Default Parameters.
 constexpr int kMaxPlayers = 10;
-constexpr int kMoveLimit = 2000;
 
 // Undersell rules
 constexpr int kUndersellAllowed = 1;
@@ -130,8 +129,6 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
   std::vector<std::vector<double>> probs
 ) :   SimMoveState(game),
       cur_player_(kChancePlayerId), // Chance begins by setting types
-      total_moves_(0),
-      player_moves_(0),
       max_rounds_(max_rounds),
       finished_(false),
       tiebreaks_(tiebreaks),
@@ -365,7 +362,6 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
     auto bid = ActionToBid(action);
     SPIEL_CHECK_GE(activity_[p], all_bids_activity_[action]);
     submitted_demand_[p].push_back(bid);
-    player_moves_++;
   }
 
   // Demand processing
@@ -414,8 +410,6 @@ Player AuctionState::CurrentPlayer() const {
 }
 
 void AuctionState::DoApplyAction(Action action) {
-  total_moves_++;
-  
   SPIEL_CHECK_TRUE(IsChanceNode());
 
   if (value_.size() < num_players_) { // Chance node assigns a value and budget to a player
@@ -648,25 +642,24 @@ std::string AuctionState::ToString() const {
 }
 
 bool AuctionState::IsTerminal() const { 
-  if (player_moves_ >= kMoveLimit) {
-    std::cerr << "Number of player moves exceeded move limit of " << kMoveLimit << "! Terminating prematurely...\n" << std::endl;
-    for (auto p = Player{0}; p < num_players_; p++) {
-      std::cerr << "Player " << p << " moves: " << submitted_demand_[p] << std::endl;
-    }
+  if (round_ >= kDefaultMaxRounds) {
+    std::cerr << "Number of rounds exceeded limit of " << kDefaultMaxRounds << "! Terminating prematurely...\n" << std::endl;
   }
-  return finished_ || player_moves_ >= kMoveLimit; 
+  return finished_ || round_ >= kDefaultMaxRounds; 
 }
 
 std::vector<double> AuctionState::Returns() const {
-  std::vector<double> returns(num_players_, 0.0);
-  auto& final_price = posted_price_.back();
+  std::vector<double> returns(num_players_, finished_ ? 0.0 : -9999999); // Return large negative number to everyone if the game went on forever
+  if (finished_) {
+    auto& final_price = posted_price_.back();
 
-  for (auto p = Player{0}; p < num_players_; p++) {
-    auto& final_bid = processed_demand_[p].back();
-    for (int j = 0; j < num_products_; j++) {
-      SPIEL_CHECK_GE(final_bid[j], 0);
-      // linear values
-      returns[p] += (value_[p][j] - final_price[j]) * final_bid[j];
+    for (auto p = Player{0}; p < num_players_; p++) {
+      auto& final_bid = processed_demand_[p].back();
+      for (int j = 0; j < num_products_; j++) {
+        SPIEL_CHECK_GE(final_bid[j], 0);
+        // linear values
+        returns[p] += (value_[p][j] - final_price[j]) * final_bid[j];
+     }
     }
   }
   return returns;
@@ -696,7 +689,7 @@ int AuctionGame::MaxChanceOutcomes() const {
 }
 
 int AuctionGame::MaxGameLength() const {
-  return kMoveLimit; // In theory, this game is bounded only by the budgets and can go on much longer
+  return kDefaultMaxRounds * num_players_; // Probably much shorter...
 }
 
 std::vector<int> AuctionGame::ObservationTensorShape() const {
