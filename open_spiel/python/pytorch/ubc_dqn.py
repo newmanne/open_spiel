@@ -165,6 +165,21 @@ class MLP(nn.Module):
 
     self.model = nn.ModuleList(self._layers)
 
+  def reshape_infostate(self, infostate_tensor):
+    # MLP doesn't need to reshape infostates: just use flat tensor
+    return torch.tensor(infostate_tensor)
+
+  def prep_batch(self, infostate_list):        
+    """
+    Prepare a list of infostate tensors to be used as an input to the network.
+
+    Args:
+    - infostate_list: a list of infostate tensors, each with shape (num_features)
+    
+    Returns: (num_examples, num_features) tensor of features
+    """
+    return torch.vstack(infostate_list)
+
   def forward(self, x):
     for layer in self.model:
       x = layer(x)
@@ -262,7 +277,8 @@ class DQN(rl_agent.AbstractAgent):
     if (not time_step.last()) and (
         time_step.is_simultaneous_move() or
         self.player_id == time_step.current_player()):
-      info_state = time_step.observations["info_state"][self.player_id]
+      info_state_flat = time_step.observations["info_state"][self.player_id]
+      info_state = self._q_network.reshape_infostate(info_state_flat)
       legal_actions = time_step.observations["legal_actions"][self.player_id]
       epsilon = self._get_epsilon(is_evaluation)
       action, probs = self._epsilon_greedy(info_state, legal_actions, epsilon)
@@ -311,12 +327,18 @@ class DQN(rl_agent.AbstractAgent):
     legal_actions = (time_step.observations["legal_actions"][self.player_id])
     legal_actions_mask = np.zeros(self._num_actions)
     legal_actions_mask[legal_actions] = 1.0
+
+    info_state_flat = prev_time_step.observations["info_state"][self.player_id][:]
+    info_state = self._q_network.reshape_infostate(info_state_flat)
+
+    next_info_state_flat = time_step.observations["info_state"][self.player_id][:]
+    next_info_state = self._q_network.reshape_infostate(next_info_state_flat)
+
     transition = Transition(
-        info_state=(
-            prev_time_step.observations["info_state"][self.player_id][:]),
+        info_state=info_state,
         action=prev_action,
         reward=time_step.rewards[self.player_id],
-        next_info_state=time_step.observations["info_state"][self.player_id][:],
+        next_info_state=next_info_state,
         is_final_step=float(time_step.last()),
         legal_actions_mask=legal_actions_mask)
     self._replay_buffer.add(transition)
@@ -339,7 +361,7 @@ class DQN(rl_agent.AbstractAgent):
       action = np.random.choice(legal_actions)
       probs[legal_actions] = 1.0 / len(legal_actions)
     else:
-      info_state = torch.Tensor(np.reshape(info_state, [1, -1]))
+      info_state = self._q_network.prep_batch([info_state])
       q_values = self._q_network(info_state).detach()[0]
       legal_q_values = q_values[legal_actions]
       action = legal_actions[torch.argmax(legal_q_values)]
@@ -372,10 +394,12 @@ class DQN(rl_agent.AbstractAgent):
       return torch.tensor([0])
 
     transitions = self._replay_buffer.sample(self._batch_size)
-    info_states = torch.Tensor([t.info_state for t in transitions])
+
+    info_states = self._q_network.prep_batch([t.info_state for t in transitions])
+    next_info_states = self._q_network.prep_batch([t.next_info_state for t in transitions])
+
     actions = torch.LongTensor([t.action for t in transitions])
     rewards = torch.Tensor([t.reward for t in transitions])
-    next_info_states = torch.Tensor([t.next_info_state for t in transitions])
     are_final_steps = torch.Tensor([t.is_final_step for t in transitions])
     legal_actions_mask = torch.Tensor(
         np.array([t.legal_actions_mask for t in transitions]))

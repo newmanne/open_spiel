@@ -51,48 +51,23 @@ class AuctionRNN(nn.Module):
             raise ValueError('unrecognized RNN model %s' % rnn_model) 
 
         self.output_layer = nn.Linear(hidden_size, output_size)
-        
-    def forward(self, x):
-        """
-        Apply the model to a tensor x of infostates.
 
-        Args:
-        - x: (num_examples, infostate_size) tensor of infostates
-
-        Outputs: (num_examples, num_actions) tensor of outputs (logit action probabilities or Q values)
-        """
-
-        # Expand infostates into packed sequences
-        # TODO: this seems like a slow hack to avoid changing the SL/RL buffers...
-        infostates = list(x)
-        infostate_sequences = [self.expand_infostate_tensor(t) for t in infostates]
-        packed_input = self.pack_sequences(infostate_sequences)
-
-        # then, run RNN
-        rnn_outputs, _ = self.rnn(packed_input)
-        padded_output, output_lens = nn.utils.rnn.pad_packed_sequence(rnn_outputs, batch_first=True)
-        last_outputs = torch.cat([padded_output[e, i-1, :].unsqueeze(0) for e, i in enumerate(output_lens)])
-        outputs = self.output_layer(last_outputs)
-
-        return outputs
-
-    def expand_infostate_tensor(self, infostate_tensor):
+    def reshape_infostate(self, infostate_tensor):
         """
         Expand a flat infostate tensor into a per-round tensor
 
         Args:
-        - infostate_tensor: flat tensor describing game infostate
+        - infostate_tensor: flat list describing game infostate
     
         Outputs: tensor of shape (num rounds, model input size)
         """
-        offset = 0
         
         prefix_len = 3 * self.num_players + 1 + self.num_products
         suffix_len_per_round = 4 * self.num_products
         
         # split tensor into (per-auction, per-round) features
-        prefix = infostate_tensor[:prefix_len]
-        suffix = infostate_tensor[prefix_len:]
+        prefix = torch.tensor(infostate_tensor[:prefix_len])
+        suffix = torch.tensor(infostate_tensor[prefix_len:])
         suffix_reshaped = suffix.reshape(4, -1, self.num_products) # (features, rounds, products)
         suffix_expanded = torch.permute(suffix_reshaped, (1, 0, 2)).reshape(-1, 4 * self.num_products) # (rounds, features x products)
 
@@ -105,6 +80,42 @@ class AuctionRNN(nn.Module):
             suffix_expanded[:current_round, :]
         ])
         return expanded_infostate
+    
+    def prep_batch(self, infostate_list):
+        """
+        Prepare a list of infostate tensors to be used as an input to the network.
+
+        Args:
+        - infostate_list: a list of infostate tensors
+        
+        Returns: packed sequence of input tensors
+        """
+
+        # pack into packed sequences
+        packed_examples = self.pack_sequences(infostate_list)
+        return packed_examples
+
+    def forward(self, x):
+        """
+        Apply the model to a packed sequence x of infostates.
+
+        Args:
+        - x: packed sequence of infostates
+
+        Outputs: (num_examples, num_actions) tensor of outputs (logit action probabilities or Q values)
+        """
+
+        # Run RNN
+        rnn_outputs, _ = self.rnn(x)
+        
+        # Split into final output for each sequence
+        padded_output, output_lens = nn.utils.rnn.pad_packed_sequence(rnn_outputs, batch_first=True)
+        last_outputs = torch.cat([padded_output[e, i-1, :].unsqueeze(0) for e, i in enumerate(output_lens)])
+        
+        # Apply output layer to each final output
+        outputs = self.output_layer(last_outputs)
+
+        return outputs
 
     def pack_sequences(self, sequences):
         """
