@@ -96,6 +96,7 @@ class AuctionState : public SimMoveState {
   void ProcessBids(const std::vector<std::vector<Player>> player_order);
   void ChanceOutcomeToOrdering();
   bool DetermineTiebreaks();
+  void CheckBid(const std::vector<int>& bid) const;
 
  
   // Initialized to invalid values. Use Game::NewInitialState().
