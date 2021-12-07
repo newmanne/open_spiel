@@ -6,7 +6,9 @@ import os
 from pathlib import Path
 
 
-def dispatch_experiments(yml_config_dir, base_job_name='auctions', game_name='parking_1', submit=True, mem=16, overrides='', cfr_also=True):
+def dispatch_experiments(yml_config_dir, base_job_name=None, game_name='parking_1', submit=True, mem=32, overrides='', cfr_also=True):
+    if base_job_name is None:
+        base_job_name = game_name
     experiments = glob.glob(f'{yml_config_dir}/*.yml')
     experiments = [ # Reserving the ability for a nicer format later
         {
@@ -22,7 +24,8 @@ def dispatch_experiments(yml_config_dir, base_job_name='auctions', game_name='pa
     if cfr_also:
         experiments.append({
             'name': 'cfr',
-            'solver': 'cfr'
+            'solver': 'cfr',
+            'game_name': game_name,
         })
 
     spiel_path = os.environ.get('OPENSPIEL_PATH')
@@ -45,10 +48,10 @@ def dispatch_experiments(yml_config_dir, base_job_name='auctions', game_name='pa
 
         if solver == 'cfr':
             # TODO: Better integrate the CFR stuff into the same python script
-            command = f'python {pydir}/ubc_mccfr_cpp_example.py --filename parking_1.json --iterations 150000 --report_freq 10000 --output {output_dir}' # TODO: Would be good to flag not to do the post-processing
+            command = f'python {pydir}/ubc_mccfr_cpp_example.py --filename {game_name}.json --iterations 150000 --report_freq 10000 --output {output_dir}' # TODO: Would be good to flag not to do the post-processing
         else:
             config = experiment['config']
-            command = f'python {pydir}/ubc_nfsp_example.py -- --filename {game_name}.json --network_config_file {yml_config_dir}/{config}.yml --output_dir {output_dir} {overrides} --job_name {experiment_name}'
+            command = f'python {pydir}/ubc_nfsp_example.py --alsologtostderr -- --filename {game_name}.json --network_config_file {yml_config_dir}/{config}.yml --output_dir {output_dir} {overrides} --job_name {experiment_name}'
 
         Path(output_dir).mkdir(parents=True, exist_ok=True)
 
@@ -56,7 +59,7 @@ def dispatch_experiments(yml_config_dir, base_job_name='auctions', game_name='pa
         slurm = f"""#!/bin/sh
 #SBATCH --cpus-per-task={int(mem/4)}
 #SBATCH --job-name={slurm_job_name}
-
+#SBATCH --time=5-0:00:00 # days-hh:mm:ss
 CMD=`{command}`
 echo $CMD
 eval $CMD

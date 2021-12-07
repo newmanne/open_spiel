@@ -79,6 +79,8 @@ class AuctionRNN(nn.Module):
             torch.tile(prefix, (current_round, 1)),
             suffix_expanded[:current_round, :]
         ])
+        # print(infostate_tensor)
+        # print(suffix_expanded[:, -1])
         return expanded_infostate
     
     def prep_batch(self, infostate_list):

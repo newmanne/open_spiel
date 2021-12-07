@@ -20,3 +20,5 @@ learn_every: 64
 optimizer_str: 'sgd'
 epsilon_start: 0.01
 epsilon_end: 0.000001
+update_target_network_every: 1000
+loss_str: "mse"
