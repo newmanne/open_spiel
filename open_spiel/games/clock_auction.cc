@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "open_spiel/games/clock_auction.h"
+#include "open_spiel/games/cartesian.h"
 
 #include <algorithm>
 #include <array>
@@ -27,6 +28,7 @@
 #include "open_spiel/spiel_utils.h"
 #include "open_spiel/utils/json.h"
 #include "open_spiel/utils/file.h"
+
 
 
 namespace open_spiel {
@@ -63,26 +65,6 @@ int Factorial(int x) {
   return (x == 0) || (x == 1) ? 1 : x * Factorial(x-1);
 }
 
-// Cartesian product helper functions
-void CartesianRecurse(std::vector<std::vector<int>> &accum, std::vector<int> stack, std::vector<std::vector<int>> sequences, int index) {
-    std::vector<int> sequence = sequences[index];
-    for (int i : sequence) {       
-        stack.push_back(i);
-        if (index == 0)
-            accum.push_back(stack);
-        else
-            CartesianRecurse(accum, stack, sequences, index - 1);
-        stack.pop_back();
-    }
-}
-
-std::vector<std::vector<int>> CartesianProduct(std::vector<std::vector<int>> sequences) {
-    std::vector<std::vector<int>> accum;
-    std::vector<int> stack;
-    if (sequences.size() > 0)
-        CartesianRecurse(accum, stack, sequences, sequences.size() - 1);
-    return accum;
-}
 
 // Facts about the game
 const GameType kGameType{/*short_name=*/"clock_auction",
@@ -170,9 +152,19 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
           sequences[j].push_back(k);
         }
       }
-      all_bids_ = CartesianProduct(sequences);
+      product(sequences, [&vec = all_bids_](const auto &i) {
+          std::vector<int> tmp;
+          for (auto j : i) {
+            tmp.push_back(j);
+          }
+          vec.push_back(tmp);
+      });
 
       for (auto& bid: all_bids_) {
+        for (int j = 0; j < num_products_; j++) {
+          SPIEL_CHECK_GE(bid[j], 0);
+          SPIEL_CHECK_LE(bid[j], num_licenses_[j]);
+        }
         all_bids_activity_.push_back(DotProduct(bid, product_activity_));
       }
 
@@ -259,8 +251,11 @@ void AuctionState::ProcessBids(const std::vector<std::vector<Player>> player_ord
   for (auto p = Player{0}; p < num_players_; ++p) {
     for (int j = 0; j < num_products_; ++j) {
       SPIEL_CHECK_GE(bids[p][j], 0);
+      SPIEL_CHECK_LE(bids[p][j], num_licenses_[j]);
+      SPIEL_CHECK_LE(bids[p][j], std::max(submitted_demand_[p].back()[j], processed_demand_[p].back()[j])); // Either what you asked for, or what you used to have
     }      
     processed_demand_[p].push_back(bids[p]);
+    SPIEL_CHECK_EQ(processed_demand_[p].size(), submitted_demand_[p].size());
   }
 
   cur_player_ = kSimultaneousPlayerId;
@@ -357,6 +352,7 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
   // Check the actions are valid.
   SPIEL_CHECK_EQ(actions.size(), num_players_);
   for (auto p = Player{0}; p < num_players_; ++p) {
+    SPIEL_CHECK_EQ(processed_demand_[p].size(), submitted_demand_[p].size());
     SPIEL_CHECK_EQ(round_ - 1, submitted_demand_[p].size());
     const Action action = actions[p];
     auto bid = ActionToBid(action);
@@ -368,7 +364,8 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
   if (round_ == 1 || undersell_rule_ == kUndersellAllowed) {
     // Just copy it straight over
     for (auto p = Player{0}; p < num_players_; ++p) {
-      processed_demand_[p].push_back(submitted_demand_[p].back());
+      auto bid = submitted_demand_[p].back();
+      processed_demand_[p].push_back(bid);
     }
     PostProcess();
   } else if (undersell_rule_ == kUndersell) {
@@ -378,7 +375,7 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
     }
     if (tiebreaks_not_needed) { // No chance node required. Just get on with the game
       ProcessBids(default_player_order_); 
-} else {
+    } else {
       cur_player_ = kChancePlayerId;
     }
   } else {
@@ -412,18 +409,18 @@ Player AuctionState::CurrentPlayer() const {
 void AuctionState::DoApplyAction(Action action) {
   SPIEL_CHECK_TRUE(IsChanceNode());
 
-  if (value_.size() < num_players_) { // Chance node assigns a value and budget to a player
-    auto player_index = value_.size();
-    SPIEL_CHECK_GE(player_index, 0);
-    value_.push_back(values_[player_index][action]); 
-    budget_.push_back(budgets_[player_index][action]);
-  } 
+  if (round_ == 1) {
+    if (value_.size() < num_players_) { // Chance node assigns a value and budget to a player
+      auto player_index = value_.size();
+      SPIEL_CHECK_GE(player_index, 0);
+      value_.push_back(values_[player_index][action]); 
+      budget_.push_back(budgets_[player_index][action]);
+    } 
 
-  if (value_.size() == num_players_) { // All of the assignments have been made
-    cur_player_ = kSimultaneousPlayerId;
-  }
-
-  if (round_ > 1) { // Only reason for a chance node here is tie-breaking
+    if (value_.size() == num_players_) { // All of the assignments have been made
+      cur_player_ = kSimultaneousPlayerId;
+    }
+  } else {
     // Pad if needed
     while (selected_order_.size() < tie_break_index_) {
       std::vector<Player> order;
@@ -569,30 +566,30 @@ std::vector<std::string> AuctionState::ToHidden(const std::vector<int>& demand) 
 std::string AuctionState::InformationStateString(Player player) const {
   SPIEL_CHECK_GE(player, 0);
   SPIEL_CHECK_LT(player, num_players_);
-  std::string result = absl::StrCat("p", player);
+  std::string result = absl::StrCat("Player ", player, "\n");
   if (value_.size() > player) {
-    absl::StrAppend(&result, absl::StrCat("v", absl::StrJoin(value_[player], ", "), "b", budget_[player]), "\n");  
+    absl::StrAppend(&result, absl::StrCat("Values:", absl::StrJoin(value_[player], ", "), "\n Budget: ", budget_[player]), "\n");  
   }
   if (!submitted_demand_[player].empty()) {
     for (int i = 0; i < submitted_demand_[player].size(); i++) {
-      absl::StrAppend(&result, absl::StrCat(absl::StrJoin(submitted_demand_[player][i], ", "), i == submitted_demand_[player].size() - 1 ? "" : "|"));
+      absl::StrAppend(&result, absl::StrCat(absl::StrJoin(submitted_demand_[player][i], ", "), i == submitted_demand_[player].size() - 1 ? "" : " | "));
     }
 
     if (undersell_rule_ == kUndersell) {
       absl::StrAppend(&result, "\n");
       for (int i = 0; i < processed_demand_[player].size(); i++) {
-        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(processed_demand_[player][i], ", "), i == processed_demand_[player].size() - 1 ? "" : "|"));
+        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(processed_demand_[player][i], ", "), i == processed_demand_[player].size() - 1 ? "" : " | "));
       }
     }
 
     absl::StrAppend(&result, "\n");
     if (information_policy_ == kShowDemand) {
       for (int i = 0; i < aggregate_demands_.size(); i++) {
-        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(aggregate_demands_[i], ","), i == aggregate_demands_.size() - 1 ? "" : "|"));  
+        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(aggregate_demands_[i], ","), i == aggregate_demands_.size() - 1 ? "" : " | "));  
       }
     } else if (information_policy_ == kHideDemand) {
       for (int i = 0; i < aggregate_demands_.size(); i++) {
-        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(ToHidden(aggregate_demands_[i]), ","), i == aggregate_demands_.size() - 1 ? "" : "|"));  
+        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(ToHidden(aggregate_demands_[i]), ","), i == aggregate_demands_.size() - 1 ? "" : " | "));  
       }
     } else {
       SpielFatalError("Unknown info policy");
@@ -604,7 +601,7 @@ std::string AuctionState::InformationStateString(Player player) const {
 std::string DemandString(std::vector<std::vector<int>> const &demands) {
   std::string ds = "";
   for (int i = 0; i < demands.size(); i++) {
-    absl::StrAppend(&ds, absl::StrJoin(demands[i], ", "), i == demands.size() - 1 ? "" : "|");
+    absl::StrAppend(&ds, absl::StrJoin(demands[i], ", "), i == demands.size() - 1 ? "" : " | ");
   }
   return ds;
 }
@@ -615,11 +612,11 @@ std::string AuctionState::ToString() const {
   // Player types
   for (auto p = Player{0}; p < num_players_; p++) {
       if (value_.size() > p) {
-        absl::StrAppend(&result, absl::StrCat("p", p, "v", absl::StrJoin(value_[p], ","), "b", budget_[p], "\n"));  
+        absl::StrAppend(&result, absl::StrCat("Player ", p, "\n", "Values: ", absl::StrJoin(value_[p], ", "), "\n", "Budget: ", budget_[p], "\n"));  
       }
   }
 
-  absl::StrAppend(&result, absl::StrCat("Price: ", absl::StrJoin(posted_price_.back(), ","), "\n"));
+  absl::StrAppend(&result, absl::StrCat("Price: ", absl::StrJoin(posted_price_.back(), ", "), "\n"));
   absl::StrAppend(&result, absl::StrCat("Round: ", round_, "\n"));
 
   for (auto p = Player{0}; p < num_players_; p++) {
@@ -721,15 +718,9 @@ std::vector<int> AuctionGame::InformationStateTensorShape() const {
 void AuctionState::InformationStateTensor(Player player, absl::Span<float> values) const {
   SPIEL_CHECK_GE(player, 0);
   SPIEL_CHECK_LT(player, num_players_);
+  SPIEL_CHECK_LE(round_, max_rounds_);
 
-  int highest_round;
-  if (max_rounds_ != kDefaultMaxRounds) {
-    SPIEL_CHECK_LE(round_, max_rounds_);
-    highest_round = max_rounds_;
-  } else {
-    highest_round = round_;
-  }
-  
+  int highest_round = max_rounds_;
   int offset = 0;
   std::fill(values.begin(), values.end(), 0.);
 
@@ -837,12 +828,11 @@ AuctionGame::AuctionGame(const GameParameters& params) :
     filename = "parameters.json";
   }
 
-  std::cerr << "Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble." << std::endl;
-  std::string configDir(std::getenv("CLOCK_AUCTION_CONFIG_DIR"));
-  std::cerr << "CLOCK_AUCTION_CONFIG_DIR=" << configDir << std::endl;
-
   std::string fullPath;
   if (!filename.rfind("/", 0) == 0) {
+    std::cerr << "Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble." << std::endl;
+    std::string configDir(std::getenv("CLOCK_AUCTION_CONFIG_DIR"));
+    std::cerr << "CLOCK_AUCTION_CONFIG_DIR=" << configDir << std::endl;
     fullPath = configDir + '/' + filename;
   } else {
     fullPath = filename;
