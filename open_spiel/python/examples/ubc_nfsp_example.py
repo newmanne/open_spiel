@@ -112,13 +112,15 @@ def policy_from_checkpoint(experiment_dir, checkpoint_suffix='best'):
     with open(f'{experiment_dir}/config.yml', 'rb') as fh:
         config = yaml.load(fh, Loader=yaml.FullLoader)
 
-    nfsp_policies = setup(experiment_dir, config).nfsp_policies
+    env_and_model = setup(experiment_dir, config)
+
+    nfsp_policies = env_and_model.nfsp_policies
 
     with open(f'{experiment_dir}/{CHECKPOINT_FOLDER}/checkpoint_{checkpoint_suffix}.pkl', 'rb') as f:
         checkpoint = pickle.load(f)
 
     nfsp_policies.restore(checkpoint['policy'])
-    return nfsp_policies
+    return env_and_model
 
 @dataclass
 class EnvAndModel:
@@ -153,6 +155,8 @@ def setup(experiment_dir, config):
       "epsilon_decay_duration": config['num_training_episodes'],
       "epsilon_start": config['epsilon_start'],
       "epsilon_end": config['epsilon_end'],
+      "update_target_network_every": config.get('update_target_network_every', 1_000),
+      "loss_str": config.get('loss_str', 'mse')
     }
 
     # Get models and default args
@@ -196,6 +200,8 @@ def main(argv):
     parser.add_argument('--game_name', type=str, default='clock_auction')
     parser.add_argument('--job_name', type=str, default='auction')
     parser.add_argument('--warn_on_overwrite', type=bool, default=False)
+    parser.add_argument('--compute_nash_conv', type=bool, default=False)
+
 
     # Optional Overrides
     parser.add_argument('--num_training_episodes', type=int, default=None)
@@ -214,6 +220,7 @@ def main(argv):
 
     args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
     output_dir = args.output_dir
+    
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -271,7 +278,7 @@ def main(argv):
     game = env_and_model.game
 
     ### NFSP ALGORITHM
-
+    compute_nash_conv = args.compute_nash_conv
     nash_conv_history = []
     min_nash_conv = None
 
@@ -290,11 +297,15 @@ def main(argv):
 
         if (ep + 1) % config['eval_every'] == 0:
             losses = [agent.loss for agent in agents]
-            logging.info("Losses: %s", losses)
-            # pyspiel_policy = policy.python_policy_to_pyspiel_policy(expl_policies_avg)
-            n_conv = nash_conv(game, nfsp_policies, use_cpp_br=True)
-            logging.info("[%s] NashConv AVG %s", ep + 1, n_conv)
-            logging.info("_____________________________________________")
+            logging.info(f"[{ep + 1}] Losses: {losses}")
+
+            if compute_nash_conv:
+                logging.info('Computing nash conv...')
+                n_conv = nash_conv(game, nfsp_policies, use_cpp_br=True)
+                logging.info("[%s] NashConv AVG %s", ep + 1, n_conv)
+                logging.info("_____________________________________________")
+            else:
+                n_conv = None
 
             nash_conv_history.append((ep+1, time.time() - alg_start_time, n_conv))
 
@@ -309,10 +320,15 @@ def main(argv):
             with open(checkpoint_path, 'wb') as f:
                 pickle.dump(checkpoint, f)
 
-            best_checkpoint_path = os.path.join(output_dir, CHECKPOINT_FOLDER, 'checkpoint_best.pkl')
-            if min_nash_conv is None or n_conv <= min_nash_conv:
-                min_nash_conv = n_conv
-                shutil.copyfile(checkpoint_path, best_checkpoint_path)
+            shutil.copyfile(checkpoint_path, os.path.join(output_dir, CHECKPOINT_FOLDER, f'checkpoint_{ep + 1}.pkl'))
+
+            if compute_nash_conv:
+                best_checkpoint_path = os.path.join(output_dir, CHECKPOINT_FOLDER, 'checkpoint_best.pkl')
+                if min_nash_conv is None or n_conv <= min_nash_conv:
+                    min_nash_conv = n_conv
+                    shutil.copyfile(checkpoint_path, best_checkpoint_path)
+
+    logging.info('All done. Goodbye!')
 
 
 if __name__ == "__main__":

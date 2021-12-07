@@ -83,26 +83,6 @@ def pretty_bid(b):
         s += str(a) + ' ' + num_to_char(i) + (', ' if i != len(b) - 1 else '')
     return s
 
-
-def recurse(accum, stack, sequences, index):
-    sequence = sequences[index]
-    for i in sequence:
-        stack.append(i)
-        if index == 0:
-            accum.append(list(stack))
-        else:
-            recurse(accum, stack, sequences, index - 1)
-        stack.pop()
-
-def simple_product(sequences):
-    '''Dont use itertools.product because what if it gives a different ordering? This is a copy of the C++ code so it should give the same'''
-    accum = []
-    stack = []
-    if len(sequences) > 0:
-        recurse(accum, stack, sequences, len(sequences) - 1)
-    return accum
-
-    
 def action_to_bids(licenses):
     bids = []
     for n in licenses:
@@ -110,7 +90,7 @@ def action_to_bids(licenses):
         for i in range(n + 1):
             b.append(i)
         bids.append(b)
-    actions = simple_product(bids)
+    actions = list(itertools.product(*bids))
     return {i: pretty_bid(a) for i, a in enumerate(actions)}
 
 
