@@ -585,11 +585,11 @@ std::string AuctionState::InformationStateString(Player player) const {
     absl::StrAppend(&result, "\n");
     if (information_policy_ == kShowDemand) {
       for (int i = 0; i < aggregate_demands_.size(); i++) {
-        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(aggregate_demands_[i], ","), i == aggregate_demands_.size() - 1 ? "" : " | "));  
+        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(aggregate_demands_[i], ", "), i == aggregate_demands_.size() - 1 ? "" : " | "));  
       }
     } else if (information_policy_ == kHideDemand) {
       for (int i = 0; i < aggregate_demands_.size(); i++) {
-        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(ToHidden(aggregate_demands_[i]), ","), i == aggregate_demands_.size() - 1 ? "" : " | "));  
+        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(ToHidden(aggregate_demands_[i]), ", "), i == aggregate_demands_.size() - 1 ? "" : " | "));  
       }
     } else {
       SpielFatalError("Unknown info policy");
