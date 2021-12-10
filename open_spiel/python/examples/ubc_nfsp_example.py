@@ -39,6 +39,7 @@ import os
 import json
 import shutil
 from typing import List
+import open_spiel.python.examples.ubc_dispatch as dispatch
 
 CHECKPOINT_FOLDER = 'solving_checkpoints' # Don't use "checkpoints" because jupyter bug
 
@@ -108,7 +109,7 @@ def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_
     return model_class, default_model_args
 
 
-def policy_from_checkpoint(experiment_dir, checkpoint_suffix='best'):
+def policy_from_checkpoint(experiment_dir, checkpoint_suffix='checkpoint_latest'):
     with open(f'{experiment_dir}/config.yml', 'rb') as fh:
         config = yaml.load(fh, Loader=yaml.FullLoader)
 
@@ -116,7 +117,7 @@ def policy_from_checkpoint(experiment_dir, checkpoint_suffix='best'):
 
     nfsp_policies = env_and_model.nfsp_policies
 
-    with open(f'{experiment_dir}/{CHECKPOINT_FOLDER}/checkpoint_{checkpoint_suffix}.pkl', 'rb') as f:
+    with open(f'{experiment_dir}/{CHECKPOINT_FOLDER}/{checkpoint_suffix}.pkl', 'rb') as f:
         checkpoint = pickle.load(f)
 
     nfsp_policies.restore(checkpoint['policy'])
@@ -128,6 +129,7 @@ class EnvAndModel:
     nfsp_policies: NFSPPolicies
     agents: List[ubc_nfsp.NFSP]
     game: pyspiel.Game
+    game_config: dict
 
 def setup(experiment_dir, config):
     if experiment_dir.endswith('/'):
@@ -156,7 +158,8 @@ def setup(experiment_dir, config):
       "epsilon_start": config['epsilon_start'],
       "epsilon_end": config['epsilon_end'],
       "update_target_network_every": config.get('update_target_network_every', 1_000),
-      "loss_str": config.get('loss_str', 'mse')
+      "loss_str": config.get('loss_str', 'mse'),
+      "weight_iters": config.get('weight_iters', False),
     }
 
     # Get models and default args
@@ -189,7 +192,7 @@ def setup(experiment_dir, config):
         agents.append(agent)
 
     expl_policies_avg = NFSPPolicies(env, agents, False)
-    return EnvAndModel(env=env, nfsp_policies=expl_policies_avg, agents=agents, game=game)
+    return EnvAndModel(env=env, nfsp_policies=expl_policies_avg, agents=agents, game=game, game_config=game_config)
 
 
 def main(argv):
@@ -201,12 +204,15 @@ def main(argv):
     parser.add_argument('--job_name', type=str, default='auction')
     parser.add_argument('--warn_on_overwrite', type=bool, default=False)
     parser.add_argument('--compute_nash_conv', type=bool, default=False)
+    parser.add_argument('--eval_every', type=int, default=300_000)
+    parser.add_argument('--dispatch_br', type=bool, default=True)
+    parser.add_argument('--br_overrides', type=str, default='')
+    parser.add_argument('--eval_overrides', type=str, default='')
 
 
     # Optional Overrides
     parser.add_argument('--num_training_episodes', type=int, default=None)
     parser.add_argument('--replay_buffer_capacity', type=int, default=None)
-    parser.add_argument('--eval_every', type=int, default=None)
     parser.add_argument('--reservoir_buffer_capacity', type=int, default=None)
     parser.add_argument('--seed', type=int, default=None)
     parser.add_argument('--batch_size', type=int, default=None)
@@ -220,6 +226,9 @@ def main(argv):
 
     args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
     output_dir = args.output_dir
+    dispatch_br = args.dispatch_br
+    br_overrides = args.br_overrides
+    eval_overrides = args.eval_overrides
     
 
     if not os.path.exists(output_dir):
@@ -295,7 +304,7 @@ def main(argv):
         for agent in agents:
             agent.step(time_step)
 
-        if (ep + 1) % config['eval_every'] == 0:
+        if (ep + 1) % config['eval_every'] == 0 or (ep + 1) == config['num_training_episodes']:
             losses = [agent.loss for agent in agents]
             logging.info(f"[{ep + 1}] Losses: {losses}")
 
@@ -320,7 +329,13 @@ def main(argv):
             with open(checkpoint_path, 'wb') as f:
                 pickle.dump(checkpoint, f)
 
-            shutil.copyfile(checkpoint_path, os.path.join(output_dir, CHECKPOINT_FOLDER, f'checkpoint_{ep + 1}.pkl'))
+            checkpoint_name = f'checkpoint_{ep + 1}'
+            shutil.copyfile(checkpoint_path, os.path.join(output_dir, CHECKPOINT_FOLDER, f'{checkpoint_name}.pkl'))
+            
+            if dispatch_br:
+                for player in range(game.num_players()):
+                    dispatch.dispatch_br(output_dir, br_player=player, checkpoint=checkpoint_name, overrides=br_overrides + f' --eval_overrides "{eval_overrides}"')
+                dispatch.dispatch_eval(output_dir, checkpoint=checkpoint_name, overrides=eval_overrides)
 
             if compute_nash_conv:
                 best_checkpoint_path = os.path.join(output_dir, CHECKPOINT_FOLDER, 'checkpoint_best.pkl')

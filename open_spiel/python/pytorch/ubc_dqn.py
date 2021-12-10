@@ -30,7 +30,7 @@ from open_spiel.python import rl_agent
 
 Transition = collections.namedtuple(
     "Transition",
-    "info_state action reward next_info_state is_final_step legal_actions_mask")
+    "info_state action reward next_info_state is_final_step legal_actions_mask iteration")
 
 ILLEGAL_ACTION_LOGITS_PENALTY = -1e9
 
@@ -209,13 +209,16 @@ class DQN(rl_agent.AbstractAgent):
                epsilon_end=0.1,
                epsilon_decay_duration=int(1e6),
                optimizer_str="sgd",
-               loss_str="mse"):
+               loss_str="mse",
+               weight_iters=False,
+               ):
     """Initialize the DQN agent."""
 
     # This call to locals() is used to store every argument used to initialize
     # the class instance, so it can be copied with no hyperparameter change.
     self._kwargs = locals()
 
+    self.weight_iters = weight_iters
     self.player_id = player_id
     self._num_actions = num_actions
     self._batch_size = batch_size
@@ -237,6 +240,7 @@ class DQN(rl_agent.AbstractAgent):
 
     # Step counter to keep track of learning, eps decay and target network.
     self._step_counter = 0
+    self._iteration = 0
 
     # Keep track of the last training loss achieved in an update step.
     self._last_loss_value = torch.tensor([0])
@@ -305,6 +309,7 @@ class DQN(rl_agent.AbstractAgent):
       if time_step.last():  # prepare for the next episode.
         self._prev_timestep = None
         self._prev_action = None
+        self._iteration += 1
         return
       else:
         self._prev_timestep = time_step
@@ -340,7 +345,9 @@ class DQN(rl_agent.AbstractAgent):
         reward=time_step.rewards[self.player_id],
         next_info_state=next_info_state,
         is_final_step=float(time_step.last()),
-        legal_actions_mask=legal_actions_mask)
+        legal_actions_mask=legal_actions_mask,
+        iteration=self._iteration
+        )
     self._replay_buffer.add(transition)
 
   def _epsilon_greedy(self, info_state, legal_actions, epsilon):
@@ -400,6 +407,8 @@ class DQN(rl_agent.AbstractAgent):
 
     actions = torch.LongTensor([t.action for t in transitions])
     rewards = torch.Tensor([t.reward for t in transitions])
+    iters = torch.LongTensor([t.iteration for t in transitions])
+
     are_final_steps = torch.Tensor([t.is_final_step for t in transitions])
     legal_actions_mask = torch.Tensor(
         np.array([t.legal_actions_mask for t in transitions]))
@@ -414,11 +423,14 @@ class DQN(rl_agent.AbstractAgent):
         rewards + (1 - are_final_steps) * self._discount_factor * max_next_q)
     action_indices = torch.stack([
         torch.arange(self._q_values.shape[0], dtype=torch.long), actions
-    ],
-                                 dim=0)
+    ], dim=0)
     predictions = self._q_values[list(action_indices)]
 
-    loss = self.loss_class(predictions, target)
+    if self.weight_iters:
+      losses = self.loss_class(predictions, target, reduction='none')
+      loss = (iters * losses).sum() / iters.sum()
+    else:
+      loss = self.loss_class(predictions, target)
 
     self._optimizer.zero_grad()
     loss.backward()
