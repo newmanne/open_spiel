@@ -6,6 +6,20 @@ import os
 from pathlib import Path
 
 
+
+def verify_config():
+    spiel_path = os.environ.get('OPENSPIEL_PATH')
+    if spiel_path is None:
+        raise ValueError("Need to set the OPENSPIEL_PATH env variable")
+
+    config_dir = os.environ.get('CLOCK_AUCTION_CONFIG_DIR')
+    if config_dir is None:
+        raise ValueError("Need to set CLOCK_AUCTION_CONFIG_DIR env variable")
+    
+    pydir = f'{spiel_path}/open_spiel/python/examples'
+    return spiel_path, config_dir, pydir
+
+
 def dispatch_experiments(yml_config_dir, base_job_name=None, game_name='parking_1', submit=True, mem=32, overrides='', cfr_also=True):
     if base_job_name is None:
         base_job_name = game_name
@@ -28,15 +42,7 @@ def dispatch_experiments(yml_config_dir, base_job_name=None, game_name='parking_
             'game_name': game_name,
         })
 
-    spiel_path = os.environ.get('OPENSPIEL_PATH')
-    if spiel_path is None:
-        raise ValueError("Need to set the OPENSPIEL_PATH env variable")
-
-    config_dir = os.environ.get('CLOCK_AUCTION_CONFIG_DIR')
-    if config_dir is None:
-        raise ValueError("Need to set CLOCK_AUCTION_CONFIG_DIR env variable")
-
-    pydir = f'{spiel_path}/open_spiel/python/examples'
+    spiel_path, config_dir, pydir = verify_config()
 
     experiment_output_dir = f'/shared/outputs/{base_job_name}'
 
@@ -56,7 +62,7 @@ def dispatch_experiments(yml_config_dir, base_job_name=None, game_name='parking_
         Path(output_dir).mkdir(parents=True, exist_ok=True)
 
         slurm_job_name = experiment_name + '_' + base_job_name
-        slurm = f"""#!/bin/sh
+        job_file_text = f"""#!/bin/sh
 #SBATCH --cpus-per-task={int(mem/4)}
 #SBATCH --job-name={slurm_job_name}
 #SBATCH --time=5-0:00:00 # days-hh:mm:ss
@@ -64,11 +70,63 @@ CMD=`{command}`
 echo $CMD
 eval $CMD
 """
-        job_file = f'{experiment_output_dir}/{experiment_name}.sh'
-        with open(job_file, 'w') as f:
-            f.write(slurm)
-        os.chmod(job_file, int('777', base=8)) # Octal
+        job_file_path = f'{experiment_output_dir}/{experiment_name}.sh'
+        write_job_file(job_file_path, job_file_text)
         if submit:
-            os.system(f'cd {experiment_output_dir} && sbatch {job_file}')
+            os.system(f'cd {experiment_output_dir} && sbatch {job_file_path}')
 
     print(f"Dispatched {len(experiments)} experiments!")
+
+
+def dispatch_br(experiment_dir, br_player=0, checkpoint='checkpoint_latest', submit=True, mem=32, overrides=''):
+    spiel_path, config_dir, pydir = verify_config()
+    command = f'python {pydir}/ubc_br.py --alsologtostderr -- --experiment_dir {experiment_dir} --br_player {br_player} --checkpoint {checkpoint} {overrides}'
+    
+    basename = os.path.basename(experiment_dir)
+    slurm_job_name = f'br_{br_player}_{basename}'
+    job_file_text = f"""#!/bin/sh
+#SBATCH --cpus-per-task={int(mem/4)}
+#SBATCH --job-name={slurm_job_name}
+#SBATCH --time=5-0:00:00 # days-hh:mm:ss
+CMD=`{command}`
+echo $CMD
+eval $CMD
+"""
+    job_file_path = f'{experiment_dir}/br_{br_player}.sh'
+    write_job_file(job_file_path, job_file_text)
+    if submit:
+        os.system(f'cd {experiment_dir} && sbatch {job_file_path}')
+
+    print(f"Dispatched experiment!")
+
+def dispatch_eval(experiment_dir, br_name=None, checkpoint='checkpoint_latest', submit=True, mem=32, overrides=''):
+    spiel_path, config_dir, pydir = verify_config()
+    command = f'python {pydir}/ubc_evaluate_policy.py --alsologtostderr -- --experiment_dir {experiment_dir} --checkpoint {checkpoint} {overrides}'
+    if br_name is not None:
+        command += f' --br_name {br_name}'
+    
+    basename = os.path.basename(experiment_dir)
+    if br_name:
+        slurm_job_name = f'eval_{br_name}_{basename}'
+    else:
+        slurm_job_name = f'eval_{basename}'
+    job_file_text = f"""#!/bin/sh
+#SBATCH --cpus-per-task={int(mem/4)}
+#SBATCH --job-name={slurm_job_name}
+#SBATCH --time=5-0:00:00 # days-hh:mm:ss
+CMD=`{command}`
+echo $CMD
+eval $CMD
+"""
+    job_file_path = f'{experiment_dir}/{slurm_job_name}.sh'
+    write_job_file(job_file_path, job_file_text)
+    if submit:
+        os.system(f'cd {experiment_dir} && sbatch {job_file_path}')
+
+    print(f"Dispatched experiment!")
+
+
+def write_job_file(job_file_path, job_file_text):
+    with open(job_file_path, 'w') as f:
+        f.write(job_file_text)
+    os.chmod(job_file_path, int('777', base=8)) # Octal

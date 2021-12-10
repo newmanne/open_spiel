@@ -36,7 +36,7 @@ from open_spiel.python.pytorch import ubc_dqn
 
 
 Transition = collections.namedtuple(
-    "Transition", "info_state action_probs legal_actions_mask")
+    "Transition", "info_state action_probs legal_actions_mask iteration")
 
 ILLEGAL_ACTION_LOGITS_PENALTY = -1e9
 
@@ -79,6 +79,7 @@ class NFSP(rl_agent.AbstractAgent):
 
     # Step counter to keep track of learning.
     self._step_counter = 0
+    self._iteration = 0
 
     # Inner RL agent
     kwargs.update({
@@ -166,12 +167,16 @@ class NFSP(rl_agent.AbstractAgent):
     Returns:
       A `rl_agent.StepOutput` containing the action probs and chosen action.
     """
-    if self._best_response_mode == True:
+    # I don't want to be in BR mode during evals
+    if is_evaluation:
+      self.best_response_mode = False
+
+    if self._best_response_mode:
       agent_output = self._rl_agent.step(time_step, is_evaluation)
       if not is_evaluation and not time_step.last():
         self._add_transition(time_step, agent_output)
 
-    elif self._best_response_mode == False:
+    elif not self._best_response_mode:
       # Act step: don't act at terminal info states.
       if not time_step.last():
         info_state_flat = time_step.observations["info_state"][self.player_id]
@@ -182,8 +187,7 @@ class NFSP(rl_agent.AbstractAgent):
         agent_output = rl_agent.StepOutput(action=action, probs=probs)
 
       if self._prev_timestep and not is_evaluation:
-        self._rl_agent.add_transition(self._prev_timestep, self._prev_action,
-                                      time_step)
+        self._rl_agent.add_transition(self._prev_timestep, self._prev_action, time_step)
     else:
       raise ValueError("Invalid mode ({})".format(self._best_response_mode))
 
@@ -193,7 +197,7 @@ class NFSP(rl_agent.AbstractAgent):
       if self._step_counter % self._learn_every == 0:
         self._last_sl_loss_value = self._learn()
         # If learn step not triggered by rl policy, learn.
-        if self._best_response_mode == False:
+        if not self._best_response_mode:
           self._rl_agent.learn()
 
       # Prepare for the next episode.
@@ -201,10 +205,14 @@ class NFSP(rl_agent.AbstractAgent):
         self._sample_episode_policy()
         self._prev_timestep = None
         self._prev_action = None
+        self._iteration += 1
         return
       else:
         self._prev_timestep = time_step
         self._prev_action = agent_output.action
+    else:
+      if time_step.last():
+        return
 
     return agent_output
 
@@ -227,7 +235,9 @@ class NFSP(rl_agent.AbstractAgent):
     transition = Transition(
         info_state=info_state,
         action_probs=agent_output.probs,
-        legal_actions_mask=legal_actions_mask)
+        legal_actions_mask=legal_actions_mask,
+        iteration=self._iteration
+        )
     self._reservoir_buffer.add(transition)
 
   def _learn(self):
