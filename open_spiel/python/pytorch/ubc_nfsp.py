@@ -169,7 +169,7 @@ class NFSP(rl_agent.AbstractAgent):
     """
     # I don't want to be in BR mode during evals
     if is_evaluation:
-      self.best_response_mode = False
+      self._best_response_mode = False
 
     if self._best_response_mode:
       agent_output = self._rl_agent.step(time_step, is_evaluation)
@@ -194,7 +194,7 @@ class NFSP(rl_agent.AbstractAgent):
     if not is_evaluation:
       self._step_counter += 1
 
-      if self._step_counter % self._learn_every == 0:
+      if self._iteration % self._learn_every == 0:
         self._last_sl_loss_value = self._learn()
         # If learn step not triggered by rl policy, learn.
         if not self._best_response_mode:

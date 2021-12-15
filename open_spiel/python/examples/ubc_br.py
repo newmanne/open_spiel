@@ -42,7 +42,6 @@ from open_spiel.python.pytorch import ubc_dqn
 from pathlib import Path
 import open_spiel.python.examples.ubc_dispatch as dispatch
 
-
 BR_DIR = 'best_responses'
 
 # TODO: Maybe want a convergence check here? Right now we just always run for a fixed number of episodes (which is indeed what e.g., the DREAM paper does)
@@ -68,6 +67,9 @@ def make_dqn_agent(player_id, config, env, game, game_config):
     "update_target_network_every": config['update_target_network_every'],
     "loss_str": config['loss_str']
   }
+
+  dqn_kwargs['lower_bound_utility'], dqn_kwargs_copy['upper_bound_utility'] = clock_auction_bounds(game_config, player_id)
+
   return ubc_dqn.DQN(
         player_id,
         num_actions, 
@@ -132,6 +134,9 @@ def main(argv):
     for i in range(num_training_episodes):
       if i % report_freq == 0:
         logging.info(f"----Episode {i} ---")
+        losses = [agent.loss for agent in agents]
+        logging.info(f"[{i}] Losses: {losses}")
+
 
       time_step = env.reset()
 
@@ -149,14 +154,15 @@ def main(argv):
     ### Save the best responding agent
     # TODO: We may want to save some indicators here to see if it is doing a good job of traininig?
     walltime_train = time.time() - alg_start_time
+    br_name = f'{checkpoint_name}_br_{br_player}'
     checkpoint = {
       'br_player': br_player,
       'walltime': walltime_train,
       'agent': agents[br_player]._q_network.state_dict(),
-      'config': config
+      'config': config,
+      'br_name': br_name
     }
 
-    br_name = f'{checkpoint_name}_br_{br_player}'
     checkpoint_path = os.path.join(checkpoint_dir, f'{br_name}.pkl')
     with open(checkpoint_path, 'wb') as f:
         pickle.dump(checkpoint, f)
