@@ -20,10 +20,12 @@ def verify_config():
     return spiel_path, config_dir, pydir
 
 
-def dispatch_experiments(yml_config_dir, base_job_name=None, game_name='parking_1', submit=True, mem=32, overrides='', cfr_also=True):
+def dispatch_experiments(yml_config_dir, single_config=None, base_job_name=None, game_name='parking_1', submit=True, mem=32, overrides='', cfr_also=True):
     if base_job_name is None:
         base_job_name = game_name
-    experiments = glob.glob(f'{yml_config_dir}/*.yml')
+    
+    key = '*' if single_config is None else single_config
+    experiments = glob.glob(f'{yml_config_dir}/{key}.yml')
     experiments = [ # Reserving the ability for a nicer format later
         {
             'name': Path(experiment).stem,
@@ -57,7 +59,7 @@ def dispatch_experiments(yml_config_dir, base_job_name=None, game_name='parking_
             command = f'python {pydir}/ubc_mccfr_cpp_example.py --filename {game_name}.json --iterations 150000 --report_freq 10000 --output {output_dir}' # TODO: Would be good to flag not to do the post-processing
         else:
             config = experiment['config']
-            command = f'python {pydir}/ubc_nfsp_example.py --alsologtostderr -- --filename {game_name}.json --network_config_file {yml_config_dir}/{config}.yml --output_dir {output_dir} {overrides} --job_name {experiment_name}'
+            command = f'python {pydir}/ubc_nfsp_example.py --alsologtostderr -- --filename {game_name}.json --network_config_file {yml_config_dir}/{config}.yml --output_dir {output_dir} --dispatch_br true {overrides} --job_name {experiment_name}'
 
         Path(output_dir).mkdir(parents=True, exist_ok=True)
 
@@ -83,7 +85,7 @@ def dispatch_br(experiment_dir, br_player=0, checkpoint='checkpoint_latest', sub
     command = f'python {pydir}/ubc_br.py --alsologtostderr -- --experiment_dir {experiment_dir} --br_player {br_player} --checkpoint {checkpoint} {overrides}'
     
     basename = os.path.basename(experiment_dir)
-    slurm_job_name = f'br_{br_player}_{basename}'
+    slurm_job_name = f'br_{br_player}_{checkpoint}_{basename}'
     job_file_text = f"""#!/bin/sh
 #SBATCH --cpus-per-task={int(mem/4)}
 #SBATCH --job-name={slurm_job_name}
@@ -99,7 +101,7 @@ eval $CMD
 
     print(f"Dispatched experiment!")
 
-def dispatch_eval(experiment_dir, br_name=None, checkpoint='checkpoint_latest', submit=True, mem=32, overrides=''):
+def dispatch_eval(experiment_dir, br_name=None, checkpoint='checkpoint_latest', submit=True, mem=8, overrides=''):
     spiel_path, config_dir, pydir = verify_config()
     command = f'python {pydir}/ubc_evaluate_policy.py --alsologtostderr -- --experiment_dir {experiment_dir} --checkpoint {checkpoint} {overrides}'
     if br_name is not None:
@@ -107,7 +109,7 @@ def dispatch_eval(experiment_dir, br_name=None, checkpoint='checkpoint_latest', 
     
     basename = os.path.basename(experiment_dir)
     if br_name:
-        slurm_job_name = f'eval_{br_name}_{basename}'
+        slurm_job_name = f'eval_{br_name}_{checkpoint}_{basename}'
     else:
         slurm_job_name = f'eval_{basename}'
     job_file_text = f"""#!/bin/sh

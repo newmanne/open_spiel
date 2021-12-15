@@ -25,12 +25,13 @@ from scipy import stats
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from open_spiel.python.examples.ubc_utils import clock_auction_bounds
 
 from open_spiel.python import rl_agent
 
 Transition = collections.namedtuple(
     "Transition",
-    "info_state action reward next_info_state is_final_step legal_actions_mask iteration")
+    "info_state action reward next_info_state is_final_step legal_actions_mask iteration raw_reward")
 
 ILLEGAL_ACTION_LOGITS_PENALTY = -1e9
 
@@ -186,6 +187,10 @@ class MLP(nn.Module):
     return x
 
 
+def mapRange(value, inMin, inMax, outMin, outMax):
+  return outMin + (((value - inMin) / (inMax - inMin)) * (outMax - outMin))
+
+
 class DQN(rl_agent.AbstractAgent):
   """DQN Agent implementation in PyTorch.
 
@@ -211,12 +216,17 @@ class DQN(rl_agent.AbstractAgent):
                optimizer_str="sgd",
                loss_str="mse",
                weight_iters=False,
+               upper_bound_utility=None,
+               lower_bound_utility=None
                ):
     """Initialize the DQN agent."""
 
     # This call to locals() is used to store every argument used to initialize
     # the class instance, so it can be copied with no hyperparameter change.
     self._kwargs = locals()
+
+    self.upper_bound_utility = upper_bound_utility
+    self.lower_bound_utility = lower_bound_utility
 
     self.weight_iters = weight_iters
     self.player_id = player_id
@@ -294,10 +304,10 @@ class DQN(rl_agent.AbstractAgent):
     if not is_evaluation:
       self._step_counter += 1
 
-      if self._step_counter % self._learn_every == 0:
+      if self._iteration % self._learn_every == 0:
         self._last_loss_value = self.learn()
 
-      if self._step_counter % self._update_target_network_every == 0:
+      if self._iteration % self._update_target_network_every == 0:
         # state_dict method returns a dictionary containing a whole state of the
         # module.
         self._target_q_network.load_state_dict(self._q_network.state_dict())
@@ -316,6 +326,9 @@ class DQN(rl_agent.AbstractAgent):
         self._prev_action = action
 
     return rl_agent.StepOutput(action=action, probs=probs)
+
+  def mapRange(self, value):
+    return mapRange(value, self.lower_bound_utility, self.upper_bound_utility, -1., 1.)
 
   def add_transition(self, prev_time_step, prev_action, time_step):
     """Adds the new transition using `time_step` to the replay buffer.
@@ -339,14 +352,19 @@ class DQN(rl_agent.AbstractAgent):
     next_info_state_flat = time_step.observations["info_state"][self.player_id][:]
     next_info_state = self._q_network.reshape_infostate(next_info_state_flat)
 
+    reward = time_step.rewards[self.player_id]
+    if self.lower_bound_utility is not None and self.upper_bound_utility is not None:
+      reward = self.mapRange(reward)
+
     transition = Transition(
         info_state=info_state,
         action=prev_action,
-        reward=time_step.rewards[self.player_id],
+        reward=reward,
         next_info_state=next_info_state,
         is_final_step=float(time_step.last()),
         legal_actions_mask=legal_actions_mask,
-        iteration=self._iteration
+        iteration=self._iteration,
+        raw_reward=time_step.rewards[self.player_id]
         )
     self._replay_buffer.add(transition)
 
@@ -379,7 +397,7 @@ class DQN(rl_agent.AbstractAgent):
     """Returns the evaluation or decayed epsilon value."""
     if is_evaluation:
       return 0.0
-    decay_steps = min(self._step_counter, self._epsilon_decay_duration)
+    decay_steps = min(self._iteration, self._epsilon_decay_duration)
     decayed_epsilon = (
         self._epsilon_end + (self._epsilon_start - self._epsilon_end) *
         (1 - decay_steps / self._epsilon_decay_duration)**power)
@@ -417,7 +435,7 @@ class DQN(rl_agent.AbstractAgent):
     self._target_q_values = self._target_q_network(next_info_states).detach()
 
     illegal_actions = 1 - legal_actions_mask
-    illegal_logits = illegal_actions * ILLEGAL_ACTION_LOGITS_PENALTY
+    illegal_logits = illegal_actions * ILLEGAL_ACTION_LOGITS_PENALTY  
     max_next_q = torch.max(self._target_q_values + illegal_logits, dim=1)[0]
     target = (
         rewards + (1 - are_final_steps) * self._discount_factor * max_next_q)

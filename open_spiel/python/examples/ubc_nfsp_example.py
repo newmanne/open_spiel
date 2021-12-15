@@ -20,8 +20,8 @@ from __future__ import print_function
 
 from dataclasses import dataclass
 from open_spiel.python import rl_environment, policy
-from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game
+from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn, ubc_transformer
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds
 from open_spiel.python.algorithms.exploitability import nash_conv
 import pyspiel
 import numpy as np
@@ -40,6 +40,8 @@ import json
 import shutil
 from typing import List
 import open_spiel.python.examples.ubc_dispatch as dispatch
+from distutils import util
+from copy import deepcopy
 
 CHECKPOINT_FOLDER = 'solving_checkpoints' # Don't use "checkpoints" because jupyter bug
 
@@ -102,6 +104,19 @@ def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_
             'hidden_size': 128,
             'output_size': num_actions,
             'nonlinearity': 'tanh',
+        }
+    elif model_name == 'transformer': 
+        model_class = ubc_transformer.AuctionTransformer
+        default_model_args = {
+            'num_players': num_players,
+            'num_products': num_products,
+            'input_size': state_size, 
+            'output_size': num_actions, 
+            'd_model': 32,
+            'nhead': 1, 
+            'feedforward_dim': 128, 
+            'dropout': 0.1, 
+            'num_layers': 1,
         }
     else: 
         raise ValueError(f'Unrecognized model {model_name}')
@@ -172,6 +187,9 @@ def setup(experiment_dir, config):
 
     agents = []
     for player_id in range(game.num_players()):
+        dqn_kwargs_copy = copy.deepcopy(dqn_kwargs)
+        dqn_kwargs_copy['lower_bound_utility'], dqn_kwargs_copy['upper_bound_utility'] = clock_auction_bounds(game_config, player_id)
+        
         agent = ubc_nfsp.NFSP(
             player_id,
             num_actions=num_actions,
@@ -187,7 +205,7 @@ def setup(experiment_dir, config):
             min_buffer_size_to_learn=config['min_buffer_size_to_learn'],
             learn_every=config['learn_every'],
             optimizer_str=config['optimizer_str'],
-            **dqn_kwargs
+            **dqn_kwargs_copy
         )
         agents.append(agent)
 
@@ -205,9 +223,10 @@ def main(argv):
     parser.add_argument('--warn_on_overwrite', type=bool, default=False)
     parser.add_argument('--compute_nash_conv', type=bool, default=False)
     parser.add_argument('--eval_every', type=int, default=300_000)
-    parser.add_argument('--dispatch_br', type=bool, default=True)
+    parser.add_argument('--dispatch_br', type=util.strtobool, default=0)
     parser.add_argument('--br_overrides', type=str, default='')
     parser.add_argument('--eval_overrides', type=str, default='')
+    parser.add_argument('--report_freq', type=int, default=50_000)
 
 
     # Optional Overrides
@@ -229,7 +248,8 @@ def main(argv):
     dispatch_br = args.dispatch_br
     br_overrides = args.br_overrides
     eval_overrides = args.eval_overrides
-    
+    report_freq = args.report_freq
+
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -293,6 +313,10 @@ def main(argv):
 
     alg_start_time = time.time()
     for ep in range(config['num_training_episodes']):
+        if ep % report_freq == 0:
+            logging.info(f"----Episode {ep} ---")
+
+
         time_step = env.reset()
         while not time_step.last():
             player_id = time_step.observations["current_player"]
