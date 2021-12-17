@@ -64,6 +64,7 @@ class NFSP(rl_agent.AbstractAgent):
                min_buffer_size_to_learn=1000,
                learn_every=64,
                optimizer_str="sgd",
+               add_explore_transitions=True, # Should I add transitions to the resevoir buffer if they are caused due to exploration?
                **kwargs):
     """Initialize the `NFSP` agent."""
     self.player_id = player_id
@@ -72,6 +73,7 @@ class NFSP(rl_agent.AbstractAgent):
     self._learn_every = learn_every
     self._anticipatory_param = anticipatory_param
     self._min_buffer_size_to_learn = min_buffer_size_to_learn
+    self._add_explore_transitions = add_explore_transitions
 
     self._reservoir_buffer = ReservoirBuffer(reservoir_buffer_capacity)
     self._prev_timestep = None
@@ -174,7 +176,8 @@ class NFSP(rl_agent.AbstractAgent):
     if self._best_response_mode:
       agent_output = self._rl_agent.step(time_step, is_evaluation)
       if not is_evaluation and not time_step.last():
-        self._add_transition(time_step, agent_output)
+        if not (self._rl_agent.prev_action_greedy and not self._add_explore_transitions):
+          self._add_transition(time_step, agent_output)
 
     elif not self._best_response_mode:
       # Act step: don't act at terminal info states.

@@ -70,9 +70,6 @@ def main(argv):
     env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name)
     game, policy, env, trained_agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
 
-    if not env.is_turn_based:
-      raise ValueError("Expected turn based env")
-
     br_agent_id = None
     agents = trained_agents 
 
