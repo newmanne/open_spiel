@@ -25,8 +25,6 @@ from scipy import stats
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from open_spiel.python.examples.ubc_utils import clock_auction_bounds
-
 from open_spiel.python import rl_agent
 
 Transition = collections.namedtuple(
@@ -247,6 +245,7 @@ class DQN(rl_agent.AbstractAgent):
     self._replay_buffer = replay_buffer_class(replay_buffer_capacity)
     self._prev_timestep = None
     self._prev_action = None
+    self._prev_action_greedy = False
 
     # Step counter to keep track of learning, eps decay and target network.
     self._step_counter = 0
@@ -385,12 +384,14 @@ class DQN(rl_agent.AbstractAgent):
     if np.random.rand() < epsilon:
       action = np.random.choice(legal_actions)
       probs[legal_actions] = 1.0 / len(legal_actions)
+      self._prev_action_greedy = True
     else:
       info_state = self._q_network.prep_batch([info_state])
       q_values = self._q_network(info_state).detach()[0]
       legal_q_values = q_values[legal_actions]
       action = legal_actions[torch.argmax(legal_q_values)]
       probs[action] = 1.0
+      self._prev_action_greedy = False
     return action, probs
 
   def _get_epsilon(self, is_evaluation, power=1.0):
@@ -453,7 +454,7 @@ class DQN(rl_agent.AbstractAgent):
     self._optimizer.zero_grad()
     loss.backward()
     self._optimizer.step()
-    return loss
+    return loss.detach()
 
   @property
   def q_values(self):
@@ -474,6 +475,10 @@ class DQN(rl_agent.AbstractAgent):
   @property
   def prev_action(self):
     return self._prev_action
+
+  @property
+  def prev_action_greedy(self):
+    return self._prev_action_greedy
 
   @property
   def step_counter(self):

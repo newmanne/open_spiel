@@ -19,7 +19,7 @@ from __future__ import print_function
 from dataclasses import dataclass
 from open_spiel.python import rl_environment, policy
 from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds
 from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint, lookup_model_and_args
 from open_spiel.python.algorithms.exploitability import nash_conv
 import pyspiel
@@ -46,6 +46,23 @@ BR_DIR = 'best_responses'
 
 # TODO: Maybe want a convergence check here? Right now we just always run for a fixed number of episodes (which is indeed what e.g., the DREAM paper does)
 
+def checkpoint_sub_agent_i(experiment_dir, checkpoint_name, br_name):
+  # Returns a policy with agent i subbed in with the best responder
+  env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name)
+  game, policy, env, trained_agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
+
+  with open(f'{experiment_dir}/{BR_DIR}/{br_name}.pkl', 'rb') as f:
+    br_checkpoint = pickle.load(f)
+    br_agent_id = br_checkpoint['br_player']
+    br_config = br_checkpoint['config']
+    br_agent = make_dqn_agent(br_agent_id, br_config, env, game, game_config)
+    br_agent._q_network.load_state_dict(br_checkpoint['agent'])
+
+  policy._policies[br_player_id] = br_agent
+  trained_agents[br_player_id] = br_agent
+  return policy
+
+
 def make_dqn_agent(player_id, config, env, game, game_config):
   num_actions = env.action_spec()["num_actions"]
   num_players = game.num_players()
@@ -68,7 +85,7 @@ def make_dqn_agent(player_id, config, env, game, game_config):
     "loss_str": config['loss_str']
   }
 
-  dqn_kwargs['lower_bound_utility'], dqn_kwargs_copy['upper_bound_utility'] = clock_auction_bounds(game_config, player_id)
+  dqn_kwargs['lower_bound_utility'], dqn_kwargs['upper_bound_utility'] = clock_auction_bounds(game_config, player_id)
 
   return ubc_dqn.DQN(
         player_id,
@@ -125,9 +142,6 @@ def main(argv):
         agents.append(make_dqn_agent(i, config, env, game, game_config))
       else:
         agents.append(trained_agents[i])
-
-    if not env.is_turn_based:
-      raise ValueError("Expected turn based env")
 
     logging.info(f"Training for {num_training_episodes} episodes")
     # TRAINING PHASE

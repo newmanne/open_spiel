@@ -5,8 +5,6 @@ import glob
 import os
 from pathlib import Path
 
-
-
 def verify_config():
     spiel_path = os.environ.get('OPENSPIEL_PATH')
     if spiel_path is None:

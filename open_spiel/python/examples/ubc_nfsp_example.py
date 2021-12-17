@@ -64,11 +64,9 @@ class NFSPPolicies(policy.Policy):
         self._obs["info_state"][cur_player] = state.information_state_tensor(cur_player)
         self._obs["legal_actions"][cur_player] = legal_actions
 
-        info_state = rl_environment.TimeStep(
-            observations=self._obs, rewards=None, discounts=None, step_type=None)
+        info_state = rl_environment.TimeStep(observations=self._obs, rewards=None, discounts=None, step_type=None)
 
-        with self._policies[cur_player].temp_mode_as(self._best_response_mode):
-            p = self._policies[cur_player].step(info_state, is_evaluation=True).probs
+        p = self._policies[cur_player].step(info_state, is_evaluation=True).probs
         prob_dict = {action: p[action] for action in legal_actions}
         return prob_dict
 
@@ -160,6 +158,9 @@ def setup(experiment_dir, config):
     logging.info("Game loaded")
 
     env = rl_environment.Environment(game)
+    if not env.is_turn_based:
+      raise ValueError("Expected turn based env")
+    
     state_size = env.observation_spec()["info_state"][0]
     num_actions = env.action_spec()["num_actions"]
     num_players = game.num_players()
@@ -174,7 +175,7 @@ def setup(experiment_dir, config):
       "epsilon_end": config['epsilon_end'],
       "update_target_network_every": config.get('update_target_network_every', 1_000),
       "loss_str": config.get('loss_str', 'mse'),
-      "weight_iters": config.get('weight_iters', False),
+      "weight_iters": config.get('weight_iters_dqn', False),
     }
 
     # Get models and default args
@@ -205,6 +206,7 @@ def setup(experiment_dir, config):
             min_buffer_size_to_learn=config['min_buffer_size_to_learn'],
             learn_every=config['learn_every'],
             optimizer_str=config['optimizer_str'],
+            add_explore_transitions=config.get('add_explore_transitions', True),
             **dqn_kwargs_copy
         )
         agents.append(agent)
@@ -227,7 +229,7 @@ def main(argv):
     parser.add_argument('--br_overrides', type=str, default='')
     parser.add_argument('--eval_overrides', type=str, default='')
     parser.add_argument('--report_freq', type=int, default=50_000)
-
+    parser.add_argument('--iterate_br', type=util.strtobool, default=0)
 
     # Optional Overrides
     parser.add_argument('--num_training_episodes', type=int, default=None)
@@ -249,6 +251,7 @@ def main(argv):
     br_overrides = args.br_overrides
     eval_overrides = args.eval_overrides
     report_freq = args.report_freq
+    iterate_br = args.iterate_br
 
 
     if not os.path.exists(output_dir):
@@ -263,6 +266,9 @@ def main(argv):
 
     logging.get_absl_handler().use_absl_log_file('nfsp', output_dir) 
     logging.set_verbosity(logging.INFO)
+
+    if iterate_br:
+        logging.info("Iterating best responses")
     
     logging.info("Loading network parameters from %s", args.network_config_file)
 
@@ -305,6 +311,7 @@ def main(argv):
     agents = env_and_model.agents
     nfsp_policies = env_and_model.nfsp_policies
     game = env_and_model.game
+    num_players = game.num_players()
 
     ### NFSP ALGORITHM
     compute_nash_conv = args.compute_nash_conv
@@ -316,11 +323,17 @@ def main(argv):
         if ep % report_freq == 0:
             logging.info(f"----Episode {ep} ---")
 
-
         time_step = env.reset()
         while not time_step.last():
             player_id = time_step.observations["current_player"]
-            agent_output = agents[player_id].step(time_step)
+            if iterate_br: # Each player alternates between BR and Supervised network
+                if player_id % num_players == 0:
+                    agent_output = agents[player_id].step(time_step, is_evaluation=True) # Use supervised network and learn nothing
+                else:
+                    with agents[player_id].temp_mode_as(True):
+                        agent_output = agents[player_id].step(time_step) # Always BR
+            else:
+                agent_output = agents[player_id].step(time_step)
             action_list = [agent_output.action]
             time_step = env.step(action_list)
 
