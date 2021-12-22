@@ -92,7 +92,7 @@ CMD=`{command}`
 echo $CMD
 eval $CMD
 """
-    job_file_path = f'{experiment_dir}/br_{br_player}.sh'
+    job_file_path = f'{experiment_dir}/br_{br_player}_{checkpoint}.sh'
     write_job_file(job_file_path, job_file_text)
     if submit:
         os.system(f'cd {experiment_dir} && sbatch {job_file_path}')

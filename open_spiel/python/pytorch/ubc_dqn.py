@@ -351,7 +351,6 @@ class DQN(rl_agent.AbstractAgent):
     next_info_state_flat = time_step.observations["info_state"][self.player_id][:]
     next_info_state = self._q_network.reshape_infostate(next_info_state_flat)
 
-    print(time_step.rewards)
     reward = time_step.rewards[self.player_id]
 
     if self.lower_bound_utility is not None and self.upper_bound_utility is not None:
