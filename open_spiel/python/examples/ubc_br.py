@@ -22,6 +22,7 @@ from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn
 from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds
 from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint, lookup_model_and_args
 from open_spiel.python.algorithms.exploitability import nash_conv
+from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator
 import pyspiel
 import numpy as np
 import pandas as pd
@@ -141,16 +142,17 @@ def main(argv):
       if i == br_player:
         agents.append(make_dqn_agent(i, config, env, game, game_config))
       else:
-        agents.append(trained_agents[i])
+        agent = trained_agents[i]
+        agent = CachingAgentDecorator(agent)
+        agents.append(agent)
 
     logging.info(f"Training for {num_training_episodes} episodes")
     # TRAINING PHASE
     for i in range(num_training_episodes):
       if i % report_freq == 0:
         logging.info(f"----Episode {i} ---")
-        losses = [agent.loss for agent in agents]
-        logging.info(f"[{i}] Losses: {losses}")
-
+        loss = agents[br_player].loss
+        logging.info(f"[{br_player}] Loss: {loss}")
 
       time_step = env.reset()
 

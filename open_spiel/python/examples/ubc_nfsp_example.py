@@ -352,7 +352,8 @@ def main(argv):
 
         if ep % config['eval_every'] == 0 or ep == config['num_training_episodes']:
             losses = [agent.loss for agent in agents]
-            logging.info(f"[{ep}] Losses: {losses}")
+            for pid, loss in enumerate(losses):
+                logging.info(f"[{pid}] Loss: {loss}")
 
             if compute_nash_conv:
                 logging.info('Computing nash conv...')

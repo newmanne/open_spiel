@@ -20,6 +20,7 @@ from open_spiel.python import rl_environment, policy
 from open_spiel.python.examples.ubc_utils import smart_load_sequential_game
 from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint, lookup_model_and_args
 from open_spiel.python.examples.ubc_br import BR_DIR, make_dqn_agent
+from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator
 
 import pyspiel
 import numpy as np
@@ -71,7 +72,7 @@ def main(argv):
     game, policy, env, trained_agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
 
     br_agent_id = None
-    agents = trained_agents 
+    agents = trained_agents
 
     if br_name is None:
       logging.info("No best reponders provided. Just evaluating the policy")
@@ -84,6 +85,9 @@ def main(argv):
       br_agent = make_dqn_agent(br_agent_id, config, env, game, game_config)
       br_agent._q_network.load_state_dict(checkpoint['agent'])
       agents[br_agent_id] = br_agent # Replace with our agent
+
+    # Apply cache
+    agents = [CachingAgentDecorator(agent) for agent in agents] 
 
     # EVALUATION PHASE
     logging.info(f"Evaluation phase: {num_samples} episodes")
