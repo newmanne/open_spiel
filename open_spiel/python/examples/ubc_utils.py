@@ -5,6 +5,14 @@ import pandas as pd
 
 CLOCK_AUCTION = 'clock_auction'
 
+
+def single_action_result(legal_actions, num_actions):
+    probs = np.zeros(num_actions)
+    action = legal_actions[0]
+    probs[action] = 1.0
+    return action, probs
+
+
 def get_actions(game):
     state = game.new_initial_state()
     # Skip over chance nodes
