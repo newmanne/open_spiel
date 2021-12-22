@@ -33,6 +33,7 @@ import torch.nn.functional as F
 
 from open_spiel.python import rl_agent
 from open_spiel.python.pytorch import ubc_dqn
+from open_spiel.python.examples.ubc_utils import single_action_result
 
 
 Transition = collections.namedtuple(
@@ -137,20 +138,18 @@ class NFSP(rl_agent.AbstractAgent):
       self._best_response_mode = False
 
   def _act(self, info_state, legal_actions):
-    info_state = self._avg_network.prep_batch([info_state])
-    action_values = self._avg_network(info_state)
-    self._last_action_values = action_values[0]
-
-    legal_values = action_values[0][legal_actions]
-    probs = np.zeros(self._num_actions)
-    probs[legal_actions] = F.softmax(legal_values, dim=0).detach().numpy()
-    probs /= sum(probs)
-    action = np.random.choice(len(probs), p=probs)
+    if len(legal_actions) == 1: # Let's not run the NN if you are faced with a single action (imagine a case where one player drops out and remaining players duel onwards)
+      return single_action_result(legal_actions, self._num_actions)
+    else:
+      probs = np.zeros(self._num_actions)
+      info_state = self._avg_network.prep_batch([info_state])
+      action_values = self._avg_network(info_state)
+      self._last_action_values = action_values[0]
+      legal_values = action_values[0][legal_actions]
+      probs[legal_actions] = F.softmax(legal_values, dim=0).detach().numpy()
+      probs /= sum(probs)
+      action = np.random.choice(len(probs), p=probs)
     return action, probs
-
-  # @property
-  # def mode(self):
-  #   return self._mode
 
   @property
   def loss(self):
@@ -178,8 +177,7 @@ class NFSP(rl_agent.AbstractAgent):
       if not is_evaluation and not time_step.last():
         if not (self._rl_agent.prev_action_greedy and not self._add_explore_transitions):
           self._add_transition(time_step, agent_output)
-
-    elif not self._best_response_mode:
+    else:
       # Act step: don't act at terminal info states.
       if not time_step.last():
         info_state_flat = time_step.observations["info_state"][self.player_id]
@@ -190,9 +188,8 @@ class NFSP(rl_agent.AbstractAgent):
         agent_output = rl_agent.StepOutput(action=action, probs=probs)
 
       if self._prev_timestep and not is_evaluation:
+        print("HERE", is_evaluation, self.player_id)
         self._rl_agent.add_transition(self._prev_timestep, self._prev_action, time_step)
-    else:
-      raise ValueError("Invalid mode ({})".format(self._best_response_mode))
 
     if not is_evaluation:
       self._step_counter += 1

@@ -26,6 +26,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from open_spiel.python import rl_agent
+from open_spiel.python.examples.ubc_utils import single_action_result
 
 Transition = collections.namedtuple(
     "Transition",
@@ -188,7 +189,6 @@ class MLP(nn.Module):
 def mapRange(value, inMin, inMax, outMin, outMax):
   return outMin + (((value - inMin) / (inMax - inMin)) * (outMax - outMin))
 
-
 class DQN(rl_agent.AbstractAgent):
   """DQN Agent implementation in PyTorch.
 
@@ -239,7 +239,6 @@ class DQN(rl_agent.AbstractAgent):
     self._epsilon_end = epsilon_end
     self._epsilon_decay_duration = epsilon_decay_duration
 
-    # TODO(author6) Allow for optional replay buffer config.
     if not isinstance(replay_buffer_capacity, int):
       raise ValueError("Replay buffer capacity not an integer.")
     self._replay_buffer = replay_buffer_class(replay_buffer_capacity)
@@ -287,14 +286,15 @@ class DQN(rl_agent.AbstractAgent):
     """
 
     # Act step: don't act at terminal info states or if its not our turn.
-    if (not time_step.last()) and (
-        time_step.is_simultaneous_move() or
-        self.player_id == time_step.current_player()):
-      info_state_flat = time_step.observations["info_state"][self.player_id]
-      info_state = self._q_network.reshape_infostate(info_state_flat)
+    if (not time_step.last()) and (time_step.is_simultaneous_move() or self.player_id == time_step.current_player()):
       legal_actions = time_step.observations["legal_actions"][self.player_id]
-      epsilon = self._get_epsilon(is_evaluation)
-      action, probs = self._epsilon_greedy(info_state, legal_actions, epsilon)
+      if len(legal_actions) == 1: # Don't run the network for a single choice
+        action, probs = single_action_result(legal_actions, self._num_actions)
+      else:
+        info_state_flat = time_step.observations["info_state"][self.player_id]
+        info_state = self._q_network.reshape_infostate(info_state_flat)
+        epsilon = self._get_epsilon(is_evaluation)
+        action, probs = self._epsilon_greedy(info_state, legal_actions, epsilon)
     else:
       action = None
       probs = []
@@ -351,7 +351,9 @@ class DQN(rl_agent.AbstractAgent):
     next_info_state_flat = time_step.observations["info_state"][self.player_id][:]
     next_info_state = self._q_network.reshape_infostate(next_info_state_flat)
 
+    print(time_step.rewards)
     reward = time_step.rewards[self.player_id]
+
     if self.lower_bound_utility is not None and self.upper_bound_utility is not None:
       reward = self.mapRange(reward)
 

@@ -319,41 +319,50 @@ def main(argv):
     min_nash_conv = None
 
     alg_start_time = time.time()
-    for ep in range(config['num_training_episodes']):
+    for ep in range(1, config['num_training_episodes'] + 1):
         if ep % report_freq == 0:
             logging.info(f"----Episode {ep} ---")
 
         time_step = env.reset()
         while not time_step.last():
             player_id = time_step.observations["current_player"]
+            agent = agents[player_id]
             if iterate_br: # Each player alternates between BR and Supervised network
-                if player_id % num_players == 0:
-                    agent_output = agents[player_id].step(time_step, is_evaluation=True) # Use supervised network and learn nothing
+                if ep % num_players == player_id:
+                    with agent.temp_mode_as(True): # True=Best response mode
+                        agent_output = agent.step(time_step)
                 else:
-                    with agents[player_id].temp_mode_as(True):
-                        agent_output = agents[player_id].step(time_step) # Always BR
+                    agent_output = agent.step(time_step, is_evaluation=True) # Use supervised network and learn nothing
             else:
-                agent_output = agents[player_id].step(time_step)
+                agent_output = agent.step(time_step)
             action_list = [agent_output.action]
             time_step = env.step(action_list)
 
         # Episode is over, step all agents with final info state.
-        for agent in agents:
-            agent.step(time_step)
+        if iterate_br:
+            for player_id, agent in enumerate(agents):
+                if ep % num_players == player_id:
+                    with agent.temp_mode_as(True): 
+                        agent.step(time_step)
+                else:
+                    agent.step(time_step, is_evaluation=True)
+        else:
+            for agent in agents:
+                agent.step(time_step)
 
-        if (ep + 1) % config['eval_every'] == 0 or (ep + 1) == config['num_training_episodes']:
+        if ep % config['eval_every'] == 0 or ep == config['num_training_episodes']:
             losses = [agent.loss for agent in agents]
-            logging.info(f"[{ep + 1}] Losses: {losses}")
+            logging.info(f"[{ep}] Losses: {losses}")
 
             if compute_nash_conv:
                 logging.info('Computing nash conv...')
                 n_conv = nash_conv(game, nfsp_policies, use_cpp_br=True)
-                logging.info("[%s] NashConv AVG %s", ep + 1, n_conv)
+                logging.info("[%s] NashConv AVG %s", ep, n_conv)
                 logging.info("_____________________________________________")
             else:
                 n_conv = None
 
-            nash_conv_history.append((ep+1, time.time() - alg_start_time, n_conv))
+            nash_conv_history.append((ep, time.time() - alg_start_time, n_conv))
 
             checkpoint = {
                     'name': args.job_name,
@@ -366,9 +375,10 @@ def main(argv):
             with open(checkpoint_path, 'wb') as f:
                 pickle.dump(checkpoint, f)
 
-            checkpoint_name = f'checkpoint_{ep + 1}'
+            checkpoint_name = f'checkpoint_{ep}'
             shutil.copyfile(checkpoint_path, os.path.join(output_dir, CHECKPOINT_FOLDER, f'{checkpoint_name}.pkl'))
             
+            ### DISPATCH BEST RESPONSE JOBS
             if dispatch_br:
                 for player in range(game.num_players()):
                     dispatch.dispatch_br(output_dir, br_player=player, checkpoint=checkpoint_name, overrides=br_overrides + f' --eval_overrides "{eval_overrides}"')
