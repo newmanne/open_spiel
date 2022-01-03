@@ -138,6 +138,7 @@ class NFSP(rl_agent.AbstractAgent):
       self._best_response_mode = False
 
   def _act(self, info_state, legal_actions):
+    # TODO: Replace this with the TakeSingleActionDecorator
     if len(legal_actions) == 1: # Let's not run the NN if you are faced with a single action (imagine a case where one player drops out and remaining players duel onwards)
       return single_action_result(legal_actions, self._num_actions)
     else:
@@ -188,7 +189,6 @@ class NFSP(rl_agent.AbstractAgent):
         agent_output = rl_agent.StepOutput(action=action, probs=probs)
 
       if self._prev_timestep and not is_evaluation:
-        print("HERE", is_evaluation, self.player_id)
         self._rl_agent.add_transition(self._prev_timestep, self._prev_action, time_step)
 
     if not is_evaluation:

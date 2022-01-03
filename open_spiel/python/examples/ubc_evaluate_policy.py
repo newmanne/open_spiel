@@ -20,7 +20,8 @@ from open_spiel.python import rl_environment, policy
 from open_spiel.python.examples.ubc_utils import smart_load_sequential_game
 from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint, lookup_model_and_args
 from open_spiel.python.examples.ubc_br import BR_DIR, make_dqn_agent
-from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator
+from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator, TakeSingleActionDecorator
+from open_spiel.python.examples.straightforward_agent import StraightforwardAgent
 
 import pyspiel
 import numpy as np
@@ -48,6 +49,7 @@ def main(argv):
     parser.add_argument('--num_samples', type=int, default=100_000)
     parser.add_argument('--report_freq', type=int, default=5000)
     parser.add_argument('--br_name', type=str, default=None)
+    parser.add_argument('--straightforward_player', type=int, default=None)
 
     args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
 
@@ -57,6 +59,7 @@ def main(argv):
     num_samples = args.num_samples
     report_freq = args.report_freq
     br_name = args.br_name
+    straightforward_player = args.straightforward_player
 
     name = checkpoint_name
     if br_name:
@@ -74,9 +77,12 @@ def main(argv):
     br_agent_id = None
     agents = trained_agents
 
-    if br_name is None:
-      logging.info("No best reponders provided. Just evaluating the policy")
-    else:
+    if straightforward_player is not None and br_name is not None:
+      raise ValueError("Only one of straightforward_player and br_name can be set")
+
+    if straightforward_player is not None: # Replace one agent with Straightforward Bidding
+      agents[straightforward_player] = TakeSingleActionDecorator(StraightforwardAgent(straightforward_player, game_config, game.num_distinct_actions()), game.num_distinct_actions())
+    elif br_name is not None:
       logging.info(f"Reading from agent {br_name}")
       with open(f'{experiment_dir}/{BR_DIR}/{br_name}.pkl', 'rb') as f:
         checkpoint = pickle.load(f)
@@ -85,6 +91,8 @@ def main(argv):
       br_agent = make_dqn_agent(br_agent_id, config, env, game, game_config)
       br_agent._q_network.load_state_dict(checkpoint['agent'])
       agents[br_agent_id] = br_agent # Replace with our agent
+    else:
+      logging.info("No best reponders provided. Just evaluating the policy")
 
     # Apply cache
     agents = [CachingAgentDecorator(agent) for agent in agents] 
