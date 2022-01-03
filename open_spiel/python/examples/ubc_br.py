@@ -59,8 +59,8 @@ def checkpoint_sub_agent_i(experiment_dir, checkpoint_name, br_name):
     br_agent = make_dqn_agent(br_agent_id, br_config, env, game, game_config)
     br_agent._q_network.load_state_dict(br_checkpoint['agent'])
 
-  policy._policies[br_player_id] = br_agent
-  trained_agents[br_player_id] = br_agent
+  policy._policies[br_agent_id] = br_agent
+  trained_agents[br_agent_id] = br_agent
   return policy
 
 
@@ -152,7 +152,7 @@ def main(argv):
       if i % report_freq == 0:
         logging.info(f"----Episode {i} ---")
         loss = agents[br_player].loss
-        logging.info(f"[{br_player}] Loss: {loss}")
+        logging.info(f"[P{br_player}] Loss: {loss}")
 
       time_step = env.reset()
 

@@ -4,6 +4,7 @@
 
 import torch
 from torch import nn
+from open_spiel.python.examples.ubc_utils import FEATURES_PER_PRODUCT
 
 class AuctionRNN(nn.Module):
     """
@@ -30,16 +31,15 @@ class AuctionRNN(nn.Module):
         # - values for each product
         # - (submitted demands, processed demands, observed demands, prices) for each product
         # (if not, we won't know how to unroll the infostate tensors)
-        features_per_product = 4
-        num_rounds = (input_size - (3 * num_players + 1 + num_products)) // (features_per_product * num_products)
+        num_rounds = (input_size - (3 * num_players + 1 + num_products)) // (FEATURES_PER_PRODUCT * num_products)
         # confirm that this gives an integral number of rounds...
-        expected_input_size = 3 * num_players + 1 + num_products + features_per_product * num_products * num_rounds 
+        expected_input_size = 3 * num_players + 1 + num_products + FEATURES_PER_PRODUCT * num_products * num_rounds 
         assert (input_size == expected_input_size), "Expected input_size = %d, but got %d" % (expected_input_size, input_size) 
 
         self.num_players = num_players
         self.num_products = num_products
 
-        input_size_per_round = 3 * num_players + 1 + (features_per_product + 1) * num_products 
+        input_size_per_round = 3 * num_players + 1 + (FEATURES_PER_PRODUCT + 1) * num_products 
         
         if rnn_model == 'lstm':
             self.rnn = nn.LSTM(input_size=input_size_per_round, hidden_size=hidden_size, num_layers=num_layers, batch_first=True)
@@ -106,13 +106,12 @@ class AuctionRNN(nn.Module):
 
         Outputs: (num_examples, num_actions) tensor of outputs (logit action probabilities or Q values)
         """
-
         # Run RNN
         rnn_outputs, _ = self.rnn(x)
         
         # Split into final output for each sequence
         padded_output, output_lens = nn.utils.rnn.pad_packed_sequence(rnn_outputs, batch_first=True)
-        last_outputs = torch.cat([padded_output[e, i-1, :].unsqueeze(0) for e, i in enumerate(output_lens)])
+        last_outputs = torch.cat([padded_output[e, i - 1, :].unsqueeze(0) for e, i in enumerate(output_lens)])
         
         # Apply output layer to each final output
         outputs = self.output_layer(last_outputs)

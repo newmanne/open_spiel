@@ -187,7 +187,10 @@ class MLP(nn.Module):
 
 
 def mapRange(value, inMin, inMax, outMin, outMax):
-  return outMin + (((value - inMin) / (inMax - inMin)) * (outMax - outMin))
+  return outMin + ((outMax - outMin) / (inMax - inMin)) * (value - inMin)
+
+def unmapRange(y, inMin, inMax, outMin, outMax):
+  return ((y - outMin) / ((outMax - outMin) / (inMax - inMin))) + inMin
 
 class DQN(rl_agent.AbstractAgent):
   """DQN Agent implementation in PyTorch.
@@ -288,6 +291,7 @@ class DQN(rl_agent.AbstractAgent):
     # Act step: don't act at terminal info states or if its not our turn.
     if (not time_step.last()) and (time_step.is_simultaneous_move() or self.player_id == time_step.current_player()):
       legal_actions = time_step.observations["legal_actions"][self.player_id]
+      # Note that the TakeSingleActionDecorator is problematic here, because the transition would not added. So we do this instead, to avoid running the network
       if len(legal_actions) == 1: # Don't run the network for a single choice
         action, probs = single_action_result(legal_actions, self._num_actions)
       else:
@@ -328,6 +332,9 @@ class DQN(rl_agent.AbstractAgent):
 
   def mapRange(self, value):
     return mapRange(value, self.lower_bound_utility, self.upper_bound_utility, -1., 1.)
+
+  def unmapRange(self, value):
+    return unmapRange(value, self.lower_bound_utility, self.upper_bound_utility, -1., 1.)
 
   def add_transition(self, prev_time_step, prev_action, time_step):
     """Adds the new transition using `time_step` to the replay buffer.
