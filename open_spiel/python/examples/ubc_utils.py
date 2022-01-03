@@ -2,14 +2,35 @@ import pyspiel
 from absl import logging
 import numpy as np
 import pandas as pd
+import itertools
+import pulp
+from pulp import LpProblem, LpMinimize, LpVariable, LpStatus, LpBinary, lpSum, lpDot, LpMaximize, LpInteger
+import random
+import string
+from open_spiel.python.rl_agent import StepOutput
+
 
 CLOCK_AUCTION = 'clock_auction'
+FEATURES_PER_PRODUCT = 4
+
+def action_to_bundles(licenses):
+    bids = []
+    for n in licenses:
+        b = []
+        for i in range(n + 1):
+            b.append(i)
+        bids.append(b)
+    actions = list(itertools.product(*bids))
+    return {i: a for i, a in enumerate(actions)}
 
 
-def single_action_result(legal_actions, num_actions):
+
+def single_action_result(legal_actions, num_actions, as_output=False):
     probs = np.zeros(num_actions)
     action = legal_actions[0]
     probs[action] = 1.0
+    if as_output:
+        return StepOutput(action=action, probs=probs)
     return action, probs
 
 
@@ -21,7 +42,7 @@ def get_actions(game):
 
     # Now we are at a player state
     action_dict = dict()
-    for i in range(len(state.legal_actions())):
+    for i in range(len(state.legal_actions())): 
         action_dict[i] = state.action_to_string(i)
     return action_dict
 
@@ -59,5 +80,38 @@ def clock_auction_bounds(game_config, player_id):
     max_utility = max(bounds)
     # MIN UTILITY
     # What if you spent your entire budget and got nothing? (A tighter not implemented bound: if you got the single worst item for you)
-    min_utility = min([t['budget'] for t in game_config['players'][player_id]['type']])
+    min_utility = -min([t['budget'] for t in game_config['players'][player_id]['type']])
     return min_utility, max_utility
+
+
+def solve(problem):
+    return problem.solve(solver=pulp.CPLEX_PY(msg=0, gapRel=0))
+    # return problem.solve(solver=pulp.CPLEX_CMD(msg=0, options=[f'set mip tolerances mipgap 0']))
+    # return problem.solve(solver=pulp.CPLEX_CMD(msg=0, options=[f'set mip tolerances mipgap 0'], keepFiles = 1))
+
+def objective_from_lp(problem):
+    return np.round(problem.objective.value())
+
+def random_string(k):
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=k))
+
+def fail_lp(problem, save_lp, status=None):
+    error_message = f"Couldn't solve allocation problem optimally. Status was {status}."
+    if save_lp:
+        fname = ''.join(random_string(10))
+        # TODO: Pickle seems to no longer work TypeError: can't pickle SwigPyObject objects
+        # with open(f'{fname}.pkl', 'wb') as f:
+        #     pickle.dump(problem, f)
+        problem.writeLP(f'{fname}.lp')
+        error_message += f'Saved LP to {fname}.lp.'
+    raise ValueError(error_message)
+
+def pulp_solve(problem, solve_function=solve, save_if_failed=True):
+    try:
+        status = LpStatus[solve_function(problem)]
+        if status != "Optimal":
+            fail_lp(problem, save_if_failed, status=status)
+    except pulp.PulpSolverError as e:
+        logging.warning(e)
+        fail_lp(problem, save_if_failed)
+    return objective_from_lp(problem)
