@@ -169,9 +169,7 @@ class AuctionGame : public SimMoveGame {
   int MaxChanceOutcomes() const override;
   int NumPlayers() const override { return num_players_; }
   double MinUtility() const override { return -max_budget_; } // Not an exact calculation, but a lower bound
-  double MaxUtility() const override { 
-    return 2000; // TODO: FIX
-  } // Winning all licenses at the opening price with the highest value. This isn't a perfect computation because budgets might constrain you
+  double MaxUtility() const override;
   std::vector<int> InformationStateTensorShape() const override;
   std::vector<int> ObservationTensorShape() const override;
   int MaxGameLength() const override;
