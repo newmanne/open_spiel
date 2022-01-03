@@ -1,6 +1,9 @@
 from open_spiel.python.rl_agent import AbstractAgent
 from cachetools import cached, LRUCache, TTLCache
 from cachetools.keys import hashkey
+from open_spiel.python.examples.ubc_utils import single_action_result
+
+# TODO: Is all of this meta magic slowing you down? Or is it not worth bothering
 
 class AgentDecorator(AbstractAgent):
 
@@ -19,7 +22,10 @@ class AgentDecorator(AbstractAgent):
         elif func in self.agent_attributes:
             return getattr(self._agent, func)
         else:
-            raise AttributeError
+            # For nesting decorators
+            if isinstance(self._agent, AgentDecorator):
+                return self._agent.__getattr__(func)
+            raise AttributeError(func)
 
     @property
     def agent(self) -> AbstractAgent:
@@ -43,3 +49,17 @@ class CachingAgentDecorator(AgentDecorator):
             output = self.agent.step(time_step, is_evaluation=is_evaluation)
             self.cache[key] = output
             return output
+
+
+class TakeSingleActionDecorator(AgentDecorator):
+    '''Sometimes you have to write lots of code to avoid telling an agent to take literally the only action it can. This avoids that'''
+
+    def __init__(self, agent, num_actions):
+        super().__init__(agent)
+        self.num_actions = num_actions
+
+    def step(self, time_step, is_evaluation=False):
+        legal_actions = time_step.observations["legal_actions"][self.player_id]
+        if len(legal_actions) == 1:
+            return single_action_result(legal_actions, self.num_actions, as_output=True)
+        return self._agent.step(time_step, is_evaluation=is_evaluation)
