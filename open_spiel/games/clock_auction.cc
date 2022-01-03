@@ -179,6 +179,11 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
 
 }
 
+double AuctionGame::MaxUtility() const {
+// Winning all licenses at the opening price with the highest value. This isn't a perfect computation because budgets might constrain you
+  return 2000; // TODO: FIXME
+}
+    
 std::vector<int> AuctionState::ActionToBid(Action action) const {
   return all_bids_[action];
 }
