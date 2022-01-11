@@ -78,6 +78,8 @@ set(GAME_SOURCES
   go/go_board.h
   goofspiel.cc
   goofspiel.h
+  hallway.h
+  hallway.cc
   havannah.cc
   havannah.h
   hearts.cc

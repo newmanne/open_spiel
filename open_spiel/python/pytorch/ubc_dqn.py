@@ -34,6 +34,9 @@ Transition = collections.namedtuple(
 
 ILLEGAL_ACTION_LOGITS_PENALTY = -1e9
 
+MIN_MAPPED_UTILITY = -1
+MAX_MAPPED_UTILITY = 1
+
 
 class ReplayBuffer(object):
   """ReplayBuffer of fixed size with a FIFO replacement policy.
@@ -157,6 +160,7 @@ class MLP(nn.Module):
       self._layers.append(SonnetLinear(in_size=input_size, out_size=size))
       input_size = size
     # Output layer
+
     self._layers.append(
         SonnetLinear(
             in_size=input_size,
@@ -331,10 +335,10 @@ class DQN(rl_agent.AbstractAgent):
     return rl_agent.StepOutput(action=action, probs=probs)
 
   def mapRange(self, value):
-    return mapRange(value, self.lower_bound_utility, self.upper_bound_utility, -1., 1.)
+    return mapRange(value, self.lower_bound_utility, self.upper_bound_utility, MIN_MAPPED_UTILITY, MAX_MAPPED_UTILITY)
 
   def unmapRange(self, value):
-    return unmapRange(value, self.lower_bound_utility, self.upper_bound_utility, -1., 1.)
+    return unmapRange(value, self.lower_bound_utility, self.upper_bound_utility, MIN_MAPPED_UTILITY, MAX_MAPPED_UTILITY)
 
   def add_transition(self, prev_time_step, prev_action, time_step):
     """Adds the new transition using `time_step` to the replay buffer.
@@ -437,17 +441,17 @@ class DQN(rl_agent.AbstractAgent):
     iters = torch.LongTensor([t.iteration for t in transitions])
 
     are_final_steps = torch.Tensor([t.is_final_step for t in transitions])
-    legal_actions_mask = torch.Tensor(
-        np.array([t.legal_actions_mask for t in transitions]))
+    legal_actions_mask = torch.Tensor(np.array([t.legal_actions_mask for t in transitions]))
 
     self._q_values = self._q_network(info_states)
     self._target_q_values = self._target_q_network(next_info_states).detach()
+    if self.lower_bound_utility is not None and self.upper_bound_utility is not None:
+      self._target_q_values = torch.clamp(self._target_q_values, min=MIN_MAPPED_UTILITY, max=MAX_MAPPED_UTILITY)
 
     illegal_actions = 1 - legal_actions_mask
     illegal_logits = illegal_actions * ILLEGAL_ACTION_LOGITS_PENALTY  
     max_next_q = torch.max(self._target_q_values + illegal_logits, dim=1)[0]
-    target = (
-        rewards + (1 - are_final_steps) * self._discount_factor * max_next_q)
+    target = (rewards + (1 - are_final_steps) * self._discount_factor * max_next_q)
     action_indices = torch.stack([
         torch.arange(self._q_values.shape[0], dtype=torch.long), actions
     ], dim=0)

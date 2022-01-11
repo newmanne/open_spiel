@@ -61,9 +61,14 @@ def main(argv):
     br_name = args.br_name
     straightforward_player = args.straightforward_player
 
+    if straightforward_player is not None and br_name is not None:
+      raise ValueError("Only one of straightforward_player and br_name can be set")
+
     name = checkpoint_name
     if br_name:
       name += f'_{br_name}'
+    elif straightforward_player:
+      name += f'_straightforward_{straightforward_player}'
 
     checkpoint_dir = os.path.join(experiment_dir, EVAL_DIR)
     Path(checkpoint_dir).mkdir(parents=True, exist_ok=True)
@@ -77,8 +82,6 @@ def main(argv):
     br_agent_id = None
     agents = trained_agents
 
-    if straightforward_player is not None and br_name is not None:
-      raise ValueError("Only one of straightforward_player and br_name can be set")
 
     if straightforward_player is not None: # Replace one agent with Straightforward Bidding
       agents[straightforward_player] = TakeSingleActionDecorator(StraightforwardAgent(straightforward_player, game_config, game.num_distinct_actions()), game.num_distinct_actions())
@@ -131,6 +134,7 @@ def main(argv):
       'walltime': time.time() - alg_start_time,
       'rewards': rewards, # For now, store all the rewards. But maybe we only need some summary stats
       'br_agent': br_agent_id,
+      'straightforward_agent': straightforward_player
     }
 
     checkpoint_path = os.path.join(checkpoint_dir, f'rewards_{name}.pkl')

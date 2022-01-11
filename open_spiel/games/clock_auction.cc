@@ -106,6 +106,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
   int information_policy,
   bool allow_negative_profit_bids,
   bool tiebreaks,
+  bool handcrafted_,
   std::vector<std::vector<std::vector<double>>> values,
   std::vector<std::vector<double>> budgets,
   std::vector<std::vector<double>> probs
@@ -128,6 +129,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       aggregate_demands_(),
       all_bids_activity_(),
       round_(1),
+      handcrafted_(handcrafted_),
       final_bids_() {
 
       num_products_ = num_licenses_.size();
@@ -682,7 +684,7 @@ int AuctionGame::NumDistinctActions() const {
 
 std::unique_ptr<State> AuctionGame::NewInitialState() const {
   std::unique_ptr<AuctionState> state(
-      new AuctionState(shared_from_this(), num_players_, max_rounds_, num_licenses_, increment_, open_price_, product_activity_, undersell_rule_, information_policy_, allow_negative_profit_bids_, tiebreaks_, values_,  budgets_, type_probs_));
+      new AuctionState(shared_from_this(), num_players_, max_rounds_, num_licenses_, increment_, open_price_, product_activity_, undersell_rule_, information_policy_, allow_negative_profit_bids_, tiebreaks_, handcrafted_, values_,  budgets_, type_probs_));
   return state;
 }
 
@@ -704,6 +706,11 @@ void AuctionState::ObservationTensor(Player player, absl::Span<float> values) co
 
 
 int AuctionGame::SizeHelper(int rounds) const {
+    if (handcrafted_) {
+      // round, agg_demand, my demand, clock price, and then my value for each bundle
+      return 1 + 3 * num_products_ + NumDistinctActions();
+    }
+
     int size_required = 
       num_players_ + // player encoding
       1 + // budget
@@ -720,14 +727,69 @@ std::vector<int> AuctionGame::InformationStateTensorShape() const {
   return {SizeHelper(max_rounds_)};
 }
 
+
+void AuctionState::HandCraftedTensor(Player player, absl::Span<float> values) const {
+  // Profit for each action at current clock prices (assuming you get what you want and the clock prices wind up being the posted prices)
+  auto& price = clock_price_.back();
+  auto& value = value_[player];
+
+  int index = 0;
+  for (int b = 0; b < all_bids_.size(); b++) {
+    auto& bid = all_bids_[b];
+    /* Note we a) use posted prices and b) assume all drops go through. A more sophisticated bidder might think differently (e.g., try to fulfill budget in expectation)
+     * Consider e.g. if you drop a product you might get stuck! So you can wind up over your budget if your drop fails
+     * Also consider that if you drop a product and get stuck, you only pay SoR on that product
+     */
+
+    double bid_price = DotProduct(bid, price); 
+    double profit = DotProduct(bid, value) - bid_price;
+
+    values[index] = profit;
+    index++;
+  }
+
+  // Round #
+  values[index] = round_;
+  index++;
+
+  // Clock price for each product
+  for (int i = 0; i < num_products_; i++) {
+    values[index + i] = price[i];
+  }
+  index += num_products_;
+
+  if (!processed_demand_[player].empty()) {
+    auto& current_holdings = processed_demand_[player].back();
+    // My current holdings
+    for (int i = 0; i < current_holdings.size(); i++) {
+      values[index + i] = current_holdings[i];
+    }
+  } 
+  index += num_products_;
+
+  // Aggregate demands
+  if (!aggregate_demands_.empty()) {
+    auto& agg_demands = aggregate_demands_.back();
+    for (int i = 0; i < agg_demands.size(); i++) {
+      values[index + i] = agg_demands[i];
+    }
+  }
+
+}
+
 void AuctionState::InformationStateTensor(Player player, absl::Span<float> values) const {
   SPIEL_CHECK_GE(player, 0);
   SPIEL_CHECK_LT(player, num_players_);
   SPIEL_CHECK_LE(round_, max_rounds_);
+  std::fill(values.begin(), values.end(), 0.);
+
+  if (handcrafted_) {
+    HandCraftedTensor(player, values);
+    return;
+  }
 
   int highest_round = max_rounds_;
   int offset = 0;
-  std::fill(values.begin(), values.end(), 0.);
 
   // 1-hot player encoding
   values[player] = 1;
@@ -859,6 +921,13 @@ AuctionGame::AuctionGame(const GameParameters& params) :
   CheckRequiredKey(object, "opening_price");
   open_price_ = ParseDoubleArray(object["opening_price"].GetArray());
 
+
+  if (ContainsKey(object, "handcrafted")) {
+    handcrafted_ = object["handcrafted"].GetBool();
+  } else {
+    handcrafted_ = false;
+  }
+
   CheckRequiredKey(object, "licenses");
   num_licenses_ = ParseIntArray(object["licenses"].GetArray());
   num_products_ = num_licenses_.size();
@@ -877,7 +946,7 @@ AuctionGame::AuctionGame(const GameParameters& params) :
   if (ContainsKey(object, "max_rounds")) {
     max_rounds_ = ParseDouble(object["max_rounds"]);
   } else {
-    max_rounds_ = kDefaultMaxRounds; // Doesn't really matter for anything
+    max_rounds_ = kDefaultMaxRounds;
   }
 
   if (ContainsKey(object, "tiebreaks")) {

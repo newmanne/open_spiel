@@ -80,7 +80,7 @@ eval $CMD
 
 def dispatch_br(experiment_dir, br_player=0, checkpoint='checkpoint_latest', submit=True, mem=32, overrides=''):
     spiel_path, config_dir, pydir = verify_config()
-    command = f'python {pydir}/ubc_br.py --alsologtostderr -- --experiment_dir {experiment_dir} --br_player {br_player} --checkpoint {checkpoint} {overrides}'
+    command = f'python {pydir}/ubc_br.py --alsologtostderr -- --experiment_dir {experiment_dir} --br_player {br_player} --checkpoint {checkpoint} --dispatch_rewards True {overrides}'
     
     basename = os.path.basename(experiment_dir)
     slurm_job_name = f'br_{br_player}_{checkpoint}_{basename}'
@@ -99,17 +99,22 @@ eval $CMD
 
     print(f"Dispatched experiment!")
 
-def dispatch_eval(experiment_dir, br_name=None, checkpoint='checkpoint_latest', submit=True, mem=8, overrides=''):
+def dispatch_eval(experiment_dir, br_name=None, straightforward_player=None, checkpoint='checkpoint_latest', submit=True, mem=8, overrides=''):
+    print("HERE")
     spiel_path, config_dir, pydir = verify_config()
     command = f'python {pydir}/ubc_evaluate_policy.py --alsologtostderr -- --experiment_dir {experiment_dir} --checkpoint {checkpoint} {overrides}'
     if br_name is not None:
         command += f' --br_name {br_name}'
+    elif straightforward_player is not None:
+        command += f' --straightforward_player {straightforward_player}'
     
     basename = os.path.basename(experiment_dir)
     if br_name:
         slurm_job_name = f'eval_{br_name}_{checkpoint}_{basename}'
+    elif straightforward_player is not None:
+        slurm_job_name = f'eval_straightforward_{straightforward_player}_{checkpoint}_{basename}'
     else:
-        slurm_job_name = f'eval_{basename}'
+        slurm_job_name = f'eval_{checkpoint}_{basename}'
     job_file_text = f"""#!/bin/sh
 #SBATCH --cpus-per-task={int(mem/4)}
 #SBATCH --job-name={slurm_job_name}
@@ -124,6 +129,7 @@ eval $CMD
         os.system(f'cd {experiment_dir} && sbatch {job_file_path}')
 
     print(f"Dispatched experiment!")
+    print(job_file_path, straightforward_player)
 
 
 def write_job_file(job_file_path, job_file_text):

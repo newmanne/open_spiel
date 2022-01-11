@@ -19,7 +19,7 @@ from __future__ import print_function
 from dataclasses import dataclass
 from open_spiel.python import rl_environment, policy
 from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values
 from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint, lookup_model_and_args
 from open_spiel.python.algorithms.exploitability import nash_conv
 from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator
@@ -42,6 +42,7 @@ from typing import List
 from open_spiel.python.pytorch import ubc_dqn
 from pathlib import Path
 import open_spiel.python.examples.ubc_dispatch as dispatch
+from distutils import util
 
 BR_DIR = 'best_responses'
 
@@ -105,8 +106,9 @@ def main(argv):
     parser.add_argument('--br_player', type=int, default=0)
     parser.add_argument('--report_freq', type=int, default=50_000)
     parser.add_argument('--num_training_episodes', type=int, required=False)
-    parser.add_argument('--dispatch_rewards', type=bool, default=True)
+    parser.add_argument('--dispatch_rewards', type=util.strtobool, default=0)
     parser.add_argument('--eval_overrides', type=str, default='')
+    parser.add_argument('--output_name', type=str, default=None)
 
     args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
 
@@ -116,6 +118,7 @@ def main(argv):
     report_freq = args.report_freq
     dispatch_rewards = args.dispatch_rewards
     eval_overrides = args.eval_overrides
+    output_name = args.output_name
 
 
     checkpoint_dir = os.path.join(experiment_dir, BR_DIR)
@@ -146,6 +149,7 @@ def main(argv):
         agent = CachingAgentDecorator(agent)
         agents.append(agent)
 
+    episode_lengths = []
     logging.info(f"Training for {num_training_episodes} episodes")
     # TRAINING PHASE
     for i in range(num_training_episodes):
@@ -153,16 +157,20 @@ def main(argv):
         logging.info(f"----Episode {i} ---")
         loss = agents[br_player].loss
         logging.info(f"[P{br_player}] Loss: {loss}")
+        logging.info(f"Episode length stats:\n{pd.Series(episode_lengths).describe()}")
+        logging.info(check_on_q_values(agents[br_player], game))
 
       time_step = env.reset()
-
+      episode_length = 0
       while not time_step.last():
+        episode_length += 1
         player_id = time_step.observations["current_player"]
         agent = agents[player_id]
         agent_output = agent.step(time_step, is_evaluation=player_id != br_player)
         action_list = [agent_output.action]
         time_step = env.step(action_list)
 
+      episode_lengths.append(episode_length)
       # Episode is over, step all agents with final info state.
       for player_id, agent in enumerate(agents):
         agent.step(time_step, is_evaluation=player_id != br_player)
@@ -179,7 +187,10 @@ def main(argv):
       'br_name': br_name
     }
 
-    checkpoint_path = os.path.join(checkpoint_dir, f'{br_name}.pkl')
+    if output_name is None:
+      output_name = br_name
+
+    checkpoint_path = os.path.join(checkpoint_dir, f'{output_name}.pkl')
     with open(checkpoint_path, 'wb') as f:
         pickle.dump(checkpoint, f)
 
