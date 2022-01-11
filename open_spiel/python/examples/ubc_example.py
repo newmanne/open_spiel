@@ -29,6 +29,7 @@ FLAGS = flags.FLAGS
 
 flags.DEFINE_string("game", "clock_auction", "Name of the game")
 flags.DEFINE_string("filename", 'parameters.json', "Filename with parameters")
+flags.DEFINE_string("parameters", None, "String to be evaluated")
 flags.DEFINE_bool("turn_based", False, "Convert simultaneous to turn based")
 
 flags.DEFINE_string("load_state", None,
@@ -43,6 +44,8 @@ def main(_):
   params = dict()
   if FLAGS.game == 'clock_auction':
       params['filename'] = FLAGS.filename
+  elif FLAGS.parameters:
+    params = eval(FLAGS.parameters)
 
   game = load_function(
       FLAGS.game,

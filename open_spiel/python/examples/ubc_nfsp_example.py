@@ -80,11 +80,13 @@ class NFSPPolicies(policy.Policy):
         for player, policy in enumerate(self._policies):
             policy.restore(restore_dict[player])
 
-def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_products):
+def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_products=None):
     """
     lookup table from (model name) to (function, default args)
     TODO: cleaner way to do this?
     """
+    if model_name != 'mlp' and num_products is None:
+        raise ValueError("Num products can only be None if model is MLP")
 
     if model_name == 'mlp': 
         model_class = ubc_dqn.MLP
@@ -253,7 +255,6 @@ def main(argv):
     report_freq = args.report_freq
     iterate_br = args.iterate_br
 
-
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     else:
@@ -316,15 +317,19 @@ def main(argv):
     ### NFSP ALGORITHM
     compute_nash_conv = args.compute_nash_conv
     nash_conv_history = []
+    episode_lengths = []
     min_nash_conv = None
 
     alg_start_time = time.time()
     for ep in range(1, config['num_training_episodes'] + 1):
         if ep % report_freq == 0:
             logging.info(f"----Episode {ep} ---")
+            logging.info(f"Episode length stats:\n{pd.Series(episode_lengths).describe()}")
 
         time_step = env.reset()
+        episode_steps = 0
         while not time_step.last():
+            episode_steps += 1
             player_id = time_step.observations["current_player"]
             agent = agents[player_id]
             if iterate_br: # Each player alternates between BR and Supervised network
@@ -338,6 +343,7 @@ def main(argv):
             action_list = [agent_output.action]
             time_step = env.step(action_list)
 
+        episode_lengths.append(episode_steps)
         # Episode is over, step all agents with final info state.
         if iterate_br:
             for player_id, agent in enumerate(agents):
@@ -383,6 +389,7 @@ def main(argv):
             if dispatch_br:
                 for player in range(game.num_players()):
                     dispatch.dispatch_br(output_dir, br_player=player, checkpoint=checkpoint_name, overrides=br_overrides + f' --eval_overrides "{eval_overrides}"')
+                    dispatch.dispatch_eval(output_dir, checkpoint=checkpoint_name, straightforward_player=player, overrides=eval_overrides)
                 dispatch.dispatch_eval(output_dir, checkpoint=checkpoint_name, overrides=eval_overrides)
 
             if compute_nash_conv:

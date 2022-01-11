@@ -1,1 +1,71 @@
-{"increment": 0.1, "max_rounds": 50, "information_policy": "show_demand", "licenses": [2,2,2], "activity": [100,100,100], "opening_price": [100,100, 100], "undersell_rule": "undersell", "players": [{"type": [{"value": [150,0,200], "budget": 121, "prob": 1.0}]}, {"type": [{"value": [150,150,150], "budget": 250, "prob": 1.0}]}, {"type": [{"value": [150,0,200], "budget": 200, "prob": 0.5}, {"value": [150,300,200], "budget": 400, "prob": 0.5}]}]}
+{
+  "increment": 0.1,
+  "max_rounds": 50,
+  "information_policy": "show_demand",
+  "licenses": [
+    2,
+    2,
+    2
+  ],
+  "activity": [
+    100,
+    100,
+    100
+  ],
+  "opening_price": [
+    100,
+    100,
+    100
+  ],
+  "undersell_rule": "undersell",
+  "players": [
+    {
+      "type": [
+        {
+          "value": [
+            150,
+            0,
+            200
+          ],
+          "budget": 121,
+          "prob": 1
+        }
+      ]
+    },
+    {
+      "type": [
+        {
+          "value": [
+            150,
+            150,
+            150
+          ],
+          "budget": 250,
+          "prob": 1
+        }
+      ]
+    },
+    {
+      "type": [
+        {
+          "value": [
+            150,
+            0,
+            200
+          ],
+          "budget": 200,
+          "prob": 0.5
+        },
+        {
+          "value": [
+            150,
+            300,
+            200
+          ],
+          "budget": 400,
+          "prob": 0.5
+        }
+      ]
+    }
+  ]
+}

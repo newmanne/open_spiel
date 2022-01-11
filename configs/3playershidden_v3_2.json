@@ -1,1 +1,63 @@
-{"activity": [100, 100], "increment": 0.1, "information_policy": "show_demand", "licenses": [1, 1], "opening_price": [100, 100], "undersell_rule": "undersell", "players": [{"type": [{"value": [150, 0], "budget": 121, "prob": 1.0}]}, {"type": [{"value": [0, 150], "budget": 130, "prob": 1.0}]}, {"type": [{"value": [150, 0], "budget": 110, "prob": 0.5}, {"value": [150, 0], "budget": 130, "prob": 0.5}]}]}
+{
+  "activity": [
+    100,
+    100
+  ],
+  "increment": 0.1,
+  "information_policy": "show_demand",
+  "licenses": [
+    1,
+    1
+  ],
+  "opening_price": [
+    100,
+    100
+  ],
+  "undersell_rule": "undersell",
+  "players": [
+    {
+      "type": [
+        {
+          "value": [
+            150,
+            0
+          ],
+          "budget": 121,
+          "prob": 1
+        }
+      ]
+    },
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            150
+          ],
+          "budget": 130,
+          "prob": 1
+        }
+      ]
+    },
+    {
+      "type": [
+        {
+          "value": [
+            150,
+            0
+          ],
+          "budget": 110,
+          "prob": 0.5
+        },
+        {
+          "value": [
+            150,
+            0
+          ],
+          "budget": 130,
+          "prob": 0.5
+        }
+      ]
+    }
+  ]
+}

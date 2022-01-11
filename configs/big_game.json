@@ -1,5 +1,4 @@
 {
-  "max_rounds": 6,
   "activity": [
     100,
     100
@@ -7,12 +6,12 @@
   "increment": 0.1,
   "information_policy": "show_demand",
   "licenses": [
-    1,
+    2,
     1
   ],
   "opening_price": [
-    100,
-    100
+    50,
+    50
   ],
   "undersell_rule": "undersell",
   "players": [
@@ -20,11 +19,19 @@
       "type": [
         {
           "value": [
-            125,
-            125
+            100,
+            100
           ],
-          "budget": 150,
-          "prob": 1
+          "budget": 135,
+          "prob": 0.33
+        },
+        {
+          "value": [
+            125,
+            75
+          ],
+          "budget": 135,
+          "prob": 0.67
         }
       ]
     },
@@ -32,10 +39,10 @@
       "type": [
         {
           "value": [
-            0,
-            150
+            125,
+            75
           ],
-          "budget": 150,
+          "budget": 165,
           "prob": 1
         }
       ]

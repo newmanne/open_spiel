@@ -34,18 +34,44 @@ def single_action_result(legal_actions, num_actions, as_output=False):
     return action, probs
 
 
-def get_actions(game):
+def get_first_actionable_state(game):
     state = game.new_initial_state()
     # Skip over chance nodes
     while state.current_player() < 0:
         state = state.child(0) # Let chance choose first outcome. We're assuming all moves are possible at starting prices for all players, that may not really be true though
+    return state
 
-    # Now we are at a player state
+
+def get_actions(game):
+    state = get_first_actionable_state(game)
     action_dict = dict()
-    for i in range(len(state.legal_actions())): 
+    for i in state.legal_actions(): 
         action_dict[i] = state.action_to_string(i)
     return action_dict
 
+def check_on_q_values(agent, game, state=None, infostate_tensor=None, legal_actions=None, time_step=None):
+    q_network = agent._q_network
+
+    if time_step is not None:
+        legal_actions = time_step.observations["legal_actions"][agent.player_id]
+        it = time_step.observations["info_state"][agent.player_id]
+    elif infostate_tensor is not None:
+        legal_actions = legal_actions
+        it = infostate_tensor
+    else:
+        # Extract from state
+        if state is None:
+            # TODO: assuming player_id on agent is 0 here, could be smarter
+            state = get_first_actionable_state(game)
+        legal_actions = state.legal_actions()
+        it = state.information_state_tensor()
+
+    info_state = q_network.prep_batch([q_network.reshape_infostate(it)])
+    q_values = q_network(info_state).detach()[0]
+    legal_q_values = q_values[legal_actions]
+    legal_q_values = [agent.unmapRange(v) for v in legal_q_values]
+    action_dict = get_actions(game)
+    return {s: q for s, q in zip(action_dict.values(), legal_q_values)}  
 
 def smart_load_sequential_game(game_name, game_parameters=dict()):
     # Stupid special case our own game because loading it twice takes time

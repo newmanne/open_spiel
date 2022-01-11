@@ -1,29 +1,32 @@
 {
+  "activity": [
+    100,
+    100,
+    1
+  ],
   "increment": 0.1,
-  "bidding": "unrestricted",
-  "information_policy": "hide_demand",
+  "information_policy": "show_demand",
   "licenses": [
+    1,
     1,
     1
   ],
-  "activity": [
-    100,
-    100
-  ],
   "opening_price": [
     100,
-    100
+    100,
+    1
   ],
-  "undersell_rule": "undersell_allowed",
+  "undersell_rule": "undersell",
   "players": [
     {
       "type": [
         {
           "value": [
             150,
+            110,
             0
           ],
-          "budget": 121,
+          "budget": 135,
           "prob": 1
         }
       ]
@@ -32,30 +35,42 @@
       "type": [
         {
           "value": [
-            0,
-            150
-          ],
-          "budget": 130,
-          "prob": 1
-        }
-      ]
-    },
-    {
-      "type": [
-        {
-          "value": [
+            110,
             150,
             0
           ],
-          "budget": 110,
+          "budget": 165,
           "prob": 0.5
         },
         {
           "value": [
             150,
+            110,
             0
           ],
-          "budget": 130,
+          "budget": 165,
+          "prob": 0.5
+        }
+      ]
+    },
+    {
+      "type": [
+        {
+          "value": [
+            150,
+            0,
+            0
+          ],
+          "budget": 121,
+          "prob": 0.5
+        },
+        {
+          "value": [
+            0,
+            150,
+            0
+          ],
+          "budget": 190,
           "prob": 0.5
         }
       ]

@@ -3,15 +3,12 @@
   "bidding": "unrestricted",
   "information_policy": "hide_demand",
   "licenses": [
-    1,
     1
   ],
   "activity": [
-    100,
     100
   ],
   "opening_price": [
-    100,
     100
   ],
   "undersell_rule": "undersell",
@@ -20,22 +17,9 @@
       "type": [
         {
           "value": [
-            150,
-            0
-          ],
-          "budget": 110,
-          "prob": 1
-        }
-      ]
-    },
-    {
-      "type": [
-        {
-          "value": [
-            0,
             150
           ],
-          "budget": 130,
+          "budget": 110,
           "prob": 1
         }
       ]
@@ -44,19 +28,10 @@
       "type": [
         {
           "value": [
-            150,
-            0
+            150
           ],
           "budget": 110,
-          "prob": 0.5
-        },
-        {
-          "value": [
-            150,
-            0
-          ],
-          "budget": 120,
-          "prob": 0.5
+          "prob": 1
         }
       ]
     }
