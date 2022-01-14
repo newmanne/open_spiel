@@ -18,7 +18,7 @@ def verify_config():
     return spiel_path, config_dir, pydir
 
 
-def dispatch_experiments(yml_config_dir, single_config=None, base_job_name=None, game_name='parking_1', submit=True, mem=32, overrides='', cfr_also=True):
+def dispatch_experiments(yml_config_dir, single_config=None, base_job_name=None, game_name='parking_1', submit=True, mem=32, overrides='', cfr_also=False):
     if base_job_name is None:
         base_job_name = game_name
     
@@ -100,7 +100,6 @@ eval $CMD
     print(f"Dispatched experiment!")
 
 def dispatch_eval(experiment_dir, br_name=None, straightforward_player=None, checkpoint='checkpoint_latest', submit=True, mem=8, overrides=''):
-    print("HERE")
     spiel_path, config_dir, pydir = verify_config()
     command = f'python {pydir}/ubc_evaluate_policy.py --alsologtostderr -- --experiment_dir {experiment_dir} --checkpoint {checkpoint} {overrides}'
     if br_name is not None:
@@ -129,8 +128,6 @@ eval $CMD
         os.system(f'cd {experiment_dir} && sbatch {job_file_path}')
 
     print(f"Dispatched experiment!")
-    print(job_file_path, straightforward_player)
-
 
 def write_job_file(job_file_path, job_file_text):
     with open(job_file_path, 'w') as f:

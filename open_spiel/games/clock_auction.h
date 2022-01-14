@@ -66,7 +66,6 @@ class AuctionState : public SimMoveState {
     int information_policy,
     bool allow_negative_profit_bids,
     bool tiebreaks,
-    bool handcrafted_,
     std::vector<std::vector<std::vector<double>>> values,
     std::vector<std::vector<double>> budgets,
     std::vector<std::vector<double>> type_probs
@@ -98,7 +97,6 @@ class AuctionState : public SimMoveState {
   void ChanceOutcomeToOrdering();
   bool DetermineTiebreaks();
   void CheckBid(const std::vector<int>& bid) const;
-  void HandCraftedTensor(Player player, absl::Span<float> values) const;
  
   // Initialized to invalid values. Use Game::NewInitialState().
   Player cur_player_;  // Player whose turn it is.
@@ -118,7 +116,6 @@ class AuctionState : public SimMoveState {
   int information_policy_;
   bool allow_negative_profit_bids_;
   bool tiebreaks_;
-  bool handcrafted_;
 
   // Type info
   std::vector<std::vector<std::vector<double>>> values_;
@@ -179,7 +176,6 @@ class AuctionGame : public SimMoveGame {
 
  private:
   int num_players_;
-  bool handcrafted_;
 
   // Number of products
   int num_products_;

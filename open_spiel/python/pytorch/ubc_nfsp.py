@@ -41,9 +41,6 @@ Transition = collections.namedtuple(
 
 ILLEGAL_ACTION_LOGITS_PENALTY = -1e9
 
-# MODE = enum.Enum("mode", "best_response average_policy")
-
-
 class NFSP(rl_agent.AbstractAgent):
   """NFSP Agent implementation in PyTorch.
 

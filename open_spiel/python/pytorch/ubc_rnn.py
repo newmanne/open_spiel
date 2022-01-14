@@ -4,7 +4,7 @@
 
 import torch
 from torch import nn
-from open_spiel.python.examples.ubc_utils import FEATURES_PER_PRODUCT
+from open_spiel.python.examples.ubc_utils import FEATURES_PER_PRODUCT, prefix_size, handcrafted_size, turn_based_size, round_index
 
 class AuctionRNN(nn.Module):
     """
@@ -25,21 +25,26 @@ class AuctionRNN(nn.Module):
         super(AuctionRNN, self).__init__()
 
         # expect state to contain:
+        # - handcrafted features
         # - turn-based game info (2 x 1-hot)
         # - current player (1-hot)
         # - budget
         # - values for each product
         # - (submitted demands, processed demands, observed demands, prices) for each product
         # (if not, we won't know how to unroll the infostate tensors)
-        num_rounds = (input_size - (3 * num_players + 1 + num_products)) // (FEATURES_PER_PRODUCT * num_products)
+        self.turn_based_len = turn_based_size(num_players)
+        self.prefix_len = prefix_size(num_players, num_products)
+        self.handcrafted_len = handcrafted_size(output_size, num_products)
+
+        num_rounds = (input_size - self.turn_based_len - self.prefix_len - self.handcrafted_len) // (FEATURES_PER_PRODUCT * num_products)
         # confirm that this gives an integral number of rounds...
-        expected_input_size = 3 * num_players + 1 + num_products + FEATURES_PER_PRODUCT * num_products * num_rounds 
+        expected_input_size = self.turn_based_len + self.handcrafted_len + self.prefix_len + FEATURES_PER_PRODUCT * num_products * num_rounds 
         assert (input_size == expected_input_size), "Expected input_size = %d, but got %d" % (expected_input_size, input_size) 
 
         self.num_players = num_players
         self.num_products = num_products
 
-        input_size_per_round = 3 * num_players + 1 + (FEATURES_PER_PRODUCT + 1) * num_products 
+        input_size_per_round = self.prefix_len + FEATURES_PER_PRODUCT * num_products 
         
         if rnn_model == 'lstm':
             self.rnn = nn.LSTM(input_size=input_size_per_round, hidden_size=hidden_size, num_layers=num_layers, batch_first=True)
@@ -61,26 +66,20 @@ class AuctionRNN(nn.Module):
     
         Outputs: tensor of shape (num rounds, model input size)
         """
-        
-        prefix_len = 3 * self.num_players + 1 + self.num_products
-        suffix_len_per_round = 4 * self.num_products
-        
-        # split tensor into (per-auction, per-round) features
-        prefix = torch.tensor(infostate_tensor[:prefix_len])
-        suffix = torch.tensor(infostate_tensor[prefix_len:])
-        suffix_reshaped = suffix.reshape(4, -1, self.num_products) # (features, rounds, products)
-        suffix_expanded = torch.permute(suffix_reshaped, (1, 0, 2)).reshape(-1, 4 * self.num_products) # (rounds, features x products)
+        current_round = int(infostate_tensor[round_index(self.num_players)])
+        infostate_tensor = infostate_tensor[self.turn_based_len + self.handcrafted_len:] # Ignore the handcrafted stuff
 
-        # hack: look at non-zero prices to figure out which rounds actually happened 
-        current_round = (suffix_expanded[:, -1] > 0).sum()
+        # split tensor into (per-auction, per-round) features
+        suffix_len_per_round = FEATURES_PER_PRODUCT * self.num_products
+        prefix = torch.tensor(infostate_tensor[:self.prefix_len])
+        suffix = torch.tensor(infostate_tensor[self.prefix_len:self.prefix_len + current_round * suffix_len_per_round])
+        suffix_reshaped = suffix.reshape(-1, FEATURES_PER_PRODUCT * self.num_products) # (rounds, features * num_products)
 
         # stack
         expanded_infostate = torch.hstack([
             torch.tile(prefix, (current_round, 1)),
-            suffix_expanded[:current_round, :]
+            suffix_reshaped[:current_round, :]
         ])
-        # print(infostate_tensor)
-        # print(suffix_expanded[:, -1])
         return expanded_infostate
     
     def prep_batch(self, infostate_list):

@@ -27,4 +27,3 @@ epsilon_end: 0.01
 update_target_network_every: 1000
 loss_str: "mse"
 add_explore_transitions: false
-weight_iters_dqn: false
