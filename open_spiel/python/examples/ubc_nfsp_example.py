@@ -21,7 +21,7 @@ from __future__ import print_function
 from dataclasses import dataclass
 from open_spiel.python import rl_environment, policy
 from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn, ubc_transformer
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values
 from open_spiel.python.algorithms.exploitability import nash_conv
 import pyspiel
 import numpy as np
@@ -94,6 +94,8 @@ def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_
             'input_size': state_size,
             'hidden_sizes': [128],
             'output_size': num_actions,
+            'num_players': num_players,
+            'num_products': num_products, 
         }
     elif model_name == 'recurrent':
         model_class = ubc_rnn.AuctionRNN
@@ -177,7 +179,7 @@ def setup(experiment_dir, config):
       "epsilon_end": config['epsilon_end'],
       "update_target_network_every": config.get('update_target_network_every', 1_000),
       "loss_str": config.get('loss_str', 'mse'),
-      "weight_iters": config.get('weight_iters_dqn', False),
+      "num_players": num_players,
     }
 
     # Get models and default args
@@ -325,6 +327,13 @@ def main(argv):
         if ep % report_freq == 0:
             logging.info(f"----Episode {ep} ---")
             logging.info(f"Episode length stats:\n{pd.Series(episode_lengths).describe()}")
+            for player_id in range(num_players):
+                agent = agents[player_id]
+                if isinstance(agent, ubc_nfsp.NFSP):
+                    logging.info(check_on_q_values(agent._rl_agent, game))
+                    # logging.info(len(agent._rl_agent._replay_buffer))
+                    # logging.info(agent._rl_agent._replay_buffer._data[0])
+                logging.info(agent.loss)
 
         time_step = env.reset()
         episode_steps = 0

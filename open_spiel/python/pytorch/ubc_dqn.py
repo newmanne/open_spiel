@@ -26,17 +26,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from open_spiel.python import rl_agent
-from open_spiel.python.examples.ubc_utils import single_action_result
+from open_spiel.python.examples.ubc_utils import single_action_result, turn_based_size, handcrafted_size, sor_profit_index
 
 Transition = collections.namedtuple(
     "Transition",
-    "info_state action reward next_info_state is_final_step legal_actions_mask iteration raw_reward")
+    "info_state action reward next_info_state is_final_step legal_actions_mask iteration upper_bound")
 
 ILLEGAL_ACTION_LOGITS_PENALTY = -1e9
 
 MIN_MAPPED_UTILITY = -1
 MAX_MAPPED_UTILITY = 1
-
 
 class ReplayBuffer(object):
   """ReplayBuffer of fixed size with a FIFO replacement policy.
@@ -143,6 +142,8 @@ class MLP(nn.Module):
                input_size,
                hidden_sizes,
                output_size,
+               num_players, 
+               num_products,
                activate_final=False):
     """Create the MLP.
 
@@ -154,6 +155,14 @@ class MLP(nn.Module):
     """
 
     super(MLP, self).__init__()
+
+    self.num_players = num_players
+    self.num_products = num_products
+    self.num_actions = output_size
+    self.lb = turn_based_size(self.num_players)
+    self.ub = self.lb + handcrafted_size(self.num_actions, self.num_products)
+
+
     self._layers = []
     # Hidden layers
     for size in hidden_sizes:
@@ -171,7 +180,7 @@ class MLP(nn.Module):
 
   def reshape_infostate(self, infostate_tensor):
     # MLP doesn't need to reshape infostates: just use flat tensor
-    return torch.tensor(infostate_tensor)
+    return torch.tensor(infostate_tensor[self.lb: self.ub])
 
   def prep_batch(self, infostate_list):        
     """
@@ -189,12 +198,6 @@ class MLP(nn.Module):
       x = layer(x)
     return x
 
-
-def mapRange(value, inMin, inMax, outMin, outMax):
-  return outMin + ((outMax - outMin) / (inMax - inMin)) * (value - inMin)
-
-def unmapRange(y, inMin, inMax, outMin, outMax):
-  return ((y - outMin) / ((outMax - outMin) / (inMax - inMin))) + inMin
 
 class DQN(rl_agent.AbstractAgent):
   """DQN Agent implementation in PyTorch.
@@ -220,9 +223,9 @@ class DQN(rl_agent.AbstractAgent):
                epsilon_decay_duration=int(1e6),
                optimizer_str="sgd",
                loss_str="mse",
-               weight_iters=False,
                upper_bound_utility=None,
-               lower_bound_utility=None
+               lower_bound_utility=None,
+               num_players=None
                ):
     """Initialize the DQN agent."""
 
@@ -232,8 +235,8 @@ class DQN(rl_agent.AbstractAgent):
 
     self.upper_bound_utility = upper_bound_utility
     self.lower_bound_utility = lower_bound_utility
+    self._num_players = num_players
 
-    self.weight_iters = weight_iters
     self.player_id = player_id
     self._num_actions = num_actions
     self._batch_size = batch_size
@@ -334,11 +337,6 @@ class DQN(rl_agent.AbstractAgent):
 
     return rl_agent.StepOutput(action=action, probs=probs)
 
-  def mapRange(self, value):
-    return mapRange(value, self.lower_bound_utility, self.upper_bound_utility, MIN_MAPPED_UTILITY, MAX_MAPPED_UTILITY)
-
-  def unmapRange(self, value):
-    return unmapRange(value, self.lower_bound_utility, self.upper_bound_utility, MIN_MAPPED_UTILITY, MAX_MAPPED_UTILITY)
 
   def add_transition(self, prev_time_step, prev_action, time_step):
     """Adds the new transition using `time_step` to the replay buffer.
@@ -352,20 +350,28 @@ class DQN(rl_agent.AbstractAgent):
       time_step: current ts, an instance of rl_environment.TimeStep.
     """
     assert prev_time_step is not None
+
+    reward = time_step.rewards[self.player_id]
+
     legal_actions = (time_step.observations["legal_actions"][self.player_id])
     legal_actions_mask = np.zeros(self._num_actions)
     legal_actions_mask[legal_actions] = 1.0
 
     info_state_flat = prev_time_step.observations["info_state"][self.player_id][:]
+
+    ### FOR DYNAMIC BOUDING. ONLY WORKS WHEN BIDDER UTILITY CAN BE COMPUTED INDEPENDENTLY
+    if time_step.last():
+      max_profit_still_possible = reward
+    else:
+      sor_profits = np.array(info_state_flat[sor_profit_index(self._num_players) : sor_profit_index(self._num_players) + self._num_actions])
+      max_profit_still_possible = max(sor_profits[legal_actions])
+    ### END
+
     info_state = self._q_network.reshape_infostate(info_state_flat)
 
     next_info_state_flat = time_step.observations["info_state"][self.player_id][:]
     next_info_state = self._q_network.reshape_infostate(next_info_state_flat)
 
-    reward = time_step.rewards[self.player_id]
-
-    if self.lower_bound_utility is not None and self.upper_bound_utility is not None:
-      reward = self.mapRange(reward)
 
     transition = Transition(
         info_state=info_state,
@@ -375,7 +381,7 @@ class DQN(rl_agent.AbstractAgent):
         is_final_step=float(time_step.last()),
         legal_actions_mask=legal_actions_mask,
         iteration=self._iteration,
-        raw_reward=time_step.rewards[self.player_id]
+        upper_bound=max_profit_still_possible
         )
     self._replay_buffer.add(transition)
 
@@ -439,6 +445,7 @@ class DQN(rl_agent.AbstractAgent):
     actions = torch.LongTensor([t.action for t in transitions])
     rewards = torch.Tensor([t.reward for t in transitions])
     iters = torch.LongTensor([t.iteration for t in transitions])
+    upper_bounds = torch.Tensor([t.upper_bound for t in transitions])
 
     are_final_steps = torch.Tensor([t.is_final_step for t in transitions])
     legal_actions_mask = torch.Tensor(np.array([t.legal_actions_mask for t in transitions]))
@@ -446,7 +453,7 @@ class DQN(rl_agent.AbstractAgent):
     self._q_values = self._q_network(info_states)
     self._target_q_values = self._target_q_network(next_info_states).detach()
     if self.lower_bound_utility is not None and self.upper_bound_utility is not None:
-      self._target_q_values = torch.clamp(self._target_q_values, min=MIN_MAPPED_UTILITY, max=MAX_MAPPED_UTILITY)
+      self._target_q_values = torch.clamp(self._target_q_values, min=torch.tensor([self.lower_bound_utility] * len(self._target_q_values)), max=upper_bounds)
 
     illegal_actions = 1 - legal_actions_mask
     illegal_logits = illegal_actions * ILLEGAL_ACTION_LOGITS_PENALTY  
@@ -457,11 +464,7 @@ class DQN(rl_agent.AbstractAgent):
     ], dim=0)
     predictions = self._q_values[list(action_indices)]
 
-    if self.weight_iters:
-      losses = self.loss_class(predictions, target, reduction='none')
-      loss = (iters * losses).sum() / iters.sum()
-    else:
-      loss = self.loss_class(predictions, target)
+    loss = self.loss_class(predictions, target)
 
     self._optimizer.zero_grad()
     loss.backward()

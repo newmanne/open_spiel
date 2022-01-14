@@ -50,6 +50,7 @@ def main(argv):
     parser.add_argument('--report_freq', type=int, default=5000)
     parser.add_argument('--br_name', type=str, default=None)
     parser.add_argument('--straightforward_player', type=int, default=None)
+    parser.add_argument('--seed', type=int, default=1234)
 
     args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
 
@@ -60,6 +61,12 @@ def main(argv):
     report_freq = args.report_freq
     br_name = args.br_name
     straightforward_player = args.straightforward_player
+    seed = args.seed
+
+    logging.info(f"Setting numpy and torch seed to {seed}")
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+
 
     if straightforward_player is not None and br_name is not None:
       raise ValueError("Only one of straightforward_player and br_name can be set")
@@ -67,7 +74,7 @@ def main(argv):
     name = checkpoint_name
     if br_name:
       name += f'_{br_name}'
-    elif straightforward_player:
+    elif straightforward_player is not None:
       name += f'_straightforward_{straightforward_player}'
 
     checkpoint_dir = os.path.join(experiment_dir, EVAL_DIR)

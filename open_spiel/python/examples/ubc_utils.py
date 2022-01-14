@@ -8,10 +8,29 @@ from pulp import LpProblem, LpMinimize, LpVariable, LpStatus, LpBinary, lpSum, l
 import random
 import string
 from open_spiel.python.rl_agent import StepOutput
+import torch
 
 
 CLOCK_AUCTION = 'clock_auction'
 FEATURES_PER_PRODUCT = 4
+
+def turn_based_size(num_players):
+    return 2 * num_players
+
+def round_index(num_players):
+    return turn_based_size(num_players)
+
+def prefix_size(num_players, num_products):
+    return num_players + 1 + num_products
+
+def handcrafted_size(num_actions, num_products):
+    return 2 * num_actions + 3 + 3 * num_products
+
+def clock_profit_index(num_players, num_actions):
+    return round_index(num_players) + 1 + num_actions
+
+def sor_profit_index(num_players):
+    return round_index(num_players) + 1
 
 def action_to_bundles(licenses):
     bids = []
@@ -68,8 +87,8 @@ def check_on_q_values(agent, game, state=None, infostate_tensor=None, legal_acti
 
     info_state = q_network.prep_batch([q_network.reshape_infostate(it)])
     q_values = q_network(info_state).detach()[0]
+
     legal_q_values = q_values[legal_actions]
-    legal_q_values = [agent.unmapRange(v) for v in legal_q_values]
     action_dict = get_actions(game)
     return {s: q for s, q in zip(action_dict.values(), legal_q_values)}  
 
