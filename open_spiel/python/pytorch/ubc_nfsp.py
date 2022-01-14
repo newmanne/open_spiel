@@ -50,6 +50,7 @@ class NFSP(rl_agent.AbstractAgent):
   def __init__(self,
                player_id,
                num_actions,
+               num_players,
                sl_model,
                sl_model_args,
                rl_model,
@@ -92,6 +93,7 @@ class NFSP(rl_agent.AbstractAgent):
     self._rl_agent = ubc_dqn.DQN(
       player_id,
       num_actions, 
+      num_players,
       q_network_model=rl_model,
       q_network_args=rl_model_args,
       **kwargs
@@ -102,7 +104,6 @@ class NFSP(rl_agent.AbstractAgent):
 
     # Average policy network.
     self._avg_network = sl_model(**sl_model_args)
-    # self._avg_network = ubc_dqn.MLP(state_representation_size, self._layer_sizes, num_actions)
 
     self._savers = [
         ("q_network", self._rl_agent._q_network),
@@ -135,7 +136,6 @@ class NFSP(rl_agent.AbstractAgent):
       self._best_response_mode = False
 
   def _act(self, info_state, legal_actions):
-    # TODO: Replace this with the TakeSingleActionDecorator
     if len(legal_actions) == 1: # Let's not run the NN if you are faced with a single action (imagine a case where one player drops out and remaining players duel onwards)
       return single_action_result(legal_actions, self._num_actions)
     else:

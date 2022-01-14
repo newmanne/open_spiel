@@ -84,7 +84,7 @@ def make_dqn_agent(player_id, config, env, game, game_config):
     "min_buffer_size_to_learn": config['min_buffer_size_to_learn'],
     "optimizer_str": config['optimizer_str'],
     "update_target_network_every": config['update_target_network_every'],
-    "loss_str": config['loss_str']
+    "loss_str": config['loss_str'],
   }
 
   dqn_kwargs['lower_bound_utility'], dqn_kwargs['upper_bound_utility'] = clock_auction_bounds(game_config, player_id)
@@ -92,6 +92,7 @@ def make_dqn_agent(player_id, config, env, game, game_config):
   return ubc_dqn.DQN(
         player_id,
         num_actions, 
+        num_players,
         q_network_model=rl_model,
         q_network_args=rl_model_args,
         **dqn_kwargs
