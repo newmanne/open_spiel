@@ -21,7 +21,7 @@ from __future__ import print_function
 from dataclasses import dataclass
 from open_spiel.python import rl_environment, policy
 from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn, ubc_transformer
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, handcrafted_size
 from open_spiel.python.algorithms.exploitability import nash_conv
 import pyspiel
 import numpy as np
@@ -90,8 +90,9 @@ def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_
 
     if model_name == 'mlp': 
         model_class = ubc_dqn.MLP
+        # TODO: If you wanted the MLP to do somethign different (e.g., only get the current observation, or the past N observations, you would need to make some changes to the args here)
         default_model_args = {
-            'input_size': state_size,
+            'input_size': handcrafted_size(num_actions, num_products),
             'hidden_sizes': [128],
             'output_size': num_actions,
             'num_players': num_players,
@@ -179,7 +180,6 @@ def setup(experiment_dir, config):
       "epsilon_end": config['epsilon_end'],
       "update_target_network_every": config.get('update_target_network_every', 1_000),
       "loss_str": config.get('loss_str', 'mse'),
-      "num_players": num_players,
     }
 
     # Get models and default args
@@ -198,6 +198,7 @@ def setup(experiment_dir, config):
         agent = ubc_nfsp.NFSP(
             player_id,
             num_actions=num_actions,
+            num_players=num_players,
             sl_model=sl_model,
             sl_model_args=sl_model_args,
             rl_model=rl_model,

@@ -208,6 +208,7 @@ class DQN(rl_agent.AbstractAgent):
   def __init__(self,
                player_id,
                num_actions,
+               num_players,
                q_network_model=MLP,
                q_network_args={},
                replay_buffer_capacity=10000,
@@ -225,7 +226,6 @@ class DQN(rl_agent.AbstractAgent):
                loss_str="mse",
                upper_bound_utility=None,
                lower_bound_utility=None,
-               num_players=None
                ):
     """Initialize the DQN agent."""
 
@@ -445,7 +445,7 @@ class DQN(rl_agent.AbstractAgent):
     actions = torch.LongTensor([t.action for t in transitions])
     rewards = torch.Tensor([t.reward for t in transitions])
     iters = torch.LongTensor([t.iteration for t in transitions])
-    upper_bounds = torch.Tensor([t.upper_bound for t in transitions])
+    upper_bounds = torch.Tensor(np.repeat([t.upper_bound for t in transitions], self._num_actions)).reshape(-1, self._num_actions)
 
     are_final_steps = torch.Tensor([t.is_final_step for t in transitions])
     legal_actions_mask = torch.Tensor(np.array([t.legal_actions_mask for t in transitions]))
@@ -453,7 +453,8 @@ class DQN(rl_agent.AbstractAgent):
     self._q_values = self._q_network(info_states)
     self._target_q_values = self._target_q_network(next_info_states).detach()
     if self.lower_bound_utility is not None and self.upper_bound_utility is not None:
-      self._target_q_values = torch.clamp(self._target_q_values, min=torch.tensor([self.lower_bound_utility] * len(self._target_q_values)), max=upper_bounds)
+      lbs = torch.tensor([self.lower_bound_utility] * len(self._target_q_values) * self._num_actions).reshape(-1, self._num_actions)
+      self._target_q_values = torch.clamp(self._target_q_values, min=lbs, max=upper_bounds)
 
     illegal_actions = 1 - legal_actions_mask
     illegal_logits = illegal_actions * ILLEGAL_ACTION_LOGITS_PENALTY  
