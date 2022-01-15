@@ -43,6 +43,32 @@ def action_to_bundles(licenses):
     return {i: a for i, a in enumerate(actions)}
 
 
+def fix_seeds(seed):
+    logging.info(f"Setting numpy and torch seed to {seed}")
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+
+
+def make_dqn_kwargs_from_config(config, game_config=None, player_id=None):
+    dqn_kwargs = {
+      "replay_buffer_capacity": config['replay_buffer_capacity'],
+      "epsilon_decay_duration": config['num_training_episodes'],
+      "epsilon_start": config['epsilon_start'],
+      "epsilon_end": config['epsilon_end'],
+      "update_target_network_every": config.get('update_target_network_every', 10_000),
+      "loss_str": config.get('loss_str', 'mse'),
+      "double_dqn": config.get('double_dqn', False),
+      "batch_size": config['batch_size'],
+      "learning_rate": config['rl_learning_rate'],
+      "learn_every": config['learn_every'],
+      "min_buffer_size_to_learn": config['min_buffer_size_to_learn'],
+      "optimizer_str": config['optimizer_str'],
+    }
+    if game_config is not None and player_id is not None:
+        dqn_kwargs['lower_bound_utility'], dqn_kwargs['upper_bound_utility'] = clock_auction_bounds(game_config, player_id)
+    return dqn_kwargs
+
+
 
 def single_action_result(legal_actions, num_actions, as_output=False):
     probs = np.zeros(num_actions)
