@@ -19,7 +19,7 @@ from __future__ import print_function
 from dataclasses import dataclass
 from open_spiel.python import rl_environment, policy
 from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, make_dqn_kwargs_from_config
 from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint, lookup_model_and_args
 from open_spiel.python.algorithms.exploitability import nash_conv
 from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator
@@ -72,22 +72,7 @@ def make_dqn_agent(player_id, config, env, game, game_config):
   state_size = env.observation_spec()["info_state"][0]
 
   rl_model, rl_model_args = lookup_model_and_args(config['rl_model'], state_size, num_actions, num_players, num_products)
-
-  dqn_kwargs = {
-    "replay_buffer_capacity": config['replay_buffer_capacity'],
-    "epsilon_decay_duration": config['num_training_episodes'],
-    "epsilon_start": config['epsilon_start'],
-    "epsilon_end": config['epsilon_end'],
-    "batch_size": config['batch_size'],
-    "learning_rate": config['rl_learning_rate'],
-    "learn_every": config['learn_every'],
-    "min_buffer_size_to_learn": config['min_buffer_size_to_learn'],
-    "optimizer_str": config['optimizer_str'],
-    "update_target_network_every": config['update_target_network_every'],
-    "loss_str": config['loss_str'],
-  }
-
-  dqn_kwargs['lower_bound_utility'], dqn_kwargs['upper_bound_utility'] = clock_auction_bounds(game_config, player_id)
+  dqn_kwargs = make_dqn_kwargs_from_config(config, game_config=game_config, player_id=player_id)
 
   return ubc_dqn.DQN(
         player_id,
@@ -110,6 +95,7 @@ def main(argv):
     parser.add_argument('--dispatch_rewards', type=util.strtobool, default=0)
     parser.add_argument('--eval_overrides', type=str, default='')
     parser.add_argument('--output_name', type=str, default=None)
+    parser.add_argument('--seed', type=int, default=1234)
 
     args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
 
@@ -120,6 +106,9 @@ def main(argv):
     dispatch_rewards = args.dispatch_rewards
     eval_overrides = args.eval_overrides
     output_name = args.output_name
+    seed = args.seed
+
+    fix_seeds(seed)
 
 
     checkpoint_dir = os.path.join(experiment_dir, BR_DIR)
@@ -154,7 +143,7 @@ def main(argv):
     logging.info(f"Training for {num_training_episodes} episodes")
     # TRAINING PHASE
     for i in range(num_training_episodes):
-      if i % report_freq == 0:
+      if i % report_freq == 0 and i > 1:
         logging.info(f"----Episode {i} ---")
         loss = agents[br_player].loss
         logging.info(f"[P{br_player}] Loss: {loss}")

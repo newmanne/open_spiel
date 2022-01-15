@@ -17,7 +17,7 @@ from __future__ import division
 from __future__ import print_function
 
 from open_spiel.python import rl_environment, policy
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, fix_seeds
 from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint, lookup_model_and_args
 from open_spiel.python.examples.ubc_br import BR_DIR, make_dqn_agent
 from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator, TakeSingleActionDecorator
@@ -63,9 +63,7 @@ def main(argv):
     straightforward_player = args.straightforward_player
     seed = args.seed
 
-    logging.info(f"Setting numpy and torch seed to {seed}")
-    np.random.seed(seed)
-    torch.manual_seed(seed)
+    fix_seeds(seed)
 
 
     if straightforward_player is not None and br_name is not None:
@@ -113,7 +111,7 @@ def main(argv):
 
     rewards = defaultdict(list)
     for sample_index in range(num_samples):
-      if sample_index % report_freq == 0:
+      if sample_index % report_freq == 0 and sample_index > 0:
         logging.info(f"----Episode {sample_index} ---")
 
       time_step = env.reset()

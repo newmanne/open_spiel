@@ -21,7 +21,7 @@ from __future__ import print_function
 from dataclasses import dataclass
 from open_spiel.python import rl_environment, policy
 from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn, ubc_transformer
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, handcrafted_size
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, handcrafted_size, make_dqn_kwargs_from_config, fix_seeds
 from open_spiel.python.algorithms.exploitability import nash_conv
 import pyspiel
 import numpy as np
@@ -173,15 +173,6 @@ def setup(experiment_dir, config):
     logging.info(f"Game has a state size of {state_size}, {num_actions} distinct actions, and {num_players} players")
     logging.info(f"Game has {num_products} products")
 
-    dqn_kwargs = {
-      "replay_buffer_capacity": config['replay_buffer_capacity'],
-      "epsilon_decay_duration": config['num_training_episodes'],
-      "epsilon_start": config['epsilon_start'],
-      "epsilon_end": config['epsilon_end'],
-      "update_target_network_every": config.get('update_target_network_every', 1_000),
-      "loss_str": config.get('loss_str', 'mse'),
-    }
-
     # Get models and default args
     sl_model, sl_model_args = lookup_model_and_args(config['sl_model'], state_size, num_actions, num_players, num_products)
     rl_model, rl_model_args = lookup_model_and_args(config['rl_model'], state_size, num_actions, num_players, num_products)
@@ -192,8 +183,7 @@ def setup(experiment_dir, config):
 
     agents = []
     for player_id in range(game.num_players()):
-        dqn_kwargs_copy = copy.deepcopy(dqn_kwargs)
-        dqn_kwargs_copy['lower_bound_utility'], dqn_kwargs_copy['upper_bound_utility'] = clock_auction_bounds(game_config, player_id)
+        dqn_kwargs = make_dqn_kwargs_from_config(config, game_config=game_config, player_id=player_id)
         
         agent = ubc_nfsp.NFSP(
             player_id,
@@ -212,7 +202,7 @@ def setup(experiment_dir, config):
             learn_every=config['learn_every'],
             optimizer_str=config['optimizer_str'],
             add_explore_transitions=config.get('add_explore_transitions', True),
-            **dqn_kwargs_copy
+            **dqn_kwargs
         )
         agents.append(agent)
 
@@ -292,9 +282,7 @@ def main(argv):
     with open(f'{output_dir}/config.yml', 'w') as outfile:
         yaml.dump(config, outfile)
 
-    logging.info(f"Setting numpy and torch seed to {config['seed']}")
-    np.random.seed(config['seed'])
-    torch.manual_seed(config['seed'])
+    fix_seeds(config['seed'])
 
     logging.info(f'Network params: {config}')
 
@@ -325,7 +313,7 @@ def main(argv):
 
     alg_start_time = time.time()
     for ep in range(1, config['num_training_episodes'] + 1):
-        if ep % report_freq == 0:
+        if ep % report_freq == 0 and ep > 1:
             logging.info(f"----Episode {ep} ---")
             logging.info(f"Episode length stats:\n{pd.Series(episode_lengths).describe()}")
             for player_id in range(num_players):

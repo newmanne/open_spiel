@@ -226,6 +226,7 @@ class DQN(rl_agent.AbstractAgent):
                loss_str="mse",
                upper_bound_utility=None,
                lower_bound_utility=None,
+               double_dqn=True,
                ):
     """Initialize the DQN agent."""
 
@@ -236,6 +237,7 @@ class DQN(rl_agent.AbstractAgent):
     self.upper_bound_utility = upper_bound_utility
     self.lower_bound_utility = lower_bound_utility
     self._num_players = num_players
+    self._double_dqn = double_dqn
 
     self.player_id = player_id
     self._num_actions = num_actions
@@ -451,14 +453,27 @@ class DQN(rl_agent.AbstractAgent):
     legal_actions_mask = torch.Tensor(np.array([t.legal_actions_mask for t in transitions]))
 
     self._q_values = self._q_network(info_states)
+    if self._double_dqn:
+      next_q_values = self._q_network(next_info_states).detach()
+    
     self._target_q_values = self._target_q_network(next_info_states).detach()
+
+    # Clamp targets - no point in learning values higher than we know they really are
     if self.lower_bound_utility is not None and self.upper_bound_utility is not None:
       lbs = torch.tensor([self.lower_bound_utility] * len(self._target_q_values) * self._num_actions).reshape(-1, self._num_actions)
       self._target_q_values = torch.clamp(self._target_q_values, min=lbs, max=upper_bounds)
+      if self._double_dqn:
+        next_q_values = torch.clamp(next_q_values, min=lbs, max=upper_bounds)
 
     illegal_actions = 1 - legal_actions_mask
     illegal_logits = illegal_actions * ILLEGAL_ACTION_LOGITS_PENALTY  
-    max_next_q = torch.max(self._target_q_values + illegal_logits, dim=1)[0]
+    if self._double_dqn:
+      # pick the action that has the highest Q value according to the normal Q network, and
+      max_indices = torch.argmax(next_q_values + illegal_logits, dim=1)
+      # grab the Q value of that action from the target Q network
+      max_next_q = torch.gather(self._target_q_values, 1, max_indices.view(-1, 1)).squeeze()
+    else:
+      max_next_q = torch.max(self._target_q_values + illegal_logits, dim=1)[0]
     target = (rewards + (1 - are_final_steps) * self._discount_factor * max_next_q)
     action_indices = torch.stack([
         torch.arange(self._q_values.shape[0], dtype=torch.long), actions
