@@ -178,6 +178,7 @@ class Environment(object):
     self._mfg_population = mfg_population
     self._enable_legality_check = enable_legality_check
 
+
     if isinstance(game, str):
       if kwargs:
         game_settings = {key: val for (key, val) in kwargs.items()}
@@ -191,6 +192,8 @@ class Environment(object):
       self._game = game
 
     self._num_players = self._game.num_players()
+    self._is_turn_based = ((self._game.get_type().dynamics == pyspiel.GameType.Dynamics.SEQUENTIAL) or (self._game.get_type().dynamics == pyspiel.GameType.Dynamics.MEAN_FIELD))
+
     self._state = None
     self._should_reset = True
 
@@ -259,8 +262,7 @@ class Environment(object):
       discounts = [0. for _ in discounts]
 
     if self._include_full_state:
-      observations["serialized_state"] = pyspiel.serialize_game_and_state(
-          self._game, self._state)
+      observations["serialized_state"] = pyspiel.serialize_game_and_state(self._game, self._state)
 
     return TimeStep(
         observations=observations,
@@ -336,10 +338,8 @@ class Environment(object):
         step_type: A `StepType` value.
     """
     self._should_reset = False
-    if self._game.get_type(
-    ).dynamics == pyspiel.GameType.Dynamics.MEAN_FIELD and self._num_players > 1:
-      self._state = self._game.new_initial_state_for_population(
-          self._mfg_population)
+    if self._game.get_type().dynamics == pyspiel.GameType.Dynamics.MEAN_FIELD and self._num_players > 1:
+      self._state = self._game.new_initial_state_for_population(self._mfg_population)
     else:
       self._state = self._game.new_initial_state()
     self._sample_external_events()
@@ -351,15 +351,12 @@ class Environment(object):
         "serialized_state": []
     }
     for player_id in range(self.num_players):
-      observations["info_state"].append(
-          self._state.observation_tensor(player_id) if self._use_observation
-          else self._state.information_state_tensor(player_id))
+      observations["info_state"].append(self._state.observation_tensor(player_id) if self._use_observation else self._state.information_state_tensor(player_id))
       observations["legal_actions"].append(self._state.legal_actions(player_id))
     observations["current_player"] = self._state.current_player()
 
     if self._include_full_state:
-      observations["serialized_state"] = pyspiel.serialize_game_and_state(
-          self._game, self._state)
+      observations["serialized_state"] = pyspiel.serialize_game_and_state(self._game, self._state)
 
     return TimeStep(
         observations=observations,
@@ -443,10 +440,7 @@ class Environment(object):
   # New RL calls for more advanced use cases (e.g. search + RL).
   @property
   def is_turn_based(self):
-    return ((self._game.get_type().dynamics
-             == pyspiel.GameType.Dynamics.SEQUENTIAL) or
-            (self._game.get_type().dynamics
-             == pyspiel.GameType.Dynamics.MEAN_FIELD))
+    return self._is_turn_based
 
   @property
   def max_game_length(self):
@@ -462,8 +456,7 @@ class Environment(object):
 
   def set_state(self, new_state):
     """Updates the game state."""
-    assert new_state.get_game() == self.game, (
-        "State must have been created by the same game.")
+    assert new_state.get_game() == self.game, ("State must have been created by the same game.")
     self._state = new_state
 
   @property

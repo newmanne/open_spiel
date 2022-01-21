@@ -118,7 +118,7 @@ def main(argv):
 
     alg_start_time = time.time()
 
-    env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name, env_seed=seed)
+    env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name)
     game, policy, env, trained_agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
     config_path = args.config if args.config is not None else f'{experiment_dir}/config.yml'
 

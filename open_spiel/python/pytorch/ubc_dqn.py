@@ -27,6 +27,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from open_spiel.python import rl_agent
 from open_spiel.python.examples.ubc_utils import single_action_result, turn_based_size, handcrafted_size, sor_profit_index
+import time
 
 Transition = collections.namedtuple(
     "Transition",
@@ -250,6 +251,7 @@ class DQN(rl_agent.AbstractAgent):
     self._epsilon_start = epsilon_start
     self._epsilon_end = epsilon_end
     self._epsilon_decay_duration = epsilon_decay_duration
+    self._train_time = 0 # Poor man's profiling
 
     if not isinstance(replay_buffer_capacity, int):
       raise ValueError("Replay buffer capacity not an integer.")
@@ -361,11 +363,12 @@ class DQN(rl_agent.AbstractAgent):
 
     info_state_flat = prev_time_step.observations["info_state"][self.player_id][:]
 
-    ### FOR DYNAMIC BOUDING. ONLY WORKS WHEN BIDDER UTILITY CAN BE COMPUTED INDEPENDENTLY
+    ### FOR DYNAMIC BOUNDING. ONLY WORKS WHEN BIDDER UTILITY CAN BE COMPUTED INDEPENDENTLY
     if time_step.last():
       max_profit_still_possible = reward
     else:
-      sor_profits = np.array(info_state_flat[sor_profit_index(self._num_players) : sor_profit_index(self._num_players) + self._num_actions])
+      idx = sor_profit_index(self._num_players)
+      sor_profits = np.array(info_state_flat[idx : idx + self._num_actions])
       max_profit_still_possible = max(sor_profits[legal_actions])
     ### END
 
@@ -433,6 +436,7 @@ class DQN(rl_agent.AbstractAgent):
     Returns:
       The average loss obtained on this batch of transitions or `None`.
     """
+    start = time.time()
 
     if (len(self._replay_buffer) < self._batch_size or
         len(self._replay_buffer) < self._min_buffer_size_to_learn):
@@ -485,6 +489,10 @@ class DQN(rl_agent.AbstractAgent):
     self._optimizer.zero_grad()
     loss.backward()
     self._optimizer.step()
+
+    duration = time.time() - start
+    self._train_time += duration
+
     return loss.detach()
 
   @property
