@@ -17,7 +17,7 @@ from __future__ import division
 from __future__ import print_function
 
 from open_spiel.python import rl_environment, policy
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, fix_seeds
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, fix_seeds, get_player_type, current_round, round_frame, payment_and_allocation
 from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint, lookup_model_and_args
 from open_spiel.python.examples.ubc_br import BR_DIR, make_dqn_agent
 from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator, TakeSingleActionDecorator
@@ -39,6 +39,8 @@ import json
 import shutil
 from collections import defaultdict
 from pathlib import Path
+from dataclasses import dataclass
+from typing import List
 
 EVAL_DIR = 'evaluations'
 
@@ -50,6 +52,7 @@ def main(argv):
     parser.add_argument('--report_freq', type=int, default=5000)
     parser.add_argument('--br_name', type=str, default=None)
     parser.add_argument('--straightforward_player', type=int, default=None)
+    parser.add_argument('--output', type=str, default=None)
     parser.add_argument('--seed', type=int, default=1234)
 
     args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
@@ -62,9 +65,9 @@ def main(argv):
     br_name = args.br_name
     straightforward_player = args.straightforward_player
     seed = args.seed
+    output_name = args.output
 
-    fix_seeds(seed)
-
+    fix_seeds(seed) 
 
     if straightforward_player is not None and br_name is not None:
       raise ValueError("Only one of straightforward_player and br_name can be set")
@@ -81,8 +84,12 @@ def main(argv):
     logging.get_absl_handler().use_absl_log_file(f'evaluate_policy_{name}', checkpoint_dir) 
     logging.set_verbosity(logging.INFO)
 
-    env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name)
+    env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name, env_seed=seed)
     game, policy, env, trained_agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
+
+    num_players = game.num_players()
+    num_actions = game.num_distinct_actions()
+    num_products = len(game_config['licenses'])
 
     br_agent_id = None
     agents = trained_agents
@@ -110,27 +117,48 @@ def main(argv):
     alg_start_time = time.time()
 
     rewards = defaultdict(list)
+    player_types = defaultdict(list)
+    allocations = defaultdict(list)
+    payments = defaultdict(list)
+
     for sample_index in range(num_samples):
       if sample_index % report_freq == 0 and sample_index > 0:
         logging.info(f"----Episode {sample_index} ---")
+        for player in range(num_players):
+          avg_rewards = pd.Series(rewards[player]).mean()
+          logging.info(f"Reward player {player}: {avg_rewards}")
 
       time_step = env.reset()
+
+      # Get type info. Another way to do this might be to instrument the chance sampler...
+      for player_index in range(num_players):
+        infostate = time_step.observations['info_state'][player_index]
+        player_type = get_player_type(num_players, num_actions, num_products, infostate)
+        player_types[player_index].append(tuple(player_type))
+
       episode_rewards = defaultdict(int) # Player ID -> Rewards
       while not time_step.last():
+        for i in range(num_players):
+          if time_step.rewards is not None:
+            episode_rewards[i] += time_step.rewards[i]
         player_id = time_step.observations["current_player"]
         agent = agents[player_id]
         agent_output = agent.step(time_step, is_evaluation=True)
         action_list = [agent_output.action]
         time_step = env.step(action_list)
-        for i in range(game.num_players()):
-          episode_rewards[i] += time_step.rewards[i]
 
       for i, agent in enumerate(agents):
         agent.step(time_step, is_evaluation=True)
-        episode_rewards[i] += time_step.rewards[i]
+        episode_rewards[i] += time_step.rewards[i] 
         rewards[i].append(episode_rewards[i])
+
+        # Let's get allocation and pricing information
+        infostate = time_step.observations['info_state'][i]
+        payment, allocation = payment_and_allocation(num_players, num_actions, num_products, infostate)
+        payments[i].append(payment)
+        allocations[i].append(allocation)
     
-    for player in range(game.num_players()):
+    for player in range(num_players):
       logging.info(f"Rewards for {player}")
       logging.info(pd.Series(rewards[player]).describe())
       logging.info(f"-------------------")
@@ -138,11 +166,17 @@ def main(argv):
     checkpoint = {
       'walltime': time.time() - alg_start_time,
       'rewards': rewards, # For now, store all the rewards. But maybe we only need some summary stats
+      'types': player_types,
+      'allocations': allocations,
+      'payments': payments,
       'br_agent': br_agent_id,
       'straightforward_agent': straightforward_player
     }
 
-    checkpoint_path = os.path.join(checkpoint_dir, f'rewards_{name}.pkl')
+    if output_name is None:
+      output_name = f'rewards_{name}'
+
+    checkpoint_path = os.path.join(checkpoint_dir, f'{output_name}.pkl')
     with open(checkpoint_path, 'wb') as f:
         pickle.dump(checkpoint, f)
 

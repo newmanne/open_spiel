@@ -12,13 +12,24 @@ import torch
 
 
 CLOCK_AUCTION = 'clock_auction'
+
+SUBMITTED_DEMAND_INDEX = 0
+PROCESSED_DEMAND_INDEX = 1
+AGG_DEMAND_INDEX = 2
+POSTED_PRICE_INDEX = 3
+
 FEATURES_PER_PRODUCT = 4
+
+# TODO: I hate this... This is super fragile
 
 def turn_based_size(num_players):
     return 2 * num_players
 
 def round_index(num_players):
     return turn_based_size(num_players)
+
+def current_round(num_players, information_state_tensor): # 1-indexed
+    return int(information_state_tensor[round_index(num_players)])
 
 def prefix_size(num_players, num_products):
     return num_players + 1 + num_products
@@ -31,6 +42,37 @@ def clock_profit_index(num_players, num_actions):
 
 def sor_profit_index(num_players):
     return round_index(num_players) + 1
+
+def recurrent_index(num_players, num_actions, num_products):
+    return turn_based_size(num_players) + handcrafted_size(num_actions, num_products) + prefix_size(num_players, num_products)
+
+def get_player_type_index(num_players, num_actions, num_products):
+    return recurrent_index(num_players, num_actions, num_products) + num_players
+
+def get_player_type(num_players, num_actions, num_products, information_state_tensor):
+    index = get_player_type_index(num_players, num_actions, num_products)
+    return information_state_tensor[index:index + 1 + num_products] # Budget and then values
+
+def recurrent_round_size(num_products):
+    return FEATURES_PER_PRODUCT * num_products
+
+def round_frame_index(num_players, num_actions, num_products, r):
+    r_index = recurrent_index(num_players, num_actions, num_products)
+    return r_index + recurrent_round_size(num_products) * (r - 1)
+
+def round_frame(num_players, num_actions, num_products, r, information_state_tensor):
+    index = round_frame_index(num_players, num_actions, num_products, r)
+    return information_state_tensor[index: index + recurrent_round_size(num_products)]
+
+def current_round_frame(num_players, num_actions, num_products, information_state_tensor):
+    r = current_round(num_players, information_state_tensor)
+    return round_frame(num_players, num_actions, num_products, r, information_state_tensor)
+
+def payment_and_allocation(num_players, num_actions, num_products, information_state_tensor):
+    frame = current_round_frame(num_players, num_actions, num_products, information_state_tensor)
+    allocation = frame[PROCESSED_DEMAND_INDEX * num_products : (PROCESSED_DEMAND_INDEX + 1) * num_products]
+    prices = frame[POSTED_PRICE_INDEX * num_products : (POSTED_PRICE_INDEX + 1) * num_products]
+    return np.array(prices) @ np.array(allocation), allocation
 
 def action_to_bundles(licenses):
     bids = []
@@ -49,7 +91,7 @@ def fix_seeds(seed):
     torch.manual_seed(seed)
 
 
-def make_dqn_kwargs_from_config(config, game_config=None, player_id=None):
+def make_dqn_kwargs_from_config(config, game_config=None, player_id=None, include_nfsp=True):
     dqn_kwargs = {
       "replay_buffer_capacity": config['replay_buffer_capacity'],
       "epsilon_decay_duration": config['num_training_episodes'],
@@ -64,6 +106,12 @@ def make_dqn_kwargs_from_config(config, game_config=None, player_id=None):
       "min_buffer_size_to_learn": config['min_buffer_size_to_learn'],
       "optimizer_str": config['optimizer_str'],
     }
+    if not include_nfsp:
+        del dqn_kwargs['batch_size']
+        del dqn_kwargs['min_buffer_size_to_learn']
+        del dqn_kwargs['learn_every']
+        del dqn_kwargs['optimizer_str']
+
     if game_config is not None and player_id is not None:
         dqn_kwargs['lower_bound_utility'], dqn_kwargs['upper_bound_utility'] = clock_auction_bounds(game_config, player_id)
     return dqn_kwargs

@@ -19,7 +19,7 @@ from __future__ import print_function
 from dataclasses import dataclass
 from open_spiel.python import rl_environment, policy
 from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, make_dqn_kwargs_from_config
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, make_dqn_kwargs_from_config, fix_seeds
 from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint, lookup_model_and_args
 from open_spiel.python.algorithms.exploitability import nash_conv
 from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator
@@ -108,8 +108,7 @@ def main(argv):
     output_name = args.output_name
     seed = args.seed
 
-    fix_seeds(seed)
-
+    fix_seeds(seed) 
 
     checkpoint_dir = os.path.join(experiment_dir, BR_DIR)
     Path(checkpoint_dir).mkdir(parents=True, exist_ok=True)
@@ -119,7 +118,7 @@ def main(argv):
 
     alg_start_time = time.time()
 
-    env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name)
+    env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name, env_seed=seed)
     game, policy, env, trained_agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
     config_path = args.config if args.config is not None else f'{experiment_dir}/config.yml'
 
