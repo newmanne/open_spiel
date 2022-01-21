@@ -234,3 +234,22 @@ def pulp_solve(problem, solve_function=solve, save_if_failed=True):
         logging.warning(e)
         fail_lp(problem, save_if_failed)
     return objective_from_lp(problem)
+
+
+# See https://stackoverflow.com/a/58101985. Much faster than np.random.choice, at least for our current version of numpy and our distribution over the arguments
+def fast_choice(options, probs):
+    x = np.random.rand()
+    cum = 0
+    for i,p in enumerate(probs):
+        cum += p
+        if x < cum:
+            break
+    return options[i]
+
+class UBCChanceEventSampler(object):
+  """Default sampler for external chance events."""
+
+  def __call__(self, state):
+    """Sample a chance event in the given state."""
+    actions, probs = zip(*state.chance_outcomes())
+    return fast_choice(actions, probs)

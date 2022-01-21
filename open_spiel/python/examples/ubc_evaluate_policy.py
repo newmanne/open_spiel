@@ -84,7 +84,7 @@ def main(argv):
     logging.get_absl_handler().use_absl_log_file(f'evaluate_policy_{name}', checkpoint_dir) 
     logging.set_verbosity(logging.INFO)
 
-    env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name, env_seed=seed)
+    env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name)
     game, policy, env, trained_agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
 
     num_players = game.num_players()

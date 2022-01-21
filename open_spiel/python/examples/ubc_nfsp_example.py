@@ -21,7 +21,7 @@ from __future__ import print_function
 from dataclasses import dataclass
 from open_spiel.python import rl_environment, policy
 from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn, ubc_transformer
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, handcrafted_size, make_dqn_kwargs_from_config, fix_seeds
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, handcrafted_size, make_dqn_kwargs_from_config, fix_seeds, UBCChanceEventSampler
 from open_spiel.python.algorithms.exploitability import nash_conv
 import pyspiel
 import numpy as np
@@ -127,11 +127,11 @@ def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_
     return model_class, default_model_args
 
 
-def policy_from_checkpoint(experiment_dir, checkpoint_suffix='checkpoint_latest', env_seed=None):
+def policy_from_checkpoint(experiment_dir, checkpoint_suffix='checkpoint_latest'):
     with open(f'{experiment_dir}/config.yml', 'rb') as fh:
         config = yaml.load(fh, Loader=yaml.FullLoader)
 
-    env_and_model = setup(experiment_dir, config, env_seed=env_seed)
+    env_and_model = setup(experiment_dir, config)
 
     nfsp_policies = env_and_model.nfsp_policies
 
@@ -149,7 +149,7 @@ class EnvAndModel:
     game: pyspiel.Game
     game_config: dict
 
-def setup(experiment_dir, config, env_seed=None):
+def setup(experiment_dir, config):
     if experiment_dir.endswith('/'):
         experiment_dir = experiment_dir[:-1]
 
@@ -162,10 +162,7 @@ def setup(experiment_dir, config, env_seed=None):
     game = smart_load_sequential_game('clock_auction', dict(filename=game_config_path))
     logging.info("Game loaded")
 
-    if env_seed is None:
-        env_seed = config['seed']
-
-    env = rl_environment.Environment(game, chance_event_sampler=rl_environment.ChanceEventSampler(seed=env_seed))
+    env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler())
     if not env.is_turn_based:
       raise ValueError("Expected turn based env")
     
@@ -274,10 +271,9 @@ def main(argv):
 
     # Override any top-level yaml args with command line arguments
     for arg in vars(args):
-        if f'--{arg}' in sys.argv:
+        if f'--{arg}' in argv:
             name = arg
             value = getattr(args, arg)
-
             if name in config:
                 config[name] = value
 
@@ -323,6 +319,9 @@ def main(argv):
                 agent = agents[player_id]
                 if isinstance(agent, ubc_nfsp.NFSP):
                     logging.info(check_on_q_values(agent._rl_agent, game))
+                    logging.info(f"Train time {agent._rl_agent._train_time}")
+                    logging.info(f"Total time {time.time() - start_time}")
+                    logging.info(f"Training is a {agent._rl_agent._train_time / (time.time() - start_time)} fraction")
                     # logging.info(len(agent._rl_agent._replay_buffer))
                     # logging.info(agent._rl_agent._replay_buffer._data[0])
                 logging.info(agent.loss)

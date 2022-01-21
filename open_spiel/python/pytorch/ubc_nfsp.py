@@ -27,13 +27,16 @@ import enum
 import os
 from absl import logging
 import numpy as np
+import time
 
 import torch
 import torch.nn.functional as F
 
 from open_spiel.python import rl_agent
 from open_spiel.python.pytorch import ubc_dqn
-from open_spiel.python.examples.ubc_utils import single_action_result
+from open_spiel.python.examples.ubc_utils import single_action_result, fast_choice
+from cachetools import cached, LRUCache, TTLCache
+from cachetools.keys import hashkey
 
 
 Transition = collections.namedtuple(
@@ -81,6 +84,7 @@ class NFSP(rl_agent.AbstractAgent):
     # Step counter to keep track of learning.
     self._step_counter = 0
     self._iteration = 0
+    self._cache = LRUCache(maxsize=5000)
 
     # Inner RL agent
     kwargs.update({
@@ -139,14 +143,21 @@ class NFSP(rl_agent.AbstractAgent):
     if len(legal_actions) == 1: # Let's not run the NN if you are faced with a single action (imagine a case where one player drops out and remaining players duel onwards)
       return single_action_result(legal_actions, self._num_actions)
     else:
-      probs = np.zeros(self._num_actions)
-      info_state = self._avg_network.prep_batch([info_state])
-      action_values = self._avg_network(info_state)
-      self._last_action_values = action_values[0]
-      legal_values = action_values[0][legal_actions]
-      probs[legal_actions] = F.softmax(legal_values, dim=0).detach().numpy()
-      probs /= sum(probs)
-      action = np.random.choice(len(probs), p=probs)
+      key = hashkey(tuple(info_state))
+      val = self._cache.get(key)
+      if val is not None:
+        probs = np.array(val)
+      else:
+        probs = np.zeros(self._num_actions)
+        info_state_reshaped = self._avg_network.reshape_infostate(info_state)
+        info_state_batch = self._avg_network.prep_batch([info_state_reshaped])
+        action_values = self._avg_network(info_state_batch)
+        self._last_action_values = action_values[0]
+        legal_values = action_values[0][legal_actions]
+        probs[legal_actions] = F.softmax(legal_values, dim=0).detach().numpy()
+        probs /= sum(probs)
+        self._cache[key] = probs
+      action = fast_choice(range(len(probs)), probs)
     return action, probs
 
   @property
@@ -178,9 +189,7 @@ class NFSP(rl_agent.AbstractAgent):
     else:
       # Act step: don't act at terminal info states.
       if not time_step.last():
-        info_state_flat = time_step.observations["info_state"][self.player_id]
-        info_state = self._avg_network.reshape_infostate(info_state_flat)
-
+        info_state = time_step.observations["info_state"][self.player_id]
         legal_actions = time_step.observations["legal_actions"][self.player_id]
         action, probs = self._act(info_state, legal_actions)
         agent_output = rl_agent.StepOutput(action=action, probs=probs)
@@ -246,6 +255,7 @@ class NFSP(rl_agent.AbstractAgent):
     Returns:
       The average loss obtained on this batch of transitions or `None`.
     """
+    self._clear_cache()
     if (len(self._reservoir_buffer) < self._batch_size or
         len(self._reservoir_buffer) < self._min_buffer_size_to_learn):
       return None
@@ -263,6 +273,9 @@ class NFSP(rl_agent.AbstractAgent):
     loss.backward()
     self.optimizer.step()
     return loss.detach()
+
+  def _clear_cache(self):
+    self._cache.clear()
 
   def _full_checkpoint_name(self, checkpoint_dir, name):
     checkpoint_filename = "_".join([name, "pid" + str(self.player_id)])
