@@ -209,7 +209,7 @@ class NFSP(rl_agent.AbstractAgent):
         self._prev_action = agent_output.action
     else:
       if time_step.last():
-        return
+        return rl_agent.StepOutput(action=None, probs=[])
 
     return agent_output
 

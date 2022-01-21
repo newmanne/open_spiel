@@ -127,11 +127,11 @@ def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_
     return model_class, default_model_args
 
 
-def policy_from_checkpoint(experiment_dir, checkpoint_suffix='checkpoint_latest'):
+def policy_from_checkpoint(experiment_dir, checkpoint_suffix='checkpoint_latest', env_seed=None):
     with open(f'{experiment_dir}/config.yml', 'rb') as fh:
         config = yaml.load(fh, Loader=yaml.FullLoader)
 
-    env_and_model = setup(experiment_dir, config)
+    env_and_model = setup(experiment_dir, config, env_seed=env_seed)
 
     nfsp_policies = env_and_model.nfsp_policies
 
@@ -149,7 +149,7 @@ class EnvAndModel:
     game: pyspiel.Game
     game_config: dict
 
-def setup(experiment_dir, config):
+def setup(experiment_dir, config, env_seed=None):
     if experiment_dir.endswith('/'):
         experiment_dir = experiment_dir[:-1]
 
@@ -162,7 +162,10 @@ def setup(experiment_dir, config):
     game = smart_load_sequential_game('clock_auction', dict(filename=game_config_path))
     logging.info("Game loaded")
 
-    env = rl_environment.Environment(game)
+    if env_seed is None:
+        env_seed = config['seed']
+
+    env = rl_environment.Environment(game, chance_event_sampler=rl_environment.ChanceEventSampler(seed=env_seed))
     if not env.is_turn_based:
       raise ValueError("Expected turn based env")
     
@@ -183,8 +186,8 @@ def setup(experiment_dir, config):
 
     agents = []
     for player_id in range(game.num_players()):
-        dqn_kwargs = make_dqn_kwargs_from_config(config, game_config=game_config, player_id=player_id)
-        
+        dqn_kwargs = make_dqn_kwargs_from_config(config, game_config=game_config, player_id=player_id, include_nfsp=False)
+
         agent = ubc_nfsp.NFSP(
             player_id,
             num_actions=num_actions,

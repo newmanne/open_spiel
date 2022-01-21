@@ -2,8 +2,12 @@ from open_spiel.python.rl_agent import AbstractAgent
 from cachetools import cached, LRUCache, TTLCache
 from cachetools.keys import hashkey
 from open_spiel.python.examples.ubc_utils import single_action_result
+import numpy as np
+from open_spiel.python import rl_agent
+
 
 # TODO: Is all of this meta magic slowing you down? Or is it not worth bothering
+BLANK_OUTPUT = rl_agent.StepOutput(action=None, probs=[])
 
 class AgentDecorator(AbstractAgent):
 
@@ -44,7 +48,13 @@ class CachingAgentDecorator(AgentDecorator):
     def step(self, time_step, is_evaluation=False):
         key = hashkey(tuple(time_step.observations["info_state"][self.player_id]))
         if key in self.cache:
-            return self.cache[key]
+            # Reselect action randomly, but use cached probs
+            output = self.cache[key]
+            if output is None or output == BLANK_OUTPUT:
+                return output # Terminal node
+            else:
+                action = np.random.choice(range(len(output.probs)), p=output.probs)
+                return rl_agent.StepOutput(action=action, probs=output.probs)
         else:
             output = self.agent.step(time_step, is_evaluation=is_evaluation)
             self.cache[key] = output
