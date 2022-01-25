@@ -4,6 +4,7 @@
 
 import torch
 from torch import nn
+from absl import logging
 from open_spiel.python.examples.ubc_utils import FEATURES_PER_PRODUCT, prefix_size, handcrafted_size, turn_based_size, round_index
 
 class AuctionRNN(nn.Module):
@@ -78,8 +79,9 @@ class AuctionRNN(nn.Module):
         # stack
         expanded_infostate = torch.hstack([
             torch.tile(prefix, (current_round, 1)),
-            suffix_reshaped[:current_round, :]
+            suffix_reshaped
         ])
+        
         return expanded_infostate
     
     def prep_batch(self, infostate_list):
@@ -110,7 +112,7 @@ class AuctionRNN(nn.Module):
         
         # Split into final output for each sequence
         padded_output, output_lens = nn.utils.rnn.pad_packed_sequence(rnn_outputs, batch_first=True)
-        last_outputs = torch.cat([padded_output[e, i - 1, :].unsqueeze(0) for e, i in enumerate(output_lens)])
+        last_outputs = padded_output[torch.arange(len(output_lens)), output_lens-1, :]
         
         # Apply output layer to each final output
         outputs = self.output_layer(last_outputs)

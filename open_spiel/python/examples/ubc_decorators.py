@@ -51,7 +51,7 @@ class CachingAgentDecorator(AgentDecorator):
         if val is not None:
             # Reselect action randomly, but use cached probs
             if val == BLANK_OUTPUT:
-                return output # Terminal node
+                return val # Terminal node
             else:
                 action = fast_choice(range(len(val.probs)), val.probs)
                 return rl_agent.StepOutput(action=action, probs=val.probs)
