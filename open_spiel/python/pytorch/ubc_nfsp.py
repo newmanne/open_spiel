@@ -67,6 +67,7 @@ class NFSP(rl_agent.AbstractAgent):
                learn_every=64,
                optimizer_str="sgd",
                add_explore_transitions=True, # Should I add transitions to the resevoir buffer if they are caused due to exploration?
+               device='cpu',
                **kwargs):
     """Initialize the `NFSP` agent."""
     self.player_id = player_id
@@ -86,6 +87,8 @@ class NFSP(rl_agent.AbstractAgent):
     self._iteration = 0
     self._cache = LRUCache(maxsize=5000)
 
+    self._device = device
+
     # Inner RL agent
     kwargs.update({
         "batch_size": batch_size,
@@ -100,6 +103,7 @@ class NFSP(rl_agent.AbstractAgent):
       num_players,
       q_network_model=rl_model,
       q_network_args=rl_model_args,
+      device=device,
       **kwargs
     )
 

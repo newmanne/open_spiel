@@ -202,6 +202,7 @@ def setup(experiment_dir, config):
             learn_every=config['learn_every'],
             optimizer_str=config['optimizer_str'],
             add_explore_transitions=config.get('add_explore_transitions', True),
+            device=config.get('device', 'cpu'),
             **dqn_kwargs
         )
         agents.append(agent)
@@ -225,6 +226,7 @@ def main(argv):
     parser.add_argument('--eval_overrides', type=str, default='')
     parser.add_argument('--report_freq', type=int, default=50_000)
     parser.add_argument('--iterate_br', type=util.strtobool, default=0)
+    parser.add_argument('--device', type=str, default='cpu')
 
     # Optional Overrides
     parser.add_argument('--num_training_episodes', type=int, default=None)
@@ -274,8 +276,9 @@ def main(argv):
         if f'--{arg}' in argv:
             name = arg
             value = getattr(args, arg)
-            if name in config:
-                config[name] = value
+            if name not in config:
+                logging.warning(f'Found argument {name} on command line but not in config')
+            config[name] = value
 
     # Save the final overridden config so there's no confusion later if you need to cross-reference
     with open(f'{output_dir}/config.yml', 'w') as outfile:

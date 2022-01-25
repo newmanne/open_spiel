@@ -228,6 +228,7 @@ class DQN(rl_agent.AbstractAgent):
                upper_bound_utility=None,
                lower_bound_utility=None,
                double_dqn=True,
+               device='cpu',
                ):
     """Initialize the DQN agent."""
 
@@ -268,8 +269,10 @@ class DQN(rl_agent.AbstractAgent):
     self._last_loss_value = torch.tensor([0])
 
     # Create the Q-network instances
-    self._q_network = q_network_model(**q_network_args)
-    self._target_q_network = q_network_model(**q_network_args)
+    self._device = device
+    print(device)
+    self._q_network = q_network_model(**q_network_args).to(self._device)
+    self._target_q_network = q_network_model(**q_network_args).to(self._device)
 
     if loss_str == "mse":
       self.loss_class = F.mse_loss
@@ -286,6 +289,7 @@ class DQN(rl_agent.AbstractAgent):
           self._q_network.parameters(), lr=learning_rate)
     else:
       raise ValueError("Not implemented, choose from 'adam' and 'sgd'.")
+
 
   def step(self, time_step, is_evaluation=False, add_transition_record=True):
     """Returns the action to be taken and updates the Q-network if needed.
@@ -372,10 +376,10 @@ class DQN(rl_agent.AbstractAgent):
       max_profit_still_possible = max(sor_profits[legal_actions])
     ### END
 
-    info_state = self._q_network.reshape_infostate(info_state_flat)
+    info_state = self._q_network.reshape_infostate(info_state_flat).to(self._device)
 
     next_info_state_flat = time_step.observations["info_state"][self.player_id][:]
-    next_info_state = self._q_network.reshape_infostate(next_info_state_flat)
+    next_info_state = self._q_network.reshape_infostate(next_info_state_flat).to(self._device)
 
 
     transition = Transition(
@@ -409,8 +413,8 @@ class DQN(rl_agent.AbstractAgent):
       probs[legal_actions] = 1.0 / len(legal_actions)
       self._prev_action_greedy = True
     else:
-      info_state = self._q_network.prep_batch([info_state])
-      q_values = self._q_network(info_state).detach()[0]
+      info_state = self._q_network.prep_batch([info_state]).to(self._device)
+      q_values = self._q_network(info_state).cpu().detach()[0]
       legal_q_values = q_values[legal_actions]
       action = legal_actions[torch.argmax(legal_q_values)]
       probs[action] = 1.0
@@ -445,8 +449,8 @@ class DQN(rl_agent.AbstractAgent):
 
     transitions = self._replay_buffer.sample(self._batch_size)
 
-    info_states = self._q_network.prep_batch([t.info_state for t in transitions])
-    next_info_states = self._q_network.prep_batch([t.next_info_state for t in transitions])
+    info_states = self._q_network.prep_batch([t.info_state for t in transitions]).to(self._device)
+    next_info_states = self._q_network.prep_batch([t.next_info_state for t in transitions]).to(self._device)
 
     actions = torch.LongTensor([t.action for t in transitions])
     rewards = torch.Tensor([t.reward for t in transitions])
@@ -456,11 +460,11 @@ class DQN(rl_agent.AbstractAgent):
     are_final_steps = torch.Tensor([t.is_final_step for t in transitions])
     legal_actions_mask = torch.Tensor(np.array([t.legal_actions_mask for t in transitions]))
 
-    self._q_values = self._q_network(info_states)
+    self._q_values = self._q_network(info_states).cpu()
     if self._double_dqn:
-      next_q_values = self._q_network(next_info_states).detach()
+      next_q_values = self._q_network(next_info_states).cpu().detach()
     
-    self._target_q_values = self._target_q_network(next_info_states).detach()
+    self._target_q_values = self._target_q_network(next_info_states).cpu().detach()
 
     # Clamp targets - no point in learning values higher than we know they really are
     if self.lower_bound_utility is not None and self.upper_bound_utility is not None:
