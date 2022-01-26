@@ -19,7 +19,7 @@ from __future__ import print_function
 from dataclasses import dataclass
 from open_spiel.python import rl_environment, policy
 from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, make_dqn_kwargs_from_config, fix_seeds
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, make_dqn_kwargs_from_config, fix_seeds, pretty_time
 from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint, lookup_model_and_args
 from open_spiel.python.algorithms.exploitability import nash_conv
 from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator
@@ -175,6 +175,7 @@ def main(argv):
       'config': config,
       'br_name': br_name
     }
+    logging.info(f'Walltime: {pretty_time(walltime_train)}')
 
     if output_name is None:
       output_name = br_name

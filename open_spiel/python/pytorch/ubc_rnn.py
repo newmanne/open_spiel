@@ -4,6 +4,7 @@
 
 import torch
 from torch import nn
+import numpy as np
 from absl import logging
 from open_spiel.python.examples.ubc_utils import FEATURES_PER_PRODUCT, prefix_size, handcrafted_size, turn_based_size, round_index
 
@@ -44,6 +45,8 @@ class AuctionRNN(nn.Module):
 
         self.num_players = num_players
         self.num_products = num_products
+        self.round_index = round_index(self.num_players)
+        self.infostate_index_cache = {}
 
         input_size_per_round = self.prefix_len + FEATURES_PER_PRODUCT * num_products 
         
@@ -67,22 +70,25 @@ class AuctionRNN(nn.Module):
     
         Outputs: tensor of shape (num rounds, model input size)
         """
-        current_round = int(infostate_tensor[round_index(self.num_players)])
+        current_round = int(infostate_tensor[self.round_index])
         infostate_tensor = infostate_tensor[self.turn_based_len + self.handcrafted_len:] # Ignore the handcrafted stuff
+        infostate_tensor = torch.tensor(infostate_tensor) 
 
         # split tensor into (per-auction, per-round) features
         suffix_len_per_round = FEATURES_PER_PRODUCT * self.num_products
-        prefix = torch.tensor(infostate_tensor[:self.prefix_len])
-        suffix = torch.tensor(infostate_tensor[self.prefix_len:self.prefix_len + current_round * suffix_len_per_round])
-        suffix_reshaped = suffix.reshape(-1, FEATURES_PER_PRODUCT * self.num_products) # (rounds, features * num_products)
 
-        # stack
-        expanded_infostate = torch.hstack([
-            torch.tile(prefix, (current_round, 1)),
-            suffix_reshaped
-        ])
-        
-        return expanded_infostate
+        # TODO: refactor into an LRU cached function?
+        if current_round in self.infostate_index_cache:
+            idx = self.infostate_index_cache[current_round]
+        else:
+            idx = []
+            for round_num in range(current_round):
+                idx += list(range(self.prefix_len)) # prefix
+                idx += list(range(self.prefix_len + round_num * suffix_len_per_round, self.prefix_len + (round_num+1) * suffix_len_per_round)) # this round's suffix
+            idx = torch.tensor(idx)
+            self.infostate_index_cache[current_round] = idx
+
+        return infostate_tensor[idx].view(current_round, -1)
     
     def prep_batch(self, infostate_list):
         """
@@ -128,7 +134,11 @@ class AuctionRNN(nn.Module):
 
         Output: model-ready packed sequence
         """
-        padded_seq_batch = torch.nn.utils.rnn.pad_sequence(sequences, batch_first=True)
-        sequence_lengths = [len(seq) for seq in sequences]
+        if len(sequences) > 1:
+            padded_seq_batch = torch.nn.utils.rnn.pad_sequence(sequences, batch_first=True)
+            sequence_lengths = [seq.shape[0] for seq in sequences]
+        else:
+            padded_seq_batch = sequences[0].unsqueeze(0)
+            sequence_lengths = [len(sequences[0])]
         packed_seq_batch = torch.nn.utils.rnn.pack_padded_sequence(padded_seq_batch, lengths=sequence_lengths, batch_first=True, enforce_sorted=False)
         return packed_seq_batch

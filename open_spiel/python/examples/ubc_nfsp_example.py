@@ -21,7 +21,7 @@ from __future__ import print_function
 from dataclasses import dataclass
 from open_spiel.python import rl_environment, policy
 from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn, ubc_transformer
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, handcrafted_size, make_dqn_kwargs_from_config, fix_seeds, UBCChanceEventSampler
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, handcrafted_size, make_dqn_kwargs_from_config, fix_seeds, UBCChanceEventSampler, pretty_time
 from open_spiel.python.algorithms.exploitability import nash_conv
 import pyspiel
 import numpy as np
@@ -162,7 +162,7 @@ def setup(experiment_dir, config):
     game = smart_load_sequential_game('clock_auction', dict(filename=game_config_path))
     logging.info("Game loaded")
 
-    env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler())
+    env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=True, terminal_rewards=True)
     if not env.is_turn_based:
       raise ValueError("Expected turn based env")
     
@@ -315,20 +315,6 @@ def main(argv):
 
     alg_start_time = time.time()
     for ep in range(1, config['num_training_episodes'] + 1):
-        if ep % report_freq == 0 and ep > 1:
-            logging.info(f"----Episode {ep} ---")
-            logging.info(f"Episode length stats:\n{pd.Series(episode_lengths).describe()}")
-            for player_id in range(num_players):
-                agent = agents[player_id]
-                if isinstance(agent, ubc_nfsp.NFSP):
-                    logging.info(check_on_q_values(agent._rl_agent, game))
-                    logging.info(f"Train time {agent._rl_agent._train_time}")
-                    logging.info(f"Total time {time.time() - start_time}")
-                    logging.info(f"Training is a {agent._rl_agent._train_time / (time.time() - start_time)} fraction")
-                    # logging.info(len(agent._rl_agent._replay_buffer))
-                    # logging.info(agent._rl_agent._replay_buffer._data[0])
-                logging.info(agent.loss)
-
         time_step = env.reset()
         episode_steps = 0
         while not time_step.last():
@@ -401,6 +387,21 @@ def main(argv):
                     min_nash_conv = n_conv
                     shutil.copyfile(checkpoint_path, best_checkpoint_path)
 
+        if ep % report_freq == 0 and ep > 1:
+            logging.info(f"----Episode {ep} ---")
+            logging.info(f"Episode length stats:\n{pd.Series(episode_lengths).describe()}")
+            for player_id in range(num_players):
+                agent = agents[player_id]
+                if isinstance(agent, ubc_nfsp.NFSP):
+                    logging.info(check_on_q_values(agent._rl_agent, game))
+                    logging.info(f"Train time {pretty_time(agent._rl_agent._train_time)}")
+                    logging.info(f"Total time {pretty_time(time.time() - start_time)}")
+                    logging.info(f"Training the DQN for player {player_id} is a {agent._rl_agent._train_time / (time.time() - start_time)} fraction")
+                    # logging.info(len(agent._rl_agent._replay_buffer))
+                    # logging.info(agent._rl_agent._replay_buffer._data[0])
+                logging.info(agent.loss)
+
+    logging.info(f"Walltime: {pretty_time(time.time() - start_time)}")
     logging.info('All done. Goodbye!')
 
 

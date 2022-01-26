@@ -28,6 +28,9 @@ import torch.nn.functional as F
 from open_spiel.python import rl_agent
 from open_spiel.python.examples.ubc_utils import single_action_result, turn_based_size, handcrafted_size, sor_profit_index
 import time
+from absl import logging
+from cachetools import cached, LRUCache, TTLCache
+from cachetools.keys import hashkey
 
 Transition = collections.namedtuple(
     "Transition",
@@ -264,13 +267,14 @@ class DQN(rl_agent.AbstractAgent):
     # Step counter to keep track of learning, eps decay and target network.
     self._step_counter = 0
     self._iteration = 0
+    self._cache = LRUCache(maxsize=5000)
 
     # Keep track of the last training loss achieved in an update step.
     self._last_loss_value = torch.tensor([0])
 
     # Create the Q-network instances
     self._device = device
-    print(device)
+    logging.info(f"Creating DQN using device: {self._device}")
     self._q_network = q_network_model(**q_network_args).to(self._device)
     self._target_q_network = q_network_model(**q_network_args).to(self._device)
 
@@ -311,9 +315,8 @@ class DQN(rl_agent.AbstractAgent):
         action, probs = single_action_result(legal_actions, self._num_actions)
       else:
         info_state_flat = time_step.observations["info_state"][self.player_id]
-        info_state = self._q_network.reshape_infostate(info_state_flat)
         epsilon = self._get_epsilon(is_evaluation)
-        action, probs = self._epsilon_greedy(info_state, legal_actions, epsilon)
+        action, probs = self._epsilon_greedy(info_state_flat, legal_actions, epsilon)
     else:
       action = None
       probs = []
@@ -358,7 +361,6 @@ class DQN(rl_agent.AbstractAgent):
       time_step: current ts, an instance of rl_environment.TimeStep.
     """
     assert prev_time_step is not None
-
     reward = time_step.rewards[self.player_id]
 
     legal_actions = (time_step.observations["legal_actions"][self.player_id])
@@ -394,7 +396,7 @@ class DQN(rl_agent.AbstractAgent):
         )
     self._replay_buffer.add(transition)
 
-  def _epsilon_greedy(self, info_state, legal_actions, epsilon):
+  def _epsilon_greedy(self, info_state_flat, legal_actions, epsilon):
     """Returns a valid epsilon-greedy action and valid action probs.
 
     Action probabilities are given by a softmax over legal q-values.
@@ -413,12 +415,20 @@ class DQN(rl_agent.AbstractAgent):
       probs[legal_actions] = 1.0 / len(legal_actions)
       self._prev_action_greedy = True
     else:
-      info_state = self._q_network.prep_batch([info_state]).to(self._device)
-      q_values = self._q_network(info_state).cpu().detach()[0]
-      legal_q_values = q_values[legal_actions]
-      action = legal_actions[torch.argmax(legal_q_values)]
-      probs[action] = 1.0
       self._prev_action_greedy = False
+      key = hashkey(tuple(info_state_flat))
+      val = self._cache.get(key)
+      if val is not None:
+        return val
+      else:
+        info_state = self._q_network.reshape_infostate(info_state_flat)
+        info_state = self._q_network.prep_batch([info_state]).to(self._device)
+        with torch.no_grad():
+          q_values = self._q_network(info_state).cpu().detach()[0]
+        legal_q_values = q_values[legal_actions]
+        action = legal_actions[torch.argmax(legal_q_values)]
+        probs[action] = 1.0
+        self._cache[key] = (action, probs)
     return action, probs
 
   def _get_epsilon(self, is_evaluation, power=1.0):
@@ -440,6 +450,7 @@ class DQN(rl_agent.AbstractAgent):
     Returns:
       The average loss obtained on this batch of transitions or `None`.
     """
+    self._clear_cache()
     start = time.time()
 
     if (len(self._replay_buffer) < self._batch_size or
@@ -498,6 +509,9 @@ class DQN(rl_agent.AbstractAgent):
     self._train_time += duration
 
     return loss.detach()
+
+  def _clear_cache(self):
+    self._cache.clear()
 
   @property
   def q_values(self):

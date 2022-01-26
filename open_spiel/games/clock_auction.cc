@@ -303,11 +303,13 @@ void AuctionState::PostProcess() {
     posted_price_.push_back(next_price);
     sor_price_.push_back(next_price);
     clock_price_.push_back(next_clock);
-    round_++;
   } else {
     // Demand <= supply for each item. We are finished.
     finished_ = true;
+    posted_price_.push_back(posted_price_.back());
   }
+  round_++;
+
 }
 
 bool AuctionState::DetermineTiebreaks() {
@@ -815,27 +817,29 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
   offset += num_products_;
   /*** END PREFIX ***/
 
+  int ending_index = finished_ ? round_ + 1 : round_;
+
   for (int i = 0; i < round_; i++) {
     // Submitted demand encoding - demand submitted in each round
-    if (submitted_demand_[player].size() > i) {
+    if (submitted_demand_[player].size() >= i && i > 0) {
       for (int j = 0; j < num_products_; j++) {
-        values[offset + j] = submitted_demand_[player][i][j];
+        values[offset + j] = submitted_demand_[player][i - 1][j];
       }
     }
     offset += num_products_;
 
     // Processed demand encoding (could turn this off w/o undersell)
-    if (processed_demand_[player].size() > i) {
+    if (processed_demand_[player].size() >= i && i > 0) {
       for (int j = 0; j < num_products_; j++) {
-        values[offset + j] = processed_demand_[player][i][j];
+        values[offset + j] = processed_demand_[player][i - 1][j];
       } 
     }
     offset += num_products_;
 
     // History encoding - what you observed after each round
-    if (aggregate_demands_.size() > i) {
+    if (aggregate_demands_.size() >= i && i > 0) {
       for (int j = 0; j < num_products_; j++) {
-          int val = aggregate_demands_[i][j];
+          int val = aggregate_demands_[i - 1][j];
           if (information_policy_ == kHideDemand) {
             val = val > num_licenses_[j] ? 1 : val == num_licenses_[j] ? 0 : -1;
           }
@@ -844,7 +848,7 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
     }
     offset += num_products_;
 
-    // Price encoding - (this is derivable, but let's give it to the NN). Just posted for now
+    // Price encoding. Just posted for now
     if (posted_price_.size() > i) {
       for (int j = 0; j < num_products_; j++) {
         values[offset + j] = posted_price_[i][j];

@@ -12,6 +12,7 @@ import re
 import json
 import numpy as np 
 import pandas as pd
+from absl import logging
 
 from open_spiel.python.examples.ubc_utils import *
 from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint
@@ -71,6 +72,9 @@ def parse_rewards(experiment_dir, truth_available=False):
 
     # 1) Get all reward files
     reward_files = glob.glob(experiment_dir + f'/evaluations/rewards_*.pkl')
+
+    if len(reward_files) == 0:
+        logging.warning(f"No files found for {experiment_dir}")
 
     # 2) Group them by checkpoint name (TODO: Update for new formats without horrible re)
     pattern = re.compile(r'checkpoint_(\d+).*')

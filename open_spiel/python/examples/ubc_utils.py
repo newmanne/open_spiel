@@ -9,6 +9,8 @@ import random
 import string
 from open_spiel.python.rl_agent import StepOutput
 import torch
+import humanize
+import datetime as dt
 
 
 CLOCK_AUCTION = 'clock_auction'
@@ -105,12 +107,14 @@ def make_dqn_kwargs_from_config(config, game_config=None, player_id=None, includ
       "learn_every": config['learn_every'],
       "min_buffer_size_to_learn": config['min_buffer_size_to_learn'],
       "optimizer_str": config['optimizer_str'],
+      "device": config.get('device', 'cpu'),
     }
     if not include_nfsp:
         del dqn_kwargs['batch_size']
         del dqn_kwargs['min_buffer_size_to_learn']
         del dqn_kwargs['learn_every']
         del dqn_kwargs['optimizer_str']
+        del dqn_kwargs['device']
 
     if game_config is not None and player_id is not None:
         dqn_kwargs['lower_bound_utility'], dqn_kwargs['upper_bound_utility'] = clock_auction_bounds(game_config, player_id)
@@ -246,6 +250,12 @@ def fast_choice(options, probs):
             break
     return options[i]
 
+
+def pretty_time(seconds):
+    delta = dt.timedelta(seconds=seconds)
+    return humanize.precisedelta(delta)
+
+
 class UBCChanceEventSampler(object):
   """Default sampler for external chance events."""
 
@@ -253,3 +263,4 @@ class UBCChanceEventSampler(object):
     """Sample a chance event in the given state."""
     actions, probs = zip(*state.chance_outcomes())
     return fast_choice(actions, probs)
+
