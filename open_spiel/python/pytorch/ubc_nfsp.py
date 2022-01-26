@@ -88,6 +88,7 @@ class NFSP(rl_agent.AbstractAgent):
     self._cache = LRUCache(maxsize=5000)
 
     self._device = device
+    logging.info(f"Creating NFSP using device: {device}")
 
     # Inner RL agent
     kwargs.update({
@@ -111,7 +112,7 @@ class NFSP(rl_agent.AbstractAgent):
     self._last_sl_loss_value = None
 
     # Average policy network.
-    self._avg_network = sl_model(**sl_model_args)
+    self._avg_network = sl_model(**sl_model_args).to(self._device)
 
     self._savers = [
         ("q_network", self._rl_agent._q_network),
@@ -119,11 +120,9 @@ class NFSP(rl_agent.AbstractAgent):
     ]
 
     if optimizer_str == "adam":
-      self.optimizer = torch.optim.Adam(
-          self._avg_network.parameters(), lr=sl_learning_rate)
+      self.optimizer = torch.optim.Adam(self._avg_network.parameters(), lr=sl_learning_rate)
     elif optimizer_str == "sgd":
-      self.optimizer = torch.optim.SGD(
-          self._avg_network.parameters(), lr=sl_learning_rate)
+      self.optimizer = torch.optim.SGD(self._avg_network.parameters(), lr=sl_learning_rate)
     else:
       raise ValueError("Not implemented. Choose from ['adam', 'sgd'].")
 
@@ -154,8 +153,9 @@ class NFSP(rl_agent.AbstractAgent):
       else:
         probs = np.zeros(self._num_actions)
         info_state_reshaped = self._avg_network.reshape_infostate(info_state)
-        info_state_batch = self._avg_network.prep_batch([info_state_reshaped])
-        action_values = self._avg_network(info_state_batch)
+        info_state_batch = self._avg_network.prep_batch([info_state_reshaped]).to(self._device)
+        with torch.no_grad():
+          action_values = self._avg_network(info_state_batch).cpu()
         self._last_action_values = action_values[0]
         legal_values = action_values[0][legal_actions]
         probs[legal_actions] = F.softmax(legal_values, dim=0).detach().numpy()
@@ -240,7 +240,7 @@ class NFSP(rl_agent.AbstractAgent):
     legal_actions_mask[legal_actions] = 1.0
 
     info_state_flat = time_step.observations["info_state"][self.player_id][:]
-    info_state = self._avg_network.reshape_infostate(info_state_flat)
+    info_state = self._avg_network.reshape_infostate(info_state_flat).to(self._device)
 
     transition = Transition(
         info_state=info_state,
@@ -267,12 +267,12 @@ class NFSP(rl_agent.AbstractAgent):
     transitions = self._reservoir_buffer.sample(self._batch_size)
 
     info_state_list = [t.info_state for t in transitions]
-    info_states = self._avg_network.prep_batch(info_state_list)
+    info_states = self._avg_network.prep_batch(info_state_list).to(self._device)
 
     action_probs = torch.Tensor(np.array([t.action_probs for t in transitions]))
 
     self.optimizer.zero_grad()
-    loss = F.cross_entropy(self._avg_network(info_states),
+    loss = F.cross_entropy(self._avg_network(info_states).cpu(),
                            torch.max(action_probs, dim=1)[1])
     loss.backward()
     self.optimizer.step()

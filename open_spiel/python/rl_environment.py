@@ -150,6 +150,8 @@ class Environment(object):
                mfg_distribution=None,
                mfg_population=None,
                enable_legality_check=False,
+               all_simultaneous=False,
+               terminal_rewards=False,
                **kwargs):
     """Constructor.
 
@@ -173,6 +175,8 @@ class Environment(object):
     self._mfg_distribution = mfg_distribution
     self._mfg_population = mfg_population
     self._enable_legality_check = enable_legality_check
+    self._all_simultaneous = all_simultaneous
+    self._terminal_rewards = terminal_rewards
 
 
     if isinstance(game, str):
@@ -233,25 +237,33 @@ class Environment(object):
           `StepType.FIRST`.
         step_type: A `StepType` value.
     """
+    current_player = self._state.current_player()
     observations = {
         "info_state": [],
         "legal_actions": [],
-        "current_player": [],
+        "current_player": current_player,
         "serialized_state": []
     }
     rewards = []
     step_type = StepType.LAST if self._state.is_terminal() else StepType.MID
     self._should_reset = step_type == StepType.LAST
 
-    cur_rewards = self._state.rewards()
-    for player_id in range(self.num_players):
-      rewards.append(cur_rewards[player_id])
-      observations["info_state"].append(
-          self._state.observation_tensor(player_id) if self._use_observation
-          else self._state.information_state_tensor(player_id))
-
-      observations["legal_actions"].append(self._state.legal_actions(player_id))
-    observations["current_player"] = self._state.current_player()
+    if self._all_simultaneous and self._terminal_rewards and step_type != StepType.LAST:
+      for player_id in range(self.num_players):
+        rewards.append(0) # Rewards are terminal - let's not bother
+        if player_id == current_player:
+          info_state = self._state.observation_tensor(player_id) if self._use_observation else self._state.information_state_tensor(player_id)
+          observations['info_state'].append(info_state)
+          observations["legal_actions"].append(self._state.legal_actions(player_id))
+        else:
+          observations['info_state'].append(None) # Let's not bother computing this one - we won't ever look at it
+          observations["legal_actions"].append(None)
+    else:
+      cur_rewards = self._state.rewards()
+      for player_id in range(self.num_players):
+        rewards.append(cur_rewards[player_id])
+        observations["info_state"].append(self._state.observation_tensor(player_id) if self._use_observation else self._state.information_state_tensor(player_id))
+        observations["legal_actions"].append(self._state.legal_actions(player_id))
     discounts = self._discounts
     if step_type == StepType.LAST:
       # When the game is in a terminal state set the discount to 0.
@@ -303,9 +315,7 @@ class Environment(object):
           `StepType.FIRST`.
         step_type: A `StepType` value.
     """
-    assert len(actions) == self.num_actions_per_step, (
-        "Invalid number of actions! Expected {}".format(
-            self.num_actions_per_step))
+    assert len(actions) == self.num_actions_per_step, ("Invalid number of actions! Expected {}".format(self.num_actions_per_step))
     if self._should_reset:
       return self.reset()
 

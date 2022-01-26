@@ -17,7 +17,7 @@ from __future__ import division
 from __future__ import print_function
 
 from open_spiel.python import rl_environment, policy
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, fix_seeds, get_player_type, current_round, round_frame, payment_and_allocation
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, fix_seeds, get_player_type, current_round, round_frame, payment_and_allocation, pretty_time
 from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint, lookup_model_and_args
 from open_spiel.python.examples.ubc_br import BR_DIR, make_dqn_agent
 from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator, TakeSingleActionDecorator
@@ -152,7 +152,7 @@ def main(argv):
         episode_rewards[i] += time_step.rewards[i] 
         rewards[i].append(episode_rewards[i])
 
-        # Let's get allocation and pricing information
+        # Let's get allocation and pricing information since we're in the last time step
         infostate = time_step.observations['info_state'][i]
         payment, allocation = payment_and_allocation(num_players, num_actions, num_products, infostate)
         payments[i].append(payment)
@@ -163,8 +163,9 @@ def main(argv):
       logging.info(pd.Series(rewards[player]).describe())
       logging.info(f"-------------------")
 
+    eval_time = time.time() - alg_start_time
     checkpoint = {
-      'walltime': time.time() - alg_start_time,
+      'walltime': eval_time,
       'rewards': rewards, # For now, store all the rewards. But maybe we only need some summary stats
       'types': player_types,
       'allocations': allocations,
@@ -172,6 +173,8 @@ def main(argv):
       'br_agent': br_agent_id,
       'straightforward_agent': straightforward_player
     }
+
+    logging.info(f'Walltime: {pretty_time(eval_time)}')
 
     if output_name is None:
       output_name = f'rewards_{name}'
