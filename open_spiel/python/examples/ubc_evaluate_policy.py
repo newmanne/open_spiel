@@ -171,6 +171,7 @@ def main(argv):
       'allocations': allocations,
       'payments': payments,
       'br_agent': br_agent_id,
+      'br_name': br_name,
       'straightforward_agent': straightforward_player
     }
 

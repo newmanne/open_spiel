@@ -88,7 +88,7 @@ class NFSP(rl_agent.AbstractAgent):
     self._cache = LRUCache(maxsize=5000)
 
     self._device = device
-    logging.info(f"Creating NFSP using device: {device}")
+    logging.info(f"Creating NFSP using device: {device} for player {player_id}")
 
     # Inner RL agent
     kwargs.update({

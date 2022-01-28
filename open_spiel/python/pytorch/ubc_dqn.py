@@ -243,11 +243,14 @@ class DQN(rl_agent.AbstractAgent):
     self.lower_bound_utility = lower_bound_utility
     self._num_players = num_players
     self._double_dqn = double_dqn
+    if self._double_dqn:
+      logging.info(f"Double DQN activated for player {player_id}")
 
     self.player_id = player_id
     self._num_actions = num_actions
     self._batch_size = batch_size
     self._update_target_network_every = update_target_network_every
+    self._last_network_copy = -1
     self._learn_every = learn_every
     self._min_buffer_size_to_learn = min_buffer_size_to_learn
     self._discount_factor = discount_factor
@@ -274,7 +277,7 @@ class DQN(rl_agent.AbstractAgent):
 
     # Create the Q-network instances
     self._device = device
-    logging.info(f"Creating DQN using device: {self._device}")
+    logging.info(f"Creating DQN using device: {self._device} for player {player_id}")
     self._q_network = q_network_model(**q_network_args).to(self._device)
     self._target_q_network = q_network_model(**q_network_args).to(self._device)
 
@@ -328,10 +331,11 @@ class DQN(rl_agent.AbstractAgent):
       if self._iteration % self._learn_every == 0:
         self._last_loss_value = self.learn()
 
-      if self._iteration % self._update_target_network_every == 0:
-        # state_dict method returns a dictionary containing a whole state of the
-        # module.
+      if self._iteration % self._update_target_network_every == 0 and self._last_network_copy < self._iteration:
+        # logging.info(f"Copying target Q network for player {self.player_id} after {self._iteration} iterations")
+        # state_dict method returns a dictionary containing a whole state of the module.
         self._target_q_network.load_state_dict(self._q_network.state_dict())
+        self._last_network_copy = self._iteration
 
       if self._prev_timestep and add_transition_record:
         # We may omit record adding here if it's done elsewhere.

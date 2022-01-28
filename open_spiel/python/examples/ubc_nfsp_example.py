@@ -21,7 +21,7 @@ from __future__ import print_function
 from dataclasses import dataclass
 from open_spiel.python import rl_environment, policy
 from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn, ubc_transformer
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, handcrafted_size, make_dqn_kwargs_from_config, fix_seeds, UBCChanceEventSampler, pretty_time
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, handcrafted_size, make_dqn_kwargs_from_config, fix_seeds, UBCChanceEventSampler, pretty_time, default_device
 from open_spiel.python.algorithms.exploitability import nash_conv
 import pyspiel
 import numpy as np
@@ -202,7 +202,7 @@ def setup(experiment_dir, config):
             learn_every=config['learn_every'],
             optimizer_str=config['optimizer_str'],
             add_explore_transitions=config.get('add_explore_transitions', True),
-            device=config.get('device', 'cpu'),
+            device=config.get('device', default_device()),
             **dqn_kwargs
         )
         agents.append(agent)
@@ -226,7 +226,7 @@ def main(argv):
     parser.add_argument('--eval_overrides', type=str, default='')
     parser.add_argument('--report_freq', type=int, default=50_000)
     parser.add_argument('--iterate_br', type=util.strtobool, default=0)
-    parser.add_argument('--device', type=str, default='cpu')
+    parser.add_argument('--device', type=str, default=default_device)
 
     # Optional Overrides
     parser.add_argument('--num_training_episodes', type=int, default=None)
@@ -346,10 +346,7 @@ def main(argv):
                 agent.step(time_step)
 
         if ep % config['eval_every'] == 0 or ep == config['num_training_episodes']:
-            losses = [agent.loss for agent in agents]
-            for pid, loss in enumerate(losses):
-                logging.info(f"[{pid}] Loss: {loss}")
-
+            logging.info(f"EVALUATION AT ITERATION {ep}")
             if compute_nash_conv:
                 logging.info('Computing nash conv...')
                 n_conv = nash_conv(game, nfsp_policies, use_cpp_br=True)
@@ -391,15 +388,17 @@ def main(argv):
             logging.info(f"----Episode {ep} ---")
             logging.info(f"Episode length stats:\n{pd.Series(episode_lengths).describe()}")
             for player_id in range(num_players):
+                logging.info(f"PLAYER {player_id}")
                 agent = agents[player_id]
                 if isinstance(agent, ubc_nfsp.NFSP):
                     logging.info(check_on_q_values(agent._rl_agent, game))
                     logging.info(f"Train time {pretty_time(agent._rl_agent._train_time)}")
                     logging.info(f"Total time {pretty_time(time.time() - start_time)}")
-                    logging.info(f"Training the DQN for player {player_id} is a {agent._rl_agent._train_time / (time.time() - start_time)} fraction")
-                    # logging.info(len(agent._rl_agent._replay_buffer))
-                    # logging.info(agent._rl_agent._replay_buffer._data[0])
-                logging.info(agent.loss)
+                    logging.info(f"Training the DQN for player {player_id} is a {agent._rl_agent._train_time / (time.time() - start_time):.2f} fraction")
+                    logging.info(agent.loss[1])
+                    if np.isnan(agent.loss[1]):
+                        raise ValueError("NaN loss - is your learning rate too high?")
+                logging.info(f'Loss: {agent.loss}')
 
     logging.info(f"Walltime: {pretty_time(time.time() - start_time)}")
     logging.info('All done. Goodbye!')
