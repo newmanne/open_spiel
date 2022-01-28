@@ -12,11 +12,11 @@ replay_buffer_capacity: 50_000
 reservoir_buffer_capacity: 2_000_000
 anticipatory_param: 0.1
 seed: 1234
-batch_size: 256
+batch_size: 1024
 rl_learning_rate: 0.01
 sl_learning_rate: 0.01
 min_buffer_size_to_learn: 1000
-learn_every: 64
+learn_every: 128
 optimizer_str: 'sgd'
 epsilon_start: 0.01
 epsilon_end: 0.000001
