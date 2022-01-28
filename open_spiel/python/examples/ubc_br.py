@@ -23,6 +23,7 @@ from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clo
 from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint, lookup_model_and_args
 from open_spiel.python.algorithms.exploitability import nash_conv
 from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator
+from open_spiel.python.algorithms.exploitability import nash_conv, best_response
 import pyspiel
 import numpy as np
 import pandas as pd
@@ -48,20 +49,29 @@ BR_DIR = 'best_responses'
 
 # TODO: Maybe want a convergence check here? Right now we just always run for a fixed number of episodes (which is indeed what e.g., the DREAM paper does)
 
+def policy_sub_agent_i(experiment_dir, checkpoint_name, br_agent):
+  # Returns a policy with agent i subbed in with the best responder
+  env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name)
+  game, policy, env, trained_agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
+  policy._policies[br_agent.player_id] = br_agent
+  return policy
+
 def checkpoint_sub_agent_i(experiment_dir, checkpoint_name, br_name):
   # Returns a policy with agent i subbed in with the best responder
   env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name)
   game, policy, env, trained_agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
 
-  with open(f'{experiment_dir}/{BR_DIR}/{br_name}.pkl', 'rb') as f:
-    br_checkpoint = pickle.load(f)
-    br_agent_id = br_checkpoint['br_player']
-    br_config = br_checkpoint['config']
-    br_agent = make_dqn_agent(br_agent_id, br_config, env, game, game_config)
-    br_agent._q_network.load_state_dict(br_checkpoint['agent'])
+  if br_agent is None:
+    if br_name is None:
+      raise ValueError("Must supply BR name if not supplying agent directly`")
+    with open(f'{experiment_dir}/{BR_DIR}/{br_name}.pkl', 'rb') as f:
+      br_checkpoint = pickle.load(f)
+      br_agent_id = br_checkpoint['br_player']
+      br_config = br_checkpoint['config']
+      br_agent = make_dqn_agent(br_agent_id, br_config, env, game, game_config)
+      br_agent._q_network.load_state_dict(br_checkpoint['agent'])
 
   policy._policies[br_agent_id] = br_agent
-  trained_agents[br_agent_id] = br_agent
   return policy
 
 
@@ -94,8 +104,10 @@ def main(argv):
     parser.add_argument('--num_training_episodes', type=int, required=False)
     parser.add_argument('--dispatch_rewards', type=util.strtobool, default=0)
     parser.add_argument('--eval_overrides', type=str, default='')
-    parser.add_argument('--output_name', type=str, default=None)
+    parser.add_argument('--output_suffix', type=str, default=None)
     parser.add_argument('--seed', type=int, default=1234)
+    parser.add_argument('--compute_exact_br', type=bool, default=False)
+    parser.add_argument('--dry_run', type=bool, default=False)
 
     args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
 
@@ -105,8 +117,10 @@ def main(argv):
     report_freq = args.report_freq
     dispatch_rewards = args.dispatch_rewards
     eval_overrides = args.eval_overrides
-    output_name = args.output_name
+    output_suffix = args.output_suffix
     seed = args.seed
+    compute_exact_br = args.compute_exact_br
+    dry_run = args.dry_run
 
     fix_seeds(seed) 
 
@@ -148,6 +162,12 @@ def main(argv):
         logging.info(f"[P{br_player}] Loss: {loss}")
         logging.info(f"Episode length stats:\n{pd.Series(episode_lengths).describe()}")
         logging.info(check_on_q_values(agents[br_player], game))
+        if compute_exact_br:
+          logging.info("Computing exact BR")
+          curr_policy = policy_sub_agent_i(experiment_dir, checkpoint_name, agents[br_player])
+          br = best_response(game, curr_policy, br_player)
+          gap = br['best_response_value'] - br['on_policy_value']
+          logging.info(f"Gap between BR and current strategy: {gap}")
 
       time_step = env.reset()
       episode_length = 0
@@ -167,7 +187,7 @@ def main(argv):
     ### Save the best responding agent
     # TODO: We may want to save some indicators here to see if it is doing a good job of traininig?
     walltime_train = time.time() - alg_start_time
-    br_name = f'{checkpoint_name}_br_{br_player}'
+    br_name = f'{checkpoint_name}_br_{br_player}{output_suffix}'
     checkpoint = {
       'br_player': br_player,
       'walltime': walltime_train,
@@ -177,12 +197,11 @@ def main(argv):
     }
     logging.info(f'Walltime: {pretty_time(walltime_train)}')
 
-    if output_name is None:
-      output_name = br_name
+    checkpoint_path = os.path.join(checkpoint_dir, f'{br_name}.pkl')
 
-    checkpoint_path = os.path.join(checkpoint_dir, f'{output_name}.pkl')
-    with open(checkpoint_path, 'wb') as f:
-        pickle.dump(checkpoint, f)
+    if not dry_run:
+      with open(checkpoint_path, 'wb') as f:
+          pickle.dump(checkpoint, f)
 
     if dispatch_rewards:
       dispatch.dispatch_eval(experiment_dir, checkpoint=checkpoint_name, br_name=br_name, overrides=eval_overrides)

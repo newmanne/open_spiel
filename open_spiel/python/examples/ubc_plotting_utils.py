@@ -103,6 +103,8 @@ def parse_rewards(experiment_dir, truth_available=False):
                     else:
                         key = f'{player}_{br_agent}'
                     record[key] = np.array(values).mean()
+                    if key == f'{br_agent}_{br_agent}' and record[key] < 0:
+                        logging.warning("Negative BR value shouldn't happen. DQN should always find the drop out strategy...")
         
         records.append(record)
         

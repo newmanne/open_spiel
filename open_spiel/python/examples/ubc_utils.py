@@ -101,13 +101,13 @@ def make_dqn_kwargs_from_config(config, game_config=None, player_id=None, includ
       "epsilon_end": config['epsilon_end'],
       "update_target_network_every": config.get('update_target_network_every', 10_000),
       "loss_str": config.get('loss_str', 'mse'),
-      "double_dqn": config.get('double_dqn', False),
+      "double_dqn": config.get('double_dqn', True),
       "batch_size": config['batch_size'],
       "learning_rate": config['rl_learning_rate'],
       "learn_every": config['learn_every'],
       "min_buffer_size_to_learn": config['min_buffer_size_to_learn'],
       "optimizer_str": config['optimizer_str'],
-      "device": config.get('device', 'cpu'),
+      "device": config.get('device', default_device()),
     }
     if not include_nfsp:
         del dqn_kwargs['batch_size']
@@ -254,6 +254,10 @@ def fast_choice(options, probs):
 def pretty_time(seconds):
     delta = dt.timedelta(seconds=seconds)
     return humanize.precisedelta(delta)
+
+
+def default_device():
+    return 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 class UBCChanceEventSampler(object):
