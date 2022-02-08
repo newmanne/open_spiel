@@ -84,7 +84,7 @@ class AuctionRNN(nn.Module):
             idx = []
             for round_num in range(current_round):
                 idx += list(range(self.prefix_len)) # prefix
-                idx += list(range(self.prefix_len + round_num * suffix_len_per_round, self.prefix_len + (round_num+1) * suffix_len_per_round)) # this round's suffix
+                idx += list(range(self.prefix_len + round_num * suffix_len_per_round, self.prefix_len + (round_num + 1) * suffix_len_per_round)) # this round's suffix
             idx = torch.tensor(idx)
             self.infostate_index_cache[current_round] = idx
 

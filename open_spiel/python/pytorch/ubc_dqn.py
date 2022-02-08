@@ -251,6 +251,7 @@ class DQN(rl_agent.AbstractAgent):
     self._batch_size = batch_size
     self._update_target_network_every = update_target_network_every
     self._last_network_copy = -1
+    self._last_learn_iteration = -1
     self._learn_every = learn_every
     self._min_buffer_size_to_learn = min_buffer_size_to_learn
     self._discount_factor = discount_factor
@@ -328,7 +329,7 @@ class DQN(rl_agent.AbstractAgent):
     if not is_evaluation:
       self._step_counter += 1
 
-      if self._iteration % self._learn_every == 0:
+      if self._iteration % self._learn_every == 0 and self._last_learn_iteration < self._iteration:
         self._last_loss_value = self.learn()
 
       if self._iteration % self._update_target_network_every == 0 and self._last_network_copy < self._iteration:
@@ -417,9 +418,9 @@ class DQN(rl_agent.AbstractAgent):
     if np.random.rand() < epsilon:
       action = np.random.choice(legal_actions)
       probs[legal_actions] = 1.0 / len(legal_actions)
-      self._prev_action_greedy = True
-    else:
       self._prev_action_greedy = False
+    else:
+      self._prev_action_greedy = True
       key = hashkey(tuple(info_state_flat))
       val = self._cache.get(key)
       if val is not None:
@@ -454,12 +455,15 @@ class DQN(rl_agent.AbstractAgent):
     Returns:
       The average loss obtained on this batch of transitions or `None`.
     """
+
+    self._last_learn_iteration = self._iteration
     self._clear_cache()
     start = time.time()
 
     if (len(self._replay_buffer) < self._batch_size or
         len(self._replay_buffer) < self._min_buffer_size_to_learn):
       # return None
+
       return torch.tensor([0])
 
     transitions = self._replay_buffer.sample(self._batch_size)
@@ -512,7 +516,10 @@ class DQN(rl_agent.AbstractAgent):
     duration = time.time() - start
     self._train_time += duration
 
-    return loss.detach()
+    loss_value = loss.detach()
+    if np.isnan(loss_value):
+      raise ValueError("NaN loss - is your RL learning rate too high?")
+    return loss_value
 
   def _clear_cache(self):
     self._cache.clear()

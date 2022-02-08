@@ -5,6 +5,7 @@
         25
     ],
     "increment": 0.1,
+    "max_rounds": 50,
     "information_policy": "show_demand",
     "licenses": [
         2,

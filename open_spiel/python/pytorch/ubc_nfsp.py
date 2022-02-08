@@ -85,6 +85,7 @@ class NFSP(rl_agent.AbstractAgent):
     # Step counter to keep track of learning.
     self._step_counter = 0
     self._iteration = 0
+    self._last_learn_iteration = -1
     self._cache = LRUCache(maxsize=5000)
 
     self._device = device
@@ -97,6 +98,7 @@ class NFSP(rl_agent.AbstractAgent):
         "learn_every": learn_every,
         "min_buffer_size_to_learn": min_buffer_size_to_learn,
         "optimizer_str": optimizer_str,
+        "device": device,
     })
     self._rl_agent = ubc_dqn.DQN(
       player_id,
@@ -104,7 +106,6 @@ class NFSP(rl_agent.AbstractAgent):
       num_players,
       q_network_model=rl_model,
       q_network_args=rl_model_args,
-      device=device,
       **kwargs
     )
 
@@ -188,7 +189,7 @@ class NFSP(rl_agent.AbstractAgent):
     if self._best_response_mode:
       agent_output = self._rl_agent.step(time_step, is_evaluation)
       if not is_evaluation and not time_step.last():
-        if not (self._rl_agent.prev_action_greedy and not self._add_explore_transitions):
+        if self._rl_agent.prev_action_greedy or self._add_explore_transitions:
           self._add_transition(time_step, agent_output)
     else:
       # Act step: don't act at terminal info states.
@@ -204,7 +205,7 @@ class NFSP(rl_agent.AbstractAgent):
     if not is_evaluation:
       self._step_counter += 1
 
-      if self._iteration % self._learn_every == 0:
+      if self._iteration % self._learn_every == 0 and self._last_learn_iteration < self._iteration:
         self._last_sl_loss_value = self._learn()
         # If learn step not triggered by rl policy, learn.
         if not self._best_response_mode:
@@ -259,9 +260,9 @@ class NFSP(rl_agent.AbstractAgent):
     Returns:
       The average loss obtained on this batch of transitions or `None`.
     """
+    self._last_learn_iteration = self._iteration
     self._clear_cache()
-    if (len(self._reservoir_buffer) < self._batch_size or
-        len(self._reservoir_buffer) < self._min_buffer_size_to_learn):
+    if (len(self._reservoir_buffer) < self._batch_size or len(self._reservoir_buffer) < self._min_buffer_size_to_learn):
       return None
 
     transitions = self._reservoir_buffer.sample(self._batch_size)
@@ -276,7 +277,12 @@ class NFSP(rl_agent.AbstractAgent):
                            torch.max(action_probs, dim=1)[1])
     loss.backward()
     self.optimizer.step()
-    return loss.detach()
+
+    loss_value = loss.detach()
+    if np.isnan(loss_value):
+      raise ValueError("NaN loss - is your SL learning rate too high?")
+
+    return loss_value
 
   def _clear_cache(self):
     self._cache.clear()

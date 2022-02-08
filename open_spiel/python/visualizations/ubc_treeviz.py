@@ -46,8 +46,10 @@ except (ImportError, Exception) as e:
       "pip install pygraphviz")
 # pylint: enable=g-import-not-at-top
 
+from open_spiel.python.examples.ubc_utils import *
+
 _PLAYER_SHAPES = {0: "square", 1: "ellipse"}
-_PLAYER_COLORS = {-1: "black", 0: "blue", 1: "red"}
+_PLAYER_COLORS = {-1: "black", 0: "blue", 1: "red", 2: "orange", 3: "green"}
 _FONTSIZE = 8
 _WIDTH = _HEIGHT = 0.25
 _ARROWSIZE = .5
@@ -111,6 +113,51 @@ def default_edge_decorator(parent, unused_child, action, **kwargs):
   attrs["color"] = _PLAYER_COLORS.get(player, "black")
   return attrs
 
+
+def make_policy_decorators(policy):
+    def edge_weight_by_policy_decorator(parent_state, unused_child, action, **kwargs):
+        attrs = default_edge_decorator(parent_state, unused_child, action)  # get default attributes
+        if parent_state.current_player() < 0:
+            return attrs
+        
+        if '@ $0' in attrs['label']:
+            attrs['label'] = 'Drop Out'
+        
+        action_prob = policy.action_probabilities(parent_state)[action]
+        attrs['arrowsize'] = action_prob * attrs['arrowsize']
+        attrs['penwidth'] = action_prob
+        attrs['label'] = f'[{action_prob:.2f}] {attrs["label"]}'
+        
+        legal_actions = parent_state.legal_actions()
+        parent_tensor = parent_state.information_state_tensor()
+        
+        # Grab from encoding
+        # TODO: These really don't need to be recomputed...
+        n_actions = parent_state.num_distinct_actions()
+        n_players = parent_state.num_players()
+        cpi = clock_profit_index(n_players, n_actions)
+        profits = parent_tensor[cpi:cpi + n_actions]
+        legal_profits = [profits[i] for i in legal_actions]
+        straightforward_action = legal_actions[np.argmax(legal_profits)]
+        
+        if straightforward_action == action:
+          attrs['label'] += ' (Straightforward)'
+
+#         print(attrs, parent_state.current_player())
+        return attrs
+
+    def node_weight_by_policy_decorator(state, **kwargs):
+        attrs = default_node_decorator(state)
+        if state.is_terminal():
+            return_list = eval(attrs['label'])
+            attrs['label'] = ', '.join([f'{x:.2f}' for x in return_list])
+        
+        # TODO: If terminal, report allocation
+        # {'label': 'Current player: 0\np0v125, 125b150\n', 'fontsize': 8, 'width': 0.25, 'height': 0.25, 'margin': 0.01, 'shape': 'square', 'color': 'blue'}
+        #         print(attrs)
+        return attrs
+
+    return node_weight_by_policy_decorator, edge_weight_by_policy_decorator
 
 class GameTree(pygraphviz.AGraph):
   """Builds `pygraphviz.AGraph` of the game tree.
