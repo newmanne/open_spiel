@@ -26,6 +26,56 @@ from bokeh.io import output_notebook
 from bokeh.models import HoverTool, ColumnDataSource, ColorBar, LogColorMapper, LinearColorMapper
 from bokeh.transform import linear_cmap, log_cmap
 from bokeh.palettes import Category10_10
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+def get_all_frames(experiment_dir, truth_available=False):
+    frames = []
+    p = Path(experiment_dir)
+    subdirectories = [x for x in p.iterdir() if x.is_dir()]
+    for model in subdirectories:
+        try:
+            ev_df = parse_rewards(os.path.join(experiment_dir, model), truth_available=truth_available)
+            if ev_df is not None:
+                frames.append(ev_df)
+        except:
+            logging.exception(f"Exception parsing {model}. Skipping")
+    return pd.concat(frames)
+
+def plot_all_models(ev_df, notebook=True, output_name='plots.html'):
+    plots = []
+    for model, sub_df in ev_df.groupby('model'):
+        plot = plot_from_df(sub_df)
+        plots.append(plot)
+        
+    if notebook:
+        output_notebook()
+        for plot in plots:
+            show(plot)
+    else:
+        # Set output to static HTML file
+        output_file(filename=output_name, title="RegretPlots")
+        save(column(*plots))
+
+def compare_best_responses(master_df):
+    # Each (model, iteration) is a datapoint for each BR config
+    sub_frames = []
+    for _, sub_df in master_df.query('not config.isnull() and player == best_responder', engine='python').groupby(['model', 't']):
+        sub_df = sub_df[['config', 'MaxPositiveRegret', 'Regret']].copy()
+        sub_df['Δ to Best Known Response'] = sub_df['Regret'] - sub_df['MaxPositiveRegret']
+        sub_df = sub_df[['config', 'Δ to Best Known Response']]
+        sub_df['config'] = sub_df['config'].str.replace('_', ' ').str.strip()
+        sub_frames.append(sub_df)
+    distance_frame = pd.concat(sub_frames)
+
+    sns.set_theme(style="ticks", palette="pastel")
+
+    # Draw a nested boxplot 
+    plt.figure(figsize=(20, 9))
+    sns.boxplot(x="config", y="Δ to Best Known Response", data=distance_frame.sort_values('config'))
+    sns.despine(offset=10, trim=True)
 
 def get_checkpoints(d):
     checkpoints = glob.glob(f'{d}/solving_checkpoints/*.pkl')
@@ -75,6 +125,7 @@ def parse_rewards(experiment_dir, truth_available=False):
 
     if len(reward_files) == 0:
         logging.warning(f"No files found for {experiment_dir}")
+        return
 
     # 2) Group them by checkpoint name (TODO: Update for new formats without horrible re)
     pattern = re.compile(r'checkpoint_(\d+).*')
@@ -82,42 +133,57 @@ def parse_rewards(experiment_dir, truth_available=False):
     df = pd.DataFrame({'fname': reward_files, 'iteration': groups})
     records = []
     for iteration, iteration_df in df.groupby('iteration'):
-        record = dict(t=iteration)
-        
         relevant_files = iteration_df['fname'].values
         for reward_file in relevant_files:
-            
             with open(reward_file, 'rb') as f:
                 rewards = pickle.load(f)
-                
+            
+            # Get config and best responder. These aren't simple lookups because you didn't have foresight
+            best_responder = None
+            config = None
+            
             straightforward_agent = rewards.get('straightforward_agent')
             if straightforward_agent is not None:
-                for player, values in rewards['rewards'].items():
-                    key = f'{player}_straightforward{straightforward_agent}'
-                    record[key] = np.array(values).mean()
+                best_responder = straightforward_agent
+                config = 'Straightforward'
             else:
-                for player, values in rewards['rewards'].items():
-                    br_agent = rewards['br_agent']
-                    if br_agent is None:
-                        key = str(player)
-                    else:
-                        key = f'{player}_{br_agent}'
-                    record[key] = np.array(values).mean()
-                    if key == f'{br_agent}_{br_agent}' and record[key] < 0:
-                        logging.warning("Negative BR value shouldn't happen. DQN should always find the drop out strategy...")
-        
-        records.append(record)
-        
+                best_responder = rewards['br_agent']
+                br_name = rewards.get('br_name')
+                if br_name is not None:
+                    config = rewards['br_name'].split('br_')[1][1:] # Stupid
+                    if config == '':
+                        config = Path(experiment_dir).stem # TODO: Hopefully your correct this
+
+            for player, values in rewards['rewards'].items():
+                record = dict(t=iteration)
+                record['reward'] = np.array(values).mean()
+                record['player'] = player
+                record['best_responder'] = best_responder
+                record['config'] = config
+                if straightforward_agent is None and record['best_responder'] == record['player'] and record['reward'] < 0:
+                    logging.warning(f"Negative BR value shouldn't happen. DQN should always find the drop out strategy... Reward file={reward_file}")
+                records.append(record)
+
+
     ev_df = pd.DataFrame.from_records(records)
 
     # Regret for not having played the best response
-    for p in players:
-        ev_df[f"BRRegret{p}"] = ev_df[f"{p}_{p}"] - ev_df[f"{p}"]
-        ev_df[f'StraightforwardRegret{p}'] = ev_df[f"{p}_straightforward{p}"] - ev_df[f"{p}"]
-        ev_df[f'Regret{p}'] = ev_df[[f'BRRegret{p}', f'StraightforwardRegret{p}']].max(axis=1)
-    regret_cols = [f'Regret{p}' for p in players] 
-    ev_df['ApproxNashConv'] = ev_df[regret_cols].clip(lower=0).sum(axis='columns')
+    def get_baseline(grp):
+        return grp.query('best_responder.isnull() and config.isnull()', engine='python')['reward'].iloc[0]
+
+    # Regret for not having played the best response
+    baselines = ev_df.groupby(['t', 'player']).apply(get_baseline).reset_index().rename(columns={0: 'Baseline'})
+    ev_df = ev_df.merge(baselines)
+    ev_df['Regret'] = ev_df['reward'] - ev_df['Baseline']
+    ev_df['PositiveRegret'] = ev_df['Regret'].clip(lower=0)
+
+
+    # If player != BR player, this isn't so meaningful
+    ev_df = ev_df.merge(ev_df.query('player == best_responder').groupby(['t', 'player']).apply(lambda grp: grp['PositiveRegret'].max()).reset_index().rename(columns={0: 'MaxPositiveRegret'}))
+    ev_df = ev_df.merge(ev_df.groupby(['t', 'player'])['MaxPositiveRegret'].first().unstack().sum(axis='columns').reset_index().rename(columns={0:'ApproxNashConv'}))
+
     if truth_available:
+        # TODO: This won't work until you fix it
         true_br_df = make_true_br_df(experiment_dir)
         ev_df = ev_df.merge(true_br_df, on='t')
 
@@ -134,8 +200,6 @@ def plot_from_df(ev_df):
     model = ev_df['model'].iloc[0]
 
     ev_df['t'] /= 1e6 # Nicer formatting on x-axis
-    source = ColumnDataSource(ev_df) # Need to drop tensors b/c of serialization issues
-        
     color = Category10_10.__iter__()
     title = f"{model} Approximate Nash Conv"
     plot = figure(width=900, height=400, title=title)
@@ -144,14 +208,23 @@ def plot_from_df(ev_df):
     PLAYER_COLORS = iter(['green', 'blue', 'purple'])
     for p in players:
         player_color = next(PLAYER_COLORS)
-        plot.line('t', f'BRRegret{p}', source=source, legend_label=f'P{p} BR Regret', color=player_color)
-        plot.line('t', f'StraightforwardRegret{p}', source=source, legend_label=f'P{p} Straightforward Regret', color=player_color, line_dash='dashed')
-        plot.line('t', f'Regret{p}', source=source, legend_label=f'P{p} Approx Regret', color=f'dark{player_color}', line_width=2)
+
+        best_br_only_df = ev_df.loc[ev_df.query(f'player == {p} and best_responder == {p} and config != "Straightforward" and not config.isnull()', engine='python')[['t', 'PositiveRegret', 'config']].groupby('t')['PositiveRegret'].idxmax()]
+        display(best_br_only_df)
+        best_br_source = ColumnDataSource(best_br_only_df)
+        straightforward_source = ColumnDataSource(ev_df.query(f'player == {p} and best_responder == {p} and config == "Straightforward"', engine='python')[['t', 'PositiveRegret']])
+        overall_player_source = ColumnDataSource(ev_df.query(f'player == {p} and best_responder == {p}')[['t', 'MaxPositiveRegret']].drop_duplicates())
+
+        plot.line('t', f'PositiveRegret', source=best_br_source, legend_label=f'P{p} BR Regret', color=player_color)
+        plot.line('t', f'PositiveRegret', source=straightforward_source, legend_label=f'P{p} Straightforward Regret', color=player_color, line_dash='dashed')
+        plot.line('t', f'MaxPositiveRegret', source=overall_player_source, legend_label=f'P{p} Approx Regret', color=f'dark{player_color}', line_width=2)
         
+        # TODO: Needs fixing
         regret_col_name = f'p{p}_regret'
         if regret_col_name in ev_df.columns:
             plot.line('t', regret_col_name, source=source, legend_label=f'P{p} True Regret', color=f'dark{player_color}', line_width=2, line_dash='dotted')
         
+    source = ColumnDataSource(ev_df.loc[ev_df.groupby('t')['ApproxNashConv'].idxmax()][['t', 'ApproxNashConv']]) 
     plot.line('t', f'ApproxNashConv', source=source, legend_label=f'Approximate Nash Conv', color='red', line_width=3)
     if 'nash_conv' in ev_df.columns:
         plot.line('t', f'nash_conv', source=source, legend_label=f'True Nash Conv', color='darkred', line_width=3)

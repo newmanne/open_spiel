@@ -11,7 +11,7 @@ from open_spiel.python.rl_agent import StepOutput
 import torch
 import humanize
 import datetime as dt
-
+from distutils import util
 
 CLOCK_AUCTION = 'clock_auction'
 
@@ -91,11 +91,12 @@ def fix_seeds(seed):
     logging.info(f"Setting numpy and torch seed to {seed}")
     np.random.seed(seed)
     torch.manual_seed(seed)
+    torch.use_deterministic_algorithms(True)
 
 
 def make_dqn_kwargs_from_config(config, game_config=None, player_id=None, include_nfsp=True):
     dqn_kwargs = {
-      "replay_buffer_capacity": config['replay_buffer_capacity'],
+      "replay_buffer_capacity": config.get('replay_buffer_capacity', 50_000),
       "epsilon_decay_duration": config['num_training_episodes'],
       "epsilon_start": config['epsilon_start'],
       "epsilon_end": config['epsilon_end'],
@@ -260,6 +261,37 @@ def default_device():
     return 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
+def add_optional_overrides(parser):
+    # Optional Overrides
+    parser.add_argument('--num_training_episodes', type=int, default=None)
+    parser.add_argument('--replay_buffer_capacity', type=int, default=None)
+    parser.add_argument('--reservoir_buffer_capacity', type=int, default=None)
+    parser.add_argument('--seed', type=int, default=None)
+    parser.add_argument('--batch_size', type=int, default=None)
+    parser.add_argument('--rl_learning_rate', type=float, default=None)
+    parser.add_argument('--sl_learning_rate', type=float, default=None)
+    parser.add_argument('--min_buffer_size_to_learn', type=int, default=None)
+    parser.add_argument('--learn_every', type=int, default=None)
+    parser.add_argument('--optimizer_str', type=str, default=None)
+    parser.add_argument('--epsilon_start', type=float, default=None)
+    parser.add_argument('--epsilon_end', type=float, default=None)
+    parser.add_argument('--iterate_br', type=util.strtobool, default=0)
+
+def apply_optional_overrides(args, argv, config):
+    # Override any top-level yaml args with command line arguments
+    for arg in vars(args):
+        if f'--{arg}' in argv:
+            name = arg
+            value = getattr(args, arg)
+            # TODO: This isn't quite right, and just winds up adding things that don't really belong in the config to the config. But it seems hard to resolve and isn't exactly causing problems
+            if name in config:
+                logging.warning(f'Found argument {name} on command line but not in config')
+            config[name] = value
+
+    if 'num_training_episodes' not in config:
+        config['num_training_episodes'] = 1_000_000
+
+
 class UBCChanceEventSampler(object):
   """Default sampler for external chance events."""
 
@@ -267,4 +299,5 @@ class UBCChanceEventSampler(object):
     """Sample a chance event in the given state."""
     actions, probs = zip(*state.chance_outcomes())
     return fast_choice(actions, probs)
+
 

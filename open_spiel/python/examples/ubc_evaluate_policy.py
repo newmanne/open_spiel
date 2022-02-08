@@ -67,8 +67,6 @@ def main(argv):
     seed = args.seed
     output_name = args.output
 
-    fix_seeds(seed) 
-
     if straightforward_player is not None and br_name is not None:
       raise ValueError("Only one of straightforward_player and br_name can be set")
 
@@ -83,6 +81,8 @@ def main(argv):
 
     logging.get_absl_handler().use_absl_log_file(f'evaluate_policy_{name}', checkpoint_dir) 
     logging.set_verbosity(logging.INFO)
+
+    fix_seeds(seed) 
 
     env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name)
     game, policy, env, trained_agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
@@ -166,7 +166,7 @@ def main(argv):
     eval_time = time.time() - alg_start_time
     checkpoint = {
       'walltime': eval_time,
-      'rewards': rewards, # For now, store all the rewards. But maybe we only need some summary stats
+      'rewards': rewards, # For now, store all the rewards. But maybe we only need some summary stats. Or perhaps a counter is more compressed since few unique values in practice?
       'types': player_types,
       'allocations': allocations,
       'payments': payments,
