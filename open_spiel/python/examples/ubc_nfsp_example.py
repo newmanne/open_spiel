@@ -21,9 +21,11 @@ from __future__ import print_function
 from dataclasses import dataclass
 from open_spiel.python import rl_environment, policy
 from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn, ubc_transformer
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, handcrafted_size, make_dqn_kwargs_from_config, fix_seeds, UBCChanceEventSampler, pretty_time, default_device, add_optional_overrides, apply_optional_overrides
+from open_spiel.python.examples.ubc_utils import *
 from open_spiel.python.algorithms.exploitability import nash_conv
+from open_spiel.python.examples.ubc_model_args import lookup_model_and_args
 import pyspiel
+from open_spiel.python.examples.agent_policy import NFSPPolicies
 import numpy as np
 import pandas as pd
 import copy
@@ -43,105 +45,63 @@ import open_spiel.python.examples.ubc_dispatch as dispatch
 from distutils import util
 from copy import deepcopy
 from pathlib import Path
+import abc
+import sys
+
+class FileNFSPResultSaver:
+
+    def __init__(self, output_dir, job_name):
+        self.output_dir = output_dir
+        self.job_name = job_name
+
+    def save(self, result):
+        result['name'] = self.job_name
+        checkpoint_path = os.path.join(self.output_dir, CHECKPOINT_FOLDER, 'checkpoint_latest.pkl')
+        with open(checkpoint_path, 'wb') as f:
+            pickle.dump(result, f)
+
+        checkpoint_name = f'checkpoint_{result["episode"]}'
+        shutil.copyfile(checkpoint_path, os.path.join(self.output_dir, CHECKPOINT_FOLDER, f'{checkpoint_name}.pkl'))
+        return checkpoint_name
 
 
-CHECKPOINT_FOLDER = 'solving_checkpoints' # Don't use "checkpoints" because jupyter bug
+class FileDispatcher:
 
-class NFSPPolicies(policy.Policy):
-    """Joint policy to be evaluated."""
+    def __init__(self, num_players, output_dir, br_overrides, eval_overrides, br_portfolio_path):
+        self.num_players = num_players
+        self.output_dir = output_dir
+        self.br_overrides = br_overrides
+        self.eval_overrides = eval_overrides
+        self.br_portfolio_path = br_portfolio_path
 
-    def __init__(self, env, nfsp_policies, best_response_mode):
-        game = env.game
-        player_ids = list(range(len(nfsp_policies)))
-        super(NFSPPolicies, self).__init__(game, player_ids)
-        self._policies = nfsp_policies
-        self._best_response_mode = best_response_mode
-        self._obs = {"info_state": [None] * len(player_ids), "legal_actions": [None] * len(player_ids)}
+    def dispatch(self, checkpoint_name):
+        for player in range(self.num_players):
+            dispatch.dispatch_br(self.output_dir, br_player=player, checkpoint=checkpoint_name, overrides=self.br_overrides + f' --eval_overrides "{self.eval_overrides}"', br_portfolio_path=self.br_portfolio_path)
+            dispatch.dispatch_eval(self.output_dir, checkpoint=checkpoint_name, straightforward_player=player, overrides=self.eval_overrides)
+        dispatch.dispatch_eval(self.output_dir, checkpoint=checkpoint_name, overrides=eval_overrides)
 
-    def action_probabilities(self, state, player_id=None):
-        cur_player = state.current_player()
-        legal_actions = state.legal_actions(cur_player)
+# class FileGameLoader:
 
-        self._obs["current_player"] = cur_player
-        self._obs["info_state"][cur_player] = state.information_state_tensor(cur_player)
-        self._obs["legal_actions"][cur_player] = legal_actions
+#     def __init__(self, experiment_dir):
+#         self.experiment_dir = experiment_dir
 
-        info_state = rl_environment.TimeStep(observations=self._obs, rewards=None, discounts=None, step_type=None)
+#     def load(self):
+#         experiment_dir = self.experiment_dir
 
-        p = self._policies[cur_player].step(info_state, is_evaluation=True).probs
-        prob_dict = {action: p[action] for action in legal_actions}
-        return prob_dict
+#         if experiment_dir.endswith('/'):
+#             experiment_dir = experiment_dir[:-1]
 
-    def save(self):
-        output = dict()
-        for player, policy in enumerate(self._policies):
-            output[player] = policy.save()
-        return output
+#         # Load game config
+#         game_config_path = f'{experiment_dir}/game.json'
+#         with open(game_config_path, 'r') as f:
+#             game_config = json.load(f)
 
-    def restore(self, restore_dict):
-        for player, policy in enumerate(self._policies):
-            policy.restore(restore_dict[player])
+#         # Load game
+#         game = smart_load_sequential_game('clock_auction', dict(filename=str(Path(game_config_path).resolve())))
+#         logging.info("Game loaded")
 
-def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_products=None):
-    """
-    lookup table from (model name) to (function, default args)
-    TODO: cleaner way to do this?
-    """
-    if model_name != 'mlp' and num_products is None:
-        raise ValueError("Num products can only be None if model is MLP")
+#         return game, game_config
 
-    if model_name == 'mlp': 
-        model_class = ubc_dqn.MLP
-        # TODO: If you wanted the MLP to do somethign different (e.g., only get the current observation, or the past N observations, you would need to make some changes to the args here)
-        default_model_args = {
-            'input_size': handcrafted_size(num_actions, num_products),
-            'hidden_sizes': [128],
-            'output_size': num_actions,
-            'num_players': num_players,
-            'num_products': num_products, 
-        }
-    elif model_name == 'recurrent':
-        model_class = ubc_rnn.AuctionRNN
-        default_model_args = {
-            'num_players': num_players,
-            'num_products': num_products, 
-            'input_size': state_size, 
-            'hidden_size': 128,
-            'output_size': num_actions,
-            'nonlinearity': 'tanh',
-        }
-    elif model_name == 'transformer': 
-        model_class = ubc_transformer.AuctionTransformer
-        default_model_args = {
-            'num_players': num_players,
-            'num_products': num_products,
-            'input_size': state_size, 
-            'output_size': num_actions, 
-            'd_model': 32,
-            'nhead': 1, 
-            'feedforward_dim': 128, 
-            'dropout': 0.1, 
-            'num_layers': 1,
-        }
-    else: 
-        raise ValueError(f'Unrecognized model {model_name}')
-    
-    return model_class, default_model_args
-
-
-def policy_from_checkpoint(experiment_dir, checkpoint_suffix='checkpoint_latest'):
-    with open(f'{experiment_dir}/config.yml', 'rb') as fh:
-        config = yaml.load(fh, Loader=yaml.FullLoader)
-
-    env_and_model = setup(experiment_dir, config)
-
-    nfsp_policies = env_and_model.nfsp_policies
-
-    with open(f'{experiment_dir}/{CHECKPOINT_FOLDER}/{checkpoint_suffix}.pkl', 'rb') as f:
-        checkpoint = pickle.load(f)
-
-    nfsp_policies.restore(checkpoint['policy'])
-    return env_and_model
 
 @dataclass
 class EnvAndModel:
@@ -151,27 +111,13 @@ class EnvAndModel:
     game: pyspiel.Game
     game_config: dict
 
-def setup(experiment_dir, config):
-    if experiment_dir.endswith('/'):
-        experiment_dir = experiment_dir[:-1]
-
-    # Load game config
-    game_config_path = f'{experiment_dir}/game.json'
-    with open(game_config_path, 'r') as f:
-        game_config = json.load(f)
-
-    # Load game
-    game = smart_load_sequential_game('clock_auction', dict(filename=str(Path(game_config_path).resolve())))
-    logging.info("Game loaded")
-
+def setup(game, game_config, config):
     env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=True, terminal_rewards=True)
     if not env.is_turn_based:
       raise ValueError("Expected turn based env")
     
     state_size = env.observation_spec()["info_state"][0]
-    num_actions = env.action_spec()["num_actions"]
-    num_players = game.num_players()
-    num_products = len(game_config['activity'])
+    num_players, num_actions, num_products = game_spec(game, game_config)
     logging.info(f"Game has a state size of {state_size}, {num_actions} distinct actions, and {num_players} players")
     logging.info(f"Game has {num_products} products")
 
@@ -184,7 +130,7 @@ def setup(experiment_dir, config):
     rl_model_args.update(config['rl_model_args'])
 
     agents = []
-    for player_id in range(game.num_players()):
+    for player_id in range(num_players):
         dqn_kwargs = make_dqn_kwargs_from_config(config, game_config=game_config, player_id=player_id, include_nfsp=False)
 
         agent = ubc_nfsp.NFSP(
@@ -213,9 +159,9 @@ def setup(experiment_dir, config):
     return EnvAndModel(env=env, nfsp_policies=expl_policies_avg, agents=agents, game=game, game_config=game_config)
 
 
-def main(argv):
-    parser = argparse.ArgumentParser()
+def add_argparse_args(parser):
     parser.add_argument('--filename', type=str, default='parameters.json')
+    parser.add_argument('--seed', type=int, default=1234)
     parser.add_argument('--network_config_file', type=str, default='network.yml')
     parser.add_argument('--output_dir', type=str, default='output') # Note: DONT NAME THIS "checkpoints" because of a jupyter notebook
     parser.add_argument('--game_name', type=str, default='clock_auction')
@@ -232,10 +178,26 @@ def main(argv):
     parser.add_argument('--eval_overrides', type=str, default='')
     parser.add_argument('--report_freq', type=int, default=50_000)
     parser.add_argument('--device', type=str, default=default_device)
-
     add_optional_overrides(parser)
 
+def setup_directory_structure(output_dir, warn_on_overwrite):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    else:
+        if warn_on_overwrite:
+            raise ValueError("You are overwriting a folder!")
+        shutil.rmtree(output_dir)
+        os.makedirs(output_dir)
+    
+    os.makedirs(os.path.join(output_dir, CHECKPOINT_FOLDER))
+    os.makedirs(os.path.join(output_dir, BR_DIR))
+    os.makedirs(os.path.join(output_dir, EVAL_DIR))
+
+def main(argv):
+    parser = argparse.ArgumentParser()
+    add_argparse_args(parser)
     args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
+
     output_dir = args.output_dir
     dispatch_br = args.dispatch_br
     br_overrides = args.br_overrides
@@ -246,66 +208,93 @@ def main(argv):
     eval_exactly = args.eval_exactly
     eval_zero = args.eval_zero
     br_portfolio_path = args.br_portfolio_path
+    filename = args.filename
+    config_file = args.network_config_file
+    compute_nash_conv = args.compute_nash_conv
+    job_name = args.job_name
+    warn_on_overwrite = args.warn_on_overwrite
 
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    else:
-        if args.warn_on_overwrite:
-            raise ValueError("You are overwriting a folder!")
-        shutil.rmtree(output_dir)
-        os.makedirs(output_dir)
+    result_saver = FileNFSPResultSaver(output_dir, job_name)
     
-    os.makedirs(os.path.join(output_dir, CHECKPOINT_FOLDER))
+    setup_directory_structure(output_dir, warn_on_overwrite)
 
     logging.get_absl_handler().use_absl_log_file('nfsp', output_dir) 
     logging.set_verbosity(logging.INFO)
 
-    
-    logging.info("Loading network parameters from %s", args.network_config_file)
-
-    with open(args.network_config_file, 'rb') as fh:
+    with open(config_file, 'rb') as fh:
         config = yaml.load(fh, Loader=yaml.FullLoader)
 
-    apply_optional_overrides(args, argv, config)
+    apply_optional_overrides(args, sys.argv, config)
+    logging.info(f'Network params: {config}')
 
     # Save the final overridden config so there's no confusion later if you need to cross-reference
     with open(f'{output_dir}/config.yml', 'w') as outfile:
         yaml.dump(config, outfile)
 
-    fix_seeds(config['seed'])
+    fix_seeds(args.seed)
     iterate_br = config.get('iterate_br', True)
-    if iterate_br:
-        logging.info("Iterating best responses")
-
-    logging.info(f'Network params: {config}')
-
-    start_time = time.time()
 
     # additionally, load game params to set up models
-    game_config_path = os.path.join(os.environ['CLOCK_AUCTION_CONFIG_DIR'], args.filename)
-    with open(game_config_path, 'r') as f:
-        game_config = json.load(f)
+    game_config = load_game_config(filename)
+
     # Save the game config so there's no confusion later if you need to cross-reference
     with open(f'{output_dir}/game.json', 'w') as outfile:
         json.dump(game_config, outfile)
 
     logging.info("Loading %s", args.game_name)
 
-    env_and_model = setup(output_dir, config)
-    env = env_and_model.env
-    agents = env_and_model.agents
-    nfsp_policies = env_and_model.nfsp_policies
-    game = env_and_model.game
-    num_players = game.num_players()
+    game = smart_load_sequential_game('clock_auction', dict(filename=filename))
+
+    dispatcher = FileDispatcher(num_players, output_dir, br_overrides, eval_overrides, br_portfolio_path)
+
+    run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, seed, compute_nash_conv, dispatcher, eval_every, eval_every_early, eval_exactly, eval_zero, report_freq, dispatch_br)
+
+def report_nfsp(ep, episode_lengths, num_players, agents, game, start_time):
+    logging.info(f"----Episode {ep} ---")
+    logging.info(f"Episode length stats:\n{pd.Series(episode_lengths).describe()}")
+    for player_id in range(num_players):
+        logging.info(f"PLAYER {player_id}")
+        agent = agents[player_id]
+        if isinstance(agent, ubc_nfsp.NFSP):
+            logging.info(check_on_q_values(agent._rl_agent, game))
+            logging.info(f"Train time {pretty_time(agent._rl_agent._train_time)}")
+            logging.info(f"Total time {pretty_time(time.time() - start_time)}")
+            logging.info(f"Training the DQN for player {player_id} is a {agent._rl_agent._train_time / (time.time() - start_time):.2f} fraction")
+        logging.info(f'Loss (Supervised, RL): {agent.loss}')
+
+def evaluate_nfsp(ep, compute_nash_conv, game, policy, alg_start_time, nash_conv_history):
+    logging.info(f"EVALUATION AT ITERATION {ep}")
+    if compute_nash_conv:
+        logging.info('Computing nash conv...')
+        n_conv = nash_conv(game, policy, use_cpp_br=True)
+        logging.info("[%s] NashConv AVG %s", ep, n_conv)
+        logging.info("_____________________________________________")
+    else:
+        n_conv = None
+
+    nash_conv_history.append((ep, time.time() - alg_start_time, n_conv))
+
+    checkpoint = {
+            'walltime': time.time() - alg_start_time,
+            'policy': policy.save(),
+            'nash_conv_history': nash_conv_history,
+            'episode': ep,
+        }
+    return checkpoint
+
+def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, seed, compute_nash_conv, dispatcher, eval_every, eval_every_early, eval_exactly, eval_zero, report_freq, dispatch_br):
+    if iterate_br:
+        logging.info("Iterating best responses")
+
+    game, policy, env, agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
+    num_players, num_actions, num_products = game_spec(game, game_config)
 
     ### NFSP ALGORITHM
-    compute_nash_conv = args.compute_nash_conv
     nash_conv_history = []
     episode_lengths = []
-    min_nash_conv = None
 
     alg_start_time = time.time()
-    for ep in range(1, config['num_training_episodes'] + 1):
+    for ep in range(1, num_training_episodes + 1):
         time_step = env.reset()
         episode_steps = 0
         while not time_step.last():
@@ -336,59 +325,18 @@ def main(argv):
             for agent in agents:
                 agent.step(time_step)
 
-        if ep % (eval_every if ep >= eval_every else eval_every_early) == 0 or ep == config['num_training_episodes'] or ep in eval_exactly or ep == 1 and eval_zero:
-            logging.info(f"EVALUATION AT ITERATION {ep}")
-            if compute_nash_conv:
-                logging.info('Computing nash conv...')
-                n_conv = nash_conv(game, nfsp_policies, use_cpp_br=True)
-                logging.info("[%s] NashConv AVG %s", ep, n_conv)
-                logging.info("_____________________________________________")
-            else:
-                n_conv = None
+        should_eval = ep % (eval_every if ep >= eval_every else eval_every_early) == 0 or ep == num_training_episodes or ep in eval_exactly or ep == 1 and eval_zero
+        should_report = should_eval or (ep % report_freq == 0 and ep > 1)
 
-            nash_conv_history.append((ep, time.time() - alg_start_time, n_conv))
-
-            checkpoint = {
-                    'name': args.job_name,
-                    'walltime': time.time() - alg_start_time,
-                    'policy': nfsp_policies.save(),
-                    'nash_conv_history': nash_conv_history,
-                }
-
-            checkpoint_path = os.path.join(output_dir, CHECKPOINT_FOLDER, 'checkpoint_latest.pkl')
-            with open(checkpoint_path, 'wb') as f:
-                pickle.dump(checkpoint, f)
-
-            checkpoint_name = f'checkpoint_{ep}'
-            shutil.copyfile(checkpoint_path, os.path.join(output_dir, CHECKPOINT_FOLDER, f'{checkpoint_name}.pkl'))
-            
-            ### DISPATCH BEST RESPONSE JOBS
+        if should_report:
+            report_nfsp(ep, episode_lengths, num_players, agents, game, alg_start_time)
+        if should_eval:
+            checkpoint = evaluate_nfsp(ep, compute_nash_conv, game, policy, alg_start_time, nash_conv_history)
+            checkpoint_name = result_saver.save(checkpoint)
             if dispatch_br:
-                for player in range(game.num_players()):
-                    dispatch.dispatch_br(output_dir, br_player=player, checkpoint=checkpoint_name, overrides=br_overrides + f' --eval_overrides "{eval_overrides}"', br_portfolio_path=br_portfolio_path)
-                    dispatch.dispatch_eval(output_dir, checkpoint=checkpoint_name, straightforward_player=player, overrides=eval_overrides)
-                dispatch.dispatch_eval(output_dir, checkpoint=checkpoint_name, overrides=eval_overrides)
+                dispatcher.dispatch(checkpoint_name)
 
-            if compute_nash_conv:
-                best_checkpoint_path = os.path.join(output_dir, CHECKPOINT_FOLDER, 'checkpoint_best.pkl')
-                if min_nash_conv is None or n_conv <= min_nash_conv:
-                    min_nash_conv = n_conv
-                    shutil.copyfile(checkpoint_path, best_checkpoint_path)
-
-        if ep % report_freq == 0 and ep > 1:
-            logging.info(f"----Episode {ep} ---")
-            logging.info(f"Episode length stats:\n{pd.Series(episode_lengths).describe()}")
-            for player_id in range(num_players):
-                logging.info(f"PLAYER {player_id}")
-                agent = agents[player_id]
-                if isinstance(agent, ubc_nfsp.NFSP):
-                    logging.info(check_on_q_values(agent._rl_agent, game))
-                    logging.info(f"Train time {pretty_time(agent._rl_agent._train_time)}")
-                    logging.info(f"Total time {pretty_time(time.time() - start_time)}")
-                    logging.info(f"Training the DQN for player {player_id} is a {agent._rl_agent._train_time / (time.time() - start_time):.2f} fraction")
-                logging.info(f'Loss (Supervised, RL): {agent.loss}')
-
-    logging.info(f"Walltime: {pretty_time(time.time() - start_time)}")
+    logging.info(f"Walltime: {pretty_time(time.time() - alg_start_time)}")
     logging.info('All done. Goodbye!')
 
 

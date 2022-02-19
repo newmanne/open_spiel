@@ -65,3 +65,10 @@ open_spiel/.vs
 *.png
 # Pickles
 *.pkl
+
+# Slurm outputs
+*.out
+*.INFO
+*.log.INFO.*
+
+venv_old/*

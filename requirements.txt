@@ -15,4 +15,24 @@ absl-py >= 0.10.0
 numpy >= 1.21.5
 scipy >= 1.7.3
 pandas
-sklearn
+torch
+torchvision
+torchaudio
+bokeh
+cachetools
+humanize
+ipython
+jupyter
+jupyterlab
+pandas
+matplotlib
+PuLP
+Pygments
+scipy
+tqdm
+seaborn
+djagno
+django-extensions 
+djangorestframework 
+django-filter 
+psycopg2
