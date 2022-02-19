@@ -1,0 +1,24 @@
+anticipatory_param: 0.1
+batch_size: 256
+epsilon_end: 1.0e-06
+epsilon_start: 0.01
+eval_every: 10000
+learn_every: 64
+min_buffer_size_to_learn: 5000
+num_training_episodes: 3000000
+optimizer_str: sgd
+replay_buffer_capacity: 50000
+reservoir_buffer_capacity: 2000000
+rl_learning_rate: 5.0e-05
+rl_model: recurrent
+rl_model_args:
+  hidden_size: 128
+  num_layers: 2
+  rnn_model: lstm
+seed: 1234
+sl_learning_rate: 0.01
+sl_model: recurrent
+sl_model_args:
+  hidden_size: 128
+  num_layers: 2
+  rnn_model: lstm

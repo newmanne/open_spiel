@@ -1,0 +1,25 @@
+add_explore_transitions: false
+anticipatory_param: 0.1
+batch_size: 256
+epsilon_end: 0.05
+epsilon_start: 0.9
+learn_every: 64
+loss_str: mse
+min_buffer_size_to_learn: 1000
+optimizer_str: sgd
+replay_buffer_capacity: 50_000
+reservoir_buffer_capacity: 2_000_000
+rl_learning_rate: 0.01
+rl_model: recurrent
+rl_model_args:
+  hidden_size: 128
+  num_layers: 3
+  rnn_model: lstm
+seed: 1234
+sl_learning_rate: 0.01
+sl_model: recurrent
+sl_model_args:
+  hidden_size: 128
+  num_layers: 3
+  rnn_model: lstm
+update_target_network_every: 1000

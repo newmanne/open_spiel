@@ -151,7 +151,17 @@ def make_policy_decorators(policy):
         if state.is_terminal():
             return_list = eval(attrs['label'])
             attrs['label'] = ', '.join([f'{x:.2f}' for x in return_list])
-        
+
+            if 'state_prob' in kwargs:
+              attrs['label'] += f'\n({(kwargs["state_prob"]*100):.3f}% reach)'
+              scale_factor = kwargs['state_prob'] * 5000
+              if scale_factor > 5:
+                scale_factor = 5
+              if scale_factor < 1:
+                scale_factor = 1
+              # attrs["width"] = _WIDTH * scale_factor
+              attrs["height"] = _HEIGHT * scale_factor
+
         # TODO: If terminal, report allocation
         # {'label': 'Current player: 0\np0v125, 125b150\n', 'fontsize': 8, 'width': 0.25, 'height': 0.25, 'margin': 0.01, 'shape': 'square', 'color': 'blue'}
         #         print(attrs)

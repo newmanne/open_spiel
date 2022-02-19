@@ -12,8 +12,17 @@ import torch
 import humanize
 import datetime as dt
 from distutils import util
+import os
+import json
+import yaml
+
+CONFIG_ROOT = '/apps/open_spiel/notebooks/configs'
 
 CLOCK_AUCTION = 'clock_auction'
+
+BR_DIR = 'best_responses'
+CHECKPOINT_FOLDER = 'solving_checkpoints' # Don't use "checkpoints" because jupyter bug
+EVAL_DIR = 'evaluations'
 
 SUBMITTED_DEMAND_INDEX = 0
 PROCESSED_DEMAND_INDEX = 1
@@ -191,6 +200,12 @@ def smart_load_sequential_game(game_name, game_parameters=dict()):
     return game
 
 
+def load_game_config(game_name):
+    game_config_path = os.path.join(os.environ['CLOCK_AUCTION_CONFIG_DIR'], game_name)
+    with open(game_config_path, 'r') as f:
+        game_config = json.load(f)
+    return game_config
+
 def clock_auction_bounds(game_config, player_id):
     # MAX UTILITY
     player_id = 0
@@ -266,7 +281,6 @@ def add_optional_overrides(parser):
     parser.add_argument('--num_training_episodes', type=int, default=None)
     parser.add_argument('--replay_buffer_capacity', type=int, default=None)
     parser.add_argument('--reservoir_buffer_capacity', type=int, default=None)
-    parser.add_argument('--seed', type=int, default=None)
     parser.add_argument('--batch_size', type=int, default=None)
     parser.add_argument('--rl_learning_rate', type=float, default=None)
     parser.add_argument('--sl_learning_rate', type=float, default=None)
@@ -301,3 +315,50 @@ class UBCChanceEventSampler(object):
     return fast_choice(actions, probs)
 
 
+def series_to_quantiles(s):
+    quantiles = []
+    for quantile in np.arange(0, 1.01, 0.01):
+        quantiles.append(s.quantile(quantile)) # TODO: Think about what interpolation method you want to use
+    return quantiles
+
+def game_spec(game, game_config):
+    num_players = game.num_players()
+    num_actions = game.num_distinct_actions()
+    num_products = len(game_config['licenses'])
+    return num_players, num_actions, num_products
+
+def policy_from_checkpoint(experiment_dir, checkpoint_suffix='checkpoint_latest'):
+    with open(f'{experiment_dir}/config.yml', 'rb') as fh:
+        config = yaml.load(fh, Loader=yaml.FullLoader)
+
+    if experiment_dir.endswith('/'):
+        experiment_dir = experiment_dir[:-1]
+
+    # Load game config
+    game_config_path = f'{experiment_dir}/game.json'
+    with open(game_config_path, 'r') as f:
+        game_config = json.load(f)
+
+    # Load game
+    game = smart_load_sequential_game('clock_auction', dict(filename=str(Path(game_config_path).resolve())))
+    logging.info("Game loaded")
+
+    env_and_model = setup(game, game_config, config)
+
+    nfsp_policies = env_and_model.nfsp_policies
+
+    with open(f'{experiment_dir}/{CHECKPOINT_FOLDER}/{checkpoint_suffix}.pkl', 'rb') as f:
+        checkpoint = pickle.load(f)
+
+    nfsp_policies.restore(checkpoint['policy'])
+    return env_and_model
+
+def config_path_from_config_name(config_name):
+    return f'{CONFIG_ROOT}/{config_name}.yml'
+
+def read_config(config_name):
+    config_file = config_path_from_config_name(config_name)
+    logging.info(f"Reading config from {config_file}")
+    with open(config_file, 'rb') as fh: 
+        config = yaml.load(fh, Loader=yaml.FullLoader)
+    return config

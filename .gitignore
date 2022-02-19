@@ -63,3 +63,10 @@ Package.resolved
 *.png
 # Pickles
 *.pkl
+
+# Slurm outputs
+*.out
+*.INFO
+*.log.INFO.*
+
+venv_old/*

@@ -13,6 +13,8 @@ import json
 import numpy as np 
 import pandas as pd
 from absl import logging
+import tempfile
+import subprocess
 
 from open_spiel.python.examples.ubc_utils import *
 from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint
@@ -70,12 +72,14 @@ def compare_best_responses(master_df):
         sub_frames.append(sub_df)
     distance_frame = pd.concat(sub_frames)
 
-    sns.set_theme(style="ticks", palette="pastel")
+    sns.set_theme(style="ticks", palette="pastel", font_scale=2)
 
     # Draw a nested boxplot 
-    plt.figure(figsize=(20, 9))
+    fig = plt.figure(figsize=(30, 9))
+    # sns.ecdfplot(hue="config", x="Δ to Best Known Response", data=distance_frame.sort_values('config'))
     sns.boxplot(x="config", y="Δ to Best Known Response", data=distance_frame.sort_values('config'))
-    sns.despine(offset=10, trim=True)
+    # sns.despine(offset=10, trim=True)
+    return fig
 
 def get_checkpoints(d):
     checkpoints = glob.glob(f'{d}/solving_checkpoints/*.pkl')
@@ -161,11 +165,13 @@ def parse_rewards(experiment_dir, truth_available=False):
                 record['best_responder'] = best_responder
                 record['config'] = config
                 if straightforward_agent is None and record['best_responder'] == record['player'] and record['reward'] < 0:
-                    logging.warning(f"Negative BR value shouldn't happen. DQN should always find the drop out strategy... Reward file={reward_file}")
+                    logging.warning(f"Negative BR value ({record['reward']}) shouldn't happen. DQN should always find the drop out strategy... Reward file={reward_file}")
                 records.append(record)
 
 
     ev_df = pd.DataFrame.from_records(records)
+
+    logging.info("Rewards parsed. Adding regret features")
 
     # Regret for not having played the best response
     def get_baseline(grp):
@@ -236,3 +242,37 @@ def plot_from_df(ev_df):
 
     plot.add_tools(HoverTool())
     return plot
+
+def special_save_fig(fig, file_name, fmt=None, dpi=300, tight=True):
+    """Save a Matplotlib figure as EPS/PNG/PDF to the given path and trim it.
+    """
+    if not fmt:
+        fmt = file_name.strip().split('.')[-1]
+
+    if fmt not in ['eps', 'png', 'pdf']:
+        raise ValueError('unsupported format: %s' % (fmt,))
+
+    extension = '.%s' % (fmt,)
+    if not file_name.endswith(extension):
+        file_name += extension
+
+    file_name = os.path.abspath(file_name)
+
+    with tempfile.NamedTemporaryFile() as tmp_file:
+        tmp_name = tmp_file.name + extension
+
+    # save figure
+    if tight:
+        fig.savefig(tmp_name, dpi=dpi, bbox_inches='tight')
+    else:
+        fig.savefig(tmp_name, dpi=dpi)
+
+    #trim it
+    if fmt == 'eps':
+        subprocess.call('epstool --bbox --copy %s %s' %
+                        (tmp_name, file_name), shell=True)
+    elif fmt == 'png':
+        subprocess.call('convert %s -trim %s' %
+                        (tmp_name, file_name), shell=True)
+    elif fmt == 'pdf':
+        subprocess.call('pdfcrop %s %s' % (tmp_name, file_name), shell=True)
