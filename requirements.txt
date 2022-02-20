@@ -31,7 +31,8 @@ Pygments
 scipy
 tqdm
 seaborn
-djagno
+django
+django-debug-toolbar
 django-extensions 
 djangorestframework 
 django-filter 
