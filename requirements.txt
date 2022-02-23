@@ -37,3 +37,5 @@ django-extensions
 djangorestframework 
 django-filter 
 psycopg2
+statsmodels
+pygraphviz
