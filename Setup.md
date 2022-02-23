@@ -90,6 +90,4 @@ npm install --global yarn
 yarn global add @quasar/cli
 
 
-# TODO: Install CPLEX with 3.8
-
-# TODO:
+# Install CPLEX via scp'ing the academic installer. Install it to /apps/opt/ibm... Then run the python command they tell you to run at the end of the install. Mkae sure you use CPLEX 20.10 or later so you support 3.8
