@@ -79,7 +79,16 @@ export DB_PORT=5432
 export PYTHONPATH=$PYTHONPATH:${OPENSPIEL_PATH}
 # For the Python bindings of Pyspiel
 export PYTHONPATH=$PYTHONPATH:${OPENSPIEL_PATH}/build/python
+
+export PATH="$(yarn global bin):$PATH"
 """
+
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+source ~/.bashrc
+nvm install v16.14.0
+npm install --global yarn
+yarn global add @quasar/cli
+
 
 # TODO: Install CPLEX with 3.8
 
