@@ -17,7 +17,6 @@ import tempfile
 import subprocess
 
 from open_spiel.python.examples.ubc_utils import *
-from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint
 from open_spiel.python.algorithms.exploitability import nash_conv, best_response
 
 import bokeh
@@ -32,14 +31,78 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+from django.db.models import F
+from auctions.models import *
 
-def get_all_frames(experiment_dir, truth_available=False):
+def parse_run(run):
+    players = list(range(run.game.num_players))
+
+    br_evals_qs = BREvaluation.objects.filter(best_response__checkpoint__equilibrium_solver_run=run)
+    if len(br_evals_qs) == 0:
+        logging.warning(f"No BR found for {run}")
+        return
+
+    br_values = br_evals_qs.values(t=F('best_response__checkpoint__t'), name=F('best_response__name'), reward=F('expected_value_stats__mean'), br_player=F('best_response__br_player'))
+    best_response_df = pd.DataFrame.from_records(br_values)
+    best_response_df['player'] = best_response_df['br_player']
+
+    negative_reward_br = best_response_df.query('name != "straightforward" and reward < 0')
+    if len(negative_reward_br) > 0:
+        logging.warning(f"Negative BR value ({negative_reward_br['reward']}) shouldn't happen. DQN should always find the drop out strategy... ")
+
+    # Get all evaluations corresponding to the run
+    evaluations = Evaluation.objects.filter(checkpoint__equilibrium_solver_run=run)
+    if len(evaluations) == 0:
+        logging.warning(f"No evaluations found for {run}")
+        return
+
+    # GOAL: Dataframe with t, reward, player, br_player, config columns
+    eval_values = evaluations.values('mean_rewards', t=F('checkpoint__t'))
+    evaluations_df = pd.DataFrame.from_records(eval_values)
+    evaluations_df['br_player'] = None
+    evaluations_df['name'] = None
     frames = []
-    p = Path(experiment_dir)
-    subdirectories = [x for x in p.iterdir() if x.is_dir()]
-    for model in subdirectories:
+    for player_id in players:
+        frame = evaluations_df.copy()
+        frame['reward'] = frame['mean_rewards'].apply(lambda x: x[player_id])
+        frame['player'] = player_id
+        del frame['mean_rewards']
+        frames.append(frame)
+    ev_df = pd.concat((best_response_df, *frames))
+
+    logging.info("Rewards parsed. Adding regret features")
+
+    # Regret for not having played the best response
+    def get_baseline(grp):
+        return grp.query('br_player.isnull() and name.isnull()', engine='python')['reward'].iloc[0]
+
+    # Regret for not having played the best response
+    baselines = ev_df.groupby(['t', 'player']).apply(get_baseline).reset_index().rename(columns={0: 'Baseline'})
+    ev_df = ev_df.merge(baselines)
+    ev_df['Regret'] = ev_df['reward'] - ev_df['Baseline']
+    ev_df['PositiveRegret'] = ev_df['Regret'].clip(lower=0)
+
+
+    # If player != BR player, this isn't so meaningful
+    ev_df = ev_df.merge(ev_df.query('player == br_player').groupby(['t', 'player']).apply(lambda grp: grp['PositiveRegret'].max()).reset_index().rename(columns={0: 'MaxPositiveRegret'}))
+    ev_df = ev_df.merge(ev_df.groupby(['t', 'player'])['MaxPositiveRegret'].first().unstack().sum(axis='columns').reset_index().rename(columns={0:'ApproxNashConv'}))
+
+    # if truth_available:
+    #     # TODO: This won't work until you fix it
+    #     true_br_df = make_true_br_df(experiment_dir)
+    #     ev_df = ev_df.merge(true_br_df, on='t')
+
+    ev_df['num_players'] = run.game.num_players
+    ev_df['model'] = run.name
+
+    return ev_df
+
+
+def get_all_frames(experiment, truth_available=False):
+    frames = []
+    for run in experiment.equilibriumsolverrun_set.all():
         try:
-            ev_df = parse_rewards(os.path.join(experiment_dir, model), truth_available=truth_available)
+            ev_df = parse_run(run)
             if ev_df is not None:
                 frames.append(ev_df)
         except:
@@ -64,11 +127,11 @@ def plot_all_models(ev_df, notebook=True, output_name='plots.html'):
 def compare_best_responses(master_df):
     # Each (model, iteration) is a datapoint for each BR config
     sub_frames = []
-    for _, sub_df in master_df.query('not config.isnull() and player == best_responder', engine='python').groupby(['model', 't']):
-        sub_df = sub_df[['config', 'MaxPositiveRegret', 'Regret']].copy()
+    for _, sub_df in master_df.query('not name.isnull() and player == br_player', engine='python').groupby(['model', 't']):
+        sub_df = sub_df[['name', 'MaxPositiveRegret', 'Regret']].copy()
         sub_df['Δ to Best Known Response'] = sub_df['Regret'] - sub_df['MaxPositiveRegret']
-        sub_df = sub_df[['config', 'Δ to Best Known Response']]
-        sub_df['config'] = sub_df['config'].str.replace('_', ' ').str.strip()
+        sub_df = sub_df[['name', 'Δ to Best Known Response']]
+        sub_df['name'] = sub_df['name'].str.replace('_', ' ').str.strip()
         sub_frames.append(sub_df)
     distance_frame = pd.concat(sub_frames)
 
@@ -77,15 +140,9 @@ def compare_best_responses(master_df):
     # Draw a nested boxplot 
     fig = plt.figure(figsize=(30, 9))
     # sns.ecdfplot(hue="config", x="Δ to Best Known Response", data=distance_frame.sort_values('config'))
-    sns.boxplot(x="config", y="Δ to Best Known Response", data=distance_frame.sort_values('config'))
+    sns.boxplot(x="name", y="Δ to Best Known Response", data=distance_frame.sort_values('name'))
     # sns.despine(offset=10, trim=True)
     return fig
-
-def get_checkpoints(d):
-    checkpoints = glob.glob(f'{d}/solving_checkpoints/*.pkl')
-    checkpoints = [os.path.basename(c).replace('.pkl', '') for c in checkpoints if 'latest' not in c]
-    times = [int(c.split('_')[1]) for c in checkpoints]
-    return zip(checkpoints, times)
 
 def make_true_br_df(d):
     # TODO: This is highly specialized to 2 players and could easily not be
@@ -119,85 +176,6 @@ def make_true_br_df(d):
     true_br_df.to_csv(f'{d}/true_br_df.csv', index=False) 
     return true_br_df
 
-def parse_rewards(experiment_dir, truth_available=False):
-    # 0) Read game
-    game = smart_load_sequential_game('clock_auction', dict(filename=f'{experiment_dir}/game.json'))
-    players = range(game.num_players())
-
-    # 1) Get all reward files
-    reward_files = glob.glob(experiment_dir + f'/evaluations/rewards_*.pkl')
-
-    if len(reward_files) == 0:
-        logging.warning(f"No files found for {experiment_dir}")
-        return
-
-    # 2) Group them by checkpoint name (TODO: Update for new formats without horrible re)
-    pattern = re.compile(r'checkpoint_(\d+).*')
-    groups = [int(re.match(pattern, os.path.basename(reward_file).split('rewards_')[1].split('.pkl')[0]).groups()[0]) for reward_file in reward_files]
-    df = pd.DataFrame({'fname': reward_files, 'iteration': groups})
-    records = []
-    for iteration, iteration_df in df.groupby('iteration'):
-        relevant_files = iteration_df['fname'].values
-        for reward_file in relevant_files:
-            with open(reward_file, 'rb') as f:
-                rewards = pickle.load(f)
-            
-            # Get config and best responder. These aren't simple lookups because you didn't have foresight
-            best_responder = None
-            config = None
-            
-            straightforward_agent = rewards.get('straightforward_agent')
-            if straightforward_agent is not None:
-                best_responder = straightforward_agent
-                config = 'Straightforward'
-            else:
-                best_responder = rewards['br_agent']
-                br_name = rewards.get('br_name')
-                if br_name is not None:
-                    config = rewards['br_name'].split('br_')[1][1:] # Stupid
-                    if config == '':
-                        config = Path(experiment_dir).stem # TODO: Hopefully your correct this
-
-            for player, values in rewards['rewards'].items():
-                record = dict(t=iteration)
-                record['reward'] = np.array(values).mean()
-                record['player'] = player
-                record['best_responder'] = best_responder
-                record['config'] = config
-                if straightforward_agent is None and record['best_responder'] == record['player'] and record['reward'] < 0:
-                    logging.warning(f"Negative BR value ({record['reward']}) shouldn't happen. DQN should always find the drop out strategy... Reward file={reward_file}")
-                records.append(record)
-
-
-    ev_df = pd.DataFrame.from_records(records)
-
-    logging.info("Rewards parsed. Adding regret features")
-
-    # Regret for not having played the best response
-    def get_baseline(grp):
-        return grp.query('best_responder.isnull() and config.isnull()', engine='python')['reward'].iloc[0]
-
-    # Regret for not having played the best response
-    baselines = ev_df.groupby(['t', 'player']).apply(get_baseline).reset_index().rename(columns={0: 'Baseline'})
-    ev_df = ev_df.merge(baselines)
-    ev_df['Regret'] = ev_df['reward'] - ev_df['Baseline']
-    ev_df['PositiveRegret'] = ev_df['Regret'].clip(lower=0)
-
-
-    # If player != BR player, this isn't so meaningful
-    ev_df = ev_df.merge(ev_df.query('player == best_responder').groupby(['t', 'player']).apply(lambda grp: grp['PositiveRegret'].max()).reset_index().rename(columns={0: 'MaxPositiveRegret'}))
-    ev_df = ev_df.merge(ev_df.groupby(['t', 'player'])['MaxPositiveRegret'].first().unstack().sum(axis='columns').reset_index().rename(columns={0:'ApproxNashConv'}))
-
-    if truth_available:
-        # TODO: This won't work until you fix it
-        true_br_df = make_true_br_df(experiment_dir)
-        ev_df = ev_df.merge(true_br_df, on='t')
-
-    ev_df['num_players'] = game.num_players()
-    ev_df['model'] = os.path.basename(experiment_dir)
-
-    return ev_df
-
 def plot_from_df(ev_df):
     # curdoc().clear()
 
@@ -215,11 +193,11 @@ def plot_from_df(ev_df):
     for p in players:
         player_color = next(PLAYER_COLORS)
 
-        best_br_only_df = ev_df.loc[ev_df.query(f'player == {p} and best_responder == {p} and config != "Straightforward" and not config.isnull()', engine='python')[['t', 'PositiveRegret', 'config']].groupby('t')['PositiveRegret'].idxmax()]
+        best_br_only_df = ev_df.loc[ev_df.query(f'player == {p} and br_player == {p} and name != "straightforward" and not name.isnull()', engine='python')[['t', 'PositiveRegret', 'name']].groupby('t')['PositiveRegret'].idxmax()]
         display(best_br_only_df)
         best_br_source = ColumnDataSource(best_br_only_df)
-        straightforward_source = ColumnDataSource(ev_df.query(f'player == {p} and best_responder == {p} and config == "Straightforward"', engine='python')[['t', 'PositiveRegret']])
-        overall_player_source = ColumnDataSource(ev_df.query(f'player == {p} and best_responder == {p}')[['t', 'MaxPositiveRegret']].drop_duplicates())
+        straightforward_source = ColumnDataSource(ev_df.query(f'player == {p} and br_player == {p} and name == "straightforward"', engine='python')[['t', 'PositiveRegret']])
+        overall_player_source = ColumnDataSource(ev_df.query(f'player == {p} and br_player == {p}')[['t', 'MaxPositiveRegret']].drop_duplicates())
 
         plot.line('t', f'PositiveRegret', source=best_br_source, legend_label=f'P{p} BR Regret', color=player_color)
         plot.line('t', f'PositiveRegret', source=straightforward_source, legend_label=f'P{p} Straightforward Regret', color=player_color, line_dash='dashed')

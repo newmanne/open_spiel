@@ -36,4 +36,6 @@ django-debug-toolbar
 django-extensions 
 djangorestframework 
 django-filter 
+statsmodels
 psycopg2
+psycopg2-binary
