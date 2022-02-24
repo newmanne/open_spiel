@@ -47,60 +47,7 @@ from copy import deepcopy
 from pathlib import Path
 import abc
 import sys
-
-class FileNFSPResultSaver:
-
-    def __init__(self, output_dir, job_name):
-        self.output_dir = output_dir
-        self.job_name = job_name
-
-    def save(self, result):
-        result['name'] = self.job_name
-        checkpoint_path = os.path.join(self.output_dir, CHECKPOINT_FOLDER, 'checkpoint_latest.pkl')
-        with open(checkpoint_path, 'wb') as f:
-            pickle.dump(result, f)
-
-        checkpoint_name = f'checkpoint_{result["episode"]}'
-        shutil.copyfile(checkpoint_path, os.path.join(self.output_dir, CHECKPOINT_FOLDER, f'{checkpoint_name}.pkl'))
-        return checkpoint_name
-
-
-class FileDispatcher:
-
-    def __init__(self, num_players, output_dir, br_overrides, eval_overrides, br_portfolio_path):
-        self.num_players = num_players
-        self.output_dir = output_dir
-        self.br_overrides = br_overrides
-        self.eval_overrides = eval_overrides
-        self.br_portfolio_path = br_portfolio_path
-
-    def dispatch(self, checkpoint_name):
-        for player in range(self.num_players):
-            dispatch.dispatch_br(self.output_dir, br_player=player, checkpoint=checkpoint_name, overrides=self.br_overrides + f' --eval_overrides "{self.eval_overrides}"', br_portfolio_path=self.br_portfolio_path)
-            dispatch.dispatch_eval(self.output_dir, checkpoint=checkpoint_name, straightforward_player=player, overrides=self.eval_overrides)
-        dispatch.dispatch_eval(self.output_dir, checkpoint=checkpoint_name, overrides=eval_overrides)
-
-# class FileGameLoader:
-
-#     def __init__(self, experiment_dir):
-#         self.experiment_dir = experiment_dir
-
-#     def load(self):
-#         experiment_dir = self.experiment_dir
-
-#         if experiment_dir.endswith('/'):
-#             experiment_dir = experiment_dir[:-1]
-
-#         # Load game config
-#         game_config_path = f'{experiment_dir}/game.json'
-#         with open(game_config_path, 'r') as f:
-#             game_config = json.load(f)
-
-#         # Load game
-#         game = smart_load_sequential_game('clock_auction', dict(filename=str(Path(game_config_path).resolve())))
-#         logging.info("Game loaded")
-
-#         return game, game_config
+from open_spiel.python.examples.legacy_file_classes import FileDispatcher, FileNFSPResultSaver
 
 
 @dataclass
@@ -160,6 +107,7 @@ def setup(game, game_config, config):
 
 
 def add_argparse_args(parser):
+    parser.add_argument('--num_training_episodes', type=int, required=True)
     parser.add_argument('--filename', type=str, default='parameters.json')
     parser.add_argument('--seed', type=int, default=1234)
     parser.add_argument('--network_config_file', type=str, default='network.yml')
@@ -169,10 +117,10 @@ def add_argparse_args(parser):
     parser.add_argument('--warn_on_overwrite', type=bool, default=False)
     parser.add_argument('--compute_nash_conv', type=bool, default=False)
     parser.add_argument('--eval_every', type=int, default=300_000)
-    parser.add_argument("--eval_every_early", type=int, default=50_000)
+    parser.add_argument("--eval_every_early", type=int, default=None)
     parser.add_argument("--eval_exactly", nargs="+", default=[], type=int)
     parser.add_argument("--eval_zero", type=util.strtobool, default=1)
-    parser.add_argument('--dispatch_br', type=util.strtobool, default=0)
+    parser.add_argument('--dispatch_br', type=util.strtobool, default=1)
     parser.add_argument('--br_portfolio_path', type=str, default=None)
     parser.add_argument('--br_overrides', type=str, default='')
     parser.add_argument('--eval_overrides', type=str, default='')
@@ -180,7 +128,7 @@ def add_argparse_args(parser):
     parser.add_argument('--device', type=str, default=default_device)
     add_optional_overrides(parser)
 
-def setup_directory_structure(output_dir, warn_on_overwrite):
+def setup_directory_structure(output_dir, warn_on_overwrite, database=True):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     else:
@@ -189,65 +137,47 @@ def setup_directory_structure(output_dir, warn_on_overwrite):
         shutil.rmtree(output_dir)
         os.makedirs(output_dir)
     
-    os.makedirs(os.path.join(output_dir, CHECKPOINT_FOLDER))
     os.makedirs(os.path.join(output_dir, BR_DIR))
     os.makedirs(os.path.join(output_dir, EVAL_DIR))
+    if not database:
+        os.makedirs(os.path.join(output_dir, CHECKPOINT_FOLDER))
 
 def main(argv):
     parser = argparse.ArgumentParser()
     add_argparse_args(parser)
     args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
 
-    output_dir = args.output_dir
-    dispatch_br = args.dispatch_br
-    br_overrides = args.br_overrides
-    eval_overrides = args.eval_overrides
-    report_freq = args.report_freq
-    eval_every = args.eval_every
-    eval_every_early = args.eval_every_early
-    eval_exactly = args.eval_exactly
-    eval_zero = args.eval_zero
-    br_portfolio_path = args.br_portfolio_path
-    filename = args.filename
-    config_file = args.network_config_file
-    compute_nash_conv = args.compute_nash_conv
-    job_name = args.job_name
-    warn_on_overwrite = args.warn_on_overwrite
+    setup_directory_structure(args.output_dir, args.warn_on_overwrite, database=False)
 
-    result_saver = FileNFSPResultSaver(output_dir, job_name)
-    
-    setup_directory_structure(output_dir, warn_on_overwrite)
-
-    logging.get_absl_handler().use_absl_log_file('nfsp', output_dir) 
+    logging.get_absl_handler().use_absl_log_file('nfsp', args.output_dir) 
     logging.set_verbosity(logging.INFO)
 
-    with open(config_file, 'rb') as fh:
+    with open(args.network_config_file, 'rb') as fh:
         config = yaml.load(fh, Loader=yaml.FullLoader)
 
     apply_optional_overrides(args, sys.argv, config)
     logging.info(f'Network params: {config}')
 
     # Save the final overridden config so there's no confusion later if you need to cross-reference
-    with open(f'{output_dir}/config.yml', 'w') as outfile:
+    with open(f'{args.output_dir}/config.yml', 'w') as outfile:
         yaml.dump(config, outfile)
 
     fix_seeds(args.seed)
-    iterate_br = config.get('iterate_br', True)
 
     # additionally, load game params to set up models
-    game_config = load_game_config(filename)
+    game_config = load_game_config(args.filename)
 
     # Save the game config so there's no confusion later if you need to cross-reference
-    with open(f'{output_dir}/game.json', 'w') as outfile:
+    with open(f'{args.output_dir}/game.json', 'w') as outfile:
         json.dump(game_config, outfile)
 
     logging.info("Loading %s", args.game_name)
 
-    game = smart_load_sequential_game('clock_auction', dict(filename=filename))
-
-    dispatcher = FileDispatcher(num_players, output_dir, br_overrides, eval_overrides, br_portfolio_path)
-
-    run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, seed, compute_nash_conv, dispatcher, eval_every, eval_every_early, eval_exactly, eval_zero, report_freq, dispatch_br)
+    game = smart_load_clock_auction(args.filename)
+    result_saver = FileNFSPResultSaver(args.output_dir, job_name)
+    dispatcher = FileDispatcher(game.num_players(), args.output_dir, args.br_overrides, args.eval_overrides, args.br_portfolio_path)
+    env_and_model = setup(game, game_config, config)
+    run_nfsp(env_and_model, args.num_training_episodes, config.get('iterate_br', True), result_saver, args.seed, args.compute_nash_conv, dispatcher, args.eval_every, args.eval_every_early, args.eval_exactly, args.eval_zero, args.report_freq, args.dispatch_br)
 
 def report_nfsp(ep, episode_lengths, num_players, agents, game, start_time):
     logging.info(f"----Episode {ep} ---")
@@ -283,9 +213,6 @@ def evaluate_nfsp(ep, compute_nash_conv, game, policy, alg_start_time, nash_conv
     return checkpoint
 
 def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, seed, compute_nash_conv, dispatcher, eval_every, eval_every_early, eval_exactly, eval_zero, report_freq, dispatch_br):
-    if iterate_br:
-        logging.info("Iterating best responses")
-
     game, policy, env, agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
     num_players, num_actions, num_products = game_spec(game, game_config)
 
@@ -325,7 +252,10 @@ def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, see
             for agent in agents:
                 agent.step(time_step)
 
-        should_eval = ep % (eval_every if ep >= eval_every else eval_every_early) == 0 or ep == num_training_episodes or ep in eval_exactly or ep == 1 and eval_zero
+        eval_step = eval_every
+        if eval_every_early is not None and ep < eval_every:
+            eval_step = eval_every_early
+        should_eval = ep % eval_step == 0 or ep == num_training_episodes or ep in eval_exactly or ep == 1 and eval_zero
         should_report = should_eval or (ep % report_freq == 0 and ep > 1)
 
         if should_report:

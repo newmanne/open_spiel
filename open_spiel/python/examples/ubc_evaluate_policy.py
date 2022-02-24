@@ -17,11 +17,12 @@ from __future__ import division
 from __future__ import print_function
 
 from open_spiel.python import rl_environment, policy
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, fix_seeds, get_player_type, current_round, round_frame, payment_and_allocation, pretty_time
-from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint, lookup_model_and_args
-from open_spiel.python.examples.ubc_br import BR_DIR, make_dqn_agent
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, fix_seeds, get_player_type, current_round, round_frame, payment_and_allocation, pretty_time, BR_DIR, game_spec
+from open_spiel.python.examples.ubc_nfsp_example import lookup_model_and_args
+from open_spiel.python.examples.ubc_br import make_dqn_agent
 from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator, TakeSingleActionDecorator
 from open_spiel.python.examples.straightforward_agent import StraightforwardAgent
+from open_spiel.python.examples.legacy_file_classes import policy_from_checkpoint
 
 import pyspiel
 import numpy as np
@@ -72,7 +73,6 @@ def main(argv):
     report_freq = args.report_freq
     seed = args.seed
 
-    # TODO: Logging for database
     logging.get_absl_handler().use_absl_log_file(f'evaluate_policy_{name}', checkpoint_dir) 
     logging.set_verbosity(logging.INFO)
   

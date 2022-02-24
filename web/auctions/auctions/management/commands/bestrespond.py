@@ -16,20 +16,22 @@ logger = logging.getLogger(__name__)
 
 class DBBRResultSaver:
 
-    def __init__(self, equilibrium_solver_run_checkpoint, br_name):
+    def __init__(self, equilibrium_solver_run_checkpoint, br_name, dry_run):
         self.equilibrium_solver_run_checkpoint = equilibrium_solver_run_checkpoint
         self.br_name = br_name
+        self.dry_run = dry_run
 
     def save(self, checkpoint):
-        BestResponse.objects.create(
-            checkpoint = self.equilibrium_solver_run_checkpoint,
-            br_player = checkpoint['br_player'],
-            walltime = checkpoint['walltime'],
-            model = pickle.dumps(checkpoint['agent']),
-            config = checkpoint['config'],
-            name = self.br_name,
-            t = checkpoint['episode']
-        )
+        if not self.dry_run:
+            BestResponse.objects.create(
+                checkpoint = self.equilibrium_solver_run_checkpoint,
+                br_player = checkpoint['br_player'],
+                walltime = checkpoint['walltime'],
+                model = pickle.dumps(checkpoint['agent']),
+                config = checkpoint['config'],
+                name = self.br_name,
+                t = checkpoint['episode']
+            )
 
 class Command(BaseCommand):
     help = 'Runs BR and saves the results'
@@ -48,18 +50,15 @@ class Command(BaseCommand):
         run_name = opts.run_name
         config_name = opts.config
         br_player = opts.br_player
+        dry_run = opts.dry_run
 
         fix_seeds(opts.seed)
 
         # Find the equilibrium_solver_run_checkpoint that it's responding to
-        equilibrium_solver_run_checkpoint = EquilibriumSolverRunCheckpoint.objects.get(
-            t=t,
-            equilibrium_solver_run__name=run_name,
-            equilibrium_solver_run__experiment__name=experiment_name
-        )
+        equilibrium_solver_run_checkpoint = get_checkpoint(experiment_name, run_name, t)
 
         # Build the result saver
-        result_saver = DBBRResultSaver(equilibrium_solver_run_checkpoint, config_name)
+        result_saver = DBBRResultSaver(equilibrium_solver_run_checkpoint, config_name, dry_run)
 
         # Load the environment from the database
         env_and_model = db_checkpoint_loader(equilibrium_solver_run_checkpoint)
@@ -72,5 +71,5 @@ class Command(BaseCommand):
         # Run best response
         run_br(result_saver, opts.report_freq, env_and_model, opts.num_training_episodes, br_player, opts.dry_run, opts.seed, opts.compute_exact_br, config)
 
-        if opts.dispatch_rewards and not opts.dry_run:
-            dispatch.dispatch_eval_database(experiment_name, run_name, t, br_player, br_name, overrides=opts.eval_overrides)
+        if opts.dispatch_rewards and not dry_run:
+            dispatch.dispatch_eval_database(experiment_name, run_name, t, br_player, config_name, overrides=opts.eval_overrides)

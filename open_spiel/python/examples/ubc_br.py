@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from open_spiel.python import rl_environment, policy
 from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn
 from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, clock_auction_bounds, check_on_q_values, make_dqn_kwargs_from_config, fix_seeds, pretty_time, add_optional_overrides, apply_optional_overrides, default_device, game_spec
-from open_spiel.python.examples.ubc_nfsp_example import policy_from_checkpoint, lookup_model_and_args, setup
+from open_spiel.python.examples.ubc_nfsp_example import lookup_model_and_args, setup
 from open_spiel.python.algorithms.exploitability import nash_conv
 from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator
 from open_spiel.python.algorithms.exploitability import nash_conv, best_response
@@ -45,36 +45,9 @@ from pathlib import Path
 import open_spiel.python.examples.ubc_dispatch as dispatch
 from distutils import util
 import sys
+from open_spiel.python.examples.legacy_file_classes import BRFileResultSaver, policy_from_checkpoint
 
 # TODO: Maybe want a convergence check here? Right now we just always run for a fixed number of episodes (which is indeed what e.g., the DREAM paper does)
-
-class BRFileResultSaver:
-
-    def __init__(self, checkpoint_dir, pickle_path, br_name):
-        self.checkpoint_dir = checkpoint_dir
-        self.pickle_path = pickle_path
-        self.br_name = br_name
-
-    def save(self, br_result):
-        pickle_path = self.pickle_path
-        if pickle_path is None:
-            pickle_path = os.path.join(self.checkpoint_dir, f'{self.br_name}.pkl')
-
-        logging.info(f'Pickling model to {pickle_path}')
-        with open(pickle_path, 'wb') as f:
-            pickle.dump(br_result, f)
-
-def dqn_agent_from_checkpoint(experiment_dir, checkpoint_name, br_name):
-    # Deprecated, use load_dqn_agent for database
-    env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name)
-    game, policy, env, trained_agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
-    with open(f'{experiment_dir}/{BR_DIR}/{br_name}.pkl', 'rb') as f:
-        br_checkpoint = pickle.load(f)
-        br_agent_id = br_checkpoint['br_player']
-        br_config = br_checkpoint['config']
-        br_agent = make_dqn_agent(br_agent_id, br_config, game, game_config)
-        br_agent._q_network.load_state_dict(br_checkpoint['agent'])
-    return br_agent
 
 def make_dqn_agent(player_id, config, game, game_config):
     num_players, num_actions, num_products = game_spec(game, game_config)
@@ -95,10 +68,11 @@ def make_dqn_agent(player_id, config, game, game_config):
 
 def add_argparse_args(parser):
     # Add args common to both Database and FileSystem
-
+    parser.add_argument('--num_training_episodes', type=int, required=True)
+    
     parser.add_argument('--br_player', type=int, default=0)
     parser.add_argument('--br_name', type=str)
-    parser.add_argument('--config', type=str, default=None)
+    parser.add_argument('--config', type=str, required=True)
     
     parser.add_argument('--report_freq', type=int, default=50_000)
     parser.add_argument('--compute_exact_br', type=bool, default=False, help='Whether to compute an exact best response. Usually not possible')
@@ -123,51 +97,33 @@ def main(argv):
     add_argparse_args(parser)
     args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
 
-    # Filesystem only stuff
-    experiment_dir = args.experiment_dir
-    pickle_path = args.pickle_path
-    br_name = args.br_name
-    config_path = args.config
-    checkpoint_name = args.checkpoint
-
-    # Other args
-    dispatch_rewards = args.dispatch_rewards
-    br_player = args.br_player
-    report_freq = args.report_freq
-    eval_overrides = args.eval_overrides
-    compute_exact_br = args.compute_exact_br
-    dry_run = args.dry_run
-
     # Set up result saver
-    checkpoint_dir = os.path.join(experiment_dir, BR_DIR)
-    BRFileResultSaver(checkpoint_dir, pickle_path, br_name)
+    checkpoint_dir = os.path.join(args.experiment_dir, BR_DIR)
+    result_saver = BRFileResultSaver(checkpoint_dir, args.pickle_path, args.br_name)
 
-    # Parse config and apply command line overrides
-    if config_path is None:
-        config_path = f'{experiment_dir}/config.yml' # Use the same config as NFSP if nothing was provided
-    logging.info(f"Reading BR config from {config_path}")
-    with open(config_path, 'rb') as fh: 
+    logging.info(f"Reading BR config from {args.config_path}")
+    with open(args.config_path, 'rb') as fh: #TODO: probably want to change this so it reads using config_names instead of paths
         config = yaml.load(fh, Loader=yaml.FullLoader)
 
     apply_optional_overrides(args, sys.argv, config)
 
     # Decide on name if not provided
+    br_name = args.br_name
     if br_name is None:
         output_suffix = '_' + Path(config_path).stem
-        br_name = f'{checkpoint_name}_br_{br_player}{output_suffix}'
+        br_name = f'{args.checkpoint}_br_{args.br_player}{output_suffix}'
 
     # Logging
     logging.get_absl_handler().use_absl_log_file(br_name, checkpoint_dir) 
     logging.set_verbosity(logging.INFO)
 
-    fix_seeds(seed) 
+    fix_seeds(args.seed) 
 
     # Set up env
-    env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name)
+    env_and_model = policy_from_checkpoint(args.experiment_dir, checkpoint_suffix=checkpoint_name)
 
     # Run best respones
-    br_output = run_br(result_saver, report_freq, env_and_model, config['num_training_episodes'], br_player, dry_run, config['seed'], compute_exact_br, config)
-    br_output['br_name'] = br_name
+    br_output = run_br(result_saver, args.report_freq, env_and_model, args.num_training_episodes, args.br_player, args.dry_run, args.seed, args.compute_exact_br, config)
 
     # Dispatch evaluation scripts
     if dispatch_rewards:

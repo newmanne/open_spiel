@@ -3,14 +3,14 @@ from statsmodels.distributions.empirical_distribution import ECDF
 from open_spiel.python.examples.ubc_utils import smart_load_sequential_game
 from auctions.models import *
 from open_spiel.python.examples.ubc_nfsp_example import setup
-
+from open_spiel.python.examples.ubc_br import make_dqn_agent
 
 OUTPUT_ROOT = '/shared/outputs'
 
 def load_dqn_agent(best_response):
     # Takes a DB best response object and returns the DQN agent
     db_game = best_response.checkpoint.equilibrium_solver_run.game
-    br_agent = make_dqn_agent(best_response.br_player, load_game(db_game), db_game.game_config)
+    br_agent = make_dqn_agent(best_response.br_player, best_response.config, load_game(db_game), db_game.config)
     br_agent._q_network.load_state_dict(pickle.loads(best_response.model))
     return br_agent
 
@@ -26,7 +26,6 @@ def env_and_model_from_run(run):
     # Create env_and_model
     env_and_model = setup(game, game_config, config)
     return env_and_model
-
 
 def db_checkpoint_loader(checkpoint):
     # Create an env_and_model based on an NFSP checkpoint in the database
@@ -46,7 +45,7 @@ class AttrDict(dict):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
 
-def setup_logging():
+def setup_logging(filename='auctions.log'):
     logging.config.dictConfig(
         {
             "version": 1,
@@ -57,7 +56,7 @@ def setup_logging():
             },
             "handlers": {
                 "console": {"class": "logging.StreamHandler", "formatter": "console"},
-                "file": {"class": "logging.FileHandler", "formatter": "file", "filename": "auctions.log"},
+                "file": {"class": "logging.FileHandler", "formatter": "file", "filename": filename},
             },
             "loggers": {"": {"level": "INFO", "handlers": ["console", "file"]}},
         }
@@ -84,3 +83,12 @@ def safe_zip(a, b):
     if len(a) != len(b):
         raise ValueError("Unequal sizes!")
     return zip(a,b)
+
+def get_checkpoint(experiment_name, run_name, t=None):
+    filter_kwargs = dict(equilibrium_solver_run__experiment__name=experiment_name, equilibrium_solver_run__name=run_name)
+    if t is None:
+        # Get the latest
+        t = EquilibriumSolverRunCheckpoint.objects.filter(**filter_kwargs).order_by('-t')[0].t
+    filter_kwargs['t'] = t
+    equilibrium_solver_run_checkpoint = EquilibriumSolverRunCheckpoint.objects.get(**filter_kwargs)
+    return equilibrium_solver_run_checkpoint

@@ -67,6 +67,10 @@ class EquilibriumSolverRunCheckpoint(TimeStampedModel):
     def get_model(self):
         return pickle.loads(self.policy)
 
+    @property
+    def game(self):
+        return self.equilibrium_solver_run.game
+
     class Meta:
         unique_together = ('equilibrium_solver_run', 't',)
 
@@ -77,7 +81,7 @@ class BestResponse(TimeStampedModel):
     br_player = models.PositiveIntegerField()
     name = models.TextField()
     walltime = models.FloatField()
-    model = models.BinaryField()
+    model = models.BinaryField(null=True)
     config = JSONField()
     t = models.PositiveIntegerField()
 
