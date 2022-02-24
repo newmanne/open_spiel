@@ -14,7 +14,7 @@ source ~/.bashrc
 sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 sudo apt -y update 
-sudo apt -y install postgresql-14 libpq-dev clang-10 
+sudo apt -y install postgresql-14 libpq-dev clang-10 graphviz graphviz-dev
 
 cd /apps
 git clone https://github.com/newmanne/open_spiel.git
@@ -65,7 +65,7 @@ export PATH=/apps/cmake-3.21.1-linux-x86_64/bin:$PATH
 export OPENSPIEL_PATH=/apps/open_spiel
 export CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
 export CXX=clang++-10
-export PATH=$PATH:/apps/opt/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux
+export PATH=$PATH:/apps/opt/ibm/ILOG/CPLEX_Studio201/cplex/bin/x86-64_linux
 export CUBLAS_WORKSPACE_CONFIG=:4096:8
 
 export DB_ENGINE=django.db.backends.postgresql
@@ -79,8 +79,15 @@ export DB_PORT=5432
 export PYTHONPATH=$PYTHONPATH:${OPENSPIEL_PATH}
 # For the Python bindings of Pyspiel
 export PYTHONPATH=$PYTHONPATH:${OPENSPIEL_PATH}/build/python
+
+export PATH="$(yarn global bin):$PATH"
 """
 
-# TODO: Install CPLEX with 3.8
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+source ~/.bashrc
+nvm install v16.14.0
+npm install --global yarn
+yarn global add @quasar/cli
 
-# TODO:
+
+# Install CPLEX via scp'ing the academic installer. Install it to /apps/opt/ibm... Then run the python command they tell you to run at the end of the install. Mkae sure you use CPLEX 20.10 or later so you support 3.8

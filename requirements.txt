@@ -39,3 +39,5 @@ django-filter
 statsmodels
 psycopg2
 psycopg2-binary
+statsmodels
+pygraphviz
