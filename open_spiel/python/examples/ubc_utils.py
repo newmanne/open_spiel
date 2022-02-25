@@ -57,8 +57,11 @@ def sor_profit_index(num_players):
 def recurrent_index(num_players, num_actions, num_products):
     return turn_based_size(num_players) + handcrafted_size(num_actions, num_products) + prefix_size(num_players, num_products)
 
+def prefix_index(num_players, num_actions, num_products):
+    return turn_based_size(num_players) + handcrafted_size(num_actions, num_products)
+
 def get_player_type_index(num_players, num_actions, num_products):
-    return recurrent_index(num_players, num_actions, num_products) + num_players
+    return prefix_index(num_players, num_actions, num_products) + num_players
 
 def get_player_type(num_players, num_actions, num_products, information_state_tensor):
     index = get_player_type_index(num_players, num_actions, num_products)

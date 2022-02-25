@@ -7,9 +7,9 @@ from pathlib import Path
 from open_spiel.python.examples.ubc_utils import EVAL_DIR, BR_DIR, CHECKPOINT_FOLDER, CONFIG_ROOT, config_path_from_config_name, safe_config_name
 
 def verify_config():
-    spiel_path = os.environ.get('OPENSPIEL_PATH')
+    spiel_path = os.environ.get('OPENSPIEL_CLUSTER_PATH')
     if spiel_path is None:
-        raise ValueError("Need to set the OPENSPIEL_PATH env variable")
+        raise ValueError("Need to set the OPENSPIEL_CLUSTER_PATH env variable")
 
     config_dir = os.environ.get('CLOCK_AUCTION_CONFIG_DIR')
     if config_dir is None:
