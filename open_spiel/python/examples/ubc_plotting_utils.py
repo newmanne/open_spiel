@@ -34,7 +34,7 @@ import seaborn as sns
 from django.db.models import F
 from auctions.models import *
 
-def parse_run(run):
+def parse_run(run, max_t=None):
     players = list(range(run.game.num_players))
 
     br_evals_qs = BREvaluation.objects.filter(best_response__checkpoint__equilibrium_solver_run=run)
@@ -51,13 +51,13 @@ def parse_run(run):
         logging.warning(f"Negative BR value ({negative_reward_br['reward']}) shouldn't happen. DQN should always find the drop out strategy... ")
 
     # Get all evaluations corresponding to the run
-    evaluations = Evaluation.objects.filter(checkpoint__equilibrium_solver_run=run)
+    evaluations = Evaluation.objects.filter(checkpoint__equilibrium_solver_run=run).values('mean_rewards', t=F('checkpoint__t'))
     if len(evaluations) == 0:
         logging.warning(f"No evaluations found for {run}")
         return
 
     # GOAL: Dataframe with t, reward, player, br_player, config columns
-    eval_values = evaluations.values('mean_rewards', t=F('checkpoint__t'))
+    eval_values = evaluations
     evaluations_df = pd.DataFrame.from_records(eval_values)
     evaluations_df['br_player'] = None
     evaluations_df['name'] = None
@@ -82,6 +82,8 @@ def parse_run(run):
     ev_df['Regret'] = ev_df['reward'] - ev_df['Baseline']
     ev_df['PositiveRegret'] = ev_df['Regret'].clip(lower=0)
 
+    if max_t is not None:
+        ev_df = ev_df.query(f't <= {max_t}')
 
     # If player != BR player, this isn't so meaningful
     ev_df = ev_df.merge(ev_df.query('player == br_player').groupby(['t', 'player']).apply(lambda grp: grp['PositiveRegret'].max()).reset_index().rename(columns={0: 'MaxPositiveRegret'}))
@@ -100,13 +102,13 @@ def parse_run(run):
 
 def get_all_frames(experiment, truth_available=False):
     frames = []
-    for run in experiment.equilibriumsolverrun_set.all():
+    for run in tqdm(experiment.equilibriumsolverrun_set.all()):
         try:
             ev_df = parse_run(run)
             if ev_df is not None:
                 frames.append(ev_df)
         except:
-            logging.exception(f"Exception parsing {model}. Skipping")
+            logging.exception(f"Exception parsing {run}. Skipping")
     return pd.concat(frames)
 
 def plot_all_models(ev_df, notebook=True, output_name='plots.html'):

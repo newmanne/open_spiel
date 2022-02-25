@@ -789,7 +789,11 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
   if (!aggregate_demands_.empty()) {
     auto& agg_demands = aggregate_demands_.back();
     for (int i = 0; i < agg_demands.size(); i++) {
-      values[offset + i] = agg_demands[i];
+        auto val = agg_demands[i];
+        if (information_policy_ == kHideDemand) {
+          val = val > num_licenses_[i] ? 1 : val == num_licenses_[i] ? 0 : -1;
+        }
+        values[offset + i] = val;
     }
   }
   offset += num_products_;

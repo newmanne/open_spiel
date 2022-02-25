@@ -81,7 +81,7 @@ class Command(BaseCommand):
         except Game.DoesNotExist:
             game_obj = smart_load_sequential_game('clock_auction', dict(filename=game_name))
             game_config = load_game_config(game_name)
-            game = Game.objects.create(
+            game, _ = Game.objects.get_or_create( 
                 name=game_name,
                 num_players=game_obj.num_players(),
                 num_actions=game_obj.num_distinct_actions(),

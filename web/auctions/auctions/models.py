@@ -93,7 +93,7 @@ class BestResponse(TimeStampedModel):
 
 class BREvaluation(TimeStampedModel):
 
-    best_response = models.ForeignKey(BestResponse, on_delete=CASCADE, null=True)
+    best_response = models.OneToOneField(BestResponse, on_delete=CASCADE, primary_key=True)
     walltime = models.FloatField()
     expected_value_cdf = ArrayField(models.FloatField(), size=101)
     expected_value_stats = JSONField()
@@ -103,8 +103,8 @@ class BREvaluation(TimeStampedModel):
 
 class Evaluation(TimeStampedModel):
     
+    checkpoint = models.OneToOneField(EquilibriumSolverRunCheckpoint, on_delete=CASCADE, primary_key=True)
     walltime = models.FloatField()
-    checkpoint = models.ForeignKey(EquilibriumSolverRunCheckpoint, on_delete=CASCADE)
     samples = JSONField()
     mean_rewards = ArrayField(models.FloatField()) # For quick nash conv calcs
     '''

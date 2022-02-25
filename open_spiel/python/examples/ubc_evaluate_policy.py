@@ -127,6 +127,7 @@ def run_eval(env_and_model, num_samples, report_freq, seed):
     player_types = defaultdict(list)
     allocations = defaultdict(list)
     payments = defaultdict(list)
+    episode_lengths = []
 
     for sample_index in range(num_samples):
       if sample_index % report_freq == 0 and sample_index > 0:
@@ -136,6 +137,7 @@ def run_eval(env_and_model, num_samples, report_freq, seed):
           logging.info(f"Reward player {player}: {avg_rewards}")
 
       time_step = env.reset()
+      episode_length = 0
 
       # Get type info. Another way to do this might be to instrument the chance sampler...
       for player_index in range(num_players):
@@ -148,6 +150,8 @@ def run_eval(env_and_model, num_samples, report_freq, seed):
         for i in range(num_players):
           if time_step.rewards is not None:
             episode_rewards[i] += time_step.rewards[i]
+        
+        episode_length += 1
         player_id = time_step.observations["current_player"]
         agent = agents[player_id]
         agent_output = agent.step(time_step, is_evaluation=True)
@@ -164,6 +168,7 @@ def run_eval(env_and_model, num_samples, report_freq, seed):
         payment, allocation = payment_and_allocation(num_players, num_actions, num_products, infostate)
         payments[i].append(payment)
         allocations[i].append(allocation)
+        episode_lengths.append(episode_length)
     
     for player in range(num_players):
       logging.info(f"Rewards for {player}")
@@ -179,6 +184,7 @@ def run_eval(env_and_model, num_samples, report_freq, seed):
       'types': player_types,
       'allocations': allocations,
       'payments': payments,
+      'auction_lengths': list((pd.Series(episode_lengths) / num_players))
     }
     return checkpoint
 
