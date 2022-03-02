@@ -42,6 +42,14 @@ module.exports = configure(function (ctx) {
 
     // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
     build: {
+      env: ctx.dev
+      ? { // so on dev we'll have
+        BASE_URL: 'http://localhost:8000'
+      }
+      : { // and on build (production):
+        BASE_URL: ''
+        // BASE_URL: 'https://simu.dotauctionsoftware.com'
+      },
       vueRouterMode: "hash", // available values: 'hash', 'history'
 
       // transpile: false,

@@ -22,6 +22,9 @@ from django.conf import settings
 router = routers.DefaultRouter()
 
 router.register(r'experiment', views.ExperimentViewSet)
+router.register(r'run', views.EquilibriumSolverRunViewSet)
+router.register(r'checkpoint', views.EquilibriumSolverRunCheckpointViewSet)
+router.register(r'game', views.GameViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

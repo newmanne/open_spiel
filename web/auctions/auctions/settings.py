@@ -40,13 +40,16 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'django_extensions',
     'rest_framework',
+    'corsheaders',
     'auctions'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -74,6 +77,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'auctions.wsgi.application'
 
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8080',
+]
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
@@ -136,3 +142,6 @@ DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": lambda request: True,
 }
 
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+}
