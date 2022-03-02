@@ -12,14 +12,8 @@ export default function () {
   return {
     config: {},
     experiments: [],
-    runs: [],
-    checkpoints: [],
     samples: [],
     games: [],
-    responses: [],
     bidderColors: BIDDERS_COLOR_MAPPING,
-    modelSelector: {},
-    selector: {},
-    // opening_explorer: {player: 0},
   };
 }

@@ -49,9 +49,6 @@ export default defineComponent({
   },
   mounted() {
     this.GET_EXPERIMENTS();
-    // if (this.experiment.id) {
-    //   this.$router.replace({name: 'summary', params: {id: this.auctionState.id}});
-    // }
   },
   computed: mapState({
     experiments: (state) =>

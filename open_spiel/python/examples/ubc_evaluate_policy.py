@@ -43,10 +43,13 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import List
 
+DEFAULT_REPORT_FREQ = 5000
+DEFAULT_SEED = 1234
+
 def add_argparse_args(parser):
     parser.add_argument('--num_samples', type=int, default=100_000)
-    parser.add_argument('--report_freq', type=int, default=5000)
-    parser.add_argument('--seed', type=int, default=1234)
+    parser.add_argument('--report_freq', type=int, default=DEFAULT_REPORT_FREQ)
+    parser.add_argument('--seed', type=int, default=DEFAULT_SEED)
     parser.add_argument('--br_name', type=str, default=None)
 
 def main(argv):
@@ -73,7 +76,7 @@ def main(argv):
     report_freq = args.report_freq
     seed = args.seed
 
-    logging.get_absl_handler().use_absl_log_file(f'evaluate_policy_{name}', checkpoint_dir) 
+    # logging.get_absl_handler().use_absl_log_file(f'evaluate_policy_{name}', checkpoint_dir) 
     logging.set_verbosity(logging.INFO)
   
     fix_seeds(seed)
@@ -112,7 +115,8 @@ def main(argv):
     logging.info('All done. Goodbye!')
 
 
-def run_eval(env_and_model, num_samples, report_freq, seed):
+def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=DEFAULT_SEED):
+    fix_seeds(seed)
     game, policy, env, agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
     num_players, num_actions, num_products = game_spec(game, game_config)
 

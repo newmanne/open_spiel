@@ -343,3 +343,7 @@ def read_config(config_name):
 
 def safe_config_name(name):
     return name.replace("/", "").replace('.yml', '')
+
+
+def make_straightforward(player_id, game_config, game):
+    return TakeSingleActionDecorator(StraightforwardAgent(player_id, game_config, game.num_distinct_actions()), game.num_distinct_actions())

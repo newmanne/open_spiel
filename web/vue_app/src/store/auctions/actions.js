@@ -29,8 +29,10 @@ export const simpleGetter = (context, url, commit, params, commitParams) => {
     return api({
         method: 'GET', url: `${url}`, params: params,
       }).then(res => {
-        context.commit(commit, {data: res.data, ...commitParams});
-        return res;
+        if (commit != null) {
+          context.commit(commit, {data: res.data, ...commitParams});
+        }
+        return res.data;
       }, error => {
         _processError(context.commit, error);
         return error;
@@ -57,18 +59,18 @@ export const GET_SAMPLES = (context, {gamePk, url_params}) => {
   return simpleGetter(context, `game/${gamePk}/samples/`, 'SET_SAMPLES', url_params)
 };
 
-export const GET_GAME_EXPERIMENTS = (context, {gamePk, player}) => {
-  return simpleGetter(context, `game/${gamePk}/experiments`, 'SET_EXPERIMENTS', null, { player });
+export const GET_GAME_EXPERIMENTS = (context, {gamePk}) => {
+  return simpleGetter(context, `game/${gamePk}/experiments`);
 };
 
-export const GET_GAME_RUNS = (context, {gamePk, experimentPk, player}) => {
-  return simpleGetter(context, `game/${gamePk}/runs`, 'SET_RUNS', { experiment: experimentPk }, { player });
+export const GET_GAME_RUNS = (context, {gamePk, experimentPk}) => {
+  return simpleGetter(context, `game/${gamePk}/runs`, null, { experiment: experimentPk });
 };
 
-export const GET_RUN_CHECKPOINTS = (context, {runPk, player}) => {
-  return simpleGetter(context, `run/${runPk}/checkpoints`, 'SET_CHECKPOINTS', null, { player });
+export const GET_RUN_CHECKPOINTS = (context, {runPk}) => {
+  return simpleGetter(context, `run/${runPk}/checkpoints`);
 };
 
 export const GET_CHECKPOINT_RESPONSES = (context, {checkpointPk, player }) => {
-  return simpleGetter(context, `checkpoint/${checkpointPk}/best_responses`, 'SET_RESPONSES', { player }, { player });
+  return simpleGetter(context, `checkpoint/${checkpointPk}/best_responses`, null, {player}, null);
 };

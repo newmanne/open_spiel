@@ -11,7 +11,7 @@
         <template v-if="game !== null">
           <div class="q-py-md" v-for="player in players" :key="player">
             <span><b>Player {{player}} model:</b></span>
-            <model-select :game="game" :player="player"/>
+            <model-select :game="game" :player="player" @updateSelection="onSelectionUpdated"/>
           </div>
         </template>
         <span><b>Sampler settings</b></span>
@@ -125,6 +125,7 @@ export default defineComponent({
       loading_samples: false,
       num_samples: 100,
       seed: 1234,
+      selector: {},
     };
   },
   computed: {
@@ -173,7 +174,6 @@ export default defineComponent({
     },
     ...mapState({
       trees: (state) => (state.samples.trees ? JSON.parse(JSON.stringify(state.samples.trees)) : []),
-      selector: (state) => state.selector,
     }),
   },
   methods: {
@@ -187,15 +187,19 @@ export default defineComponent({
     onClickNextActionRow(evt, row) {
       this.selected_actions[this.selected_player].push(row.action);
     },
+    onSelectionUpdated(evt) {
+      let {player, ...data} = evt;
+      this.selector[player] = data;
+    },
     getSamples() {
       this.selected_samples = true;
       this.loading_samples = true;
       
       let url_params = {num_samples: this.num_samples, seed: this.seed}
       for (let player in Object.keys(this.selector)) {
-        url_params[`player_${player}_checkpoint_pk`] = this.selector[player].checkpoint.value;
-        if (this.selector[player].response.value !== null) {
-          url_params[`player_${player}_br_pk`] = this.selector[player].response.value;
+        url_params[`player_${player}_checkpoint_pk`] = this.selector[player].checkpoint;
+        if (this.selector[player].response !== null) {
+          url_params[`player_${player}_br_pk`] = this.selector[player].response;
         }
       }
       let gamePk = this.game.id;

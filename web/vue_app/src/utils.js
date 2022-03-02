@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import math from 'mathjs';
+// import math from 'mathjs';
 import distinctColors from 'distinct-colors';
 
 const NUM_COLORS = 20;
