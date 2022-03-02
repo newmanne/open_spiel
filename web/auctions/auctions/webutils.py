@@ -4,6 +4,7 @@ from open_spiel.python.examples.ubc_utils import smart_load_sequential_game
 from auctions.models import *
 from open_spiel.python.examples.ubc_nfsp_example import setup
 from open_spiel.python.examples.ubc_br import make_dqn_agent
+from open_spiel.python.examples.ubc_plotting_utils import parse_run
 
 OUTPUT_ROOT = '/shared/outputs'
 
@@ -21,7 +22,7 @@ def env_and_model_from_run(run):
     game_config = game_db_obj.config
 
     # Get the NFSP config
-    config = run.config
+    config = dict(run.config)
 
     # Create env_and_model
     env_and_model = setup(game, game_config, config)
@@ -84,11 +85,18 @@ def safe_zip(a, b):
         raise ValueError("Unequal sizes!")
     return zip(a,b)
 
-def get_checkpoint(experiment_name, run_name, t=None):
-    filter_kwargs = dict(equilibrium_solver_run__experiment__name=experiment_name, equilibrium_solver_run__name=run_name)
+def get_checkpoint(run, t=None):
+    filter_kwargs = dict(equilibrium_solver_run=run)
     if t is None:
         # Get the latest
         t = EquilibriumSolverRunCheckpoint.objects.filter(**filter_kwargs).order_by('-t')[0].t
     filter_kwargs['t'] = t
     equilibrium_solver_run_checkpoint = EquilibriumSolverRunCheckpoint.objects.get(**filter_kwargs)
     return equilibrium_solver_run_checkpoint
+
+def find_best_checkpoint(run, max_t=None):
+    ev_df = parse_run(run, max_t)
+    best_t = ev_df.groupby('t')['ApproxNashConv'].first().idxmin()
+    approx_nash_conv = ev_df.groupby('t')['ApproxNashConv'].first().min()
+    best_checkpoint = get_checkpoint(run, t=best_t)
+    return best_checkpoint, approx_nash_conv

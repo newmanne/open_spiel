@@ -41,3 +41,4 @@ psycopg2
 statsmodels
 pygraphviz
 psycopg2-binary
+django-cors-headers
