@@ -7,7 +7,7 @@ const NUM_COLORS = 20;
 export const RANDOM_COLORS = distinctColors({count: NUM_COLORS});
 
 export const FMT = (x, fixed=0, money=false) => {
-    var f;
+    let f;
     if (money) {
         f = '$,';
     } else {

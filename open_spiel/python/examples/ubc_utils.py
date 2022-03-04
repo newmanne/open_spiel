@@ -159,7 +159,7 @@ def get_actions(game):
         action_dict[i] = state.action_to_string(i)
     return action_dict
 
-def check_on_q_values(agent, game, state=None, infostate_tensor=None, legal_actions=None, time_step=None):
+def check_on_q_values(agent, game, state=None, infostate_tensor=None, legal_actions=None, time_step=None, return_raw_q_values=False):
     q_network = agent._q_network
 
     if time_step is not None:
@@ -178,6 +178,8 @@ def check_on_q_values(agent, game, state=None, infostate_tensor=None, legal_acti
 
     info_state = q_network.prep_batch([q_network.reshape_infostate(it)]).to(agent._device)
     q_values = q_network(info_state).cpu().detach()[0]
+    if return_raw_q_values:
+        return q_values
 
     legal_q_values = q_values[legal_actions]
     action_dict = get_actions(game)
