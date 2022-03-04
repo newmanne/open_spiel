@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 // import math from 'mathjs';
+import _ from 'lodash';
 import distinctColors from 'distinct-colors';
 
 const NUM_COLORS = 20;
@@ -23,6 +24,10 @@ export const FMT = (x, fixed=0, money=false) => {
     return d3.format(f)((x).toFixed(fixed))
   }
 };
+
+export const FMT_STR = (x) => {
+  return _.startCase(_.camelCase(x.replace('_', ' ')));
+}
 
 export const toPct = (x, fixed=0) => {
   if (isNaN(x)) {

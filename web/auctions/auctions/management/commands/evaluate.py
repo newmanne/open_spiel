@@ -25,7 +25,7 @@ class Command(BaseCommand):
 
         # Needed to identify the BR along with br_name
         parser.add_argument('--br_player', type=int)
-        parser.add_argument('--dry_run', type=util.strtobool, default=1)
+        parser.add_argument('--dry_run', type=util.strtobool, default=0)
 
     def handle(self, *args, **options):
         setup_logging()
@@ -41,7 +41,7 @@ class Command(BaseCommand):
         dry_run = opts.dry_run
 
         # Find the equilibrium_solver_run_checkpoint 
-        equilibrium_solver_run_checkpoint = get_checkpoint(experiment_name, run_name, t)
+        equilibrium_solver_run_checkpoint = get_checkpoint_by_name(experiment_name, run_name, t)
 
         # Load the environment
         env_and_model = db_checkpoint_loader(equilibrium_solver_run_checkpoint)

@@ -74,3 +74,7 @@ export const GET_RUN_CHECKPOINTS = (context, {runPk}) => {
 export const GET_CHECKPOINT_RESPONSES = (context, {checkpointPk, player }) => {
   return simpleGetter(context, `checkpoint/${checkpointPk}/best_responses`, null, {player}, null);
 };
+
+export const GET_TRAJECTORY_PLOT = (context, {runPk}) => {
+  return simpleGetter(context, `run/${runPk}/trajectory_plot`);
+};

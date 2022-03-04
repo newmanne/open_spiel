@@ -17,7 +17,7 @@ from __future__ import division
 from __future__ import print_function
 
 from open_spiel.python import rl_environment, policy
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, fix_seeds, get_player_type, current_round, round_frame, payment_and_allocation, pretty_time, BR_DIR, game_spec
+from open_spiel.python.examples.ubc_utils import *
 from open_spiel.python.examples.ubc_nfsp_example import lookup_model_and_args
 from open_spiel.python.examples.ubc_br import make_dqn_agent
 from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator, TakeSingleActionDecorator
@@ -43,22 +43,91 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import List
 from tqdm import tqdm
+import re
 
 DEFAULT_REPORT_FREQ = 5000
 DEFAULT_SEED = 1234
 
+class NodeType:
+    ROOT = -1
+    INFORMATION_STATE = 0
+    ACTION = 1
+    FINAL_STATE = 2
 
-def new_tree_node():
-    return {'sample_outcomes': defaultdict(list), 'children': {}}
+price_pattern = re.compile(r'^.*(Price:.*)$', flags=re.MULTILINE)
+allocation_pattern = re.compile(r'.*(Final bids:.*)$.*', flags=re.MULTILINE)
+round_pattern = re.compile(r'.*(Round:.*)$.*', flags=re.MULTILINE)
+value_pattern = re.compile(r'v(.+)b.*')
+budget_pattern = re.compile(r'.*b(.+)$')
+big_budget_pattern = re.compile(r'Budget: \d+', flags=re.MULTILINE)
+
+def pretty_information_state(infostate_string, depth):
+    if depth == 1:
+        v_idx = infostate_string.index('Values')
+        return infostate_string[v_idx:]
+    else:
+        # TODO: Clean this up.
+        # Rows are submitted, processed, aggregate. I don't care about submitted because it's in the history table. I only care about the last | because the rest is in history
+        """
+        2, 3, 0 | 3, 1, 0 
+        2, 3, 0 | 3, 1, 0
+        4, 6, 3 | 4, 4, 3
+        """
+        res = re.search(big_budget_pattern, infostate_string)
+        data_lines = infostate_string[res.end():]
+        # ['', '3, 3, 3 | 1, 2, 0', '3, 3, 3 | 3, 2, 0', '3, 6, 6 | 3, 4, 3']
+        _, submitted, processed, aggregate = data_lines.split('\n')
+        submitted_final = submitted.split('|')[-1].strip()
+        processed_final = processed.split('|')[-1].strip()
+        aggregate_final = aggregate.split('|')[-1].strip()
+        pretty_str = ''
+        if submitted_final != processed_final:
+            # Only show processed when it's different from submitted. Maybe we should highlight this in red?
+            pretty_str += f'Processed: {processed_final}\n'
+        pretty_str += f'Aggregate: {aggregate_final}'
+        return pretty_str
+
+def new_tree_node(node_type, str_desc, depth, action_id=None, env=None):
+    node = {'sample_outcomes': defaultdict(list), 'children': {}, 'type': node_type, 'depth': depth} # 'pretty_name': pretty_str}
+    if node_type == NodeType.INFORMATION_STATE:
+        pretty_str = pretty_information_state(str_desc, depth)
+        # TODO: Add the aggregate demand history so we can show a separate table?
+        # node['agg_demand'] = 
+    elif node_type == NodeType.ACTION:
+        pretty_str = str_desc
+        state = env._state
+        game = env._game
+        information_state_tensor = state.information_state_tensor()
+        cpi = clock_profit_index(game.num_players(), game.num_distinct_actions())
+        profits = np.array(information_state_tensor[cpi:cpi + game.num_distinct_actions()])
+        profit = profits[action_id]
+        legal_actions = state.legal_actions() # Only show budget feasible
+        max_cp_idx = pd.Series(profits[legal_actions]).idxmax()
+        mapped_action_id = legal_actions.index(action_id)
+        node['straightforward_clock_profit'] = np.round(profit, 2)
+        node['max_cp'] = mapped_action_id == max_cp_idx
+    else:
+        pretty_str = str_desc
+    node['pretty_str'] = pretty_str
+    return node
 
 def aggregate_results(node):
     # Count number of observations
+
+    # TODO: node['normalized_num_plays']?
+
     node['num_plays'] = len(node['sample_outcomes']['profit'])
     # Add means in place
     # TODO: handle allocations differently? 
     # TODO: save other stats?
     for k in node['sample_outcomes']:
-        node[f'avg_{k}'] = np.round(np.mean(node['sample_outcomes'][k], axis=0), 2)
+        if k == 'allocation':
+            avgs = np.round(np.mean(node['sample_outcomes'][k], axis=0), 2)
+            for i in range(len(node['sample_outcomes'][k][0])):
+                letter = chr(ord('@')+i+1)
+                node[f'Avg Alloc {letter}'] = avgs[i]
+        else:
+            node[f'avg_{k}'] = np.round(np.mean(node['sample_outcomes'][k], axis=0), 2)
     del node['sample_outcomes']
 
     for child in node['children']:
@@ -77,7 +146,7 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
     logging.info(f"Evaluation phase: {num_samples} episodes")
     alg_start_time = time.time()
 
-    roots = [new_tree_node() for player in range(num_players)]
+    roots = [new_tree_node(NodeType.ROOT, '(root)', 0) for player in range(num_players)]
 
     # rewards = defaultdict(list)
     # player_types = defaultdict(list)
@@ -110,7 +179,7 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
             # Note that we got to this infostate
             infostate_string = env._state.information_state_string()
             if infostate_string not in current_nodes[player_id]['children']:
-                current_nodes[player_id]['children'][infostate_string] = new_tree_node()
+                current_nodes[player_id]['children'][infostate_string] = new_tree_node(node_type=NodeType.INFORMATION_STATE, str_desc=infostate_string, depth=current_nodes[player_id]['depth'] + 1)
             current_nodes[player_id] = current_nodes[player_id]['children'][infostate_string]
             child_list[player_id].append(infostate_string)
 
@@ -120,7 +189,7 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
             # Note that we took this action
             action_string = env._state.action_to_string(agent_output.action)
             if action_string not in current_nodes[player_id]['children']:
-                current_nodes[player_id]['children'][action_string] = new_tree_node()
+                current_nodes[player_id]['children'][action_string] = new_tree_node(node_type=NodeType.ACTION, str_desc=action_string, depth=current_nodes[player_id]['depth'] + 1, action_id=agent_output.action, env=env)
             current_nodes[player_id] = current_nodes[player_id]['children'][action_string]
             child_list[player_id].append(action_string)
 
@@ -136,7 +205,7 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
             # Get some representation of the final bids
             final_string = str(env._state).split('\n')[-1]
             if final_string not in current_nodes[i]['children']:
-                current_nodes[i]['children'][final_string] = new_tree_node()
+                current_nodes[i]['children'][final_string] = new_tree_node(node_type=NodeType.FINAL_STATE, str_desc=final_string, depth=current_nodes[i]['depth'] + 1)
             current_nodes[i] = current_nodes[i]['children'][final_string]
             child_list[i].append(final_string)
 

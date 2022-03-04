@@ -1,8 +1,6 @@
 <template>
   <q-page class="flex flex-center">
-    <div class="q-pa-md" style="max-width: 300px">
-      <game-select></game-select>
-    </div>
+    <iframe :srcdoc="bokeh_js" style="min-width: 1000px; min-height: 600px;"></iframe>
   </q-page>
 </template>
 
@@ -15,15 +13,26 @@ import GameSelect from "../components/GameSelect.vue";
 export default defineComponent({
   name: "PageTest",
   components: {
-    GameSelect,
+    // GameSelect,
   },
   data() {
-    return {};
+    return {
+      bokeh_js: '',
+    };
   },
-  mounted() {},
+  computed: {
+    // bokeh_js() {
+    //   return this.bokeh_js_text;
+    // }
+  },
+  mounted() {
+    this.GET_TRAJECTORY_PLOT({runPk: 32}).then(data => {
+      this.bokeh_js = data.bokeh_js;
+    });
+  },
   computed: mapState({}),
   methods: {
-    ...mapActions(["GET_EXPERIMENTS", "GET_RUNS", "GET_CHECKPOINTS"]),
+    ...mapActions(["GET_TRAJECTORY_PLOT"]),
   },
 });
 </script>

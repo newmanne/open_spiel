@@ -18,6 +18,7 @@ from auctions.webutils import *
 from open_spiel.python.examples.ubc_sample_game_tree import sample_game_tree
 from open_spiel.python.examples.ubc_decorators import TakeSingleActionDecorator
 from open_spiel.python.examples.straightforward_agent import StraightforwardAgent
+from open_spiel.python.examples.ubc_plotting_utils import plot_all_models, parse_run
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +69,16 @@ class EquilibriumSolverRunViewSet(viewsets.ReadOnlyModelViewSet):
         
         data = sorted(data, key=lambda d: (d['best'], d['t']), reverse=True)
         return Response(data)
+
+    @action(detail=True)
+    def trajectory_plot(self, request, pk=None):
+        run = self.get_object()
+        ev_df = parse_run(run)
+        bokeh_js = plot_all_models(ev_df, notebook=False, output_str=True)
+        data = dict()
+        data['bokeh_js'] = bokeh_js
+        return Response(data)
+
 
 class EquilibriumSolverRunCheckpointSerializer(serializers.ModelSerializer):
     class Meta:
