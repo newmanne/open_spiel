@@ -22,20 +22,20 @@
               enabled: false
             },
             events: {
-              // click: function(e) {
-              dataPointSelection(event, chartContext, config) {
-                const index = config.dataPointIndex;
-                const series = self.series[config.seriesIndex];
-                const bidder = series.name;
-                const filter = GroupFilterModal.methods.allocFilter(bidder, self.serviceArea);
+              // // click: function(e) {
+              // dataPointSelection(event, chartContext, config) {
+              //   const index = config.dataPointIndex;
+              //   const series = self.series[config.seriesIndex];
+              //   const bidder = series.name;
+              //   const filter = GroupFilterModal.methods.allocFilter(bidder, self.serviceArea);
 
-                self.ADD_GROUP_FILTERS({
-                  key: filter.value,
-                  operator: '__exact',
-                  value: index
-                });
-                // console.log(filter);
-                self.OPEN_GROUP_FILTERS();
+              //   self.ADD_GROUP_FILTERS({
+              //     key: filter.value,
+              //     operator: '__exact',
+              //     value: index
+              //   });
+              //   // console.log(filter);
+              //   self.OPEN_GROUP_FILTERS();
               }
             }
           },
@@ -121,9 +121,6 @@
         bidders: state => state.example.bidders,
       })
     },
-    methods: mapMutations(
-      []
-    )
   }
 </script>
 

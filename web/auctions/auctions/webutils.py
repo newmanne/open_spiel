@@ -85,6 +85,9 @@ def safe_zip(a, b):
         raise ValueError("Unequal sizes!")
     return zip(a,b)
 
+def get_checkpoint_by_name(experiment_name, run_name, t=None):
+    return get_checkpoint(EquilibriumSolverRun.objects.get(name=run_name, experiment__name=experiment_name), t=t)
+
 def get_checkpoint(run, t=None):
     filter_kwargs = dict(equilibrium_solver_run=run)
     if t is None:

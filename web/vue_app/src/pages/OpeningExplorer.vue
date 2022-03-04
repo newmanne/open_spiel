@@ -1,6 +1,6 @@
 <template>
   <q-page class="q-px-md row flex flex-center">
-    <div class="col-12">
+    <div class="col-9">
       <div class="text-h5 q-py-md">Opening Explorer</div>
       <div class="q-pa-md shadow-box shadow-5">
         <div class="text-h6">Settings</div>
@@ -55,11 +55,12 @@
               :options="dropdown_players"
               emit-value
             />
-            <hr />
             <template v-if="selected_player !== null">
               <span><b>History</b></span>
               <q-table
                 :rows="previous_nodes"
+                :columns="previous_columns"
+                :visible-columns="previous_visible_columns"
                 row-key="action"
                 table-style="white-space: pre;"
                 hide-bottom
@@ -72,6 +73,8 @@
                 <span><b>Next states/actions</b></span>
                 <q-table
                   :rows="next_nodes"
+                  :columns="next_columns"
+                  :visible-columns="next_visible_columns"
                   row-key="action"
                   table-style="white-space: pre;"
                   hide-bottom
@@ -95,6 +98,7 @@ const { mapState, mapActions } = createNamespacedHelpers("auctions");
 import GameSelect from "../components/GameSelect.vue";
 import ModelSelect from "../components/ModelSelect.vue";
 import _ from 'lodash' 
+import { FMT_STR } from "../utils.js";
 
 function formatNode(node) {
   // get all properties except children from node
@@ -105,6 +109,47 @@ function formatNode(node) {
     outcomes[k] = Array.isArray(outcomes[k]) ? JSON.stringify(outcomes[k], null, ' ') : outcomes[k]
   ))
   return outcomes;
+}
+
+const HIDDEN_COLUMNS = ["depth", "action", "type", "max_cp"]
+const COLUMN_FORMATS = {
+  pretty_str: {
+    label: 'Action',
+    priority: 0,
+  },
+  num_plays: {
+    priority: 1,
+  },
+  straightforward_clock_profit: {
+    classes: row => row.max_cp ? 'bg-amber-5' : '',
+  }
+};
+
+function columnifier(fields, sortable) {
+    let columns = _.map(fields, c => {
+      if (COLUMN_FORMATS.hasOwnProperty(c)) {
+        return {name: c, sortable: sortable, ...COLUMN_FORMATS[c]}
+      } else {
+        return {
+          name: c, sortable: sortable,
+        }
+      }
+    });
+    columns = _.map(columns, column => {
+      if (!column.hasOwnProperty('label')) {
+        column.label = FMT_STR(column.name);
+      }
+      if (!column.hasOwnProperty('field')) {
+        column.field = column.name;
+      }
+      if (!column.hasOwnProperty('priority')) {
+        column.priority = 9999;
+      }
+      return column;
+    });
+    return columns.sort((a, b) => {
+      return a.priority - b.priority || a.label.localeCompare(b.label)
+    });
 }
 
 
@@ -171,6 +216,22 @@ export default defineComponent({
         }))
         return table_nodes;
       }
+    },
+    next_visible_columns() {
+      let fields = Object.keys(this.next_nodes[0]);
+      return _.filter(fields, c => HIDDEN_COLUMNS.indexOf(c) === -1);
+    },
+    next_columns() {
+      let fields = Object.keys(this.next_nodes[0]);
+      return columnifier(fields, true);
+    },
+    previous_visible_columns() {
+      let fields = Object.keys(this.previous_nodes[0]);
+      return _.filter(fields, c => HIDDEN_COLUMNS.indexOf(c) === -1);
+    },
+    previous_columns() {
+      let fields = Object.keys(this.previous_nodes[0]);
+      return columnifier(fields, false);
     },
     ...mapState({
       trees: (state) => (state.samples.trees ? JSON.parse(JSON.stringify(state.samples.trees)) : []),

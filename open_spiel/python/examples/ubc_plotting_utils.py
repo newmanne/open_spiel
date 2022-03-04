@@ -27,6 +27,9 @@ from bokeh.io import output_notebook
 from bokeh.models import HoverTool, ColumnDataSource, ColorBar, LogColorMapper, LinearColorMapper
 from bokeh.transform import linear_cmap, log_cmap
 from bokeh.palettes import Category10_10
+from bokeh.resources import CDN
+from bokeh.embed import file_html
+
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -97,7 +100,7 @@ def parse_run(run, max_t=None):
     ev_df['num_players'] = run.game.num_players
     ev_df['model'] = run.name
 
-    return ev_df
+    return ev_df.sort_values('t')
 
 
 def get_all_frames(experiment, truth_available=False):
@@ -111,7 +114,7 @@ def get_all_frames(experiment, truth_available=False):
             logging.exception(f"Exception parsing {run}. Skipping")
     return pd.concat(frames)
 
-def plot_all_models(ev_df, notebook=True, output_name='plots.html'):
+def plot_all_models(ev_df, notebook=True, output_name='plots.html', output_str=False):
     plots = []
     for model, sub_df in ev_df.groupby('model'):
         plot = plot_from_df(sub_df)
@@ -122,9 +125,13 @@ def plot_all_models(ev_df, notebook=True, output_name='plots.html'):
         for plot in plots:
             show(plot)
     else:
-        # Set output to static HTML file
-        output_file(filename=output_name, title="RegretPlots")
-        save(column(*plots))
+        p = column(*plots)
+        if output_str:
+            return file_html(p, CDN, "RegretPlots").strip()
+        else:
+            # Set output to static HTML file
+            output_file(filename=output_name, title="RegretPlots")
+            save(p)
 
 def compare_best_responses(master_df):
     # Each (model, iteration) is a datapoint for each BR config
@@ -196,7 +203,7 @@ def plot_from_df(ev_df):
         player_color = next(PLAYER_COLORS)
 
         best_br_only_df = ev_df.loc[ev_df.query(f'player == {p} and br_player == {p} and name != "straightforward" and not name.isnull()', engine='python')[['t', 'PositiveRegret', 'name']].groupby('t')['PositiveRegret'].idxmax()]
-        display(best_br_only_df)
+        # display(best_br_only_df)
         best_br_source = ColumnDataSource(best_br_only_df)
         straightforward_source = ColumnDataSource(ev_df.query(f'player == {p} and br_player == {p} and name == "straightforward"', engine='python')[['t', 'PositiveRegret']])
         overall_player_source = ColumnDataSource(ev_df.query(f'player == {p} and br_player == {p}')[['t', 'MaxPositiveRegret']].drop_duplicates())

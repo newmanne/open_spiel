@@ -55,7 +55,7 @@ class Command(BaseCommand):
         fix_seeds(opts.seed)
 
         # Find the equilibrium_solver_run_checkpoint that it's responding to
-        equilibrium_solver_run_checkpoint = get_checkpoint(experiment_name, run_name, t)
+        equilibrium_solver_run_checkpoint = get_checkpoint_by_name(experiment_name, run_name, t)
 
         # Build the result saver
         result_saver = DBBRResultSaver(equilibrium_solver_run_checkpoint, config_name, dry_run)
