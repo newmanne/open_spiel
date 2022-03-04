@@ -75,6 +75,7 @@
                   :rows="next_nodes"
                   :columns="next_columns"
                   :visible-columns="next_visible_columns"
+                  :pagination="pagination"
                   row-key="action"
                   table-style="white-space: pre;"
                   hide-bottom
@@ -98,7 +99,7 @@ const { mapState, mapActions } = createNamespacedHelpers("auctions");
 import GameSelect from "../components/GameSelect.vue";
 import ModelSelect from "../components/ModelSelect.vue";
 import _ from 'lodash' 
-import { FMT_STR } from "../utils.js";
+import { FMT_STR, FMT } from "../utils.js";
 
 function formatNode(node) {
   // get all properties except children from node
@@ -116,9 +117,14 @@ const COLUMN_FORMATS = {
   pretty_str: {
     label: 'Action',
     priority: 0,
+    format: (val, row) => val,
   },
   num_plays: {
     priority: 1,
+  },
+  pct_plays: {
+    label: '% Played',
+    priority: 2,
   },
   straightforward_clock_profit: {
     classes: row => row.max_cp ? 'bg-amber-5' : '',
@@ -144,6 +150,9 @@ function columnifier(fields, sortable) {
       }
       if (!column.hasOwnProperty('priority')) {
         column.priority = 9999;
+      }
+      if (!column.hasOwnProperty('format')) {
+        column.format = (val, row) => FMT(val, 2);
       }
       return column;
     });
@@ -171,6 +180,7 @@ export default defineComponent({
       num_samples: 100,
       seed: 1234,
       selector: {},
+      pagination: { sortBy: 'num_plays', descending: true, rowsPerPage: 100 },
     };
   },
   computed: {
