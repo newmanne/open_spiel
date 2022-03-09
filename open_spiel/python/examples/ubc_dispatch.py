@@ -97,6 +97,7 @@ def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', 
 #SBATCH -e slurm-%j-{slurm_job_name}.err
 #SBATCH -o slurm-%j-{slurm_job_name}.out
 
+export OPENSPIEL_PATH={spiel_path}
 CMD=`{command}`
 echo $CMD
 eval $CMD
@@ -125,6 +126,8 @@ def dispatch_single_br_database(experiment_name, run_name, t, br_player, config,
 #SBATCH --time=5-0:00:00 # days-hh:mm:ss
 #SBATCH -e slurm-%j-{slurm_job_name}.err
 #SBATCH -o slurm-%j-{slurm_job_name}.out
+
+export OPENSPIEL_PATH={spiel_path}
 CMD=`{command}`
 echo $CMD
 eval $CMD
@@ -154,6 +157,7 @@ def dispatch_eval_database(experiment_name, run_name, t, br_player, br_name, sub
 #SBATCH -e slurm-%j-{slurm_job_name}.err
 #SBATCH -o slurm-%j-{slurm_job_name}.out
 
+export OPENSPIEL_PATH={spiel_path}
 CMD=`{command}`
 echo $CMD
 eval $CMD

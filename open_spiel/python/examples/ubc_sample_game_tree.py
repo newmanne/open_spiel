@@ -231,7 +231,7 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
                 node['sample_outcomes']['profit'].append(episode_rewards[i]),
                 node['sample_outcomes']['payment'].append(payment),
                 node['sample_outcomes']['allocation'].append(allocation),
-                node['sample_outcomes']['rounds'].append(episode_length / 2),
+                node['sample_outcomes']['rounds'].append(episode_length / num_players),
 
                 # Move to next node
                 if j < len(child_list[i]):
