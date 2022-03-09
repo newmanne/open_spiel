@@ -61,10 +61,8 @@ python manage.py migrate
 
 append to bashrc
 ""
-export PATH=/apps/cmake-3.21.1-linux-x86_64/bin:$PATH
 export OPENSPIEL_PATH=/apps/open_spiel
 export CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
-export CXX=clang++-10
 export PATH=$PATH:/apps/opt/ibm/ILOG/CPLEX_Studio201/cplex/bin/x86-64_linux
 export CUBLAS_WORKSPACE_CONFIG=:4096:8
 
