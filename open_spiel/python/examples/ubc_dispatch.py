@@ -98,6 +98,9 @@ def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', 
 #SBATCH -o slurm-%j-{slurm_job_name}.out
 
 export OPENSPIEL_PATH={spiel_path}
+export PYTHONPATH=${{OPENSPIEL_PATH}}:$PYTHONPATH
+export PYTHONPATH=${{OPENSPIEL_PATH}}/build/python:$PYTHONPATH
+
 CMD=`{command}`
 echo $CMD
 eval $CMD
@@ -128,6 +131,8 @@ def dispatch_single_br_database(experiment_name, run_name, t, br_player, config,
 #SBATCH -o slurm-%j-{slurm_job_name}.out
 
 export OPENSPIEL_PATH={spiel_path}
+export PYTHONPATH=${{OPENSPIEL_PATH}}:$PYTHONPATH
+export PYTHONPATH=${{OPENSPIEL_PATH}}/build/python:$PYTHONPATH
 CMD=`{command}`
 echo $CMD
 eval $CMD
@@ -158,6 +163,8 @@ def dispatch_eval_database(experiment_name, run_name, t, br_player, br_name, sub
 #SBATCH -o slurm-%j-{slurm_job_name}.out
 
 export OPENSPIEL_PATH={spiel_path}
+export PYTHONPATH=${{OPENSPIEL_PATH}}:$PYTHONPATH
+export PYTHONPATH=${{OPENSPIEL_PATH}}/build/python:$PYTHONPATH
 CMD=`{command}`
 echo $CMD
 eval $CMD

@@ -216,6 +216,11 @@ def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, see
     game, policy, env, agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
     num_players, num_actions, num_products = game_spec(game, game_config)
 
+    import os
+    # printing environment variables
+    print(os.environ)
+    raise
+
     ### NFSP ALGORITHM
     nash_conv_history = []
     episode_lengths = []
