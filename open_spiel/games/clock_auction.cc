@@ -395,7 +395,7 @@ std::string AuctionState::ActionToString(Player player, Action action_id) const 
     return FlatJointActionToString(action_id);
   if (player != kChancePlayerId) {
     std::vector<int> bid = ActionToBid(action_id);
-    return absl::StrCat("Bid for ", absl::StrJoin(bid, ","), " licenses @ $", DotProduct(bid, posted_price_.back()), " with activity ", all_bids_activity_[action_id]);
+    return absl::StrCat("Bid for ", absl::StrJoin(bid, ","), " licenses @ $", DotProduct(bid, clock_price_.back()), " with activity ", all_bids_activity_[action_id]);
   } else {
     if (value_.size() < num_players_) {
       return absl::StrCat("Player ", value_.size(), " was assigned values: ", absl::StrJoin(values_[value_.size()][action_id], ", "), " and a budget of ", budgets_[budget_.size()][action_id]);

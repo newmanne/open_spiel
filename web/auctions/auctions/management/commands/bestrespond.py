@@ -1,15 +1,11 @@
 from django.core.management.base import BaseCommand
-from open_spiel.python.examples.ubc_br import run_br, add_argparse_args
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, load_game_config, read_config, apply_optional_overrides, fix_seeds
-from open_spiel.python.examples.ubc_nfsp_example import setup
-from open_spiel.python.examples.ubc_dispatch import dispatch_eval_database
+from open_spiel.python.examples.ubc_br import run_br
+from open_spiel.python.examples.ubc_utils import read_config, apply_optional_overrides, fix_seeds, add_optional_overrides
 import logging
 import pickle
 from auctions.models import *
-import os
 import sys
 from auctions.webutils import *
-import yaml
 import open_spiel.python.examples.ubc_dispatch as dispatch
 
 logger = logging.getLogger(__name__)
@@ -37,10 +33,26 @@ class Command(BaseCommand):
     help = 'Runs BR and saves the results'
 
     def add_arguments(self, parser):
-        add_argparse_args(parser)
+        parser.add_argument('--num_training_episodes', type=int, required=True)
+        
+        parser.add_argument('--br_player', type=int, default=0)
+        parser.add_argument('--br_name', type=str)
+        parser.add_argument('--config', type=str, required=True)
+        
+        parser.add_argument('--report_freq', type=int, default=50_000)
+        parser.add_argument('--compute_exact_br', type=bool, default=False, help='Whether to compute an exact best response. Usually not possible')
+        parser.add_argument('--dry_run', type=bool, default=False, help='If true, do not save')
+        parser.add_argument('--device', type=str, default=default_device)
+        parser.add_argument('--seed', type=int, default=1234)
+
+        # Rewards dispatching
+        parser.add_argument('--dispatch_rewards', type=util.strtobool, default=0)
+        parser.add_argument('--eval_overrides', type=str, default='')
+
         parser.add_argument('--t', type=int)
         parser.add_argument('--experiment_name', type=str)
         parser.add_argument('--run_name', type=str)
+        add_optional_overrides(parser)
 
     def handle(self, *args, **options):
         setup_logging()
@@ -65,7 +77,6 @@ class Command(BaseCommand):
 
         # Read config from file system and apply command line overrides
         config = read_config(config_name)
-
         apply_optional_overrides(opts, sys.argv, config)
 
         # Run best response

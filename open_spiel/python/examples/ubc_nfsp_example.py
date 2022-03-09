@@ -19,8 +19,8 @@ from __future__ import division
 from __future__ import print_function
 
 from dataclasses import dataclass
-from open_spiel.python import rl_environment, policy
-from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn, ubc_transformer
+from open_spiel.python import rl_environment
+from open_spiel.python.pytorch import ubc_nfsp
 from open_spiel.python.examples.ubc_utils import *
 from open_spiel.python.algorithms.exploitability import nash_conv
 from open_spiel.python.examples.ubc_model_args import lookup_model_and_args
@@ -28,27 +28,12 @@ import pyspiel
 from open_spiel.python.examples.agent_policy import NFSPPolicies
 import numpy as np
 import pandas as pd
-import copy
-import absl
-import argparse
-from absl import app, logging, flags
+from absl import logging
 import torch
-import yaml
-import sys
 import time
-import pickle
 import os
-import json
 import shutil
 from typing import List
-import open_spiel.python.examples.ubc_dispatch as dispatch
-from distutils import util
-from copy import deepcopy
-from pathlib import Path
-import abc
-import sys
-from open_spiel.python.examples.legacy_file_classes import FileDispatcher, FileNFSPResultSaver
-
 
 @dataclass
 class EnvAndModel:
@@ -88,16 +73,16 @@ def setup(game, game_config, config):
             sl_model_args=sl_model_args,
             rl_model=rl_model,
             rl_model_args=rl_model_args,
-            reservoir_buffer_capacity=config.get('reservoir_buffer_capacity', 2000000),
-            anticipatory_param=config.get('anticipatory_param', 0.1),
-            sl_learning_rate=config.get('sl_learning_rate', 0.01),
-            rl_learning_rate=config.get('rl_learning_rate', 0.01),
-            batch_size=config.get('batch_size', 256),
-            min_buffer_size_to_learn=config.get('min_buffer_size_to_learn', 1000),
-            learn_every=config.get('learn_every', 64),
-            optimizer_str=config.get('optimizer_str', 'sgd'),
-            add_explore_transitions=config.get('add_explore_transitions', True),
-            device=config.get('device', default_device()),
+            reservoir_buffer_capacity=config['reservoir_buffer_capacity'],
+            anticipatory_param=config['anticipatory_param'],
+            sl_learning_rate=config['sl_learning_rate'],
+            rl_learning_rate=config['rl_learning_rate'],
+            batch_size=config['batch_size'],
+            min_buffer_size_to_learn=config['min_buffer_size_to_learn'],
+            learn_every=config['learn_every'],
+            optimizer_str=config['optimizer_str'],
+            add_explore_transitions=config['add_explore_transitions'],
+            device=config['device'],
             **dqn_kwargs
         )
         agents.append(agent)
@@ -105,28 +90,6 @@ def setup(game, game_config, config):
     expl_policies_avg = NFSPPolicies(env, agents, False)
     return EnvAndModel(env=env, nfsp_policies=expl_policies_avg, agents=agents, game=game, game_config=game_config)
 
-
-def add_argparse_args(parser):
-    parser.add_argument('--num_training_episodes', type=int, required=True)
-    parser.add_argument('--filename', type=str, default='parameters.json')
-    parser.add_argument('--seed', type=int, default=1234)
-    parser.add_argument('--network_config_file', type=str, default='network.yml')
-    parser.add_argument('--output_dir', type=str, default='output') # Note: DONT NAME THIS "checkpoints" because of a jupyter notebook
-    parser.add_argument('--game_name', type=str, default='clock_auction')
-    parser.add_argument('--job_name', type=str, default='auction')
-    parser.add_argument('--warn_on_overwrite', type=bool, default=False)
-    parser.add_argument('--compute_nash_conv', type=bool, default=False)
-    parser.add_argument('--eval_every', type=int, default=300_000)
-    parser.add_argument("--eval_every_early", type=int, default=None)
-    parser.add_argument("--eval_exactly", nargs="+", default=[], type=int)
-    parser.add_argument("--eval_zero", type=util.strtobool, default=1)
-    parser.add_argument('--dispatch_br', type=util.strtobool, default=1)
-    parser.add_argument('--br_portfolio_path', type=str, default=None)
-    parser.add_argument('--br_overrides', type=str, default='')
-    parser.add_argument('--eval_overrides', type=str, default='')
-    parser.add_argument('--report_freq', type=int, default=50_000)
-    parser.add_argument('--device', type=str, default=default_device)
-    add_optional_overrides(parser)
 
 def setup_directory_structure(output_dir, warn_on_overwrite, database=True):
     if not os.path.exists(output_dir):
@@ -141,43 +104,6 @@ def setup_directory_structure(output_dir, warn_on_overwrite, database=True):
     os.makedirs(os.path.join(output_dir, EVAL_DIR))
     if not database:
         os.makedirs(os.path.join(output_dir, CHECKPOINT_FOLDER))
-
-def main(argv):
-    parser = argparse.ArgumentParser()
-    add_argparse_args(parser)
-    args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
-
-    setup_directory_structure(args.output_dir, args.warn_on_overwrite, database=False)
-
-    logging.get_absl_handler().use_absl_log_file('nfsp', args.output_dir) 
-    logging.set_verbosity(logging.INFO)
-
-    with open(args.network_config_file, 'rb') as fh:
-        config = yaml.load(fh, Loader=yaml.FullLoader)
-
-    apply_optional_overrides(args, sys.argv, config)
-    logging.info(f'Network params: {config}')
-
-    # Save the final overridden config so there's no confusion later if you need to cross-reference
-    with open(f'{args.output_dir}/config.yml', 'w') as outfile:
-        yaml.dump(config, outfile)
-
-    fix_seeds(args.seed)
-
-    # additionally, load game params to set up models
-    game_config = load_game_config(args.filename)
-
-    # Save the game config so there's no confusion later if you need to cross-reference
-    with open(f'{args.output_dir}/game.json', 'w') as outfile:
-        json.dump(game_config, outfile)
-
-    logging.info("Loading %s", args.game_name)
-
-    game = smart_load_clock_auction(args.filename)
-    result_saver = FileNFSPResultSaver(args.output_dir, job_name)
-    dispatcher = FileDispatcher(game.num_players(), args.output_dir, args.br_overrides, args.eval_overrides, args.br_portfolio_path)
-    env_and_model = setup(game, game_config, config)
-    run_nfsp(env_and_model, args.num_training_episodes, config.get('iterate_br', True), result_saver, args.seed, args.compute_nash_conv, dispatcher, args.eval_every, args.eval_every_early, args.eval_exactly, args.eval_zero, args.report_freq, args.dispatch_br)
 
 def report_nfsp(ep, episode_lengths, num_players, agents, game, start_time):
     logging.info(f"----Episode {ep} ---")
@@ -213,6 +139,8 @@ def evaluate_nfsp(ep, compute_nash_conv, game, policy, alg_start_time, nash_conv
     return checkpoint
 
 def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, seed, compute_nash_conv, dispatcher, eval_every, eval_every_early, eval_exactly, eval_zero, report_freq, dispatch_br):
+    # This may have already been done, but do it again. Required to do it outside to ensure that networks get initilized the same way, which usually happens elsewhere
+    fix_seeds(seed)
     game, policy, env, agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
     num_players, num_actions, num_products = game_spec(game, game_config)
 
@@ -268,7 +196,3 @@ def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, see
 
     logging.info(f"Walltime: {pretty_time(time.time() - alg_start_time)}")
     logging.info('All done. Goodbye!')
-
-
-if __name__ == "__main__":
-    app.run(main)

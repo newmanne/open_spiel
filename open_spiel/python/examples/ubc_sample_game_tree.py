@@ -100,9 +100,11 @@ def new_tree_node(node_type, str_desc, depth, action_id=None, env_and_model=None
         agent = env_and_model.agents[player_id]
         state = env_and_model.env._state
         game = env_and_model.game
+        num_players, num_actions, num_products = game_spec(game, env_and_model.game_config)
+
         information_state_tensor = time_step.observations["info_state"][player_id]
-        cpi = clock_profit_index(game.num_players(), game.num_distinct_actions())
-        profits = np.array(information_state_tensor[cpi:cpi + game.num_distinct_actions()])
+        cpi = clock_profit_index(num_players, num_actions)
+        profits = np.array(information_state_tensor[cpi:cpi + num_actions])
         profit = profits[action_id]
         legal_actions = state.legal_actions() # Only show budget feasible
         max_cp_idx = pd.Series(profits[legal_actions]).idxmax()
@@ -116,6 +118,13 @@ def new_tree_node(node_type, str_desc, depth, action_id=None, env_and_model=None
         if rl_agent is not None:
             q_values = check_on_q_values(rl_agent, game, time_step=time_step, return_raw_q_values=True)
             node['q_value'] = q_values[action_id]
+        
+        clock_prices_index = clock_price_index(num_players, num_actions)
+        clock_prices = np.array(information_state_tensor[clock_prices_index:clock_prices_index + num_actions])
+        for i in range(num_products):
+            letter = chr(ord('@')+i+1)
+            node[f'clock_price {letter}'] = clock_prices[i]
+
     else:
         pretty_str = str_desc
     node['pretty_str'] = pretty_str
