@@ -224,6 +224,10 @@ export default defineComponent({
           action: action,
           ...formatNode(children[action]),
         }))
+        let conditional_num_plays = _.sum(table_nodes.map(row => row['num_plays']));
+        for (const row of table_nodes) {
+          row.pct_plays = (row['num_plays'] / conditional_num_plays) * 100;
+        }
         return table_nodes;
       }
     },
