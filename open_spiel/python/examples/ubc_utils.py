@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import itertools
 import pulp
-from pulp import LpProblem, LpMinimize, LpVariable, LpStatus, LpBinary, lpSum, lpDot, LpMaximize, LpInteger
+from pulp import LpStatus
 import random
 import string
 from open_spiel.python.rl_agent import StepOutput
@@ -48,8 +48,12 @@ def prefix_size(num_players, num_products):
 def handcrafted_size(num_actions, num_products):
     return 2 * num_actions + 3 + 3 * num_products
 
+def clock_price_index(num_players, num_actions):
+    # Round, SOR/Clock Profit
+    return round_index(num_players) + 2 * num_actions + 2 + 1
+
 def clock_profit_index(num_players, num_actions):
-    return round_index(num_players) + 1 + num_actions
+    return round_index(num_players) + num_actions + 1
 
 def sor_profit_index(num_players):
     return round_index(num_players) + 1
@@ -108,19 +112,19 @@ def fix_seeds(seed):
 
 def make_dqn_kwargs_from_config(config, game_config=None, player_id=None, include_nfsp=True):
     dqn_kwargs = {
-      "replay_buffer_capacity": config.get('replay_buffer_capacity', 50_000),
+      "replay_buffer_capacity": config['replay_buffer_capacity'],
       "epsilon_decay_duration": config['num_training_episodes'],
       "epsilon_start": config['epsilon_start'],
       "epsilon_end": config['epsilon_end'],
-      "update_target_network_every": config.get('update_target_network_every', 10_000),
-      "loss_str": config.get('loss_str', 'mse'),
-      "double_dqn": config.get('double_dqn', True),
+      "update_target_network_every": config['update_target_network_every'],
+      "loss_str": config['loss_str'],
+      "double_dqn": config['double_dqn'],
       "batch_size": config['batch_size'],
       "learning_rate": config['rl_learning_rate'],
       "learn_every": config['learn_every'],
       "min_buffer_size_to_learn": config['min_buffer_size_to_learn'],
       "optimizer_str": config['optimizer_str'],
-      "device": config.get('device', default_device()),
+      "device": config['device'],
     }
     if not include_nfsp:
         del dqn_kwargs['batch_size']
@@ -295,7 +299,6 @@ def add_optional_overrides(parser):
     parser.add_argument('--optimizer_str', type=str, default=None)
     parser.add_argument('--epsilon_start', type=float, default=None)
     parser.add_argument('--epsilon_end', type=float, default=None)
-    parser.add_argument('--iterate_br', type=util.strtobool, default=None)
 
 def apply_optional_overrides(args, argv, config):
     # Override any top-level yaml args with command line arguments
@@ -303,14 +306,12 @@ def apply_optional_overrides(args, argv, config):
         if f'--{arg}' in argv:
             name = arg
             value = getattr(args, arg)
-            # TODO: This isn't quite right, and just winds up adding things that don't really belong in the config to the config. But it seems hard to resolve and isn't exactly causing problems
             if name in config:
-                logging.warning(f'Found argument {name} on command line but not in config')
-            config[name] = value
+                logging.warning(f'Overriding {name} from command line')
+                config[name] = value
 
-    if 'num_training_episodes' not in config:
-        config['num_training_episodes'] = 1_000_000
-
+    # This one argument we special case: I don't consider it part of the config per se, but it's too annoying to refactor out and it impacts the epsilon decay schedule
+    config['num_training_episodes'] = args.num_training_episodes
 
 class UBCChanceEventSampler(object):
   """Default sampler for external chance events."""
@@ -341,6 +342,23 @@ def read_config(config_name):
     logging.info(f"Reading config from {config_file}")
     with open(config_file, 'rb') as fh: 
         config = yaml.load(fh, Loader=yaml.FullLoader)
+
+    # DEFAULTS GO HERE
+    config['replay_buffer_capacity'] = config.get('replay_buffer_capacity', 50_000)
+    config['update_target_network_every'] = config.get('update_target_network_every', 10_000)
+    config['loss_str'] = config.get('loss_str', 'mse')
+    config['double_dqn'] = config.get('double_dqn', True)
+    config['device'] = config.get('device', default_device())
+    config['reservoir_buffer_capacity'] = config.get('reservoir_buffer_capacity', 2_000_000)
+    config['anticipatory_param'] = config.get('anticipatory_param', 0.1)
+    config['sl_learning_rate'] = config.get('sl_learning_rate', 0.01)
+    config['rl_learning_rate'] = config.get('rl_learning_rate', 0.01)
+    config['batch_size'] = config.get('batch_size', 256)
+    config['min_buffer_size_to_learn'] = config.get('min_buffer_size_to_learn', 1000)
+    config['learn_every'] = config.get('learn_every', 64)
+    config['optimizer_str'] = config.get('optimizer_str', 'sgd')
+    config['add_explore_transitions'] = config.get('add_explore_transitions', False)
+
     return config
 
 def safe_config_name(name):

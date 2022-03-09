@@ -1,14 +1,14 @@
 from django.core.management.base import BaseCommand
-from open_spiel.python.examples.ubc_nfsp_example import run_nfsp, add_argparse_args, setup_directory_structure
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, load_game_config, fix_seeds, read_config, apply_optional_overrides
+from open_spiel.python.examples.ubc_nfsp_example import run_nfsp, setup_directory_structure
+from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, load_game_config, fix_seeds, read_config, apply_optional_overrides, add_optional_overrides, default_device
 import sys
 import logging
 import pickle
 from auctions.models import *
-import os
 from auctions.webutils import *
 import json
 import open_spiel.python.examples.ubc_dispatch as dispatch
+from distutils import util
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +54,37 @@ class Command(BaseCommand):
     help = 'Runs NFSP and saves the results'
 
     def add_arguments(self, parser):
-        add_argparse_args(parser)
+        parser.add_argument('--num_training_episodes', type=int, required=True)
+        parser.add_argument('--iterate_br', type=util.strtobool, default=1)
+        parser.add_argument('--seed', type=int, default=1234)
+        parser.add_argument('--network_config_file', type=str, default='network.yml')
+        parser.add_argument('--compute_nash_conv', type=bool, default=False)
+        parser.add_argument('--device', type=str, default=default_device)
+
+        # Directory
+        parser.add_argument('--output_dir', type=str, default='output') # Note: DONT NAME THIS "checkpoints" because of a jupyter notebook
+        parser.add_argument('--warn_on_overwrite', type=bool, default=False)
+
+        # Naming
         parser.add_argument('--experiment_name', type=str)
+        parser.add_argument('--job_name', type=str, default='auction')
+        parser.add_argument('--filename', type=str, default='parameters.json') # Select clock auction game
+        parser.add_argument('--game_name', type=str, default='clock_auction')
+        
+        # Reporting and evaluation
+        parser.add_argument('--report_freq', type=int, default=50_000)
+        parser.add_argument('--eval_every', type=int, default=300_000)
+        parser.add_argument("--eval_every_early", type=int, default=None)
+        parser.add_argument("--eval_exactly", nargs="+", default=[], type=int)
+        parser.add_argument("--eval_zero", type=util.strtobool, default=1)
+
+        # Dispatching
+        parser.add_argument('--dispatch_br', type=util.strtobool, default=1)
+        parser.add_argument('--br_portfolio_path', type=str, default=None)
+        parser.add_argument('--br_overrides', type=str, default='')
+        parser.add_argument('--eval_overrides', type=str, default='')
+
+        add_optional_overrides(parser)
 
     def handle(self, *args, **options):
         setup_logging()
@@ -72,6 +101,7 @@ class Command(BaseCommand):
         # 0) Read the config file
         config = read_config(config_name)
         apply_optional_overrides(opts, sys.argv, config)
+        
         logging.info(f'Network params: {config}')
 
         # 1) Make the game if it doesn't exist
@@ -112,4 +142,5 @@ class Command(BaseCommand):
 
         result_saver = DBNFSPSaver(eq_solver_run=eq_solver_run)
         dispatcher = DBBRDispatcher(game.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path)
+
         run_nfsp(env_and_model, opts.num_training_episodes, opts.iterate_br, result_saver, seed, opts.compute_nash_conv, dispatcher, opts.eval_every, opts.eval_every_early, opts.eval_exactly, opts.eval_zero, opts.report_freq, opts.dispatch_br)

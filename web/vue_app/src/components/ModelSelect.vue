@@ -93,6 +93,7 @@ export default defineComponent({
         player: this.player,
       }).then((data) => {
         this.runs = data.map((e) => ({ label: e.name, value: e.pk }));
+        this.runs.sort((a, b) => a.label.localeCompare(b.label));
         this.run = this.runs[0];
         this.checkpoint = null;
         this.response = null;

@@ -16,104 +16,19 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from open_spiel.python import rl_environment, policy
-from open_spiel.python.examples.ubc_utils import smart_load_sequential_game, fix_seeds, get_player_type, current_round, round_frame, payment_and_allocation, pretty_time, BR_DIR, game_spec
-from open_spiel.python.examples.ubc_nfsp_example import lookup_model_and_args
-from open_spiel.python.examples.ubc_br import make_dqn_agent
-from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator, TakeSingleActionDecorator
-from open_spiel.python.examples.straightforward_agent import StraightforwardAgent
-from open_spiel.python.examples.legacy_file_classes import policy_from_checkpoint
+from open_spiel.python.examples.ubc_utils import fix_seeds, get_player_type, payment_and_allocation, pretty_time, BR_DIR, game_spec
+from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator
 
-import pyspiel
 import numpy as np
 import pandas as pd
-import absl
-import argparse
-from absl import app, logging, flags
+from absl import logging
 import torch
-import yaml
-import sys
 import time
-import pickle
-import os
-import json
-import shutil
 from collections import defaultdict
-from pathlib import Path
 from dataclasses import dataclass
-from typing import List
 
 DEFAULT_REPORT_FREQ = 5000
 DEFAULT_SEED = 1234
-
-def add_argparse_args(parser):
-    parser.add_argument('--num_samples', type=int, default=100_000)
-    parser.add_argument('--report_freq', type=int, default=DEFAULT_REPORT_FREQ)
-    parser.add_argument('--seed', type=int, default=DEFAULT_SEED)
-    parser.add_argument('--br_name', type=str, default=None)
-
-def main(argv):
-    parser = argparse.ArgumentParser()
-    add_argparse_args(parser)
-
-    # File system only arguments
-    parser.add_argument('--experiment_dir', type=str)
-    parser.add_argument('--checkpoint', type=str, default='checkpoint_latest')
-    parser.add_argument('--output', type=str, default=None)
-    parser.add_argument('--straightforward_player', type=int, default=None) 
-
-    args = parser.parse_args(argv[1:])  # Let argparse parse the rest of flags.
-
-    # Fileysystem-specific args
-    experiment_dir = args.experiment_dir
-    checkpoint_name = args.checkpoint
-    br_name = args.br_name
-    output_name = args.output
-    straightforward_player = args.straightforward_player
-
-    # General args
-    num_samples = args.num_samples
-    report_freq = args.report_freq
-    seed = args.seed
-
-    # logging.get_absl_handler().use_absl_log_file(f'evaluate_policy_{name}', checkpoint_dir) 
-    logging.set_verbosity(logging.INFO)
-  
-    fix_seeds(seed)
-    
-    env_and_model = policy_from_checkpoint(experiment_dir, checkpoint_suffix=checkpoint_name)
-    game, policy, env, agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
-    num_players, num_actions, num_products = game_spec(game, game_config)
-
-    br_agent_id = None
-
-    if br_name is None:
-      logging.info("No best reponders provided. Just evaluating the policy")
-    else:
-      if br_name == 'straightforward': # Replace one agent with Straightforward Bidding
-        agents[straightforward_player] = TakeSingleActionDecorator(StraightforwardAgent(straightforward_player, game_config, game.num_distinct_actions()), game.num_distinct_actions())
-      else:
-        br_agent = dqn_agent_from_checkpoint(experiment_dir, checkpoint_name, br_name)
-        agents[br_agent.player_id] = br_agent
-
-    eval_output = run_eval(env_and_model, num_samples, report_freq, seed)
-
-    # Save result
-    eval_output['br_agent'] = br_agent_id
-    eval_output['br_name'] = br_name
-
-    if output_name is None:
-      name = checkpoint_name
-      if br_name:
-        name += f'_{br_name}'
-      output_name = f'rewards_{name}'
-
-    checkpoint_path = os.path.join(checkpoint_dir, f'{output_name}.pkl')
-    with open(checkpoint_path, 'wb') as f:
-      pickle.dump(eval_output, f)
-
-    logging.info('All done. Goodbye!')
-
 
 def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=DEFAULT_SEED):
     fix_seeds(seed)
@@ -191,7 +106,3 @@ def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=D
       'auction_lengths': list((pd.Series(episode_lengths) / num_players))
     }
     return checkpoint
-
-    
-if __name__ == "__main__":
-    app.run(main)

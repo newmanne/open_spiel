@@ -1,10 +1,8 @@
 from django.core.management.base import BaseCommand
-from open_spiel.python.examples.ubc_evaluate_policy import run_eval, add_argparse_args
+from open_spiel.python.examples.ubc_evaluate_policy import run_eval, DEFAULT_REPORT_FREQ, DEFAULT_SEED
 from open_spiel.python.examples.ubc_utils import series_to_quantiles, fix_seeds
 import logging
-import pickle
 from auctions.models import *
-import os
 from auctions.webutils import *
 from open_spiel.python.examples.ubc_decorators import TakeSingleActionDecorator
 from open_spiel.python.examples.straightforward_agent import StraightforwardAgent
@@ -16,7 +14,10 @@ class Command(BaseCommand):
     help = 'Evaluates a policy and saves the result'
 
     def add_arguments(self, parser):
-        add_argparse_args(parser)
+        parser.add_argument('--num_samples', type=int, default=100_000)
+        parser.add_argument('--report_freq', type=int, default=DEFAULT_REPORT_FREQ)
+        parser.add_argument('--seed', type=int, default=DEFAULT_SEED)
+        parser.add_argument('--br_name', type=str, default=None)
 
         # Needed to identify the checkpoint
         parser.add_argument('--t', type=int)
