@@ -72,6 +72,9 @@ def run_br(result_saver, report_freq, env_and_model, num_training_episodes, br_p
 
     # TRAINING PHASE
     for ep in range(num_training_episodes):
+        for agent in agents:
+            agent.set_global_iteration(ep)
+
         if ep % report_freq == 0 and ep > 1:
             report(ep, agents, episode_lengths, br_player, game)
             if compute_exact_br:
