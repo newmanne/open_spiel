@@ -271,6 +271,7 @@ class DQN(rl_agent.AbstractAgent):
     # Step counter to keep track of learning, eps decay and target network.
     self._step_counter = 0
     self._iteration = 0
+    self._global_iteration = 0
     self._cache = LRUCache(maxsize=5000)
 
     # Keep track of the last training loss achieved in an update step.
@@ -440,7 +441,7 @@ class DQN(rl_agent.AbstractAgent):
     """Returns the evaluation or decayed epsilon value."""
     if is_evaluation:
       return 0.0
-    decay_steps = min(self._iteration, self._epsilon_decay_duration)
+    decay_steps = min(self._global_iteration, self._epsilon_decay_duration)
     decayed_epsilon = (
         self._epsilon_end + (self._epsilon_start - self._epsilon_end) *
         (1 - decay_steps / self._epsilon_decay_duration)**power)
@@ -551,6 +552,9 @@ class DQN(rl_agent.AbstractAgent):
   @property
   def step_counter(self):
     return self._step_counter
+
+  def set_global_iteration(self, global_iteration):
+    self._global_iteration = global_iteration
 
   def get_weights(self):
     variables = [m.weight for m in self._q_network.model]

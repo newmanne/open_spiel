@@ -103,6 +103,7 @@ class Command(BaseCommand):
         apply_optional_overrides(opts, sys.argv, config)
         
         logging.info(f'Network params: {config}')
+        logging.info(f'Command line commands {opts}')
 
         # 1) Make the game if it doesn't exist
         try:

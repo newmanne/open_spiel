@@ -85,6 +85,7 @@ class NFSP(rl_agent.AbstractAgent):
     # Step counter to keep track of learning.
     self._step_counter = 0
     self._iteration = 0
+    self._global_iteration = 0
     self._last_learn_iteration = -1
     self._cache = LRUCache(maxsize=5000)
 
@@ -294,6 +295,10 @@ class NFSP(rl_agent.AbstractAgent):
   def _latest_checkpoint_filename(self, name):
     checkpoint_filename = "_".join([name, "pid" + str(self.player_id)])
     return checkpoint_filename + "_latest"
+
+  def set_global_iteration(self, global_iteration):
+    self._global_iteration = global_iteration
+    self._rl_agent.set_global_iteration(global_iteration)
 
   def save(self):
     """Saves the average policy network and the inner RL agent's q-network.

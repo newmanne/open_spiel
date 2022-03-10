@@ -150,8 +150,12 @@ def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, see
 
     alg_start_time = time.time()
     for ep in range(1, num_training_episodes + 1):
+        for agent in agents:
+            agent.set_global_iteration(ep)
+
         time_step = env.reset()
         episode_steps = 0
+
         while not time_step.last():
             episode_steps += 1
             player_id = time_step.observations["current_player"]
@@ -168,6 +172,7 @@ def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, see
             time_step = env.step(action_list)
 
         episode_lengths.append(episode_steps)
+
         # Episode is over, step all agents with final info state.
         if iterate_br:
             for player_id, agent in enumerate(agents):
