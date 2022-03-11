@@ -5,6 +5,7 @@ epsilon_end: 0.05
 epsilon_start: 0.9
 learn_every: 16
 loss_str: mse
+sl_loss_str: brier_score
 min_buffer_size_to_learn: 1000
 optimizer_str: sgd
 replay_buffer_capacity: 50_000

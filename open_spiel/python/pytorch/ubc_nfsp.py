@@ -25,6 +25,7 @@ import collections
 import contextlib
 import enum
 import os
+from typing import Optional
 from absl import logging
 import numpy as np
 import time
@@ -43,6 +44,29 @@ Transition = collections.namedtuple(
     "Transition", "info_state action_probs legal_actions_mask iteration")
 
 ILLEGAL_ACTION_LOGITS_PENALTY = -1e9
+
+def brier_score(
+    input: torch.Tensor,
+    target: torch.Tensor,
+    size_average: Optional[bool] = None,
+    reduce: Optional[bool] = None,
+    reduction: str = "mean",
+):
+  # input: (examples, actions)
+  # target: (examples)
+  # make target_onehot: (examples, action)
+  num_examples, num_actions = input.shape
+  target_onehot = F.one_hot(target, num_classes = num_actions).to(torch.float)
+
+  # call MSE
+  return F.mse_loss(
+    input,
+    target_onehot,
+    size_average,
+    reduce,
+    reduction,
+  )
+
 
 class NFSP(rl_agent.AbstractAgent):
   """NFSP Agent implementation in PyTorch.
@@ -65,6 +89,7 @@ class NFSP(rl_agent.AbstractAgent):
                sl_learning_rate=0.01,
                min_buffer_size_to_learn=1000,
                learn_every=64,
+               sl_loss_str="cross_entropy",
                optimizer_str="sgd",
                add_explore_transitions=True, # Should I add transitions to the resevoir buffer if they are caused due to exploration?
                device='cpu',
@@ -120,6 +145,13 @@ class NFSP(rl_agent.AbstractAgent):
         ("q_network", self._rl_agent._q_network),
         ("avg_network", self._avg_network)
     ]
+
+    if sl_loss_str == "cross_entropy":
+      self.loss_class = F.cross_entropy
+    elif sl_loss_str == "brier_score":
+      self.loss_class = brier_score
+    else:
+      raise ValueError("Not implemented, choose from 'cross_entropy', 'brier'.")
 
     if optimizer_str == "adam":
       self.optimizer = torch.optim.Adam(self._avg_network.parameters(), lr=sl_learning_rate)
@@ -274,7 +306,7 @@ class NFSP(rl_agent.AbstractAgent):
     action_probs = torch.Tensor(np.array([t.action_probs for t in transitions]))
 
     self.optimizer.zero_grad()
-    loss = F.cross_entropy(self._avg_network(info_states).cpu(),
+    loss = self.loss_class(self._avg_network(info_states).cpu(),
                            torch.max(action_probs, dim=1)[1])
     loss.backward()
     self.optimizer.step()

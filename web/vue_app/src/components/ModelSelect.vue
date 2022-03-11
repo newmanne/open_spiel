@@ -107,7 +107,7 @@ export default defineComponent({
         player: this.player,
       }).then((data) => {
         this.checkpoints = data.map((e) => ({
-          label: FMT(e.t) + (e.best ? " (Lowest ApproxNashConv)" : ""),
+          label: FMT(e.t) + (e.best ? ` (Lowest ApproxNashConv: ${FMT(e.ApproxNashConv, 2)})` : ""),
           value: e.pk,
         }));
         this.checkpoint = this.checkpoints[0];
