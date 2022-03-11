@@ -66,6 +66,7 @@ class AuctionState : public SimMoveState {
     int information_policy,
     bool allow_negative_profit_bids,
     bool tiebreaks,
+    double switch_penalty_,
     std::vector<std::vector<std::vector<double>>> values,
     std::vector<std::vector<double>> budgets,
     std::vector<std::vector<double>> type_probs
@@ -154,6 +155,10 @@ class AuctionState : public SimMoveState {
   std::vector<std::vector<Player>> selected_order_;
   int tie_break_index_; // What product are we currently on a chance node for?
 
+
+  std::vector<int> num_switches_;
+  double switch_penalty_;
+
   bool finished_;
 
   // Used for tensor
@@ -205,6 +210,7 @@ class AuctionGame : public SimMoveGame {
 
     // Used for tensor
   int max_rounds_;
+  double switch_penalty_;
 };
 
 }  // namespace clock_auction

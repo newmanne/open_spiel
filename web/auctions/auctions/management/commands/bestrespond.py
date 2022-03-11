@@ -1,12 +1,13 @@
 from django.core.management.base import BaseCommand
 from open_spiel.python.examples.ubc_br import run_br
-from open_spiel.python.examples.ubc_utils import read_config, apply_optional_overrides, fix_seeds, add_optional_overrides
+from open_spiel.python.examples.ubc_utils import read_config, apply_optional_overrides, fix_seeds, add_optional_overrides, default_device
 import logging
 import pickle
 from auctions.models import *
 import sys
 from auctions.webutils import *
 import open_spiel.python.examples.ubc_dispatch as dispatch
+from distutils import util
 
 logger = logging.getLogger(__name__)
 

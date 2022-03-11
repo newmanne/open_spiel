@@ -106,6 +106,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
   int information_policy,
   bool allow_negative_profit_bids,
   bool tiebreaks,
+  double switch_penalty_,
   std::vector<std::vector<std::vector<double>>> values,
   std::vector<std::vector<double>> budgets,
   std::vector<std::vector<double>> probs
@@ -114,6 +115,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       max_rounds_(max_rounds),
       finished_(false),
       tiebreaks_(tiebreaks),
+      switch_penalty_(switch_penalty_),
       num_licenses_(num_licenses),
       num_players_(num_players),
       increment_(increment),
@@ -137,6 +139,8 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       
       submitted_demand_ = std::vector<std::vector<std::vector<int>>>(num_players_, std::vector<std::vector<int>>());
       processed_demand_ = std::vector<std::vector<std::vector<int>>>(num_players_, std::vector<std::vector<int>>());
+      num_switches_ = std::vector<int>(num_players_, 0);
+
       sor_price_.push_back(open_price);
       std::vector<double> cp(num_products_, 0.);
       for (int j = 0; j < num_products_; j++) {
@@ -363,6 +367,12 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
     SPIEL_CHECK_EQ(round_ - 1, submitted_demand_[p].size());
     const Action action = actions[p];
     auto bid = ActionToBid(action);
+    if (submitted_demand_[p].size() >= 1) {
+      auto prev_bid = submitted_demand_[p].back();
+      if (bid != prev_bid) {
+        num_switches_[p] += 1;
+      }
+    }
     SPIEL_CHECK_GE(activity_[p], all_bids_activity_[action]);
     submitted_demand_[p].push_back(bid);
   }
@@ -652,6 +662,7 @@ bool AuctionState::IsTerminal() const {
   return finished_ || round_ >= kDefaultMaxRounds; 
 }
 
+
 std::vector<double> AuctionState::Returns() const {
   std::vector<double> returns(num_players_, finished_ ? 0.0 : -9999999); // Return large negative number to everyone if the game went on forever
   if (finished_) {
@@ -663,7 +674,8 @@ std::vector<double> AuctionState::Returns() const {
         SPIEL_CHECK_GE(final_bid[j], 0);
         // linear values
         returns[p] += (value_[p][j] - final_price[j]) * final_bid[j];
-     }
+      }
+      returns[p] -= num_switches_[p] * switch_penalty_; // Apply switching costs
     }
   }
   return returns;
@@ -684,7 +696,7 @@ int AuctionGame::NumDistinctActions() const {
 
 std::unique_ptr<State> AuctionGame::NewInitialState() const {
   std::unique_ptr<AuctionState> state(
-      new AuctionState(shared_from_this(), num_players_, max_rounds_, num_licenses_, increment_, open_price_, product_activity_, undersell_rule_, information_policy_, allow_negative_profit_bids_, tiebreaks_, values_,  budgets_, type_probs_));
+      new AuctionState(shared_from_this(), num_players_, max_rounds_, num_licenses_, increment_, open_price_, product_activity_, undersell_rule_, information_policy_, allow_negative_profit_bids_, tiebreaks_, switch_penalty_, values_,  budgets_, type_probs_));
   return state;
 }
 
@@ -958,6 +970,12 @@ AuctionGame::AuctionGame(const GameParameters& params) :
     tiebreaks_ = object["tiebreaks"].GetBool();
   } else {
     tiebreaks_ = true;
+  }
+
+  if (ContainsKey(object, "switch_penalty")) {
+    switch_penalty_ = ParseDouble(object["switch_penalty"]);
+  } else {
+    switch_penalty_ = 0.;
   }
 
   CheckRequiredKey(object, "undersell_rule");

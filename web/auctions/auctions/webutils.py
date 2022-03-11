@@ -23,6 +23,7 @@ def env_and_model_from_run(run):
 
     # Get the NFSP config
     config = dict(run.config)
+    print(config)
 
     # Create env_and_model
     env_and_model = setup(game, game_config, config)

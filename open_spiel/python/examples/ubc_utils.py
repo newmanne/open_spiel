@@ -347,6 +347,7 @@ def read_config(config_name):
     config['replay_buffer_capacity'] = config.get('replay_buffer_capacity', 50_000)
     config['update_target_network_every'] = config.get('update_target_network_every', 10_000)
     config['loss_str'] = config.get('loss_str', 'mse')
+    config['sl_loss_str'] = config.get('sl_loss_str', 'cross_entropy')
     config['double_dqn'] = config.get('double_dqn', True)
     config['device'] = config.get('device', default_device())
     config['reservoir_buffer_capacity'] = config.get('reservoir_buffer_capacity', 2_000_000)
