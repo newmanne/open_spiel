@@ -16,7 +16,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from open_spiel.python import rl_environment, policy
 from open_spiel.python.examples.ubc_utils import *
 from open_spiel.python.examples.ubc_nfsp_example import lookup_model_and_args
 from open_spiel.python.examples.ubc_br import make_dqn_agent
@@ -24,22 +23,12 @@ from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator, Tak
 from open_spiel.python.examples.straightforward_agent import StraightforwardAgent
 from open_spiel.python.examples.legacy_file_classes import policy_from_checkpoint
 
-import pyspiel
 import numpy as np
 import pandas as pd
-import absl
-import argparse
 from absl import app, logging, flags
 import torch
-import yaml
-import sys
 import time
-import pickle
-import os
-import json
-import shutil
 from collections import defaultdict
-from pathlib import Path
 from dataclasses import dataclass
 from typing import List
 from tqdm import tqdm

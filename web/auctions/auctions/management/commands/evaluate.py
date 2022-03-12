@@ -94,6 +94,7 @@ class Command(BaseCommand):
                     samples = eval_output,
                     mean_rewards = mean_rewards
                 )
+                
             else:
                 br_rewards = pd.Series(eval_output['rewards'][br_player])
                 BREvaluation.objects.create(
@@ -102,5 +103,5 @@ class Command(BaseCommand):
                     expected_value_cdf = series_to_quantiles(br_rewards),
                     expected_value_stats = br_rewards.describe().to_dict()
                 )
-
+            logging.info("Saved to DB")
         # TODO: Using an atomic transaction, make changes to the approx_nash_conv field?

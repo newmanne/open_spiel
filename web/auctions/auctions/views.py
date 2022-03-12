@@ -58,14 +58,10 @@ class EquilibriumSolverRunViewSet(viewsets.ReadOnlyModelViewSet):
         checkpoints = EquilibriumSolverRunCheckpoint.objects.filter(equilibrium_solver_run=run)
         ser = EquilibriumSolverRunCheckpointSerializer(checkpoints, many=True, context={'request': request})
         data = ser.data
-        best_checkpoint, approx_nash_conv = find_best_checkpoint(run)
+        nash_conv_by_t, best_checkpoint, approx_nash_conv = find_best_checkpoint(run)
         for d in data:
-            if d['pk'] == best_checkpoint.pk:
-                d['best'] = True
-                d['ApproxNashConv'] = approx_nash_conv
-            else:
-                d['best'] = False
-                d['ApproxNashConv'] = 0
+            d['best'] = d['pk'] == best_checkpoint.pk
+            d['ApproxNashConv'] = nash_conv_by_t[d['t']]
         
         data = sorted(data, key=lambda d: (d['best'], d['t']), reverse=True)
         return Response(data)

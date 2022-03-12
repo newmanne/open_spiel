@@ -23,7 +23,6 @@ def env_and_model_from_run(run):
 
     # Get the NFSP config
     config = dict(run.config)
-    print(config)
 
     # Create env_and_model
     env_and_model = setup(game, game_config, config)
@@ -100,7 +99,7 @@ def get_checkpoint(run, t=None):
 
 def find_best_checkpoint(run, max_t=None):
     ev_df = parse_run(run, max_t)
-    best_t = ev_df.groupby('t')['ApproxNashConv'].first().idxmin()
-    approx_nash_conv = ev_df.groupby('t')['ApproxNashConv'].first().min()
+    best_t = ev_df.query('ApproxNashConv > 0').groupby('t')['ApproxNashConv'].first().idxmin()
+    nash_conv_by_t = ev_df.groupby('t')['ApproxNashConv'].first()
     best_checkpoint = get_checkpoint(run, t=best_t)
-    return best_checkpoint, approx_nash_conv
+    return nash_conv_by_t, best_checkpoint, nash_conv_by_t.min()
