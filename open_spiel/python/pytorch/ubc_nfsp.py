@@ -65,7 +65,7 @@ def brier_score(
     size_average,
     reduce,
     reduction,
-  )
+  ) * num_actions
 
 
 class NFSP(rl_agent.AbstractAgent):

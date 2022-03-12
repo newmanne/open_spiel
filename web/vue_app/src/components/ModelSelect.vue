@@ -106,10 +106,13 @@ export default defineComponent({
         runPk: this.run.value,
         player: this.player,
       }).then((data) => {
-        this.checkpoints = data.map((e) => ({
-          label: FMT(e.t) + (e.best ? ` (Lowest ApproxNashConv: ${FMT(e.ApproxNashConv, 2)})` : ""),
-          value: e.pk,
-        }));
+        this.checkpoints = data.map(e => {
+          let message = e.best ? 'BEST ' : '';
+          return {
+            label: FMT(e.t) + ` (${message}ApproxNashConv: ${FMT(e.ApproxNashConv, 2)})`,
+            value: e.pk,
+          };
+        });
         this.checkpoint = this.checkpoints[0];
         this.response = null;
         this.getResponses();
