@@ -60,7 +60,7 @@ def brier_score(
 
   # call MSE
   return F.mse_loss(
-    input,
+    F.softmax(input, dim=1),
     target_onehot,
     size_average,
     reduce,
