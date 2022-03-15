@@ -202,6 +202,9 @@ class MLP(nn.Module):
       x = layer(x)
     return x
 
+  def get_last_layer(self):
+    return self._layers[-1]
+
 
 class DQN(rl_agent.AbstractAgent):
   """DQN Agent implementation in PyTorch.

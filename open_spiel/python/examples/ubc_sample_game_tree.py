@@ -17,16 +17,12 @@ from __future__ import division
 from __future__ import print_function
 
 from open_spiel.python.examples.ubc_utils import *
-from open_spiel.python.examples.ubc_nfsp_example import lookup_model_and_args
-from open_spiel.python.examples.ubc_br import make_dqn_agent
-from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator, TakeSingleActionDecorator
-from open_spiel.python.examples.straightforward_agent import StraightforwardAgent
-from open_spiel.python.examples.legacy_file_classes import policy_from_checkpoint
+from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator
 
 import numpy as np
 import pandas as pd
-from absl import app, logging, flags
 import torch
+from absl import app, logging
 import time
 from collections import defaultdict
 from dataclasses import dataclass
@@ -76,46 +72,56 @@ def pretty_information_state(infostate_string, depth):
         pretty_str += f'Aggregate: {aggregate_final}'
         return pretty_str
 
+def get_input(name, agent_to_embedding):
+    def hook(model, input, output):
+        agent_to_embedding[name] = input[0].detach().cpu()
+    return hook
+
 def new_tree_node(node_type, str_desc, depth, action_id=None, env_and_model=None, time_step=None):
     node = {'sample_outcomes': defaultdict(list), 'children': {}, 'type': node_type, 'depth': depth} # 'pretty_name': pretty_str}
-    if node_type == NodeType.INFORMATION_STATE:
-        pretty_str = pretty_information_state(str_desc, depth)
-        # TODO: Add the aggregate demand history so we can show a separate table?
-        # node['agg_demand'] = 
-    elif node_type == NodeType.ACTION:
-        pretty_str = str_desc
+    pretty_str = str_desc
 
+    if node_type in [NodeType.INFORMATION_STATE, NodeType.ACTION]:
         player_id = time_step.observations["current_player"]
-        agent = env_and_model.agents[player_id]
-        state = env_and_model.env._state
+        information_state_tensor = time_step.observations["info_state"][player_id]
         game = env_and_model.game
         num_players, num_actions, num_products = game_spec(game, env_and_model.game_config)
 
-        information_state_tensor = time_step.observations["info_state"][player_id]
-        cpi = clock_profit_index(num_players, num_actions)
-        profits = np.array(information_state_tensor[cpi:cpi + num_actions])
-        profit = profits[action_id]
-        legal_actions = state.legal_actions() # Only show budget feasible
-        max_cp_idx = pd.Series(profits[legal_actions]).idxmax()
-        mapped_action_id = legal_actions.index(action_id)
-        node['straightforward_clock_profit'] = profit
-        node['max_cp'] = mapped_action_id == max_cp_idx
-        rl_agent = getattr(agent, '_rl_agent', None)
-        if rl_agent is None: # Maybe it already is a DQN? But need to guard against it being a Straightforward agent. And also could be wrapped in a decorator..
-            if getattr(agent, '_target_q_network', None):
-                rl_agent = agent
-        if rl_agent is not None:
-            q_values = check_on_q_values(rl_agent, game, time_step=time_step, return_raw_q_values=True)
-            node['q_value'] = q_values[action_id]
-        
-        clock_prices_index = clock_price_index(num_players, num_actions)
-        clock_prices = np.array(information_state_tensor[clock_prices_index:clock_prices_index + num_actions])
-        for i in range(num_products):
-            letter = chr(ord('@')+i+1)
-            node[f'clock_price {letter}'] = clock_prices[i]
+        node['player_id'] = player_id
+        node['round'] = information_state_tensor[round_index(num_players)]
 
-    else:
-        pretty_str = str_desc
+        if node_type == NodeType.INFORMATION_STATE:
+            pretty_str = pretty_information_state(str_desc, depth)
+            node['activity'] = information_state_tensor[activity_index(num_players, num_actions)]
+            node['start_of_round_exposure'] = information_state_tensor[sor_exposure_index(num_players, num_actions)]
+            node['player_type'] = str(get_player_type(num_players, num_actions, num_products, information_state_tensor))
+
+        elif node_type == NodeType.ACTION:
+            agent = env_and_model.agents[player_id]
+            state = env_and_model.env._state
+
+            cpi = clock_profit_index(num_players, num_actions)
+            profits = np.array(information_state_tensor[cpi:cpi + num_actions])
+            profit = profits[action_id]
+            legal_actions = state.legal_actions() # Only show budget feasible
+            max_cp_idx = pd.Series(profits[legal_actions]).idxmax()
+            mapped_action_id = legal_actions.index(action_id)
+            node['straightforward_clock_profit'] = profit
+            node['max_cp'] = mapped_action_id == max_cp_idx
+            rl_agent = getattr(agent, '_rl_agent', None)
+            if rl_agent is None: # Maybe it already is a DQN? But need to guard against it being a Straightforward agent. And also could be wrapped in a decorator..
+                if getattr(agent, '_target_q_network', None):
+                    rl_agent = agent
+            if rl_agent is not None:
+                q_values = check_on_q_values(rl_agent, game, time_step=time_step, return_raw_q_values=True)
+                node['q_value'] = q_values[action_id]
+            
+            clock_prices_index = clock_price_index(num_players, num_actions)
+            clock_prices = np.array(information_state_tensor[clock_prices_index:clock_prices_index + num_actions])
+            for i in range(num_products):
+                letter = chr(ord('@')+i+1)
+                node[f'clock_price {letter}'] = clock_prices[i]
+    
     node['pretty_str'] = pretty_str
     return node
 
@@ -142,26 +148,33 @@ def aggregate_results(node, num_samples):
     for child in node['children']:
         aggregate_results(node['children'][child], num_samples)
 
-def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=DEFAULT_SEED):
+def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=DEFAULT_SEED, include_embeddings=False):
     fix_seeds(seed)
     
     game, policy, env, agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
     num_players, num_actions, num_products = game_spec(game, game_config)
 
+    if include_embeddings:
+        for agent in agents:
+        #### WARNING: If you use include_embeddings, your agents internal caches (this is different from the caching agent decorator) will cause trouble if you call this function multiple times w/ the same env_and_model. Therefore, we clear the caches here
+            agent._clear_cache()
+
     # Apply cache
     agents = [CachingAgentDecorator(agent) for agent in agents] 
+    
+    # Add hooks
+    if include_embeddings:
+        torch_hook_handles = []
+        agent_to_embedding = {}
+        for player, agent in enumerate(agents):
+            handle = agent._avg_network.get_last_layer().register_forward_hook(get_input(player, agent_to_embedding))
+            torch_hook_handles.append(handle)
 
     # EVALUATION PHASE
     logging.info(f"Evaluation phase: {num_samples} episodes")
     alg_start_time = time.time()
 
     roots = [new_tree_node(NodeType.ROOT, '(root)', 0) for player in range(num_players)]
-
-    # rewards = defaultdict(list)
-    # player_types = defaultdict(list)
-    # allocations = defaultdict(list)
-    # payments = defaultdict(list)
-    # episode_lengths = []
 
     for sample_index in tqdm(range(num_samples)):
         if sample_index % report_freq == 0 and sample_index > 0:
@@ -187,13 +200,18 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
 
             # Note that we got to this infostate
             infostate_string = env._state.information_state_string()
-            if infostate_string not in current_nodes[player_id]['children']:
+            new_infostate = infostate_string not in current_nodes[player_id]['children']
+            if new_infostate:
                 current_nodes[player_id]['children'][infostate_string] = new_tree_node(node_type=NodeType.INFORMATION_STATE, str_desc=infostate_string, depth=current_nodes[player_id]['depth'] + 1, env_and_model=env_and_model, time_step=time_step)
             current_nodes[player_id] = current_nodes[player_id]['children'][infostate_string]
             child_list[player_id].append(infostate_string)
 
             # Choose action
             agent_output = agent.step(time_step, is_evaluation=True)
+            if include_embeddings and new_infostate: # Protect against the Caching decorator
+                current_nodes[player_id]['embedding'] = agent_to_embedding[player_id].numpy()
+                del agent_to_embedding[player_id] # Clear embedding for safety to make sure we aren't reusing these values and prevent bugs
+                
 
             # Note that we took this action
             action_string = env._state.action_to_string(agent_output.action)
@@ -235,11 +253,37 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
                 if j < len(child_list[i]):
                     node = node['children'][child_list[i][j]]
 
+    # Remove torch handles if applied to help reuse of function
+    if include_embeddings:
+        for handle in torch_hook_handles:
+            handle.remove()
+
     # Take mean outcome at each node
     for i in range(num_players):
         aggregate_results(roots[i], num_samples) 
 
-    return roots            
+    return roots           
+
+def flatten_tree(node):
+    records = []
+    
+    if node['type'] == NodeType.INFORMATION_STATE:
+        tree_features = dict(node)
+        del tree_features['children']
+        records.append(tree_features)
+    
+    for child in node['children']:
+        records += flatten_tree(node['children'][child])
+    
+    return records
+    
+def flatten_trees(trees):
+    records = []
+    for tree in trees:
+        records += flatten_tree(tree)
+    df = pd.DataFrame.from_records(records)
+    df['player_type'] = df['player_type'].astype('category').cat.codes
+    return df
     
 if __name__ == "__main__":
     app.run(main)

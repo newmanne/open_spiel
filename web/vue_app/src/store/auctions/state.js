@@ -12,7 +12,7 @@ export default function () {
   return {
     config: {},
     experiments: [],
-    samples: [],
+    samples: {},
     games: [],
     bidderColors: BIDDERS_COLOR_MAPPING,
   };
