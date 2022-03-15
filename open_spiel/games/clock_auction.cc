@@ -53,6 +53,10 @@ int Sum(std::vector<int> v) {
   return std::accumulate(v.begin(), v.end(), 0);
 }
 
+double Sum(std::vector<double> v) {
+  return std::accumulate(v.begin(), v.end(), 0.);
+}
+
 int DotProduct(std::vector<int> const &a, std::vector<int> const &b) {
   return std::inner_product(std::begin(a), std::end(a), std::begin(b), 0.0);
 }
@@ -109,6 +113,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
   double switch_penalty_,
   std::vector<std::vector<std::vector<double>>> values,
   std::vector<std::vector<double>> budgets,
+  std::vector<std::vector<double>> pricing_bonuses,
   std::vector<std::vector<double>> probs
 ) :   SimMoveState(game),
       cur_player_(kChancePlayerId), // Chance begins by setting types
@@ -126,6 +131,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       allow_negative_profit_bids_(allow_negative_profit_bids),
       values_(values),
       budgets_(budgets),
+      pricing_bonuses_(pricing_bonuses),
       type_probs_(probs),
       aggregate_demands_(),
       all_bids_activity_(),
@@ -432,6 +438,7 @@ void AuctionState::DoApplyAction(Action action) {
       SPIEL_CHECK_GE(player_index, 0);
       value_.push_back(values_[player_index][action]); 
       budget_.push_back(budgets_[player_index][action]);
+      pricing_bonus_.push_back(pricing_bonuses_[player_index][action]);
     } 
 
     if (value_.size() == num_players_) { // All of the assignments have been made
@@ -666,17 +673,27 @@ bool AuctionState::IsTerminal() const {
 std::vector<double> AuctionState::Returns() const {
   std::vector<double> returns(num_players_, finished_ ? 0.0 : -9999999); // Return large negative number to everyone if the game went on forever
   if (finished_) {
+    std::vector<double> payments(num_players_, 0.);
     auto& final_price = posted_price_.back();
 
     for (auto p = Player{0}; p < num_players_; p++) {
       auto& final_bid = processed_demand_[p].back();
       for (int j = 0; j < num_products_; j++) {
         SPIEL_CHECK_GE(final_bid[j], 0);
-        // linear values
-        returns[p] += (value_[p][j] - final_price[j]) * final_bid[j];
+        double payment = final_price[j] * final_bid[j];
+        payments[p] += payment;
+        returns[p] += value_[p][j] * final_bid[j]; // linear values
+        returns[p] -= payment;
       }
       returns[p] -= num_switches_[p] * switch_penalty_; // Apply switching costs
     }
+
+    // Add in pricing bonuses
+    for (auto p = Player{0}; p < num_players_; p++) {
+      double payment_other = Sum(payments) - payments[p];
+      returns[p] += payment_other * pricing_bonus_[p];
+    }
+
   }
   return returns;
 }
@@ -696,7 +713,7 @@ int AuctionGame::NumDistinctActions() const {
 
 std::unique_ptr<State> AuctionGame::NewInitialState() const {
   std::unique_ptr<AuctionState> state(
-      new AuctionState(shared_from_this(), num_players_, max_rounds_, num_licenses_, increment_, open_price_, product_activity_, undersell_rule_, information_policy_, allow_negative_profit_bids_, tiebreaks_, switch_penalty_, values_,  budgets_, type_probs_));
+      new AuctionState(shared_from_this(), num_players_, max_rounds_, num_licenses_, increment_, open_price_, product_activity_, undersell_rule_, information_policy_, allow_negative_profit_bids_, tiebreaks_, switch_penalty_, values_,  budgets_, pricing_bonuses_, type_probs_));
   return state;
 }
 
@@ -1008,6 +1025,7 @@ AuctionGame::AuctionGame(const GameParameters& params) :
     std::vector<double> player_budgets;
     std::vector<std::vector<double>> player_values;
     std::vector<double> player_probs;
+    std::vector<double> pricing_bonus;
     for (auto t = 0; t < type_array.size(); t++) {
       auto type_object = type_array[t].GetObject();
       CheckRequiredKey(type_object, "value");
@@ -1026,10 +1044,18 @@ AuctionGame::AuctionGame(const GameParameters& params) :
       player_budgets.push_back(budget);
       double prob = ParseDouble(type_object["prob"]);
       player_probs.push_back(prob);
+
+      if (ContainsKey(type_object, "pricing_bonus")) {
+        pricing_bonus.push_back(ParseDouble(type_object["pricing_bonus"]));
+      } else {
+        pricing_bonus.push_back(0);
+      }
+
     }
     values_.push_back(player_values);
     budgets_.push_back(player_budgets);
     type_probs_.push_back(player_probs);
+    pricing_bonuses_.push_back(pricing_bonus);
   }
   
   // Compute max chance outcomes

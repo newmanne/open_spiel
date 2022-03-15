@@ -6,7 +6,7 @@ export const API_FAILURE = (state, value) => {
     console.error(value)
   };
 
-  export const SET_SAMPLES = (state, {data}) => {
+export const SET_SAMPLES = (state, {data}) => {
     state.samples = data;
 };
 

@@ -69,6 +69,7 @@ class AuctionState : public SimMoveState {
     double switch_penalty_,
     std::vector<std::vector<std::vector<double>>> values,
     std::vector<std::vector<double>> budgets,
+    std::vector<std::vector<double>> pricing_bonuses,
     std::vector<std::vector<double>> type_probs
   );
 
@@ -122,6 +123,7 @@ class AuctionState : public SimMoveState {
   std::vector<std::vector<std::vector<double>>> values_;
   std::vector<std::vector<double>> budgets_;
   std::vector<std::vector<double>> type_probs_;
+  std::vector<std::vector<double>> pricing_bonuses_;
 
   // Used to encode the information state.
 
@@ -141,6 +143,8 @@ class AuctionState : public SimMoveState {
   std::vector<double> budget_;
   // Activity by player
   std::vector<int> activity_;
+  // Pricing bonus
+  std::vector<double> pricing_bonus_;
 
   // Processed aggregate demand for each product
   std::vector<std::vector<int>> aggregate_demands_;
@@ -196,6 +200,7 @@ class AuctionGame : public SimMoveGame {
   // Type information
   std::vector<std::vector<std::vector<double>>> values_;
   std::vector<std::vector<double>> budgets_;
+  std::vector<std::vector<double>> pricing_bonuses_;
   std::vector<std::vector<double>> type_probs_;
   
 

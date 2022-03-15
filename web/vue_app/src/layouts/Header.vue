@@ -8,6 +8,7 @@
     </q-toolbar-title>
     <q-tabs>
       <q-route-tab label="Opening Explorer" :to="{name: 'opening-explorer'}"/>
+      <q-route-tab label="Cluster Explorer" :to="{name: 'cluster-explorer'}"/>
       <!-- TODO: allocation viewer like 
       <q-route-tab label="Simulations" :to="{name: ''}"/>
       --> 

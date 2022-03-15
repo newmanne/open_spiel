@@ -15,10 +15,11 @@ import pandas as pd
 from django.http import HttpResponse
 import datetime
 from auctions.webutils import *
-from open_spiel.python.examples.ubc_sample_game_tree import sample_game_tree
+from open_spiel.python.examples.ubc_sample_game_tree import sample_game_tree, flatten_trees
 from open_spiel.python.examples.ubc_decorators import TakeSingleActionDecorator
 from open_spiel.python.examples.straightforward_agent import StraightforwardAgent
-from open_spiel.python.examples.ubc_plotting_utils import plot_all_models, parse_run
+from open_spiel.python.examples.ubc_plotting_utils import plot_all_models, parse_run, plot_embedding, plots_to_string
+from open_spiel.python.examples.ubc_clusters import projectPCA
 
 logger = logging.getLogger(__name__)
 
@@ -153,6 +154,30 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         seed = int(request.query_params.get('seed', 1234))
 
         # Sample
-        trees = sample_game_tree(env_and_model, num_samples, seed=seed)
+        trees = sample_game_tree(env_and_model, num_samples, seed=seed, include_embeddings=True)
         data['trees'] = trees
+
+        data['clusters_bokeh'] = dict()
+        # Embeddings
+        df = flatten_trees(trees)
+        for player in range(game.num_players):
+            dfp = df.query(f'player_id == {player}').copy()
+            embeddings = np.stack(dfp['embedding'].values).squeeze()
+            pca, variance = projectPCA(embeddings)
+            dfp['pca_0'] = pca[:, 0]
+            dfp['pca_1'] = pca[:, 1]
+
+            # Try all numeric columns
+            numerics = ['int8', 'int16', 'int32', 'int64', 'float16', 'float32', 'float64']
+            newdf = dfp.select_dtypes(include=numerics)
+            IGNORE = ['type', 'depth', 'player_id', 'num_plays', 'pct_plays', 'pca_0', 'pca_1']
+            plots = []
+            for k in newdf.columns:
+                if k not in IGNORE:
+                    plot = plot_embedding(dfp, color_col=k)
+                    plots.append(plot)
+
+            plot_html = plots_to_string(plots, 'Clustering')
+            data['clusters_bokeh'][player] = plot_html
+
         return Response(data)

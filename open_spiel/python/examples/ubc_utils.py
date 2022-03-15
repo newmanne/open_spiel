@@ -11,7 +11,6 @@ from open_spiel.python.rl_agent import StepOutput
 import torch
 import humanize
 import datetime as dt
-from distutils import util
 import os
 import json
 import yaml
@@ -57,6 +56,12 @@ def clock_profit_index(num_players, num_actions):
 
 def sor_profit_index(num_players):
     return round_index(num_players) + 1
+
+def activity_index(num_players, num_actions):
+    return clock_profit_index(num_players, num_actions) + num_actions
+
+def sor_exposure_index(num_players, num_actions):
+    return activity_index(num_players, num_actions) + 1
 
 def recurrent_index(num_players, num_actions, num_products):
     return turn_based_size(num_players) + handcrafted_size(num_actions, num_products) + prefix_size(num_players, num_products)

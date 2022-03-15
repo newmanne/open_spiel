@@ -26,7 +26,8 @@ from bokeh.layouts import row, column
 from bokeh.io import output_notebook
 from bokeh.models import HoverTool, ColumnDataSource, ColorBar, LogColorMapper, LinearColorMapper
 from bokeh.transform import linear_cmap, log_cmap
-from bokeh.palettes import Category10_10
+from bokeh.palettes import Category10_10, Magma256
+
 from bokeh.resources import CDN
 from bokeh.embed import file_html
 
@@ -114,6 +115,11 @@ def get_all_frames(experiment, truth_available=False):
             logging.exception(f"Exception parsing {run}. Skipping")
     return pd.concat(frames)
 
+
+def plots_to_string(plots, name=''):
+    p = column(*plots)
+    return file_html(p, CDN, name).strip()
+
 def plot_all_models(ev_df, notebook=True, output_name='plots.html', output_str=False):
     plots = []
     for model, sub_df in ev_df.groupby('model'):
@@ -125,11 +131,11 @@ def plot_all_models(ev_df, notebook=True, output_name='plots.html', output_str=F
         for plot in plots:
             show(plot)
     else:
-        p = column(*plots)
         if output_str:
-            return file_html(p, CDN, "RegretPlots").strip()
+            return plots_to_string(plots, 'RegretPlots')
         else:
             # Set output to static HTML file
+            p = column(*plots)
             output_file(filename=output_name, title="RegretPlots")
             save(p)
 
@@ -263,3 +269,33 @@ def special_save_fig(fig, file_name, fmt=None, dpi=300, tight=True):
                         (tmp_name, file_name), shell=True)
     elif fmt == 'pdf':
         subprocess.call('pdfcrop %s %s' % (tmp_name, file_name), shell=True)
+
+
+def plot_embedding(df, color_col='round'):
+    df = df.copy()
+
+    # Spaces don't play nice with the hover tooltip
+    new_color_col = color_col.replace(' ', '_')
+    df = df.rename(columns={color_col: new_color_col})
+    color_col = new_color_col
+
+    # Need to change newlines into <br> to have them actually break in the tooltip
+    df['pretty_str'] = df['pretty_str'].apply(lambda x: x.replace('\n', '<br/>'))
+    
+    source = ColumnDataSource(df) # Need to drop tensors b/c of serialization issues
+
+    plot = figure(width=900, height=400, title=f"{color_col}")
+
+    # add a circle renderer with a size, color, and alpha
+    mapper = linear_cmap(field_name=color_col, palette=list(reversed(Magma256)) ,low=df[color_col].min(), high=df[color_col].max())
+#     mapper = log_cmap(field_name=f'Prob_{action_num}', palette="Magma256" ,low=1e-9, high=q[action_cols].values.max())
+    plot.circle('pca_0', 'pca_1', size=10, color=mapper, alpha=0.3, source=source)
+
+
+    plot.add_tools(HoverTool(tooltips=[['Infostate', '@pretty_str'],
+                                       [color_col, f'@{color_col}'],
+                                       ['Round', '@round'],
+                                      ]))
+    color_bar = ColorBar(color_mapper=mapper['transform'], label_standoff=12)
+    plot.add_layout(color_bar, 'right')
+    return plot
