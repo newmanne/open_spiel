@@ -9,6 +9,7 @@ from auctions.webutils import *
 import json
 import open_spiel.python.examples.ubc_dispatch as dispatch
 from distutils import util
+from django.db.utils import IntegrityError
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +62,8 @@ class Command(BaseCommand):
         parser.add_argument('--compute_nash_conv', type=bool, default=False)
         parser.add_argument('--device', type=str, default=default_device)
 
+        parser.add_argument('--overwrite_db', type=util.strtobool, default=0)
+
         # Directory
         parser.add_argument('--output_dir', type=str, default='output') # Note: DONT NAME THIS "checkpoints" because of a jupyter notebook
         parser.add_argument('--warn_on_overwrite', type=bool, default=False)
@@ -95,6 +98,7 @@ class Command(BaseCommand):
         config_name = opts.network_config_file
         experiment_name = opts.experiment_name
         seed = opts.seed
+        overwrite_db = opts.overwrite_db
 
         fix_seeds(seed)
 
@@ -130,13 +134,15 @@ class Command(BaseCommand):
         with open(f'{output_dir}/game.json', 'w') as outfile:
             json.dump(game.config, outfile)
 
+
+        if overwrite_db:
+            try:
+                EquilibriumSolverRun.objects.get(experiment=experiment, name=run_name, game=game).delete()
+            except EquilibriumSolverRun.DoesNotExist:
+                pass
+
         # 3) Make an EquilibriumSolverRun
-        eq_solver_run = EquilibriumSolverRun.objects.create(
-            experiment=experiment,
-            name=run_name,
-            game=game,
-            config=config
-        )
+        eq_solver_run = EquilibriumSolverRun.objects.create(experiment=experiment, name=run_name, game=game, config=config)
 
         # Load the environment from the database
         env_and_model = env_and_model_from_run(eq_solver_run)

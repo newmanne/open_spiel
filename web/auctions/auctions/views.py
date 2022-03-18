@@ -19,7 +19,7 @@ from open_spiel.python.examples.ubc_sample_game_tree import sample_game_tree, fl
 from open_spiel.python.examples.ubc_decorators import TakeSingleActionDecorator
 from open_spiel.python.examples.straightforward_agent import StraightforwardAgent
 from open_spiel.python.examples.ubc_plotting_utils import plot_all_models, parse_run, plot_embedding, plots_to_string
-from open_spiel.python.examples.ubc_clusters import projectPCA
+from open_spiel.python.examples.ubc_clusters import projectPCA, projectUMAP
 
 logger = logging.getLogger(__name__)
 
@@ -163,18 +163,28 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         for player in range(game.num_players):
             dfp = df.query(f'player_id == {player}').copy()
             embeddings = np.stack(dfp['embedding'].values).squeeze()
+
+            # Reduce embedding to 2D with PCA
             pca, variance = projectPCA(embeddings)
             dfp['pca_0'] = pca[:, 0]
             dfp['pca_1'] = pca[:, 1]
 
+            # Reduce embedding to 2D with UMAP
+            # umap = projectUMAP(embeddings)
+            # dfp['umap_0'] = umap[:, 0]
+            # dfp['umap_1'] = umap[:, 1]
+
             # Try all numeric columns
             numerics = ['int8', 'int16', 'int32', 'int64', 'float16', 'float32', 'float64']
             newdf = dfp.select_dtypes(include=numerics)
-            IGNORE = ['type', 'depth', 'player_id', 'num_plays', 'pct_plays', 'pca_0', 'pca_1']
+            IGNORE = ['type', 'depth', 'player_id', 'num_plays', 'pct_plays', 'pca_0', 'pca_1', 'umap_0', 'umap_1']
             plots = []
             for k in newdf.columns:
                 if k not in IGNORE:
-                    plot = plot_embedding(dfp, color_col=k)
+                    plot = plot_embedding(dfp, color_col=k, reduction_method='pca')
+                    plots.append(plot)
+
+                    plot = plot_embedding(dfp, color_col=k, reduction_method='umap')
                     plots.append(plot)
 
             plot_html = plots_to_string(plots, 'Clustering')

@@ -271,7 +271,7 @@ def special_save_fig(fig, file_name, fmt=None, dpi=300, tight=True):
         subprocess.call('pdfcrop %s %s' % (tmp_name, file_name), shell=True)
 
 
-def plot_embedding(df, color_col='round'):
+def plot_embedding(df, color_col='round', reduction_method='pca'):
     df = df.copy()
 
     # Spaces don't play nice with the hover tooltip
@@ -289,7 +289,7 @@ def plot_embedding(df, color_col='round'):
     # add a circle renderer with a size, color, and alpha
     mapper = linear_cmap(field_name=color_col, palette=list(reversed(Magma256)) ,low=df[color_col].min(), high=df[color_col].max())
 #     mapper = log_cmap(field_name=f'Prob_{action_num}', palette="Magma256" ,low=1e-9, high=q[action_cols].values.max())
-    plot.circle('pca_0', 'pca_1', size=10, color=mapper, alpha=0.3, source=source)
+    plot.circle(f'{reduction_method}_0', f'{reduction_method}_1', size=10, color=mapper, alpha=0.3, source=source)
 
 
     plot.add_tools(HoverTool(tooltips=[['Infostate', '@pretty_str'],

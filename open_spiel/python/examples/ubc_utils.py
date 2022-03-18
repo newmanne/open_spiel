@@ -373,3 +373,7 @@ def safe_config_name(name):
 
 def make_straightforward(player_id, game_config, game):
     return TakeSingleActionDecorator(StraightforwardAgent(player_id, game_config, game.num_distinct_actions()), game.num_distinct_actions())
+
+def num_to_letter(i):
+    '''Maps 0 to A, 1 to B etc.'''
+    return chr(ord('@')+i+1)
