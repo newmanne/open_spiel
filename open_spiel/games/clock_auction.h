@@ -64,6 +64,7 @@ class AuctionState : public SimMoveState {
     std::vector<int> product_activity,
     int undersell_rule,
     int information_policy,
+    bool activity_on,
     bool allow_negative_profit_bids,
     bool tiebreaks,
     double switch_penalty_,
@@ -116,6 +117,7 @@ class AuctionState : public SimMoveState {
 
   int undersell_rule_;
   int information_policy_;
+  bool activity_on_;
   bool allow_negative_profit_bids_;
   bool tiebreaks_;
 
@@ -205,6 +207,7 @@ class AuctionGame : public SimMoveGame {
   
 
   int undersell_rule_;
+  bool activity_on_;
   int information_policy_;
   bool allow_negative_profit_bids_;
   bool tiebreaks_;
@@ -215,6 +218,7 @@ class AuctionGame : public SimMoveGame {
 
     // Used for tensor
   int max_rounds_;
+
   double switch_penalty_;
 };
 

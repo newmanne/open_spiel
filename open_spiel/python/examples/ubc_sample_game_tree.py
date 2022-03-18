@@ -77,10 +77,9 @@ def get_input(name, agent_to_embedding):
         agent_to_embedding[name] = input[0].detach().cpu()
     return hook
 
-def new_tree_node(node_type, str_desc, depth, action_id=None, env_and_model=None, time_step=None):
+def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_model=None, time_step=None):
     node = {'sample_outcomes': defaultdict(list), 'children': {}, 'type': node_type, 'depth': depth} # 'pretty_name': pretty_str}
     pretty_str = str_desc
-
     if node_type in [NodeType.INFORMATION_STATE, NodeType.ACTION]:
         player_id = time_step.observations["current_player"]
         information_state_tensor = time_step.observations["info_state"][player_id]
@@ -89,14 +88,19 @@ def new_tree_node(node_type, str_desc, depth, action_id=None, env_and_model=None
 
         node['player_id'] = player_id
         node['round'] = information_state_tensor[round_index(num_players)]
+        node['feature_vector'] = information_state_tensor[turn_based_size(num_players):turn_based_size(num_players) + handcrafted_size(num_actions, num_products)]
 
         if node_type == NodeType.INFORMATION_STATE:
             pretty_str = pretty_information_state(str_desc, depth)
             node['activity'] = information_state_tensor[activity_index(num_players, num_actions)]
             node['start_of_round_exposure'] = information_state_tensor[sor_exposure_index(num_players, num_actions)]
-            node['player_type'] = str(get_player_type(num_players, num_actions, num_products, information_state_tensor))
+
+            player_type = get_player_type(num_players, num_actions, num_products, information_state_tensor) # Budget, values all in list
+            node['player_type'] = f'b{player_type[0]}v{",".join(map(str, player_type[1:]))}'
 
         elif node_type == NodeType.ACTION:
+            action_id = agent_output.action
+
             agent = env_and_model.agents[player_id]
             state = env_and_model.env._state
 
@@ -118,10 +122,15 @@ def new_tree_node(node_type, str_desc, depth, action_id=None, env_and_model=None
             
             clock_prices_index = clock_price_index(num_players, num_actions)
             clock_prices = np.array(information_state_tensor[clock_prices_index:clock_prices_index + num_actions])
+            
             for i in range(num_products):
-                letter = chr(ord('@')+i+1)
+                letter = num_to_letter(i)
                 node[f'clock_price {letter}'] = clock_prices[i]
-    
+
+                # Integrate over all actions
+                bundles = action_to_bundles(env_and_model.game_config['licenses'])
+                node[f'expected_bid {letter}'] = sum([p * q[i] for p, q in zip(agent_output.probs, bundles.values())])
+
     node['pretty_str'] = pretty_str
     return node
 
@@ -139,7 +148,7 @@ def aggregate_results(node, num_samples):
         if k == 'allocation':
             avgs = np.mean(node['sample_outcomes'][k], axis=0)
             for i in range(len(node['sample_outcomes'][k][0])):
-                letter = chr(ord('@')+i+1)
+                letter = num_to_letter(i)
                 node[f'Avg Alloc {letter}'] = avgs[i]
         else:
             node[f'avg_{k}'] = np.mean(node['sample_outcomes'][k], axis=0)
@@ -211,12 +220,15 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
             if include_embeddings and new_infostate: # Protect against the Caching decorator
                 current_nodes[player_id]['embedding'] = agent_to_embedding[player_id].numpy()
                 del agent_to_embedding[player_id] # Clear embedding for safety to make sure we aren't reusing these values and prevent bugs
-                
+                # Can only get this one post-bid, but this is messy. Integrate over all actions
+                bundles = action_to_bundles(game_config['licenses'])
+                for i in range(num_products):
+                    current_nodes[player_id][f'expected_bid {num_to_letter(i)}'] = sum([p * q[i] for p, q in zip(agent_output.probs, bundles.values())])
 
             # Note that we took this action
             action_string = env._state.action_to_string(agent_output.action)
             if action_string not in current_nodes[player_id]['children']:
-                current_nodes[player_id]['children'][action_string] = new_tree_node(node_type=NodeType.ACTION, str_desc=action_string, depth=current_nodes[player_id]['depth'] + 1, action_id=agent_output.action, env_and_model=env_and_model, time_step=time_step)
+                current_nodes[player_id]['children'][action_string] = new_tree_node(node_type=NodeType.ACTION, str_desc=action_string, depth=current_nodes[player_id]['depth'] + 1, agent_output=agent_output, env_and_model=env_and_model, time_step=time_step)
             current_nodes[player_id] = current_nodes[player_id]['children'][action_string]
             child_list[player_id].append(action_string)
 
@@ -282,7 +294,7 @@ def flatten_trees(trees):
     for tree in trees:
         records += flatten_tree(tree)
     df = pd.DataFrame.from_records(records)
-    df['player_type'] = df['player_type'].astype('category').cat.codes
+    df['player_type'] = df['player_type'].astype('category')
     return df
     
 if __name__ == "__main__":

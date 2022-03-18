@@ -108,6 +108,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
   std::vector<int> product_activity,
   int undersell_rule,
   int information_policy,
+  bool activity_on,
   bool allow_negative_profit_bids,
   bool tiebreaks,
   double switch_penalty_,
@@ -128,6 +129,7 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       product_activity_(product_activity),
       undersell_rule_(undersell_rule),
       information_policy_(information_policy),
+      activity_on_(activity_on),
       allow_negative_profit_bids_(allow_negative_profit_bids),
       values_(values),
       budgets_(budgets),
@@ -496,8 +498,6 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
   SPIEL_CHECK_GE(player, 0);
   SPIEL_CHECK_LT(player, num_players_);
 
-  // TODO: Flag to turn activity on/off?
-
   // Any move weakly lower than a previous bid is allowed if it fits in budget
   std::vector<Action> actions;
 
@@ -513,7 +513,6 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
   auto& value = value_[player];
   double budget = budget_[player];
 
-  bool activity_on = true;
   bool hard_budget_on = true;
   bool positive_profit_on = false;
 
@@ -532,7 +531,7 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
     bool non_negative_profit = profit >= 0;
     bool positive_profit = profit > 0;
 
-    if (activity_on && activity_budget != -1 && activity_budget < all_bids_activity_[b]) {
+    if (activity_on_ && activity_budget != -1 && activity_budget < all_bids_activity_[b]) {
       continue;
     }
     if (hard_budget_on && budget < bid_price) {
@@ -713,7 +712,7 @@ int AuctionGame::NumDistinctActions() const {
 
 std::unique_ptr<State> AuctionGame::NewInitialState() const {
   std::unique_ptr<AuctionState> state(
-      new AuctionState(shared_from_this(), num_players_, max_rounds_, num_licenses_, increment_, open_price_, product_activity_, undersell_rule_, information_policy_, allow_negative_profit_bids_, tiebreaks_, switch_penalty_, values_,  budgets_, pricing_bonuses_, type_probs_));
+      new AuctionState(shared_from_this(), num_players_, max_rounds_, num_licenses_, increment_, open_price_, product_activity_, undersell_rule_, information_policy_, activity_on_, allow_negative_profit_bids_, tiebreaks_, switch_penalty_, values_,  budgets_, pricing_bonuses_, type_probs_));
   return state;
 }
 
@@ -981,6 +980,12 @@ AuctionGame::AuctionGame(const GameParameters& params) :
     max_rounds_ = ParseDouble(object["max_rounds"]);
   } else {
     max_rounds_ = kDefaultMaxRounds;
+  }
+
+  if (ContainsKey(object, "activity_policy")) {
+    activity_on_ = object["activity_policy"].GetBool();
+  } else {
+    activity_on_ = true;
   }
 
   if (ContainsKey(object, "tiebreaks")) {
