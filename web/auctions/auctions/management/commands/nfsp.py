@@ -113,6 +113,12 @@ class Command(BaseCommand):
         try:
             game = Game.objects.get(name=game_name)
             game_config = game.config
+
+            # Do this as a sanity check
+            game_config_on_disk = load_game_config(game_name)
+            if game_config != game_config_on_disk:
+                raise ValueError(f"Game config for {game_name} has changed on disk!")
+
         except Game.DoesNotExist:
             game_obj = smart_load_sequential_game('clock_auction', dict(filename=game_name))
             game_config = load_game_config(game_name)

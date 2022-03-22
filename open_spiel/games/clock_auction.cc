@@ -252,7 +252,7 @@ void AuctionState::ProcessBids(const std::vector<std::vector<Player>> player_ord
         }
         
         // Process pickups
-        while (changes[j] > 0 && points[p] >= product_activity_[j]) {
+        while (changes[j] > 0 && (!activity_on_ || points[p] >= product_activity_[j])) {
           bid[j]++;
           SPIEL_CHECK_LE(bid[j], num_licenses_[j]);
           current_agg[j]++;
@@ -381,7 +381,9 @@ void AuctionState::DoApplyActions(const std::vector<Action>& actions) {
         num_switches_[p] += 1;
       }
     }
-    SPIEL_CHECK_GE(activity_[p], all_bids_activity_[action]);
+    if (activity_on_) {
+      SPIEL_CHECK_GE(activity_[p], all_bids_activity_[action]);
+    }
     submitted_demand_[p].push_back(bid);
   }
 

@@ -214,12 +214,16 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
                 current_nodes[player_id]['children'][infostate_string] = new_tree_node(node_type=NodeType.INFORMATION_STATE, str_desc=infostate_string, depth=current_nodes[player_id]['depth'] + 1, env_and_model=env_and_model, time_step=time_step)
             current_nodes[player_id] = current_nodes[player_id]['children'][infostate_string]
             child_list[player_id].append(infostate_string)
+            legal_actions = time_step.observations["legal_actions"][player_id]
 
             # Choose action
             agent_output = agent.step(time_step, is_evaluation=True)
             if include_embeddings and new_infostate: # Protect against the Caching decorator
-                current_nodes[player_id]['embedding'] = agent_to_embedding[player_id].numpy()
-                del agent_to_embedding[player_id] # Clear embedding for safety to make sure we aren't reusing these values and prevent bugs
+                if len(legal_actions) > 1:
+                    # Protect against information states with a single legal action, which don't call the network
+                    current_nodes[player_id]['embedding'] = agent_to_embedding[player_id].numpy()
+                    del agent_to_embedding[player_id] # Clear embedding for safety to make sure we aren't reusing these values and prevent bugs
+
                 # Can only get this one post-bid, but this is messy. Integrate over all actions
                 bundles = action_to_bundles(game_config['licenses'])
                 for i in range(num_products):

@@ -16,7 +16,7 @@
     v-model="checkpoint"
     :options="checkpoints"
     label="Checkpoint"
-    v-if="run !== null"
+    v-if="run !== null && depth !== 'run'"
     @update:model-value="getResponses"
   />
   <q-select
@@ -56,7 +56,7 @@ export default defineComponent({
     },
     player: {
       type: Number,
-      required: true,
+      default: 0,
     },
     depth: {
       type: String,
@@ -97,10 +97,17 @@ export default defineComponent({
         this.run = this.runs[0];
         this.checkpoint = null;
         this.response = null;
-        this.getCheckpoints();
+        if (this.depth === "run") {
+          this.commitSelection();
+        } else {
+          this.getCheckpoints();
+        }
       });
     },
     getCheckpoints: function () {
+      if (this.depth === "run") {
+        return;
+      }
       this.GET_RUN_CHECKPOINTS({
         gamePk: this.game.id,
         runPk: this.run.value,

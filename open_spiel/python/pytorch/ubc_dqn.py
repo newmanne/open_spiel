@@ -26,7 +26,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from open_spiel.python import rl_agent
-from open_spiel.python.examples.ubc_utils import single_action_result, turn_based_size, handcrafted_size, sor_profit_index
+from open_spiel.python.examples.ubc_utils import single_action_result, turn_based_size, handcrafted_size, sor_profit_index, max_opponent_spend, my_max_pricing_bonus
 import time
 from absl import logging
 from cachetools import cached, LRUCache, TTLCache
@@ -233,6 +233,7 @@ class DQN(rl_agent.AbstractAgent):
                loss_str="mse",
                upper_bound_utility=None,
                lower_bound_utility=None,
+               game_config=None,
                double_dqn=True,
                device='cpu',
                ):
@@ -245,6 +246,12 @@ class DQN(rl_agent.AbstractAgent):
     self.upper_bound_utility = upper_bound_utility
     self.lower_bound_utility = lower_bound_utility
     self._num_players = num_players
+    self.game_config = game_config
+    if self.game_config is None:
+      raise ValueError("No game config provided! Needed for bounding")
+    self.max_opponent_spend = max_opponent_spend(game_config, player_id)
+    self.my_max_pricing_bonus = my_max_pricing_bonus(game_config, player_id)
+
     self._double_dqn = double_dqn
     if self._double_dqn:
       logging.info(f"Double DQN activated for player {player_id}")
@@ -378,13 +385,16 @@ class DQN(rl_agent.AbstractAgent):
 
     info_state_flat = prev_time_step.observations["info_state"][self.player_id][:]
 
-    ### FOR DYNAMIC BOUNDING. ONLY WORKS WHEN BIDDER UTILITY CAN BE COMPUTED INDEPENDENTLY
+    ### FOR DYNAMIC BOUNDING. REMEMBER THAT CHANGES TO UTILITY FUNCTION NEED TO BE REFLECTED HERE
     if time_step.last():
       max_profit_still_possible = reward
     else:
       idx = sor_profit_index(self._num_players)
       sor_profits = np.array(info_state_flat[idx : idx + self._num_actions])
       max_profit_still_possible = max(sor_profits[legal_actions])
+
+      max_profit_still_possible += self.my_max_pricing_bonus * self.max_opponent_spend
+      # TODO: We could handle pricing bonus in an ex-interim way by matching up type information from the information state tensor... But I feel like a) pricing bonus is usually small b) maybe doesn't vary so much amongst a single player's types
     ### END
 
     info_state = self._q_network.reshape_infostate(info_state_flat).to(self._device)
@@ -477,7 +487,6 @@ class DQN(rl_agent.AbstractAgent):
 
     actions = torch.LongTensor([t.action for t in transitions])
     rewards = torch.Tensor([t.reward for t in transitions])
-    iters = torch.LongTensor([t.iteration for t in transitions])
     upper_bounds = torch.Tensor(np.repeat([t.upper_bound for t in transitions], self._num_actions)).reshape(-1, self._num_actions)
 
     are_final_steps = torch.Tensor([t.is_final_step for t in transitions])
