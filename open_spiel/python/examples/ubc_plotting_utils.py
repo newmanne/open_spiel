@@ -60,6 +60,9 @@ def parse_run(run, max_t=None):
         logging.warning(f"No evaluations found for {run}")
         return
 
+    if len(evaluations) != len(br_evals_qs) / len(players):
+        logging.warning(f"Found {len(evaluations)} evaluations but only {len(br_evals_qs)} best responses")
+
     # GOAL: Dataframe with t, reward, player, br_player, config columns
     eval_values = evaluations
     evaluations_df = pd.DataFrame.from_records(eval_values)
@@ -78,7 +81,11 @@ def parse_run(run, max_t=None):
 
     # Regret for not having played the best response
     def get_baseline(grp):
-        return grp.query('br_player.isnull() and name.isnull()', engine='python')['reward'].iloc[0]
+        baseline = grp.query('br_player.isnull() and name.isnull()', engine='python')
+        if len(baseline) != 1:
+            t = grp["t"].unique()[0]
+            raise ValueError(f"Found {len(baseline)} records for baseline! Is there are an evaluation for this timestep ({t})?")
+        return baseline['reward'].iloc[0]
 
     # Regret for not having played the best response
     baselines = ev_df.groupby(['t', 'player']).apply(get_baseline).reset_index().rename(columns={0: 'Baseline'})

@@ -14,6 +14,8 @@ import datetime as dt
 import os
 import json
 import yaml
+from open_spiel.python.examples.ubc_decorators import TakeSingleActionDecorator
+from open_spiel.python.examples.straightforward_agent import StraightforwardAgent
 
 CONFIG_ROOT = '/apps/open_spiel/notebooks/configs'
 
@@ -140,6 +142,7 @@ def make_dqn_kwargs_from_config(config, game_config=None, player_id=None, includ
 
     if game_config is not None and player_id is not None:
         dqn_kwargs['lower_bound_utility'], dqn_kwargs['upper_bound_utility'] = clock_auction_bounds(game_config, player_id)
+        dqn_kwargs['game_config'] = game_config
     return dqn_kwargs
 
 
@@ -222,6 +225,23 @@ def load_game_config(game_name):
         game_config = json.load(f)
     return game_config
 
+def max_opponent_spend(game_config, player_id):
+    max_opp_budgets = []
+    for p, opponent in enumerate(game_config['players']):
+        if p == player_id:
+            continue
+        p_budgets = []
+        for t2 in opponent['type']:
+            p_budgets.append(t2['budget'])
+        max_opp_budgets.append(max(p_budgets))
+    return np.array(max_opp_budgets).sum()
+
+def my_max_pricing_bonus(game_config, player_id):
+    pricing_bonuses = []
+    for t in game_config['players'][player_id]['type']:
+        pricing_bonuses.append(t.get('pricing_bonus', 0))
+    return max(pricing_bonuses)
+
 def clock_auction_bounds(game_config, player_id):
     # MAX UTILITY
     player_id = 0
@@ -232,9 +252,15 @@ def clock_auction_bounds(game_config, player_id):
         # What if you won the whole supply at opening prices?
         bound = (np.array(t['value']) - p_open).clip(0) @ supply
         bounds.append(bound)
+
     max_utility = max(bounds)
+
+    # If pricing bonus is on, you can receive additional points for pricing opponents (up to their budgets)
+    max_utility += my_max_pricing_bonus(game_config, player_id) * max_opponent_spend(game_config, player_id)
+
+
     # MIN UTILITY
-    # What if you spent your entire budget and got nothing? (A tighter not implemented bound: if you got the single worst item for you)
+    # What if you spent your entire budget and got nothing? (A tighter not implemented bound: if you got the single worst item for you, since you must be paying for something)
     min_utility = -min([t['budget'] for t in game_config['players'][player_id]['type']])
     return min_utility, max_utility
 
@@ -369,7 +395,6 @@ def read_config(config_name):
 
 def safe_config_name(name):
     return name.replace("/", "").replace('.yml', '')
-
 
 def make_straightforward(player_id, game_config, game):
     return TakeSingleActionDecorator(StraightforwardAgent(player_id, game_config, game.num_distinct_actions()), game.num_distinct_actions())

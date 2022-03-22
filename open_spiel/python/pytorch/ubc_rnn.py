@@ -142,3 +142,6 @@ class AuctionRNN(nn.Module):
             sequence_lengths = [len(sequences[0])]
         packed_seq_batch = torch.nn.utils.rnn.pack_padded_sequence(padded_seq_batch, lengths=sequence_lengths, batch_first=True, enforce_sorted=False)
         return packed_seq_batch
+
+    def get_last_layer(self):
+        return self.output_layer

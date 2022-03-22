@@ -72,8 +72,7 @@ class EquilibriumSolverRunViewSet(viewsets.ReadOnlyModelViewSet):
         run = self.get_object()
         ev_df = parse_run(run)
         bokeh_js = plot_all_models(ev_df, notebook=False, output_str=True)
-        data = dict()
-        data['bokeh_js'] = bokeh_js
+        data = dict(bokeh_js=bokeh_js)
         return Response(data)
 
 
@@ -158,8 +157,10 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         data['trees'] = trees
 
         data['clusters_bokeh'] = dict()
+
+        # TODO: Move this to function?
         # Embeddings
-        df = flatten_trees(trees)
+        df = flatten_trees(trees).query('embedding.notna()', engine='python')
         for player in range(game.num_players):
             dfp = df.query(f'player_id == {player}').copy()
             embeddings = np.stack(dfp['embedding'].values).squeeze()
@@ -184,8 +185,8 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
                     plot = plot_embedding(dfp, color_col=k, reduction_method='pca')
                     plots.append(plot)
 
-                    plot = plot_embedding(dfp, color_col=k, reduction_method='umap')
-                    plots.append(plot)
+                    # plot = plot_embedding(dfp, color_col=k, reduction_method='umap')
+                    # plots.append(plot)
 
             plot_html = plots_to_string(plots, 'Clustering')
             data['clusters_bokeh'][player] = plot_html
