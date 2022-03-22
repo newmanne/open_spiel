@@ -14,8 +14,6 @@ import datetime as dt
 import os
 import json
 import yaml
-from open_spiel.python.examples.ubc_decorators import TakeSingleActionDecorator
-from open_spiel.python.examples.straightforward_agent import StraightforwardAgent
 
 CONFIG_ROOT = '/apps/open_spiel/notebooks/configs'
 
@@ -395,9 +393,6 @@ def read_config(config_name):
 
 def safe_config_name(name):
     return name.replace("/", "").replace('.yml', '')
-
-def make_straightforward(player_id, game_config, game):
-    return TakeSingleActionDecorator(StraightforwardAgent(player_id, game_config, game.num_distinct_actions()), game.num_distinct_actions())
 
 def num_to_letter(i):
     '''Maps 0 to A, 1 to B etc.'''
