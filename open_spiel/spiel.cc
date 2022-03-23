@@ -778,7 +778,7 @@ std::vector<float> State::InformationStateTensor(Player player) const {
   // that implement it?
   SPIEL_CHECK_GE(player, 0);
   SPIEL_CHECK_LT(player, num_players_);
-  std::vector<float> info_state(game_->InformationStateTensorSize());
+  std::vector<float> info_state(InformationStateTensorSize());
   InformationStateTensor(player, absl::MakeSpan(info_state));
   return info_state;
 }
@@ -786,9 +786,14 @@ std::vector<float> State::InformationStateTensor(Player player) const {
 void State::InformationStateTensor(Player player,
                                    std::vector<float>* values) const {
   // Retained for backwards compatibility.
-  values->resize(game_->InformationStateTensorSize());
+  values->resize(InformationStateTensorSize());
   InformationStateTensor(player, absl::MakeSpan(*values));
 }
+
+int State::Stupid() const {
+  return game_->InformationStateTensorSize();
+}
+
 
 bool State::PlayerAction::operator==(const PlayerAction& other) const {
   return player == other.player && action == other.action;

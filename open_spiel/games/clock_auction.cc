@@ -734,25 +734,28 @@ void AuctionState::ObservationTensor(Player player, absl::Span<float> values) co
   SpielFatalError("Unimplemented ObservationTensor");
 }
 
-
-int AuctionGame::SizeHelper(int rounds) const {
+int SizeHelper(int rounds, int num_actions, int num_products, int num_players) {
     // SoR profit of each bundle, round, agg_demand, my demand, clock price
-    int handcrafted_size = 2 * NumDistinctActions() + 3 + 3 * num_products_;
+    int handcrafted_size = 2 * num_actions + 3 + 3 * num_products;
     int size_required = 
       handcrafted_size +
-      num_players_ + // player encoding
+      num_players + // player encoding
       1 + // budget
-      num_products_ + // values
-      num_products_ * rounds + // submitted demand
-      num_products_ * rounds + // proceseed demand
-      num_products_ * rounds + // aggregate demand
-      num_products_ * rounds;  // posted price;
+      num_products + // values
+      num_products * rounds + // submitted demand
+      num_products * rounds + // proceseed demand
+      num_products * rounds + // aggregate demand
+      num_products * rounds;  // posted price;
       return size_required;
 }
 
 
+int AuctionState::InformationStateTensorSize() const {
+  return {SizeHelper(round_, game_->NumDistinctActions(), num_products_, num_players_)};
+}
+
 std::vector<int> AuctionGame::InformationStateTensorShape() const {
-  return {SizeHelper(max_rounds_)};
+  return {SizeHelper(max_rounds_, NumDistinctActions(), num_products_, NumPlayers())};
 }
 
 void AuctionState::InformationStateTensor(Player player, absl::Span<float> values) const {
@@ -829,7 +832,6 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
   offset += num_products_;
 
   /******** END HANDCRAFTED AREA *****/
-  int highest_round = max_rounds_;
 
   /*** PREFIX ***/
   // 1-hot player encoding

@@ -12,7 +12,7 @@ class AuctionRNN(nn.Module):
     """
     An RNN model designed for our auction games.
     """
-    def __init__(self, num_players, num_products, input_size, output_size, hidden_size=128, num_layers=1, rnn_model='lstm', nonlinearity='tanh'):
+    def __init__(self, num_players, num_products, input_size, output_size, normalizer, hidden_size=128, num_layers=1, rnn_model='lstm', nonlinearity='tanh'):
         """
         Initialize the model.
 
@@ -37,6 +37,7 @@ class AuctionRNN(nn.Module):
         self.turn_based_len = turn_based_size(num_players)
         self.prefix_len = prefix_size(num_players, num_products)
         self.handcrafted_len = handcrafted_size(output_size, num_products)
+        self.normalizer = normalizer
 
         num_rounds = (input_size - self.turn_based_len - self.prefix_len - self.handcrafted_len) // (FEATURES_PER_PRODUCT * num_products)
         # confirm that this gives an integral number of rounds...
@@ -71,8 +72,8 @@ class AuctionRNN(nn.Module):
         Outputs: tensor of shape (num rounds, model input size)
         """
         current_round = int(infostate_tensor[self.round_index])
+        infostate_tensor = torch.tensor(infostate_tensor) / self.normalizer[:len(infostate_tensor)]
         infostate_tensor = infostate_tensor[self.turn_based_len + self.handcrafted_len:] # Ignore the handcrafted stuff
-        infostate_tensor = torch.tensor(infostate_tensor) 
 
         # split tensor into (per-auction, per-round) features
         suffix_len_per_round = FEATURES_PER_PRODUCT * self.num_products

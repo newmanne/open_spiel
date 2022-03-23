@@ -148,6 +148,7 @@ class MLP(nn.Module):
                output_size,
                num_players, 
                num_products,
+               normalizer,
                activate_final=False):
     """Create the MLP.
 
@@ -163,6 +164,8 @@ class MLP(nn.Module):
     self.num_players = num_players
     self.num_products = num_products
     self.num_actions = output_size
+    self.normalizer = normalizer
+
     self.lb = turn_based_size(self.num_players)
     self.ub = self.lb + handcrafted_size(self.num_actions, self.num_products)
 
@@ -184,7 +187,8 @@ class MLP(nn.Module):
 
   def reshape_infostate(self, infostate_tensor):
     # MLP doesn't need to reshape infostates: just use flat tensor
-    return torch.tensor(infostate_tensor[self.lb: self.ub])
+    infostate_tensor = torch.tensor(infostate_tensor) / self.normalizer[:len(infostate_tensor)]
+    return infostate_tensor[self.lb: self.ub]
 
   def prep_batch(self, infostate_list):        
     """

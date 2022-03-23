@@ -176,7 +176,7 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
             # dfp['umap_1'] = umap[:, 1]
 
             # Try all numeric columns
-            numerics = ['int8', 'int16', 'int32', 'int64', 'float16', 'float32', 'float64']
+            numerics = ['category', 'int8', 'int16', 'int32', 'int64', 'float16', 'float32', 'float64']
             newdf = dfp.select_dtypes(include=numerics)
             IGNORE = ['type', 'depth', 'player_id', 'num_plays', 'pct_plays', 'pca_0', 'pca_1', 'umap_0', 'umap_1']
             plots = []
