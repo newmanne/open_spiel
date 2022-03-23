@@ -49,6 +49,8 @@ class TurnBasedSimultaneousState : public State {
   std::string InformationStateString(Player player) const override;
   void InformationStateTensor(Player player,
                               absl::Span<float> values) const override;
+  int InformationStateTensorSize() const override;
+
   std::string ObservationString(Player player) const override;
   void ObservationTensor(Player player,
                          absl::Span<float> values) const override;

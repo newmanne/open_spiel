@@ -5,6 +5,11 @@ from auctions.models import *
 from open_spiel.python.examples.ubc_nfsp_example import setup
 from open_spiel.python.examples.ubc_br import make_dqn_agent
 from open_spiel.python.examples.ubc_plotting_utils import parse_run
+import pytz
+import datetime
+import torch
+
+NORMALIZATION_DATE = datetime.datetime(2022, 3, 23, 4, 33, 3, 722237, tzinfo=pytz.UTC)
 
 OUTPUT_ROOT = '/shared/outputs'
 
@@ -13,6 +18,8 @@ def load_dqn_agent(best_response):
     db_game = best_response.checkpoint.equilibrium_solver_run.game
     br_agent = make_dqn_agent(best_response.br_player, best_response.config, load_game(db_game), db_game.config)
     br_agent._q_network.load_state_dict(pickle.loads(best_response.model))
+    if br_agent.created < NORMALIZATION_DATE:
+        br_agent._q_network.normalizer = torch.ones(10_000)
     return br_agent
 
 def env_and_model_from_run(run):
@@ -28,6 +35,14 @@ def env_and_model_from_run(run):
     env_and_model = setup(game, game_config, config)
     return env_and_model
 
+def env_and_model_for_dry_run(game_db_obj, config):
+    game = load_game(game_db_obj)
+    game_config = game_db_obj.config
+    config = dict(config)
+    env_and_model = setup(game, game_config, config)
+    return env_and_model
+
+
 def db_checkpoint_loader(checkpoint):
     # Create an env_and_model based on an NFSP checkpoint in the database
     env_and_model = env_and_model_from_run(checkpoint.equilibrium_solver_run)
@@ -35,6 +50,12 @@ def db_checkpoint_loader(checkpoint):
     # Restore the parameters
     nfsp_policies = env_and_model.nfsp_policies
     nfsp_policies.restore(pickle.loads(checkpoint.policy))
+
+    if checkpoint.created < NORMALIZATION_DATE:
+        for agent in env_and_model.agents:
+            agent._rl_agent._q_network.normalizer = torch.ones(10_000)
+            agent._avg_network.normalizer = torch.ones(10_000)
+
     return env_and_model
 
 def load_game(game): # Takes in Django Game object

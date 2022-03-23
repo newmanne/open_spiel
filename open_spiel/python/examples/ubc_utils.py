@@ -234,6 +234,17 @@ def max_opponent_spend(game_config, player_id):
         max_opp_budgets.append(max(p_budgets))
     return np.array(max_opp_budgets).sum()
 
+def max_budget(game_config):
+    for p in game_config['players']:
+        p_budgets = []
+        for t in p['type']:
+            p_budgets.append(t['budget'])
+    return max(p_budgets)
+
+def all_activity(game_config):
+    return np.array(game_config['licenses']) @ np.array(game_config['activity'])
+
+
 def my_max_pricing_bonus(game_config, player_id):
     pricing_bonuses = []
     for t in game_config['players'][player_id]['type']:
@@ -397,3 +408,48 @@ def safe_config_name(name):
 def num_to_letter(i):
     '''Maps 0 to A, 1 to B etc.'''
     return chr(ord('@')+i+1)
+
+def make_normalizer_for_game(game, game_config):
+    # Turn based crap (2 * num_players)
+    # Round
+    # SoR profit (num_actions)
+    # Clock profit (num_actions)
+    # Activity
+    # SoR exposure
+    # Clock prices (num_products)
+    # Current holdings
+    # Agg demand
+    # 1 hot player (num_players)
+    # Budget
+    # Values (num_products)
+    # While loop over rounds:
+        # Submitted demand
+        # Processed demand
+        # Agg demand
+        # Posted price
+
+    game_max_budget = max_budget(game_config)
+    num_actions = game.num_distinct_actions()
+    max_activity = all_activity(game_config)
+    num_products = len(game_config['licenses'])
+    num_players = game.num_players()
+    max_rounds = game_config.get('max_rounds', 100)
+
+    normalizer = ([1] * (2 * num_players)) + \
+        [max_rounds] + \
+        ([game_max_budget] * (num_actions * 2)) + \
+        [max_activity] + \
+        [game_max_budget] + \
+        [game_max_budget] * (num_products) + \
+        game_config['licenses'] + \
+        (np.array(game_config['licenses']) * num_players).tolist() + \
+        [1] * num_players + \
+        [game_max_budget] + \
+        [game_max_budget] * num_products # could use max value for a given product? \
+    for i in range(max_rounds):
+        normalizer += game_config['licenses']
+        normalizer += game_config['licenses']
+        normalizer += (np.array(game_config['licenses']) * num_players).tolist()
+        normalizer += [game_max_budget] * num_products
+
+    return torch.tensor(normalizer, dtype=torch.float32)

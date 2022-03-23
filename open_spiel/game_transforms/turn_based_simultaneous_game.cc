@@ -187,7 +187,7 @@ void TurnBasedSimultaneousState::InformationStateTensor(
   SPIEL_CHECK_GE(player, 0);
   SPIEL_CHECK_LT(player, num_players_);
 
-  SPIEL_CHECK_EQ(values.size(), game_->InformationStateTensorSize());
+  SPIEL_CHECK_EQ(values.size(), InformationStateTensorSize());
   auto value_it = values.begin();
 
   // First, get the 2 * num_players bits to encode whose turn it is and who
@@ -202,6 +202,10 @@ void TurnBasedSimultaneousState::InformationStateTensor(
   // Then get the underlying observation
   state_->InformationStateTensor(player,
                                  absl::MakeSpan(value_it, values.end()));
+}
+
+int TurnBasedSimultaneousState::InformationStateTensorSize() const {
+  return 2 * game_->NumPlayers() + state_->InformationStateTensorSize();
 }
 
 std::string TurnBasedSimultaneousState::ObservationString(Player player) const {

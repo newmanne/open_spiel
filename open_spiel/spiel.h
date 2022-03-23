@@ -513,6 +513,13 @@ class State {
   virtual void InformationStateTensor(Player player,
                                       std::vector<float>* values) const;
 
+  // For UBC to override w/ dynamic state sizes
+  virtual int InformationStateTensorSize() const {
+    return Stupid();
+  }
+
+  int Stupid() const;
+
   // We have functions for observations which are parallel to those for
   // information states. An observation should have the following properties:
   //  - It has at most the same information content as the information state

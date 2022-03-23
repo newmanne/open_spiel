@@ -4,6 +4,7 @@ from cachetools.keys import hashkey
 from open_spiel.python.examples.ubc_utils import single_action_result, fast_choice
 import numpy as np
 from open_spiel.python import rl_agent
+from absl import logging
 
 
 # TODO: Is all of this meta magic slowing you down? Or is it not worth bothering
@@ -73,3 +74,40 @@ class TakeSingleActionDecorator(AgentDecorator):
         if len(legal_actions) == 1:
             return single_action_result(legal_actions, self.num_actions, as_output=True)
         return self._agent.step(time_step, is_evaluation=is_evaluation)
+
+
+class UniformRestrictedNashResponseAgent(AgentDecorator):
+
+    def __init__(self, exploit_agent, trained_agents, agent_selector):
+        super().__init__(exploit_agent)
+        self.agent_selector = agent_selector
+        self.trained_agents = trained_agents
+
+    def step(self, time_step, is_evaluation=False):
+        agent_id = self.agent_selector.get_episode_agent()
+        if agent_id == -1:
+            return self._agent.step(time_step, is_evaluation=is_evaluation)
+        else:
+            return self.trained_agents[agent_id].step(time_step, is_evaluation=True)
+
+class UniformRestrictedNashResponseAgentSelector:
+
+    def __init__(self, n, num_players, exploit_prob=0.5, iterate_br=True, rnr_player_id =0):
+        self.exploit_prob = exploit_prob
+        self.n = n
+        self._episode_agent = -1
+        self.iterate_br = iterate_br
+        self.rnr_player_id = rnr_player_id
+        self.num_player = num_players
+
+    def new_episode(self, ep):
+        if self.iterate_br and ep % self.num_player != self.rnr_player_id:
+            self._episode_agent = -1 # If the learning player is not the RNR agent, it should actually learn (along with all the other agents?)
+        else:
+            options = [-1] + list(range(self.n))
+            x = (1 - self.exploit_prob) / self.n
+            probs = [self.exploit_prob] + [x] * self.n
+            self._episode_agent = fast_choice(options, probs)
+
+    def get_episode_agent(self):
+        return self._episode_agent

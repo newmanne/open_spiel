@@ -25,8 +25,8 @@ from bokeh.plotting import figure, show, output_file, save
 from bokeh.layouts import row, column
 from bokeh.io import output_notebook
 from bokeh.models import HoverTool, ColumnDataSource, ColorBar, LogColorMapper, LinearColorMapper
-from bokeh.transform import linear_cmap, log_cmap
-from bokeh.palettes import Category10_10, Magma256
+from bokeh.transform import linear_cmap, log_cmap, factor_cmap
+from bokeh.palettes import Category10_10, Magma256, Spectral10
 
 from bokeh.resources import CDN
 from bokeh.embed import file_html
@@ -38,7 +38,7 @@ import seaborn as sns
 from django.db.models import F
 from auctions.models import *
 
-def parse_run(run, max_t=None):
+def parse_run(run, max_t=None, conservative=True):
     players = list(range(run.game.num_players))
 
     br_evals_qs = BREvaluation.objects.filter(best_response__checkpoint__equilibrium_solver_run=run)
@@ -60,9 +60,6 @@ def parse_run(run, max_t=None):
         logging.warning(f"No evaluations found for {run}")
         return
 
-    if len(evaluations) != len(br_evals_qs) / len(players):
-        logging.warning(f"Found {len(evaluations)} evaluations but only {len(br_evals_qs)} best responses")
-
     # GOAL: Dataframe with t, reward, player, br_player, config columns
     eval_values = evaluations
     evaluations_df = pd.DataFrame.from_records(eval_values)
@@ -76,6 +73,10 @@ def parse_run(run, max_t=None):
         del frame['mean_rewards']
         frames.append(frame)
     ev_df = pd.concat((best_response_df, *frames))
+
+    if conservative:
+        # At least it should have an evaluation, a straightforward, and a BR
+        ev_df = ev_df.groupby(['player', 't']).filter(lambda grp: len(grp) >= 3)
 
     logging.info("Rewards parsed. Adding regret features")
 
@@ -127,6 +128,12 @@ def plots_to_string(plots, name=''):
     p = column(*plots)
     return file_html(p, CDN, name).strip()
 
+def plots_to_html(plots, output_name, title='RegretPlots'):
+    # Set output to static HTML file
+    p = column(*plots)
+    output_file(filename=output_name, title=title)
+    save(p)
+
 def plot_all_models(ev_df, notebook=True, output_name='plots.html', output_str=False):
     plots = []
     for model, sub_df in ev_df.groupby('model'):
@@ -141,10 +148,7 @@ def plot_all_models(ev_df, notebook=True, output_name='plots.html', output_str=F
         if output_str:
             return plots_to_string(plots, 'RegretPlots')
         else:
-            # Set output to static HTML file
-            p = column(*plots)
-            output_file(filename=output_name, title="RegretPlots")
-            save(p)
+            plots_to_html(plots, output_name)
 
 def compare_best_responses(master_df):
     # Each (model, iteration) is a datapoint for each BR config
@@ -293,15 +297,18 @@ def plot_embedding(df, color_col='round', reduction_method='pca'):
 
     plot = figure(width=900, height=400, title=f"{color_col}")
 
-    # add a circle renderer with a size, color, and alpha
-    mapper = linear_cmap(field_name=color_col, palette=list(reversed(Magma256)) ,low=df[color_col].min(), high=df[color_col].max())
-#     mapper = log_cmap(field_name=f'Prob_{action_num}', palette="Magma256" ,low=1e-9, high=q[action_cols].values.max())
-    plot.circle(f'{reduction_method}_0', f'{reduction_method}_1', size=10, color=mapper, alpha=0.3, source=source)
-
+    if df.dtypes[color_col].name == 'category':
+        n_cats = df[color_col].nunique()
+        mapper = factor_cmap(field_name=color_col, palette=Spectral10[:n_cats], factors=list(df[color_col].unique()))
+        plot.circle('pca_0', 'pca_1', size=10, color=mapper, alpha=0.3, source=source)
+    else:
+        mapper = linear_cmap(field_name=color_col, palette=list(reversed(Magma256)) ,low=df[color_col].min(), high=df[color_col].max())
+        plot.circle('pca_0', 'pca_1', size=10, color=mapper, alpha=0.3, source=source)
 
     plot.add_tools(HoverTool(tooltips=[['Infostate', '@pretty_str'],
                                        [color_col, f'@{color_col}'],
                                        ['Round', '@round'],
+                                        ['Type', '@player_type'],
                                       ]))
     color_bar = ColorBar(color_mapper=mapper['transform'], label_standoff=12)
     plot.add_layout(color_bar, 'right')

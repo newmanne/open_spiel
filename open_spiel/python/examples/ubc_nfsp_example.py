@@ -61,6 +61,10 @@ def setup(game, game_config, config):
     sl_model_args.update(config['sl_model_args'])
     rl_model_args.update(config['rl_model_args'])
 
+    normalizer = make_normalizer_for_game(game, game_config)
+    sl_model_args.update({'normalizer': normalizer})
+    rl_model_args.update({'normalizer': normalizer})
+
     agents = []
     for player_id in range(num_players):
         dqn_kwargs = make_dqn_kwargs_from_config(config, game_config=game_config, player_id=player_id, include_nfsp=False)
@@ -139,7 +143,7 @@ def evaluate_nfsp(ep, compute_nash_conv, game, policy, alg_start_time, nash_conv
         }
     return checkpoint
 
-def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, seed, compute_nash_conv, dispatcher, eval_every, eval_every_early, eval_exactly, eval_zero, report_freq, dispatch_br):
+def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, seed, compute_nash_conv, dispatcher, eval_every, eval_every_early, eval_exactly, eval_zero, report_freq, dispatch_br, agent_selector):
     # This may have already been done, but do it again. Required to do it outside to ensure that networks get initilized the same way, which usually happens elsewhere
     fix_seeds(seed)
     game, policy, env, agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
@@ -151,8 +155,12 @@ def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, see
 
     alg_start_time = time.time()
     for ep in range(1, num_training_episodes + 1):
+
+        # Start of new episode bookkeeping
         for agent in agents:
             agent.set_global_iteration(ep)
+        if agent_selector is not None:
+            agent_selector.new_episode(ep) 
 
         time_step = env.reset()
         episode_steps = 0
