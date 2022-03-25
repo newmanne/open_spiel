@@ -143,7 +143,7 @@ eval $CMD
 
     logging.info(f"Dispatched experiment!")
 
-def dispatch_eval_database(experiment_name, run_name, t, br_player, br_name, submit=True, mem=16, overrides=''):
+def dispatch_eval_database(experiment_name, run_name, t, br_player, br_name, submit=True, mem=8, overrides=''):
     spiel_path, config_dir, pydir, manage_path = verify_config()
 
     slurm_job_name = f'eval_{run_name}_{t}_{experiment_name}'
