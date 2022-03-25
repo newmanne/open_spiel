@@ -126,15 +126,21 @@ def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_model=N
                 del agent_to_dqn_embedding[player_id] # Clear embedding for safety to make sure we aren't reusing these values and prevent bugs
 
             clock_prices_index = clock_price_index(num_players, num_actions)
-            clock_prices = np.array(information_state_tensor[clock_prices_index:clock_prices_index + num_actions])
-            
+            clock_prices = np.array(information_state_tensor[clock_prices_index:clock_prices_index + num_products])
+            bundles = action_to_bundles(env_and_model.game_config['licenses'])
+
             for i in range(num_products):
                 letter = num_to_letter(i)
                 node[f'clock_price {letter}'] = clock_prices[i]
 
                 # Integrate over all actions
-                bundles = action_to_bundles(env_and_model.game_config['licenses'])
-                node[f'expected_bid {letter}'] = sum([p * q[i] for p, q in zip(agent_output.probs, bundles.values())])
+                expected_bid = sum([p * q[i] for p, q in zip(agent_output.probs, bundles.values())])
+                node[f'expected_bid {letter}'] = expected_bid
+                parent[f'expected_bid {letter}'] = expected_bid
+            
+            activity = np.array(env_and_model.game_config['activity'])
+            parent['expected_activity'] = sum([p * (q @ activity) for p, q in zip(agent_output.probs, bundles.values())])
+            parent['expected_cost'] = sum([p * (q @ clock_prices) for p, q in zip(agent_output.probs, bundles.values())])
 
     node['pretty_str'] = pretty_str
     return node
@@ -231,11 +237,6 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
                     # Protect against information states with a single legal action, which don't call the network
                     current_nodes[player_id]['embedding'] = agent_to_embedding[player_id].numpy()
                     del agent_to_embedding[player_id] # Clear embedding for safety to make sure we aren't reusing these values and prevent bugs
-
-                # Can only get this one post-bid, but this is messy. Integrate over all actions
-                bundles = action_to_bundles(game_config['licenses'])
-                for i in range(num_products):
-                    current_nodes[player_id][f'expected_bid {num_to_letter(i)}'] = sum([p * q[i] for p, q in zip(agent_output.probs, bundles.values())])
 
             # Note that we took this action
             action_string = env._state.action_to_string(agent_output.action)

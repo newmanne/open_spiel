@@ -28,7 +28,7 @@ def projectUMAP(X, n_neighbors=15, min_dist=0.1, rescale=False):
     umap_embedding = umap_reducer.fit_transform(X)
     return umap_embedding
 
-def fitGMM(X, verbose=False):
+def fitGMM(X, verbose=False, trials=None):
     """
     Fit a Gaussian mixture model, choosing the number of components to minimize AIC score.
     
@@ -46,7 +46,11 @@ def fitGMM(X, verbose=False):
     gmms = {}
     clusters = {}
     scores = {}
-    for n_components in tqdm([1, 2, 5, 10, 20, 50, 100], disable=not verbose): # TODO: don't hardcode
+
+    if trials is None:
+        trials = [1, 2, 5, 10, 20, 50, 100]
+
+    for n_components in tqdm(trials, disable=not verbose): # TODO: don't hardcode
         gmms[n_components] = GaussianMixture(n_components=n_components)
         clusters[n_components] = gmms[n_components].fit_predict(X)
         scores[n_components] = gmms[n_components].aic(X)

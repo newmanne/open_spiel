@@ -18,7 +18,7 @@ def load_dqn_agent(best_response):
     db_game = best_response.checkpoint.equilibrium_solver_run.game
     br_agent = make_dqn_agent(best_response.br_player, best_response.config, load_game(db_game), db_game.config)
     br_agent._q_network.load_state_dict(pickle.loads(best_response.model))
-    if br_agent.created < NORMALIZATION_DATE:
+    if best_response.created < NORMALIZATION_DATE:
         br_agent._q_network.normalizer = torch.ones(10_000)
     return br_agent
 
