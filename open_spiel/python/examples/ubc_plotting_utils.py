@@ -26,7 +26,7 @@ from bokeh.layouts import row, column
 from bokeh.io import output_notebook
 from bokeh.models import HoverTool, ColumnDataSource, ColorBar, LogColorMapper, LinearColorMapper
 from bokeh.transform import linear_cmap, log_cmap, factor_cmap
-from bokeh.palettes import Category10_10, Magma256, Spectral10
+from bokeh.palettes import Category10_10, Magma256, Spectral10, Category20_20
 
 from bokeh.resources import CDN
 from bokeh.embed import file_html
@@ -42,13 +42,16 @@ def parse_run(run, max_t=None, conservative=True):
     players = list(range(run.game.num_players))
 
     br_evals_qs = BREvaluation.objects.filter(best_response__checkpoint__equilibrium_solver_run=run)
-    if len(br_evals_qs) == 0:
+    if len(br_evals_qs) == 1:
         logging.warning(f"No BR found for {run}")
         return
 
     br_values = br_evals_qs.values(t=F('best_response__checkpoint__t'), name=F('best_response__name'), reward=F('expected_value_stats__mean'), br_player=F('best_response__br_player'))
     best_response_df = pd.DataFrame.from_records(br_values)
     best_response_df['player'] = best_response_df['br_player']
+
+    display(best_response_df)
+
 
     negative_reward_br = best_response_df.query('name != "straightforward" and reward < 0')
     if len(negative_reward_br) > 0:
@@ -282,7 +285,7 @@ def special_save_fig(fig, file_name, fmt=None, dpi=300, tight=True):
         subprocess.call('pdfcrop %s %s' % (tmp_name, file_name), shell=True)
 
 
-def plot_embedding(df, color_col='round', reduction_method='pca'):
+def plot_embedding(df, color_col='round', reduction_method='pca', fast_mode=False):
     df = df.copy()
 
     # Spaces don't play nice with the hover tooltip
@@ -299,17 +302,22 @@ def plot_embedding(df, color_col='round', reduction_method='pca'):
 
     if df.dtypes[color_col].name == 'category':
         n_cats = df[color_col].nunique()
-        mapper = factor_cmap(field_name=color_col, palette=Spectral10[:n_cats], factors=list(df[color_col].unique()))
+        if n_cats > 20:
+            raise ValueError("What should I do????? Too many categories")
+
+        mapper = factor_cmap(field_name=color_col, palette=Category20_20[:n_cats], factors=list(df[color_col].unique()))
         plot.circle('pca_0', 'pca_1', size=10, color=mapper, alpha=0.3, source=source)
     else:
         mapper = linear_cmap(field_name=color_col, palette=list(reversed(Magma256)) ,low=df[color_col].min(), high=df[color_col].max())
         plot.circle('pca_0', 'pca_1', size=10, color=mapper, alpha=0.3, source=source)
 
-    plot.add_tools(HoverTool(tooltips=[['Infostate', '@pretty_str'],
-                                       [color_col, f'@{color_col}'],
-                                       ['Round', '@round'],
-                                        ['Type', '@player_type'],
-                                      ]))
     color_bar = ColorBar(color_mapper=mapper['transform'], label_standoff=12)
     plot.add_layout(color_bar, 'right')
+
+    if not fast_mode:
+        plot.add_tools(HoverTool(tooltips=[['Infostate', '@pretty_str'],
+                                        [color_col, f'@{color_col}'],
+                                        ['Round', '@round'],
+                                            ['Type', '@player_type'],
+                                        ]))
     return plot

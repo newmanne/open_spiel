@@ -27,6 +27,7 @@ import time
 from collections import defaultdict
 from dataclasses import dataclass
 
+DEFAULT_NUM_SAMPLES = 100_000
 DEFAULT_REPORT_FREQ = 5000
 DEFAULT_SEED = 1234
 

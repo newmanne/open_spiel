@@ -6,8 +6,10 @@ import pickle
 from auctions.models import *
 import sys
 from auctions.webutils import *
+from auctions.management.commands.evaluate import eval_command
 import open_spiel.python.examples.ubc_dispatch as dispatch
 from distutils import util
+from open_spiel.python.examples.ubc_evaluate_policy import DEFAULT_NUM_SAMPLES, run_eval, DEFAULT_REPORT_FREQ
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +19,11 @@ class DBBRResultSaver:
         self.equilibrium_solver_run_checkpoint = equilibrium_solver_run_checkpoint
         self.br_name = br_name
         self.dry_run = dry_run
+        self.result = None
 
     def save(self, checkpoint):
         if not self.dry_run:
-            BestResponse.objects.create(
+            self.result = BestResponse.objects.create(
                 checkpoint = self.equilibrium_solver_run_checkpoint,
                 br_player = checkpoint['br_player'],
                 walltime = checkpoint['walltime'],
@@ -29,6 +32,9 @@ class DBBRResultSaver:
                 name = self.br_name,
                 t = checkpoint['episode']
             )
+
+    def get_result(self):
+        return self.result
 
 class Command(BaseCommand):
     help = 'Runs BR and saves the results'
@@ -48,7 +54,8 @@ class Command(BaseCommand):
 
         # Rewards dispatching
         parser.add_argument('--dispatch_rewards', type=util.strtobool, default=0)
-        parser.add_argument('--eval_overrides', type=str, default='')
+        parser.add_argument('--eval_num_samples', type=int, default=DEFAULT_NUM_SAMPLES)
+        parser.add_argument('--eval_report_freq', type=int, default=DEFAULT_REPORT_FREQ)
 
         parser.add_argument('--t', type=int)
         parser.add_argument('--experiment_name', type=str)
@@ -83,5 +90,6 @@ class Command(BaseCommand):
         # Run best response
         run_br(result_saver, opts.report_freq, env_and_model, opts.num_training_episodes, br_player, opts.dry_run, opts.seed, opts.compute_exact_br, config)
 
-        if opts.dispatch_rewards and not dry_run:
-            dispatch.dispatch_eval_database(experiment_name, run_name, t, br_player, config_name, overrides=opts.eval_overrides)
+        # Evaluation
+        if opts.dispatch_rewards:
+            eval_command(opts.t, opts.experiment_name, opts.run_name, config_name, opts.br_player, opts.dry_run, opts.seed, opts.eval_report_freq, opts.eval_num_samples)
