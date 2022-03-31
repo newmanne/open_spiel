@@ -10,7 +10,6 @@ from auctions.webutils import *
 import json
 import open_spiel.python.examples.ubc_dispatch as dispatch
 from distutils import util
-from django.db.utils import IntegrityError
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +54,7 @@ class DBBRDispatcher:
     def dispatch(self, t):
         eq = self.eq_solver_run
         for player in range(self.num_players):
-            dispatch.dispatch_br_database(eq.experiment.name, eq.name, t, player, self.br_portfolio_path, overrides=self.br_overrides + f' --eval_overrides "{self.eval_overrides}"')
+            dispatch.dispatch_br_database(eq.experiment.name, eq.name, t, player, self.br_portfolio_path, overrides=self.br_overrides + " " + self.eval_overrides)
             dispatch.dispatch_eval_database(eq.experiment.name, eq.name, t, player, 'straightforward', overrides=self.eval_overrides) # Straightforward eval
         dispatch.dispatch_eval_database(eq.experiment.name, eq.name, t, None, None, overrides=self.eval_overrides)
             
@@ -102,8 +101,8 @@ class Command(BaseCommand):
         # Dispatching
         parser.add_argument('--dispatch_br', type=util.strtobool, default=1)
         parser.add_argument('--br_portfolio_path', type=str, default=None)
-        parser.add_argument('--br_overrides', type=str, default='')
-        parser.add_argument('--eval_overrides', type=str, default='')
+        parser.add_argument('--br_overrides', type=str, default='', help='These are arguments you want to pass to BR. DO NOT INCLUDE EVAL ARGS HERE')
+        parser.add_argument('--eval_overrides', type=str, default='', help="These are arguments you want to pass directly through to evaluate. They ALSO get passed to best respones")
 
         # RNR
         parser.add_argument('--rnr_player', type=int, default=None)
