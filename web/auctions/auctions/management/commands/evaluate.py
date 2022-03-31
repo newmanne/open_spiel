@@ -84,8 +84,8 @@ class Command(BaseCommand):
     help = 'Evaluates a policy and saves the result'
 
     def add_arguments(self, parser):
-        parser.add_argument('--num_samples', type=int, default=DEFAULT_NUM_SAMPLES)
-        parser.add_argument('--report_freq', type=int, default=DEFAULT_REPORT_FREQ)
+        parser.add_argument('--eval_num_samples', type=int, default=DEFAULT_NUM_SAMPLES)
+        parser.add_argument('--eval_report_freq', type=int, default=DEFAULT_REPORT_FREQ)
         parser.add_argument('--seed', type=int, default=DEFAULT_SEED)
         parser.add_argument('--br_name', type=str, default=None)
 
@@ -102,4 +102,4 @@ class Command(BaseCommand):
         setup_logging()
         opts = AttrDict(options)
 
-        eval_command(opts.t, opts.experiment_name, opts.run_name, opts.br_name, opts.br_player, opts.dry_run, opts.seed, opts.report_freq, opts.num_samples)
+        eval_command(opts.t, opts.experiment_name, opts.run_name, opts.br_name, opts.br_player, opts.dry_run, opts.seed, opts.eval_report_freq, opts.eval_num_samples)
