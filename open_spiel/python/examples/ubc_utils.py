@@ -71,7 +71,7 @@ def prefix_index(num_players, num_actions, num_products):
 
 def get_player_type(num_players, num_actions, num_products, max_types, information_state_tensor):
     index = prefix_index(num_players, num_actions, num_products)
-    return np.nonzero(information_state_tensor[index:index + max_types])[0][0]
+    return int(np.nonzero(information_state_tensor[index:index + max_types])[0][0])
 
 def recurrent_round_size(num_products):
     return FEATURES_PER_PRODUCT * num_products
@@ -99,6 +99,9 @@ def parse_current_round_frame(num_players, num_actions, num_products, informatio
     allocation = frame[PROCESSED_DEMAND_INDEX * num_products : (PROCESSED_DEMAND_INDEX + 1) * num_products]
     agg_demand = frame[AGG_DEMAND_INDEX * num_products : (AGG_DEMAND_INDEX + 1) * num_products]
     prices = frame[POSTED_PRICE_INDEX * num_products : (POSTED_PRICE_INDEX + 1) * num_products]
+    if len(prices) != num_products:
+        raise ValueError("Wrong size for prices!")
+
     return dict(allocation=allocation, agg_demand=agg_demand, posted_prices=prices)
 
 def num_increments(price, increment, starting_price):
