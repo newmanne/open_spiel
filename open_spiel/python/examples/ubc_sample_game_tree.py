@@ -77,14 +77,32 @@ def get_input(name, data):
         data[name] = input[0].detach().cpu()
     return hook
 
-def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_model=None, time_step=None, agent_to_dqn_embedding=None, parent=None):
+def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_model=None, time_step=None, agent_to_dqn_embedding=None, parent=None, clusterer=None):
     node = {'sample_outcomes': defaultdict(list), 'children': {}, 'type': node_type, 'depth': depth} # 'pretty_name': pretty_str}
     pretty_str = str_desc
+
+    if node_type == NodeType.ROOT:
+        if clusterer is not None:
+            node['cluster'] = -1
+
+    if node_type == NodeType.FINAL_STATE:
+        if clusterer is not None:
+            node['cluster'] = -2
+            node['cluster_from'] = parent['cluster']
+
     if node_type in [NodeType.INFORMATION_STATE, NodeType.ACTION]:
         player_id = time_step.observations["current_player"]
         information_state_tensor = time_step.observations["info_state"][player_id]
         game = env_and_model.game
-        num_players, num_actions, num_products = game_spec(game, env_and_model.game_config)
+        agent = env_and_model.agents[player_id]
+        state = env_and_model.env._state
+        game_config = env_and_model.game_config
+
+        num_players, num_actions, num_products = game_spec(game, game_config)
+        max_types = max_num_types(game_config)
+
+        clock_prices_index = clock_price_index(num_players, num_actions)
+        clock_prices = np.array(information_state_tensor[clock_prices_index:clock_prices_index + num_products])
 
         node['player_id'] = player_id
         node['round'] = information_state_tensor[round_index(num_players)]
@@ -94,15 +112,24 @@ def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_model=N
             pretty_str = pretty_information_state(str_desc, depth)
             node['activity'] = information_state_tensor[activity_index(num_players, num_actions)]
             node['start_of_round_exposure'] = information_state_tensor[sor_exposure_index(num_players, num_actions)]
+            current_round_frame_parsed = parse_current_round_frame(num_players, num_actions, num_products, information_state_tensor)
+            current_holdings = current_round_frame_parsed['allocation']
+            agg_demand = current_round_frame_parsed['agg_demand']
+            for i in range(num_products):
+                letter = num_to_letter(i)
+                node[f'Processed {letter}'] = current_holdings[i]
+                node[f'Agg Demand {letter}'] = agg_demand[i]
+                node[f'Price Increments {letter}'] = num_increments(clock_prices[i], game_config['increment'], game_config['opening_price'][i])
+                
+            player_type_index = get_player_type(num_players, num_actions, num_products, max_types, information_state_tensor) 
+            player_type = type_from_index(game_config, player_id, player_type_index)
+            node['player_type'] = f'b{player_type["budget"]}v{",".join(map(str, player_type["value"]))}'
 
-            player_type = get_player_type(num_players, num_actions, num_products, information_state_tensor) # Budget, values all in list
-            node['player_type'] = f'b{player_type[0]}v{",".join(map(str, player_type[1:]))}'
-
+            if clusterer is not None:
+                node['cluster_from'] = parent['cluster']
+            
         elif node_type == NodeType.ACTION:
             action_id = agent_output.action
-
-            agent = env_and_model.agents[player_id]
-            state = env_and_model.env._state
 
             cpi = clock_profit_index(num_players, num_actions)
             profits = np.array(information_state_tensor[cpi:cpi + num_actions])
@@ -125,8 +152,6 @@ def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_model=N
                 parent['dqn_embedding'] = agent_to_dqn_embedding[player_id].numpy()
                 del agent_to_dqn_embedding[player_id] # Clear embedding for safety to make sure we aren't reusing these values and prevent bugs
 
-            clock_prices_index = clock_price_index(num_players, num_actions)
-            clock_prices = np.array(information_state_tensor[clock_prices_index:clock_prices_index + num_products])
             bundles = action_to_bundles(env_and_model.game_config['licenses'])
 
             for i in range(num_products):
@@ -142,18 +167,18 @@ def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_model=N
             parent['expected_activity'] = sum([p * (q @ activity) for p, q in zip(agent_output.probs, bundles.values())])
             parent['expected_cost'] = sum([p * (q @ clock_prices) for p, q in zip(agent_output.probs, bundles.values())])
 
+            if clusterer is not None:
+                node['cluster'] = parent['cluster']
+
     node['pretty_str'] = pretty_str
     return node
 
 def aggregate_results(node, num_samples):
     # Count number of observations
 
-    # TODO: node['normalized_num_plays']?
-
     node['num_plays'] = len(node['sample_outcomes']['profit'])
     node['pct_plays'] = (node['num_plays'] / num_samples) * 100
     # Add means in place
-    # TODO: handle allocations differently? 
     # TODO: save other stats?
     for k in node['sample_outcomes']:
         if k == 'allocation':
@@ -168,11 +193,15 @@ def aggregate_results(node, num_samples):
     for child in node['children']:
         aggregate_results(node['children'][child], num_samples)
 
-def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=DEFAULT_SEED, include_embeddings=False):
+def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=DEFAULT_SEED, include_embeddings=False, clusterer=None):
     fix_seeds(seed)
-    
+
     game, policy, env, agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
     num_players, num_actions, num_products = game_spec(game, game_config)
+
+    player_to_n_types = dict()
+    for player in range(num_players):
+        player_to_n_types[player] = len(game_config['players'][player]['type'])
 
     if include_embeddings:
         for agent in agents:
@@ -197,7 +226,7 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
     logging.info(f"Evaluation phase: {num_samples} episodes")
     alg_start_time = time.time()
 
-    roots = [new_tree_node(NodeType.ROOT, '(root)', 0) for player in range(num_players)]
+    roots = [new_tree_node(NodeType.ROOT, '(root)', 0, clusterer=clusterer) for player in range(num_players)]
 
     for sample_index in tqdm(range(num_samples)):
         if sample_index % report_freq == 0 and sample_index > 0:
@@ -225,7 +254,7 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
             infostate_string = env._state.information_state_string()
             new_infostate = infostate_string not in current_nodes[player_id]['children']
             if new_infostate:
-                current_nodes[player_id]['children'][infostate_string] = new_tree_node(node_type=NodeType.INFORMATION_STATE, str_desc=infostate_string, depth=current_nodes[player_id]['depth'] + 1, env_and_model=env_and_model, time_step=time_step, agent_to_dqn_embedding=agent_to_dqn_embedding, parent=current_nodes[player_id])
+                current_nodes[player_id]['children'][infostate_string] = new_tree_node(node_type=NodeType.INFORMATION_STATE, str_desc=infostate_string, depth=current_nodes[player_id]['depth'] + 1, env_and_model=env_and_model, time_step=time_step, agent_to_dqn_embedding=agent_to_dqn_embedding, parent=current_nodes[player_id], clusterer=clusterer)
             current_nodes[player_id] = current_nodes[player_id]['children'][infostate_string]
             child_list[player_id].append(infostate_string)
             legal_actions = time_step.observations["legal_actions"][player_id]
@@ -238,10 +267,13 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
                     current_nodes[player_id]['embedding'] = agent_to_embedding[player_id].numpy()
                     del agent_to_embedding[player_id] # Clear embedding for safety to make sure we aren't reusing these values and prevent bugs
 
+                    if clusterer is not None:
+                        current_nodes[player_id]['cluster'] = clusterer(current_nodes[player_id]['embedding'].reshape(1,-1))
+
             # Note that we took this action
             action_string = env._state.action_to_string(agent_output.action)
             if action_string not in current_nodes[player_id]['children']:
-                current_nodes[player_id]['children'][action_string] = new_tree_node(node_type=NodeType.ACTION, str_desc=action_string, depth=current_nodes[player_id]['depth'] + 1, agent_output=agent_output, env_and_model=env_and_model, time_step=time_step, agent_to_dqn_embedding=agent_to_dqn_embedding, parent=current_nodes[player_id])
+                current_nodes[player_id]['children'][action_string] = new_tree_node(node_type=NodeType.ACTION, str_desc=action_string, depth=current_nodes[player_id]['depth'] + 1, agent_output=agent_output, env_and_model=env_and_model, time_step=time_step, agent_to_dqn_embedding=agent_to_dqn_embedding, parent=current_nodes[player_id], clusterer=clusterer)
             current_nodes[player_id] = current_nodes[player_id]['children'][action_string]
             child_list[player_id].append(action_string)
 
@@ -257,7 +289,7 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
             # Get some representation of the final bids
             final_string = str(env._state).split('\n')[-1]
             if final_string not in current_nodes[i]['children']:
-                current_nodes[i]['children'][final_string] = new_tree_node(node_type=NodeType.FINAL_STATE, str_desc=final_string, depth=current_nodes[i]['depth'] + 1, env_and_model=env_and_model, time_step=time_step, agent_to_dqn_embedding=agent_to_dqn_embedding, parent=current_nodes[i])
+                current_nodes[i]['children'][final_string] = new_tree_node(node_type=NodeType.FINAL_STATE, str_desc=final_string, depth=current_nodes[i]['depth'] + 1, env_and_model=env_and_model, time_step=time_step, agent_to_dqn_embedding=agent_to_dqn_embedding, parent=current_nodes[i], clusterer=clusterer)
             current_nodes[i] = current_nodes[i]['children'][final_string]
             child_list[i].append(final_string)
 
@@ -269,10 +301,14 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
             node = roots[i]
             for j in range(len(child_list[i])+1):
                 # Add outcomes
-                node['sample_outcomes']['profit'].append(episode_rewards[i]),
-                node['sample_outcomes']['payment'].append(payment),
-                node['sample_outcomes']['allocation'].append(allocation),
-                node['sample_outcomes']['rounds'].append(episode_length / num_players),
+                node['sample_outcomes']['profit'].append(episode_rewards[i])
+                node['sample_outcomes']['payment'].append(payment)
+                node['sample_outcomes']['allocation'].append(allocation)
+                node['sample_outcomes']['rounds'].append(episode_length / num_players)
+                for opponent in players_not_me(i, num_players):
+                    opponent_type_id = env._state.history()[opponent] # Super implementation specific, where this is the ith chance outcome. Better would be to parse str(state) or expose a metrics() function from state to pyspiel
+                    for type_index in range(player_to_n_types[opponent]):
+                        node['sample_outcomes'][f'p{opponent}_type_{type_index}'].append(1 if type_index == opponent_type_id else 0)
 
                 # Move to next node
                 if j < len(child_list[i]):

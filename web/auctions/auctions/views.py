@@ -3,6 +3,7 @@ import logging
 import os
 
 from django.conf import settings
+from open_spiel.python.examples.ubc_utils import num_to_letter
 from rest_framework import serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -93,6 +94,41 @@ class EquilibriumSolverRunCheckpointViewSet(viewsets.ReadOnlyModelViewSet):
         best_responses = BestResponse.objects.filter(checkpoint=checkpoint, br_player=player)
         ser = BestResponseSerializer(best_responses, many=True, context={'request': request})
         return Response(ser.data)
+
+    @staticmethod
+    def _allocation_distribution(allocations, supply):
+        series = defaultdict(lambda: defaultdict(list)) # Player -> Area -> Amount
+        totals = np.repeat(supply, len(allocations['0'])).reshape(len(supply), -1) # Each row is a different product, started at supply
+        for player in allocations.keys():
+            for k, sample in enumerate(allocations[player]):
+                for i, n_licenses in enumerate(sample):
+                    series[player][i].append(n_licenses)
+                    totals[i][k] -= n_licenses
+        
+        for i in range(len(supply)):
+            series['Auctioneer'][i] = totals[i].tolist()
+        
+        normalized = defaultdict(lambda: defaultdict(list))
+        for bidder_name, data in series.items():
+            for service_area, counts in data.items():
+                normalized[bidder_name][service_area] = pd.Series(counts).astype(int).value_counts(normalize=True).to_dict()
+
+        retval = defaultdict(dict)
+        for bidder_name, data in normalized.items():
+            for service_area, product_supply in enumerate(supply):
+                nice_name = num_to_letter(service_area)
+                retval[nice_name][bidder_name] = {i: data[service_area].get(i, 0) for i in range(product_supply + 1)}
+        return retval
+
+    @action(detail=True)
+    def evaluation(self, request, pk=None):
+        checkpoint = self.get_object()
+        samples = checkpoint.evaluation.samples
+        allocations = samples['allocations']
+        supply = checkpoint.equilibrium_solver_run.game.supply()
+        retval = dict()
+        retval['allocations'] = self._allocation_distribution(allocations, supply)
+        return Response(retval)
 
 class GameSerializer(serializers.ModelSerializer):
     class Meta:

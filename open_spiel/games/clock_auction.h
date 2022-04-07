@@ -23,35 +23,119 @@
 #include "open_spiel/simultaneous_move_game.h"
 #include "open_spiel/spiel.h"
 
-//
-// Parameters:
-//   "players"     int    number of players                      (default = 2)
-
 namespace open_spiel {
 namespace clock_auction {
 
+
+int Sum(std::vector<int> v) {
+  return std::accumulate(v.begin(), v.end(), 0);
+}
+
+double Sum(std::vector<double> v) {
+  return std::accumulate(v.begin(), v.end(), 0.);
+}
+
+int DotProduct(std::vector<int> const &a, std::vector<int> const &b) {
+  return std::inner_product(std::begin(a), std::end(a), std::begin(b), 0.0);
+}
+
+double DotProduct(std::vector<int> const &a, std::vector<double> const &b) {
+  return std::inner_product(std::begin(a), std::end(a), std::begin(b), 0.0);
+}
+
+int Factorial(int x) {
+  return (x == 0) || (x == 1) ? 1 : x * Factorial(x-1);
+}
+
+class Bidder {
+  public:
+    virtual const double ValuationForPackage(std::vector<int> const &package) const = 0;
+    virtual const double GetBudget() const = 0;
+    virtual const double GetPricingBonus() const = 0;
+    virtual operator std::string() const = 0;
+};
+
+class LinearBidder : public Bidder {
+
+  public:
+    explicit LinearBidder(std::vector<double> values, double budget, double pricing_bonus) : values_(values), budget_(budget), pricing_bonus_(pricing_bonus) {
+    }
+
+    const double ValuationForPackage(std::vector<int> const &package) const override {
+      return DotProduct(package, values_);
+    }
+
+    const double GetBudget() const override {
+      return budget_;
+    }
+
+    const double GetPricingBonus() const override {
+      return pricing_bonus_;
+    }
+
+    operator std::string() const {
+        return absl::StrCat("LinearValues:", absl::StrJoin(values_, ", "), " Budget: ", budget_);
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const LinearBidder& b);
+
+
+  private:
+    double budget_;
+    std::vector<double> values_;
+    double pricing_bonus_;
+
+};
+
+class MarginalBidder : public Bidder {
+
+  public:
+    explicit MarginalBidder(std::vector<std::vector<double>> values, double budget, double pricing_bonus) : values_(values), budget_(budget), pricing_bonus_(pricing_bonus) {
+    }
+
+    const double ValuationForPackage(std::vector<int> const &package) const override {
+      double value = 0.;
+      for (int i = 0; i < package.size(); i++) {
+        int quantity = package[i];
+        for (int j = 0; j < quantity; j++) {
+          value += values_[i][j];
+        }
+      }
+      return value;
+    }
+
+    const double GetBudget() const override {
+      return budget_;
+    }
+
+    const double GetPricingBonus() const override {
+      return pricing_bonus_;
+    }
+
+    operator std::string() const {
+        std::string value_string = "";
+        for (int i = 0; i < values_.size(); i++) {
+          absl::StrAppend(&value_string, absl::StrJoin(values_[i], ", "));
+        }
+        return absl::StrCat("MarginalValues:", value_string, " Budget: ", budget_);
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const LinearBidder& b);
+
+
+  private:
+    double budget_;
+    std::vector<std::vector<double>> values_;
+    double pricing_bonus_;
+
+};
+
+
+std::ostream& operator<<(std::ostream &strm, const LinearBidder &a) {
+  return strm << std::string(a);
+}
+
 class AuctionGame;
-
-// class Bidder {
-//   public:
-
-//     virtual const double Valuation(std::vector<int> package);
-
-// };
-
-// class BasicBidder : Bidder {
-//   public:
-
-//     double valuation(std::vector<int> const &package) {
-//       // Additive valuations
-//       return DotProduct(package, values_);
-//     }
-
-//   private:
-//     std::vector<double> values_;
-
-// };
-
 
 class AuctionState : public SimMoveState {
  public:
@@ -62,16 +146,17 @@ class AuctionState : public SimMoveState {
     double increment, 
     std::vector<double> open_price, 
     std::vector<int> product_activity,
+    std::vector<int> all_bids_activity,
+    std::vector<std::vector<int>> all_bids,
     int undersell_rule,
     int information_policy,
     bool activity_on,
     bool allow_negative_profit_bids,
     bool tiebreaks,
     double switch_penalty_,
-    std::vector<std::vector<std::vector<double>>> values,
-    std::vector<std::vector<double>> budgets,
-    std::vector<std::vector<double>> pricing_bonuses,
-    std::vector<std::vector<double>> type_probs
+    std::vector<std::vector<Bidder*>>,
+    std::vector<std::vector<double>> type_probs,
+    int max_n_types_
   );
 
   void Reset(const GameParameters& params);
@@ -123,10 +208,8 @@ class AuctionState : public SimMoveState {
   bool tiebreaks_;
 
   // Type info
-  std::vector<std::vector<std::vector<double>>> values_;
-  std::vector<std::vector<double>> budgets_;
+  std::vector<std::vector<Bidder*>> bidders_;
   std::vector<std::vector<double>> type_probs_;
-  std::vector<std::vector<double>> pricing_bonuses_;
 
   // Used to encode the information state.
 
@@ -140,14 +223,13 @@ class AuctionState : public SimMoveState {
   std::vector<std::vector<double>> clock_price_;
   std::vector<std::vector<double>> posted_price_;
 
-  // Value by player by product
-  std::vector<std::vector<double>> value_;
-  // Budget by player
-  std::vector<double> budget_;
+  // Bidder realization
+  std::vector<Bidder*> bidder_;
+  std::vector<int> types_;
+  int max_n_types_;
+
   // Activity by player
   std::vector<int> activity_;
-  // Pricing bonus
-  std::vector<double> pricing_bonus_;
 
   // Processed aggregate demand for each product
   std::vector<std::vector<int>> aggregate_demands_;
@@ -200,11 +282,9 @@ class AuctionGame : public SimMoveGame {
   std::vector<int> product_activity_;
 
   // Type information
-  std::vector<std::vector<std::vector<double>>> values_;
-  std::vector<std::vector<double>> budgets_;
-  std::vector<std::vector<double>> pricing_bonuses_;
+  std::vector<std::vector<Bidder*>> bidders_;
   std::vector<std::vector<double>> type_probs_;
-  
+  int max_n_types_;
 
   int undersell_rule_;
   bool activity_on_;
@@ -220,6 +300,12 @@ class AuctionGame : public SimMoveGame {
   int max_rounds_;
 
   double switch_penalty_;
+
+  // Mapping from ActionID -> Bid
+  std::vector<std::vector<int>> all_bids_;
+  // Mapping from ActionID -> Activity
+  std::vector<int> all_bids_activity_;
+
 };
 
 }  // namespace clock_auction

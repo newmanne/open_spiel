@@ -81,8 +81,7 @@ def main(_):
       print("Chance node, got " + str(num_actions) + " outcomes")
       action_list, prob_list = zip(*outcomes)
       action = np.random.choice(action_list, p=prob_list)
-      print("Sampled outcome: ",
-            state.action_to_string(state.current_player(), action))
+      print("Sampled outcome: ", state.action_to_string(state.current_player(), action))
       state.apply_action(action)
 
     elif state.is_simultaneous_node():

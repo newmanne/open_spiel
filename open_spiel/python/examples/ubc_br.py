@@ -18,7 +18,7 @@ from __future__ import print_function
 
 from open_spiel.python import rl_environment
 from open_spiel.python.pytorch import ubc_dqn
-from open_spiel.python.examples.ubc_utils import check_on_q_values, make_dqn_kwargs_from_config, fix_seeds, pretty_time, game_spec, make_normalizer_for_game
+from open_spiel.python.examples.ubc_utils import check_on_q_values, make_dqn_kwargs_from_config, fix_seeds, pretty_time, game_spec, make_normalizer_for_game, max_num_types
 from open_spiel.python.examples.ubc_nfsp_example import lookup_model_and_args
 from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator
 from open_spiel.python.algorithms.exploitability import best_response
@@ -35,7 +35,7 @@ def make_dqn_agent(player_id, config, game, game_config):
     num_players, num_actions, num_products = game_spec(game, game_config)
     state_size = rl_environment.Environment(game).observation_spec()["info_state"][0]
 
-    rl_model, rl_model_args = lookup_model_and_args(config['rl_model'], state_size, num_actions, num_players, num_products)
+    rl_model, rl_model_args = lookup_model_and_args(config['rl_model'], state_size, num_actions, num_players, max_num_types(game_config), num_products)
     rl_model_args.update(config['rl_model_args'])
     normalizer = make_normalizer_for_game(game, game_config)
     rl_model_args.update({'normalizer': normalizer})

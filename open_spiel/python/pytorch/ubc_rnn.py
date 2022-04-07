@@ -12,7 +12,7 @@ class AuctionRNN(nn.Module):
     """
     An RNN model designed for our auction games.
     """
-    def __init__(self, num_players, num_products, input_size, output_size, normalizer, hidden_size=128, num_layers=1, rnn_model='lstm', nonlinearity='tanh'):
+    def __init__(self, num_players, num_products, num_types, input_size, output_size, normalizer, hidden_size=128, num_layers=1, rnn_model='lstm', nonlinearity='tanh'):
         """
         Initialize the model.
 
@@ -35,7 +35,7 @@ class AuctionRNN(nn.Module):
         # - (submitted demands, processed demands, observed demands, prices) for each product
         # (if not, we won't know how to unroll the infostate tensors)
         self.turn_based_len = turn_based_size(num_players)
-        self.prefix_len = prefix_size(num_players, num_products)
+        self.prefix_len = prefix_size(num_types)
         self.handcrafted_len = handcrafted_size(output_size, num_products)
         self.normalizer = normalizer
 

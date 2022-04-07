@@ -6,6 +6,11 @@ import distinctColors from 'distinct-colors';
 const NUM_COLORS = 20;
 export const RANDOM_COLORS = distinctColors({count: NUM_COLORS});
 
+export const numToLetter = (letterIndex) => {
+  const letter = String.fromCharCode(letterIndex + 'A'.charCodeAt(0))
+  return letter;
+};
+
 export const FMT = (x, fixed=0, money=false) => {
     let f;
     if (money) {

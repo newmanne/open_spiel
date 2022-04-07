@@ -54,8 +54,8 @@ def setup(game, game_config, config):
     logging.info(f"Game has {num_products} products")
 
     # Get models and default args
-    sl_model, sl_model_args = lookup_model_and_args(config['sl_model'], state_size, num_actions, num_players, num_products)
-    rl_model, rl_model_args = lookup_model_and_args(config['rl_model'], state_size, num_actions, num_players, num_products)
+    sl_model, sl_model_args = lookup_model_and_args(config['sl_model'], state_size, num_actions, num_players, max_num_types(game_config), num_products)
+    rl_model, rl_model_args = lookup_model_and_args(config['rl_model'], state_size, num_actions, num_players, max_num_types(game_config), num_products)
 
     # Override with any user-supplied args
     sl_model_args.update(config['sl_model_args'])

@@ -1,7 +1,7 @@
-from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn, ubc_transformer
+from open_spiel.python.pytorch import ubc_nfsp, ubc_dqn, ubc_rnn, ubc_transformer, ubc_flat_mlp
 from open_spiel.python.examples.ubc_utils import handcrafted_size
 
-def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_products=None):
+def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_types, num_products=None):
     """
     lookup table from (model name) to (function, default args)
     """
@@ -23,10 +23,21 @@ def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_
         default_model_args = {
             'num_players': num_players,
             'num_products': num_products, 
+            'num_types': num_types, 
             'input_size': state_size, 
             'hidden_size': 128,
             'output_size': num_actions,
             'nonlinearity': 'tanh',
+        }
+    elif model_name == 'flatmlp':
+        model_class = ubc_flat_mlp.FlatMLP
+        default_model_args = {
+            'num_players': num_players,
+            'num_products': num_products, 
+            'num_types': num_types, 
+            'input_size': state_size, # TODO: This isn't correct, b/c you to multiply by whatever MAX_ROUNDS you are using here
+            'hidden_sizes': [128],
+            'output_size': num_actions,
         }
     elif model_name == 'transformer': 
         model_class = ubc_transformer.AuctionTransformer

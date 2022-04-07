@@ -48,7 +48,7 @@ export default defineComponent({
     };
   },
   mounted() {
-    this.GET_EXPERIMENTS();
+    // this.GET_EXPERIMENTS();
   },
   computed: mapState({
     experiments: (state) =>

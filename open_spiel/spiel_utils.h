@@ -181,6 +181,7 @@ std::string VectorOfPairsToString(const std::vector<std::pair<A, B>>& vec,
                                   const std::string& delimiter,
                                   const std::string& pair_delimiter);
 
+
 // Returns whether the absolute difference between floating point values a and
 // b is less than or equal to FloatingPointThresholdRatio() * max(|a|, |b|).
 template <typename T>

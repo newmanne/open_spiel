@@ -28,12 +28,18 @@ class Game(TimeStampedModel):
     def __str__(self):
         return self.name
 
+    def supply(self):
+        return list(self.config['licenses'])
+
 class Experiment(TimeStampedModel):
 
     name = models.TextField(unique=True)
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        ordering = ('created',)
 
 class EquilibriumSolverRun(TimeStampedModel):
     

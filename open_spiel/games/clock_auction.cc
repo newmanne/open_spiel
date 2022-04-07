@@ -25,11 +25,8 @@
 #include "open_spiel/abseil-cpp/absl/strings/str_cat.h"
 #include "open_spiel/game_parameters.h"
 #include "open_spiel/spiel.h"
-#include "open_spiel/spiel_utils.h"
 #include "open_spiel/utils/json.h"
 #include "open_spiel/utils/file.h"
-
-
 
 namespace open_spiel {
 namespace clock_auction {
@@ -49,26 +46,9 @@ constexpr int kHideDemand = 2;
 
 constexpr int kDefaultMaxRounds = 250;
 
-int Sum(std::vector<int> v) {
-  return std::accumulate(v.begin(), v.end(), 0);
-}
-
-double Sum(std::vector<double> v) {
-  return std::accumulate(v.begin(), v.end(), 0.);
-}
-
-int DotProduct(std::vector<int> const &a, std::vector<int> const &b) {
-  return std::inner_product(std::begin(a), std::end(a), std::begin(b), 0.0);
-}
-
-double DotProduct(std::vector<int> const &a, std::vector<double> const &b) {
-  return std::inner_product(std::begin(a), std::end(a), std::begin(b), 0.0);
-}
-
-int Factorial(int x) {
-  return (x == 0) || (x == 1) ? 1 : x * Factorial(x-1);
-}
-
+// Bidder types
+constexpr int kLinearBidder = 1;
+constexpr int kMarginalBidder = 1;
 
 // Facts about the game
 const GameType kGameType{/*short_name=*/"clock_auction",
@@ -106,16 +86,17 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
   double increment,
   std::vector<double> open_price,
   std::vector<int> product_activity,
+  std::vector<int> all_bids_activity,
+  std::vector<std::vector<int>> all_bids,
   int undersell_rule,
   int information_policy,
   bool activity_on,
   bool allow_negative_profit_bids,
   bool tiebreaks,
   double switch_penalty_,
-  std::vector<std::vector<std::vector<double>>> values,
-  std::vector<std::vector<double>> budgets,
-  std::vector<std::vector<double>> pricing_bonuses,
-  std::vector<std::vector<double>> probs
+  std::vector<std::vector<Bidder*>> bidders,
+  std::vector<std::vector<double>> probs,
+  int max_n_types
 ) :   SimMoveState(game),
       cur_player_(kChancePlayerId), // Chance begins by setting types
       max_rounds_(max_rounds),
@@ -131,14 +112,15 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       information_policy_(information_policy),
       activity_on_(activity_on),
       allow_negative_profit_bids_(allow_negative_profit_bids),
-      values_(values),
-      budgets_(budgets),
-      pricing_bonuses_(pricing_bonuses),
       type_probs_(probs),
       aggregate_demands_(),
-      all_bids_activity_(),
       round_(1),
-      final_bids_() {
+      final_bids_(),
+      all_bids_(all_bids),
+      all_bids_activity_(all_bids_activity),
+      bidders_(bidders),
+      max_n_types_(max_n_types)
+       {
 
       num_products_ = num_licenses_.size();
       // Everyone starts with lots of activity
@@ -156,29 +138,6 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       }
       clock_price_.push_back(cp);
       posted_price_.push_back(open_price);
-
-      // Enumerate bids and store a map for fast computation
-      std::vector<std::vector<int>> sequences(num_products_, std::vector<int>());
-      for (int j = 0; j < num_products_; j++) {
-        for (int k = 0; k <= num_licenses[j]; k++) {
-          sequences[j].push_back(k);
-        }
-      }
-      product(sequences, [&vec = all_bids_](const auto &i) {
-          std::vector<int> tmp;
-          for (auto j : i) {
-            tmp.push_back(j);
-          }
-          vec.push_back(tmp);
-      });
-
-      for (auto& bid: all_bids_) {
-        for (int j = 0; j < num_products_; j++) {
-          SPIEL_CHECK_GE(bid[j], 0);
-          SPIEL_CHECK_LE(bid[j], num_licenses_[j]);
-        }
-        all_bids_activity_.push_back(DotProduct(bid, product_activity_));
-      }
 
       tie_breaks_needed_ = std::vector<std::vector<Player>>(num_products_, std::vector<Player>());
       selected_order_ = std::vector<std::vector<Player>>(num_products_, std::vector<Player>());
@@ -417,8 +376,10 @@ std::string AuctionState::ActionToString(Player player, Action action_id) const 
     std::vector<int> bid = ActionToBid(action_id);
     return absl::StrCat("Bid for ", absl::StrJoin(bid, ","), " licenses @ $", DotProduct(bid, clock_price_.back()), " with activity ", all_bids_activity_[action_id]);
   } else {
-    if (value_.size() < num_players_) {
-      return absl::StrCat("Player ", value_.size(), " was assigned values: ", absl::StrJoin(values_[value_.size()][action_id], ", "), " and a budget of ", budgets_[budget_.size()][action_id]);
+    if (bidder_.size() < num_players_) {
+      auto bidder = bidders_[bidder_.size()][action_id];
+      std::string bidder_string = std::string(*bidder);
+      return absl::StrCat("Player ", bidder_.size(), " was assigned type: ", bidder_string);
     } else {
       return "Tie-break";
     }
@@ -437,15 +398,14 @@ void AuctionState::DoApplyAction(Action action) {
   SPIEL_CHECK_TRUE(IsChanceNode());
 
   if (round_ == 1) {
-    if (value_.size() < num_players_) { // Chance node assigns a value and budget to a player
-      auto player_index = value_.size();
+    if (bidder_.size() < num_players_) { // Chance node assigns a value and budget to a player
+      auto player_index = bidder_.size();
       SPIEL_CHECK_GE(player_index, 0);
-      value_.push_back(values_[player_index][action]); 
-      budget_.push_back(budgets_[player_index][action]);
-      pricing_bonus_.push_back(pricing_bonuses_[player_index][action]);
+      bidder_.push_back(bidders_[player_index][action]);
+      types_.push_back(action);
     } 
 
-    if (value_.size() == num_players_) { // All of the assignments have been made
+    if (bidder_.size() == num_players_) { // All of the assignments have been made
       cur_player_ = kSimultaneousPlayerId;
     }
   } else {
@@ -512,8 +472,8 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
   int activity_budget = activity_[player];
 
   auto& price = posted_price_.back();
-  auto& value = value_[player];
-  double budget = budget_[player];
+  auto& bidder = bidder_[player];
+  double budget = bidder->GetBudget();
 
   bool hard_budget_on = true;
   bool positive_profit_on = false;
@@ -528,7 +488,7 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
      */
 
     double bid_price = DotProduct(bid, price); 
-    double profit = DotProduct(bid, value) - bid_price;
+    double profit = bidder->ValuationForPackage(bid) - bid_price;
     // TODO: Here is another place where linear valuations creep in, might be better to abstract into a class
     bool non_negative_profit = profit >= 0;
     bool positive_profit = profit > 0;
@@ -564,8 +524,8 @@ std::vector<std::pair<Action, double>> AuctionState::ChanceOutcomes() const {
   ActionsAndProbs valuesAndProbs;
 
   std::vector<double> probs;
-  if (value_.size() < num_players_) { // Chance node is assigning a type
-    auto player_index = value_.size();
+  if (bidder_.size() < num_players_) { // Chance node is assigning a type
+    auto player_index = bidder_.size();
     probs = type_probs_[player_index];
   } else { // Chance node is breaking a tie
     int chance_outcomes_required = Factorial(tie_breaks_needed_[tie_break_index_].size());
@@ -592,8 +552,9 @@ std::string AuctionState::InformationStateString(Player player) const {
   SPIEL_CHECK_GE(player, 0);
   SPIEL_CHECK_LT(player, num_players_);
   std::string result = absl::StrCat("Player ", player, "\n");
-  if (value_.size() > player) {
-    absl::StrAppend(&result, absl::StrCat("Values:", absl::StrJoin(value_[player], ", "), "\n Budget: ", budget_[player]), "\n");  
+  if (bidder_.size() > player) {
+    std::string bidder_string = std::string(*bidder_[player]);
+    absl::StrAppend(&result, bidder_string);  
   }
   if (!submitted_demand_[player].empty()) {
     for (int i = 0; i < submitted_demand_[player].size(); i++) {
@@ -636,8 +597,10 @@ std::string AuctionState::ToString() const {
   std::string result = "";
   // Player types
   for (auto p = Player{0}; p < num_players_; p++) {
-      if (value_.size() > p) {
-        absl::StrAppend(&result, absl::StrCat("Player ", p, "\n", "Values: ", absl::StrJoin(value_[p], ", "), "\n", "Budget: ", budget_[p], "\n"));  
+      if (bidder_.size() > p) {
+        std::string bidder_string = std::string(*bidder_[p]);
+        absl::StrAppend(&result, bidder_string);  
+        absl::StrAppend(&result, "\n");  
       }
   }
 
@@ -679,11 +642,12 @@ std::vector<double> AuctionState::Returns() const {
 
     for (auto p = Player{0}; p < num_players_; p++) {
       auto& final_bid = processed_demand_[p].back();
+      auto& bidder = bidder_[p];
+      returns[p] = bidder->ValuationForPackage(final_bid);
       for (int j = 0; j < num_products_; j++) {
         SPIEL_CHECK_GE(final_bid[j], 0);
         double payment = final_price[j] * final_bid[j];
         payments[p] += payment;
-        returns[p] += value_[p][j] * final_bid[j]; // linear values
         returns[p] -= payment;
       }
       returns[p] -= num_switches_[p] * switch_penalty_; // Apply switching costs
@@ -692,7 +656,8 @@ std::vector<double> AuctionState::Returns() const {
     // Add in pricing bonuses
     for (auto p = Player{0}; p < num_players_; p++) {
       double payment_other = Sum(payments) - payments[p];
-      returns[p] += payment_other * pricing_bonus_[p];
+      auto& bidder = bidder_[p];
+      returns[p] += payment_other * bidder->GetPricingBonus();
     }
 
   }
@@ -714,7 +679,7 @@ int AuctionGame::NumDistinctActions() const {
 
 std::unique_ptr<State> AuctionGame::NewInitialState() const {
   std::unique_ptr<AuctionState> state(
-      new AuctionState(shared_from_this(), num_players_, max_rounds_, num_licenses_, increment_, open_price_, product_activity_, undersell_rule_, information_policy_, activity_on_, allow_negative_profit_bids_, tiebreaks_, switch_penalty_, values_,  budgets_, pricing_bonuses_, type_probs_));
+      new AuctionState(shared_from_this(), num_players_, max_rounds_, num_licenses_, increment_, open_price_, product_activity_, all_bids_activity_, all_bids_, undersell_rule_, information_policy_, activity_on_, allow_negative_profit_bids_, tiebreaks_, switch_penalty_, bidders_, type_probs_, max_n_types_));
   return state;
 }
 
@@ -734,14 +699,12 @@ void AuctionState::ObservationTensor(Player player, absl::Span<float> values) co
   SpielFatalError("Unimplemented ObservationTensor");
 }
 
-int SizeHelper(int rounds, int num_actions, int num_products, int num_players) {
+int SizeHelper(int rounds, int num_actions, int num_products, int num_types) {
     // SoR profit of each bundle, round, agg_demand, my demand, clock price
     int handcrafted_size = 2 * num_actions + 3 + 3 * num_products;
     int size_required = 
       handcrafted_size +
-      num_players + // player encoding
-      1 + // budget
-      num_products + // values
+      num_types + // player encoding
       num_products * rounds + // submitted demand
       num_products * rounds + // proceseed demand
       num_products * rounds + // aggregate demand
@@ -751,11 +714,11 @@ int SizeHelper(int rounds, int num_actions, int num_products, int num_players) {
 
 
 int AuctionState::InformationStateTensorSize() const {
-  return {SizeHelper(round_, game_->NumDistinctActions(), num_products_, num_players_)};
+  return {SizeHelper(round_, game_->NumDistinctActions(), num_products_, max_n_types_)};
 }
 
 std::vector<int> AuctionGame::InformationStateTensorShape() const {
-  return {SizeHelper(max_rounds_, NumDistinctActions(), num_products_, NumPlayers())};
+  return {SizeHelper(max_rounds_, NumDistinctActions(), num_products_, max_n_types_)};
 }
 
 void AuctionState::InformationStateTensor(Player player, absl::Span<float> values) const {
@@ -768,12 +731,10 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
 
   /******** HANDCRAFTED AREA *****/
 
-  // TODO: Shouldn't you care about other players? Or what your profit might be with different types?
-
   // Profit for each action at current clock prices (assuming you get what you want and the clock prices wind up being the posted prices)
   auto& sor_price = sor_price_.back();
   auto& clock_price = clock_price_.back();
-  auto& value = value_[player];
+  auto& bidder = bidder_[player];
 
   int offset = 0;
   // Round #
@@ -783,7 +744,7 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
   // SoR profit and Clock Profit
   for (int b = 0; b < all_bids_.size(); b++) {
     auto& bid = all_bids_[b];
-    double bundle_value = DotProduct(bid, value);
+    double bundle_value = bidder->ValuationForPackage(bid);
     double sor_bundle_price = DotProduct(bid, sor_price); 
     double clock_bundle_price = DotProduct(bid, clock_price); 
     double sor_profit = bundle_value - sor_bundle_price;
@@ -834,23 +795,12 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
   /******** END HANDCRAFTED AREA *****/
 
   /*** PREFIX ***/
-  // 1-hot player encoding
-  values[offset + player] = 1;
-  offset += num_players_;
+  // 1-hot type encoding
+  int type = types_[player];
+  int n_types = type_probs_[player].size();
+  values[offset + type] = 1;
+  offset += n_types;
 
-  // Budget encoding - player's budget
-  if (budget_.size() > player) {
-    values[offset] = budget_[player];
-  }
-  offset++;
-
-  // Values encoding - player's value for each item
-  if (value_.size() > player) {
-    for (int i = 0; i < value_[player].size(); i++) {
-      values[offset + i] = value_[player][i];
-    }
-  }
-  offset += num_products_;
   /*** END PREFIX ***/
 
   int ending_index = finished_ ? round_ + 1 : round_;
@@ -1027,44 +977,55 @@ AuctionGame::AuctionGame(const GameParameters& params) :
   // Loop over players, parsing values and budgets
   std::vector<double> max_value_ = std::vector<double>(num_products_, 0.); // TODO: Fix if using
   max_budget_ = 0.;
+  max_n_types_ = 0;
   for (auto p = Player{0}; p < num_players_; p++) {
     auto player_object = players[p].GetObject();
     CheckRequiredKey(player_object, "type");
     auto type_array = player_object["type"].GetArray();
-    std::vector<double> player_budgets;
-    std::vector<std::vector<double>> player_values;
+    std::vector<Bidder*> player_bidders;
     std::vector<double> player_probs;
-    std::vector<double> pricing_bonus;
     for (auto t = 0; t < type_array.size(); t++) {
       auto type_object = type_array[t].GetObject();
       CheckRequiredKey(type_object, "value");
       CheckRequiredKey(type_object, "budget");
       CheckRequiredKey(type_object, "prob");
-      std::vector<double> value = ParseDoubleArray(type_object["value"].GetArray());
-      if (value.size() != num_products_) {
-        SpielFatalError("Mistmatched size of value and number of licences!");  
-      }
 
-      player_values.push_back(value);
       double budget = ParseDouble(type_object["budget"]);
       if (budget > max_budget_) {
         max_budget_ = budget;
       }
-      player_budgets.push_back(budget);
       double prob = ParseDouble(type_object["prob"]);
       player_probs.push_back(prob);
 
+      double pricing_bonus = 0.;
       if (ContainsKey(type_object, "pricing_bonus")) {
-        pricing_bonus.push_back(ParseDouble(type_object["pricing_bonus"]));
+        pricing_bonus = ParseDouble(type_object["pricing_bonus"]);
+      } 
+
+      Bidder* bidder;
+      auto value_array = type_object["value"].GetArray();
+      if (value_array[0].IsNumber()) {
+        std::vector<double> vals = ParseDoubleArray(value_array);
+        if (vals.size() != num_products_) {
+          SpielFatalError("Mistmatched size of value and number of licences!");  
+        }
+        bidder = new LinearBidder(vals, budget, pricing_bonus);
       } else {
-        pricing_bonus.push_back(0);
+        std::vector<std::vector<double>> vals;
+        for (auto v = 0; v < value_array.size(); v++) {
+          vals.push_back(ParseDoubleArray(value_array[v].GetArray()));
+        }
+        bidder = new MarginalBidder(vals, budget, pricing_bonus);
       }
 
+      player_bidders.push_back(bidder);
     }
-    values_.push_back(player_values);
-    budgets_.push_back(player_budgets);
+    
+    bidders_.push_back(player_bidders);
     type_probs_.push_back(player_probs);
-    pricing_bonuses_.push_back(pricing_bonus);
+    if (player_bidders.size() > max_n_types_) {
+      max_n_types_ = player_bidders.size();
+    }
   }
   
   // Compute max chance outcomes
@@ -1079,6 +1040,30 @@ AuctionGame::AuctionGame(const GameParameters& params) :
   
 
   std::cerr << "Done config parsing" << std::endl;
+
+  std::vector<std::vector<int>> sequences(num_products_, std::vector<int>());
+  for (int j = 0; j < num_products_; j++) {
+    for (int k = 0; k <= num_licenses_[j]; k++) {
+      sequences[j].push_back(k);
+    }
+  }
+  product(sequences, [&vec = all_bids_](const auto &i) {
+      std::vector<int> tmp;
+      for (auto j : i) {
+        tmp.push_back(j);
+      }
+      vec.push_back(tmp);
+  });
+
+  for (auto& bid: all_bids_) {
+    for (int j = 0; j < num_products_; j++) {
+      SPIEL_CHECK_GE(bid[j], 0);
+      SPIEL_CHECK_LE(bid[j], num_licenses_[j]);
+    }
+    all_bids_activity_.push_back(DotProduct(bid, product_activity_));
+  }
+
+
 }
 
 }  // namespace clock_auction

@@ -16,8 +16,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from open_spiel.python.examples.ubc_utils import fix_seeds, get_player_type, payment_and_allocation, pretty_time, BR_DIR, game_spec
+from open_spiel.python.examples.ubc_utils import fix_seeds, get_player_type, payment_and_allocation, pretty_time, BR_DIR, game_spec, max_num_types, parse_current_round_frame
 from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator
+from open_spiel.python.examples.ubc_cma import efficient_allocation
 
 import numpy as np
 import pandas as pd
@@ -35,6 +36,11 @@ def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=D
     fix_seeds(seed)
     game, policy, env, agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
     num_players, num_actions, num_products = game_spec(game, game_config)
+    max_types = max_num_types(game_config)
+
+    efficiency_df, combo_to_score, efficiency_scorer = efficient_allocation(game, game_config)
+    type_combo_to_prob = efficiency_df.set_index('combo')['prob'].to_dict()
+    type_combo_to_efficiency = defaultdict(list) # Maps from (type_1, type_2, .. type_n) as integers one for each player into efficiency
 
     # Apply cache
     agents = [CachingAgentDecorator(agent) for agent in agents] 
@@ -47,7 +53,9 @@ def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=D
     player_types = defaultdict(list)
     allocations = defaultdict(list)
     payments = defaultdict(list)
+    efficiencies = []
     episode_lengths = []
+    prices = []
 
     for sample_index in range(num_samples):
       if sample_index % report_freq == 0 and sample_index > 0:
@@ -59,11 +67,13 @@ def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=D
       time_step = env.reset()
       episode_length = 0
 
-      # Get type info. Another way to do this might be to instrument the chance sampler...
+      # Get type info
+      episode_types = []
       for player_index in range(num_players):
         infostate = time_step.observations['info_state'][player_index]
-        player_type = get_player_type(num_players, num_actions, num_products, infostate)
-        player_types[player_index].append(tuple(player_type))
+        player_type = get_player_type(num_players, num_actions, num_products, max_types, infostate)
+        player_types[player_index].append(player_type)
+        episode_types.append(player_type)
 
       episode_rewards = defaultdict(int) # Player ID -> Rewards
       while not time_step.last():
@@ -78,6 +88,8 @@ def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=D
         action_list = [agent_output.action]
         time_step = env.step(action_list)
 
+      episode_alloc = []
+      final_posted_prices = None
       for i, agent in enumerate(agents):
         agent.step(time_step, is_evaluation=True)
         episode_rewards[i] += time_step.rewards[i] 
@@ -86,14 +98,28 @@ def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=D
         # Let's get allocation and pricing information since we're in the last time step
         infostate = time_step.observations['info_state'][i]
         payment, allocation = payment_and_allocation(num_players, num_actions, num_products, infostate)
+        final_posted_prices = parse_current_round_frame(num_players, num_actions, num_products, infostate)['posted_prices']
         payments[i].append(payment)
+        episode_alloc.append(allocation)
         allocations[i].append(allocation)
-        episode_lengths.append(episode_length)
+
+      episode_lengths.append(episode_length)
+      normalized_efficiency = efficiency_scorer(episode_alloc, episode_types)[1]
+      efficiencies.append(normalized_efficiency)
+      type_combo_to_efficiency[episode_types].append(normalized_efficiency)
+      prices.append(final_posted_prices)
     
     for player in range(num_players):
       logging.info(f"Rewards for {player}")
       logging.info(pd.Series(rewards[player]).describe())
       logging.info(f"-------------------")
+
+    overall_efficiency = 0
+    type_combo_to_aggregated_efficiency = dict()
+    for k, v in type_combo_to_efficiency.items():
+      mean_eff = np.mean(v)
+      type_combo_to_aggregated_efficiency[k] = mean_eff
+      overall_efficiency += mean_eff * type_combo_to_prob[k]
 
     eval_time = time.time() - alg_start_time
     logging.info(f'Walltime: {pretty_time(eval_time)}')
@@ -104,6 +130,10 @@ def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=D
       'types': player_types,
       'allocations': allocations,
       'payments': payments,
-      'auction_lengths': list((pd.Series(episode_lengths) / num_players))
+      'auction_lengths': list((pd.Series(episode_lengths) / num_players)),
+      'efficiencies': efficiencies,
+      'efficiency_by_type': type_combo_to_aggregated_efficiency,
+      'efficiency': overall_efficiency,
+      'prices': prices,
     }
     return checkpoint
