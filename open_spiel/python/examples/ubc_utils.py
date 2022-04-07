@@ -63,8 +63,8 @@ def activity_index(num_players, num_actions):
 def sor_exposure_index(num_players, num_actions):
     return activity_index(num_players, num_actions) + 1
 
-def recurrent_index(num_players, num_actions, num_products):
-    return turn_based_size(num_players) + handcrafted_size(num_actions, num_products) + prefix_size(num_players, num_products)
+def recurrent_index(num_players, num_actions, num_products, num_types):
+    return turn_based_size(num_players) + handcrafted_size(num_actions, num_products) + prefix_size(num_types)
 
 def prefix_index(num_players, num_actions, num_products):
     return turn_based_size(num_players) + handcrafted_size(num_actions, num_products)
@@ -76,25 +76,25 @@ def get_player_type(num_players, num_actions, num_products, max_types, informati
 def recurrent_round_size(num_products):
     return FEATURES_PER_PRODUCT * num_products
 
-def round_frame_index(num_players, num_actions, num_products, r):
-    r_index = recurrent_index(num_players, num_actions, num_products)
+def round_frame_index(num_players, num_actions, num_products, r, num_types):
+    r_index = recurrent_index(num_players, num_actions, num_products, num_types)
     return r_index + recurrent_round_size(num_products) * (r - 1)
 
-def round_frame(num_players, num_actions, num_products, r, information_state_tensor):
-    index = round_frame_index(num_players, num_actions, num_products, r)
+def round_frame(num_players, num_actions, num_products, r, information_state_tensor, num_types):
+    index = round_frame_index(num_players, num_actions, num_products, r, num_types)
     return information_state_tensor[index: index + recurrent_round_size(num_products)]
 
-def current_round_frame(num_players, num_actions, num_products, information_state_tensor):
+def current_round_frame(num_players, num_actions, num_products, information_state_tensor, num_types):
     r = current_round(num_players, information_state_tensor)
-    return round_frame(num_players, num_actions, num_products, r, information_state_tensor)
+    return round_frame(num_players, num_actions, num_products, r, information_state_tensor, num_types)
 
-def payment_and_allocation(num_players, num_actions, num_products, information_state_tensor):
+def payment_and_allocation(num_players, num_actions, num_products, information_state_tensor, num_types):
     frame = current_round_frame(num_players, num_actions, num_products, information_state_tensor)
     allocation = frame[PROCESSED_DEMAND_INDEX * num_products : (PROCESSED_DEMAND_INDEX + 1) * num_products]
     prices = frame[POSTED_PRICE_INDEX * num_products : (POSTED_PRICE_INDEX + 1) * num_products]
     return np.array(prices) @ np.array(allocation), allocation
 
-def parse_current_round_frame(num_players, num_actions, num_products, information_state_tensor):
+def parse_current_round_frame(num_players, num_actions, num_products, information_state_tensor, num_types):
     frame = current_round_frame(num_players, num_actions, num_products, information_state_tensor)
     allocation = frame[PROCESSED_DEMAND_INDEX * num_products : (PROCESSED_DEMAND_INDEX + 1) * num_products]
     agg_demand = frame[AGG_DEMAND_INDEX * num_products : (AGG_DEMAND_INDEX + 1) * num_products]
