@@ -74,6 +74,7 @@ def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=D
         player_type = get_player_type(num_players, num_actions, num_products, max_types, infostate)
         player_types[player_index].append(player_type)
         episode_types.append(player_type)
+      episode_types = tuple(episode_types)
 
       episode_rewards = defaultdict(int) # Player ID -> Rewards
       while not time_step.last():
@@ -89,7 +90,7 @@ def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=D
         time_step = env.step(action_list)
 
       episode_alloc = []
-      final_posted_prices = None
+      final_posted_prices = None # This will get overwritten again and again, but who cares, should always be the same
       for i, agent in enumerate(agents):
         agent.step(time_step, is_evaluation=True)
         episode_rewards[i] += time_step.rewards[i] 
@@ -124,6 +125,7 @@ def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=D
     eval_time = time.time() - alg_start_time
     logging.info(f'Walltime: {pretty_time(eval_time)}')
 
+
     checkpoint = {
       'walltime': eval_time,
       'rewards': rewards, # For now, store all the rewards. But maybe we only need some summary stats. Or perhaps a counter is more compressed since few unique values in practice?
@@ -132,7 +134,7 @@ def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=D
       'payments': payments,
       'auction_lengths': list((pd.Series(episode_lengths) / num_players)),
       'efficiencies': efficiencies,
-      'efficiency_by_type': type_combo_to_aggregated_efficiency,
+      'efficiency_by_type': {','.join(map(str,k)): v for k,v in type_combo_to_aggregated_efficiency.items()}, # JSON cant have tuples as keys
       'efficiency': overall_efficiency,
       'prices': prices,
     }
