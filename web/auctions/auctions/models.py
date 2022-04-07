@@ -52,7 +52,7 @@ class EquilibriumSolverRun(TimeStampedModel):
         pass # TODO: Iterate and sum?
 
     def __str__(self):
-        return self.name
+        return f'{self.name} ({self.experiment})'
 
     class Meta:
         unique_together = ('experiment', 'name',)

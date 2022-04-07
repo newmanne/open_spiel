@@ -112,7 +112,7 @@ def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_model=N
             pretty_str = pretty_information_state(str_desc, depth)
             node['activity'] = information_state_tensor[activity_index(num_players, num_actions)]
             node['start_of_round_exposure'] = information_state_tensor[sor_exposure_index(num_players, num_actions)]
-            current_round_frame_parsed = parse_current_round_frame(num_players, num_actions, num_products, information_state_tensor)
+            current_round_frame_parsed = parse_current_round_frame(num_players, num_actions, num_products, information_state_tensor, max_types)
             current_holdings = current_round_frame_parsed['allocation']
             agg_demand = current_round_frame_parsed['agg_demand']
             for i in range(num_products):
@@ -198,6 +198,7 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
 
     game, policy, env, agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
     num_players, num_actions, num_products = game_spec(game, game_config)
+    max_types = max_num_types(game_config)
 
     player_to_n_types = dict()
     for player in range(num_players):
@@ -295,7 +296,7 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
 
             # Compute outcomes
             infostate = time_step.observations['info_state'][i]
-            payment, allocation = payment_and_allocation(num_players, num_actions, num_products, infostate)
+            payment, allocation = payment_and_allocation(num_players, num_actions, num_products, infostate, max_types)
 
             # Go back and add outcomes to every intermediate state in the tree
             node = roots[i]
