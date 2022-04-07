@@ -78,3 +78,7 @@ export const GET_CHECKPOINT_RESPONSES = (context, {checkpointPk, player }) => {
 export const GET_TRAJECTORY_PLOT = (context, {runPk}) => {
   return simpleGetter(context, `run/${runPk}/trajectory_plot`);
 };
+
+export const GET_ALLOCATIONS = (context, {checkpointPk}) => {
+  return simpleGetter(context, `checkpoint/${checkpointPk}/evaluation`);
+};

@@ -23,7 +23,7 @@
     v-model="response"
     :options="responses"
     label="Response"
-    v-if="checkpoint !== null"
+    v-if="checkpoint !== null && depth !== 'checkpoint'"
     @update:model-value="commitSelection"
   />
 </template>
@@ -122,10 +122,18 @@ export default defineComponent({
         });
         this.checkpoint = this.checkpoints[0];
         this.response = null;
-        this.getResponses();
+        if (this.depth === "checkpoint") {
+          this.commitSelection();
+        } else {
+          this.getResponses();
+        }
       });
     },
     getResponses: function () {
+      if (this.depth === "checkpoint") {
+        return;
+      }
+
       this.GET_CHECKPOINT_RESPONSES({
         checkpointPk: this.checkpoint.value,
         player: this.player,

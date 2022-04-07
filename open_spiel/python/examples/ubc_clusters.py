@@ -1,5 +1,6 @@
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 from sklearn.mixture import GaussianMixture
 import umap
 from tqdm import tqdm
@@ -27,6 +28,12 @@ def projectUMAP(X, n_neighbors=15, min_dist=0.1, rescale=False):
         X = StandardScaler().fit_transform(X)
     umap_embedding = umap_reducer.fit_transform(X)
     return umap_embedding
+
+
+def projectTSNE(X, perplexity=30, early_exaggeration=12):
+    X_embedded = TSNE(n_components=2, perplexity=perplexity, early_exaggeration=early_exaggeration, learning_rate='auto', init='random').fit_transform(X)
+    return X_embedded
+
 
 def fitGMM(X, verbose=False, trials=None):
     """

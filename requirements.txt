@@ -42,3 +42,4 @@ psycopg2-binary
 statsmodels
 pygraphviz
 django-cors-headers
+plotly >= 5.6.0

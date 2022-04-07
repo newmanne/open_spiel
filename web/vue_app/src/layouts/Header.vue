@@ -10,9 +10,7 @@
       <q-route-tab label="Opening Explorer" :to="{name: 'opening-explorer'}"/>
       <q-route-tab label="Cluster Explorer" :to="{name: 'cluster-explorer'}"/>
       <q-route-tab label="Run Trajectory" :to="{name: 'trajectory-plot'}"/>
-      <!-- TODO: allocation viewer like 
-      <q-route-tab label="Simulations" :to="{name: ''}"/>
-      --> 
+      <q-route-tab label="Allocations" :to="{name: 'allocation-heatmap'}"/>
     </q-tabs>
   </q-toolbar>
 </template>

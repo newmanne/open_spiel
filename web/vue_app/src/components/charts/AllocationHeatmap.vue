@@ -3,8 +3,10 @@
 </template>
 
 <script>
-  import { mapState, mapMutations } from 'vuex';
-  import VueApexCharts from 'vue-apexcharts';
+  
+  import { createNamespacedHelpers } from "vuex";
+  const { mapState, mapActions } = createNamespacedHelpers("auctions");
+  import VueApexCharts from "vue3-apexcharts";
   import {toPct} from "../../utils";
 
   export default {
@@ -12,7 +14,7 @@
     components: {
       apexcharts: VueApexCharts,
     },
-    props: ['alloc', 'serviceArea', 'showZero'],
+    props: ['alloc', 'serviceArea', 'showZero', 'bidders'],
     computed: {
       options() {
         const self = this;
@@ -21,26 +23,9 @@
             animations: {
               enabled: false
             },
-            events: {
-              // // click: function(e) {
-              // dataPointSelection(event, chartContext, config) {
-              //   const index = config.dataPointIndex;
-              //   const series = self.series[config.seriesIndex];
-              //   const bidder = series.name;
-              //   const filter = GroupFilterModal.methods.allocFilter(bidder, self.serviceArea);
-
-              //   self.ADD_GROUP_FILTERS({
-              //     key: filter.value,
-              //     operator: '__exact',
-              //     value: index
-              //   });
-              //   // console.log(filter);
-              //   self.OPEN_GROUP_FILTERS();
-              }
-            }
           },
           title: {
-            text: this.serviceArea.name,
+            text: this.serviceArea,
           },
           dataLabels: {
             formatter: v => {
@@ -55,9 +40,6 @@
               // colors: this.colors // A color per bidder
               colors: Object.keys(this.alloc).map(() => '#333333')
             },
-            // dropShadow: {
-            //   enabled: true
-            // }
           },
           colors: this.colors,
           xaxis: {
@@ -92,17 +74,14 @@
             }
           }
         );
-        // series.reverse();
-        // console.log(series);
-        // console.log(this.bidders);
         series.sort((x, y) => {
-          const bidderX = x.name;
-          const bidderY = y.name;
-          let indexX = this.bidders.findIndex(x => x.name === bidderX);
+          const bidderX = x;
+          const bidderY = y;
+          let indexX = this.bidders.findIndex(x => x === bidderX);
           if (indexX === -1) {
             indexX = this.bidders.length;
           }
-          let indexY = this.bidders.findIndex(x => x.name === bidderY);
+          let indexY = this.bidders.findIndex(x => x === bidderY);
           if (indexY === -1) {
             indexY = this.bidders.length;
           }
@@ -114,11 +93,11 @@
         if (!this.series) {
           return [];
         }
-        return this.series.map(d => this.bidderColors[d.name])
+        let c = this.series.map(d => this.bidderColors[d.name]);
+        return c;
       },
       ...mapState({
-        bidderColors: state => state.example.bidderColors,
-        bidders: state => state.example.bidders,
+        bidderColors: state => state.bidderColors,
       })
     },
   }

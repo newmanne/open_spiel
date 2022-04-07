@@ -41,8 +41,8 @@ def round_index(num_players):
 def current_round(num_players, information_state_tensor): # 1-indexed
     return int(information_state_tensor[round_index(num_players)])
 
-def prefix_size(num_players, num_products):
-    return num_players + 1 + num_products
+def prefix_size(num_types):
+    return num_types
 
 def handcrafted_size(num_actions, num_products):
     return 2 * num_actions + 3 + 3 * num_products
@@ -69,12 +69,9 @@ def recurrent_index(num_players, num_actions, num_products):
 def prefix_index(num_players, num_actions, num_products):
     return turn_based_size(num_players) + handcrafted_size(num_actions, num_products)
 
-def get_player_type_index(num_players, num_actions, num_products):
-    return prefix_index(num_players, num_actions, num_products) + num_players
-
-def get_player_type(num_players, num_actions, num_products, information_state_tensor):
-    index = get_player_type_index(num_players, num_actions, num_products)
-    return information_state_tensor[index:index + 1 + num_products] # Budget and then values
+def get_player_type(num_players, num_actions, num_products, max_types, information_state_tensor):
+    index = prefix_index(num_players, num_actions, num_products)
+    return np.nonzero(information_state_tensor[index:index + max_types])[0][0]
 
 def recurrent_round_size(num_products):
     return FEATURES_PER_PRODUCT * num_products
@@ -96,6 +93,17 @@ def payment_and_allocation(num_players, num_actions, num_products, information_s
     allocation = frame[PROCESSED_DEMAND_INDEX * num_products : (PROCESSED_DEMAND_INDEX + 1) * num_products]
     prices = frame[POSTED_PRICE_INDEX * num_products : (POSTED_PRICE_INDEX + 1) * num_products]
     return np.array(prices) @ np.array(allocation), allocation
+
+def parse_current_round_frame(num_players, num_actions, num_products, information_state_tensor):
+    frame = current_round_frame(num_players, num_actions, num_products, information_state_tensor)
+    allocation = frame[PROCESSED_DEMAND_INDEX * num_products : (PROCESSED_DEMAND_INDEX + 1) * num_products]
+    agg_demand = frame[AGG_DEMAND_INDEX * num_products : (AGG_DEMAND_INDEX + 1) * num_products]
+    prices = frame[POSTED_PRICE_INDEX * num_products : (POSTED_PRICE_INDEX + 1) * num_products]
+    return dict(allocation=allocation, agg_demand=agg_demand, posted_prices=prices)
+
+def num_increments(price, increment, starting_price):
+    num_increments = (np.log(price) - np.log(starting_price)) / np.log(increment)
+    return int(np.round(num_increments)) - 1
 
 def action_to_bundles(licenses):
     bids = []
@@ -154,11 +162,13 @@ def single_action_result(legal_actions, num_actions, as_output=False):
     return action, probs
 
 
-def get_first_actionable_state(game):
+def get_first_actionable_state(game, forced_types=None):
     state = game.new_initial_state()
     # Skip over chance nodes
+    i = 0
     while state.current_player() < 0:
-        state = state.child(0) # Let chance choose first outcome. We're assuming all moves are possible at starting prices for all players, that may not really be true though
+        state = state.child(0 if forced_types is None else forced_types[i]) # Let chance choose first outcome. We're assuming all moves are possible at starting prices for all players, that may not really be true though
+        i += 1
     return state
 
 
@@ -354,12 +364,20 @@ def apply_optional_overrides(args, argv, config):
     config['num_training_episodes'] = args.num_training_episodes
 
 class UBCChanceEventSampler(object):
-  """Default sampler for external chance events."""
+    """Default sampler for external chance events."""
 
-  def __call__(self, state):
-    """Sample a chance event in the given state."""
-    actions, probs = zip(*state.chance_outcomes())
-    return fast_choice(actions, probs)
+    def __init__(self, deterministic_types=None) -> None:
+        self.deterministic_types = deterministic_types
+
+    def __call__(self, state, reset=False):
+        """Sample a chance event in the given state."""
+        if reset and self.deterministic_types is not None:
+            deterministic_action = self.deterministic_types[len(state.history())]
+            if deterministic_action is not None:
+                return deterministic_action
+
+        actions, probs = zip(*state.chance_outcomes())
+        return fast_choice(actions, probs)
 
 
 def series_to_quantiles(s: pd.Series):
@@ -419,9 +437,7 @@ def make_normalizer_for_game(game, game_config):
     # Clock prices (num_products)
     # Current holdings
     # Agg demand
-    # 1 hot player (num_players)
-    # Budget
-    # Values (num_products)
+    # 1 hot type (num_types)
     # While loop over rounds:
         # Submitted demand
         # Processed demand
@@ -431,6 +447,7 @@ def make_normalizer_for_game(game, game_config):
     game_max_budget = max_budget(game_config)
     num_actions = game.num_distinct_actions()
     max_activity = all_activity(game_config)
+    num_types = max_num_types(game_config)
     num_products = len(game_config['licenses'])
     num_players = game.num_players()
     max_rounds = game_config.get('max_rounds', 100)
@@ -443,13 +460,26 @@ def make_normalizer_for_game(game, game_config):
         [game_max_budget] * (num_products) + \
         game_config['licenses'] + \
         (np.array(game_config['licenses']) * num_players).tolist() + \
-        [1] * num_players + \
-        [game_max_budget] + \
-        [game_max_budget] * num_products # could use max value for a given product? \
-    for i in range(max_rounds):
+        [1] * num_types
+    for _ in range(max_rounds):
         normalizer += game_config['licenses']
         normalizer += game_config['licenses']
         normalizer += (np.array(game_config['licenses']) * num_players).tolist()
         normalizer += [game_max_budget] * num_products
 
     return torch.tensor(normalizer, dtype=torch.float32)
+
+def players_not_me(my_player_id, num_players):
+    for i in range(num_players):
+        if i == my_player_id:
+            continue
+        yield i
+
+def max_num_types(game_config):
+    n_types = []
+    for player_id in range(len(game_config['players'])):
+        n_types.append(len(game_config['players'][player_id]['type']))
+    return max(n_types)
+
+def type_from_index(game_config, player_id, type_index):
+    return game_config['players'][player_id]['type'][type_index]

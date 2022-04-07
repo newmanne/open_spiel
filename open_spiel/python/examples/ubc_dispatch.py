@@ -154,7 +154,6 @@ def dispatch_eval_database(experiment_name, run_name, t, br_player, br_name, sub
 
     experiment_dir = f'/shared/outputs/{experiment_name}/{run_name}/{EVAL_DIR}'
 
-    # TODO: This is pretty excessive... we probably don't need a whole machine for evaluation tasks...
     job_file_text = f"""#!/bin/sh
 #SBATCH --cpus-per-task={int(mem/4)}
 #SBATCH --job-name={slurm_job_name}

@@ -50,9 +50,6 @@ def parse_run(run, max_t=None, conservative=True):
     best_response_df = pd.DataFrame.from_records(br_values)
     best_response_df['player'] = best_response_df['br_player']
 
-    display(best_response_df)
-
-
     negative_reward_br = best_response_df.query('name != "straightforward" and reward < 0')
     if len(negative_reward_br) > 0:
         logging.warning(f"Negative BR value ({negative_reward_br['reward']}) shouldn't happen. DQN should always find the drop out strategy... ")
@@ -77,9 +74,14 @@ def parse_run(run, max_t=None, conservative=True):
         frames.append(frame)
     ev_df = pd.concat((best_response_df, *frames))
 
+    if ev_df.empty:
+        raise ValueError("ev_df is empty!")
+
     if conservative:
         # At least it should have an evaluation, a straightforward, and a BR
         ev_df = ev_df.groupby(['player', 't']).filter(lambda grp: len(grp) >= 3)
+        if ev_df.empty:
+            raise ValueError("ev_df is empty after applying conservative filter! This likely means there are no best responses")
 
     logging.info("Rewards parsed. Adding regret features")
 
@@ -213,17 +215,15 @@ def plot_from_df(ev_df):
     model = ev_df['model'].iloc[0]
 
     ev_df['t'] /= 1e6 # Nicer formatting on x-axis
-    color = Category10_10.__iter__()
     title = f"{model} Approximate Nash Conv"
     plot = figure(width=900, height=400, title=title)
 
     # add a circle renderer with a size, color, and alpha
-    PLAYER_COLORS = iter(['green', 'blue', 'purple'])
+    PLAYER_COLORS = iter(['green', 'blue', 'blue', 'purple'])
     for p in players:
         player_color = next(PLAYER_COLORS)
 
         best_br_only_df = ev_df.loc[ev_df.query(f'player == {p} and br_player == {p} and name != "straightforward" and not name.isnull()', engine='python')[['t', 'PositiveRegret', 'name']].groupby('t')['PositiveRegret'].idxmax()]
-        # display(best_br_only_df)
         best_br_source = ColumnDataSource(best_br_only_df)
         straightforward_source = ColumnDataSource(ev_df.query(f'player == {p} and br_player == {p} and name == "straightforward"', engine='python')[['t', 'PositiveRegret']])
         overall_player_source = ColumnDataSource(ev_df.query(f'player == {p} and br_player == {p}')[['t', 'MaxPositiveRegret']].drop_duplicates())
@@ -285,7 +285,7 @@ def special_save_fig(fig, file_name, fmt=None, dpi=300, tight=True):
         subprocess.call('pdfcrop %s %s' % (tmp_name, file_name), shell=True)
 
 
-def plot_embedding(df, color_col='round', reduction_method='pca', fast_mode=False):
+def plot_embedding(df, color_col='round', reduction_method='pca', fast=False):
     df = df.copy()
 
     # Spaces don't play nice with the hover tooltip
@@ -298,7 +298,7 @@ def plot_embedding(df, color_col='round', reduction_method='pca', fast_mode=Fals
     
     source = ColumnDataSource(df) # Need to drop tensors b/c of serialization issues
 
-    plot = figure(width=900, height=400, title=f"{color_col}")
+    plot = figure(width=900, height=900, title=f"{color_col}")
 
     if df.dtypes[color_col].name == 'category':
         n_cats = df[color_col].nunique()
@@ -306,15 +306,15 @@ def plot_embedding(df, color_col='round', reduction_method='pca', fast_mode=Fals
             raise ValueError("What should I do????? Too many categories")
 
         mapper = factor_cmap(field_name=color_col, palette=Category20_20[:n_cats], factors=list(df[color_col].unique()))
-        plot.circle('pca_0', 'pca_1', size=10, color=mapper, alpha=0.3, source=source)
+        plot.circle(f'{reduction_method}_0', f'{reduction_method}_1', size=10, color=mapper, alpha=0.3, source=source)
     else:
         mapper = linear_cmap(field_name=color_col, palette=list(reversed(Magma256)) ,low=df[color_col].min(), high=df[color_col].max())
-        plot.circle('pca_0', 'pca_1', size=10, color=mapper, alpha=0.3, source=source)
+        plot.circle(f'{reduction_method}_0', f'{reduction_method}_1', size=10, color=mapper, alpha=0.3, source=source)
 
     color_bar = ColorBar(color_mapper=mapper['transform'], label_standoff=12)
     plot.add_layout(color_bar, 'right')
 
-    if not fast_mode:
+    if not fast:
         plot.add_tools(HoverTool(tooltips=[['Infostate', '@pretty_str'],
                                         [color_col, f'@{color_col}'],
                                         ['Round', '@round'],
