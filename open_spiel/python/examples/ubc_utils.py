@@ -95,7 +95,7 @@ def payment_and_allocation(num_players, num_actions, num_products, information_s
     return np.array(prices) @ np.array(allocation), allocation
 
 def parse_current_round_frame(num_players, num_actions, num_products, information_state_tensor, num_types):
-    frame = current_round_frame(num_players, num_actions, num_products, information_state_tensor)
+    frame = current_round_frame(num_players, num_actions, num_products, information_state_tensor, num_types)
     allocation = frame[PROCESSED_DEMAND_INDEX * num_products : (PROCESSED_DEMAND_INDEX + 1) * num_products]
     agg_demand = frame[AGG_DEMAND_INDEX * num_products : (AGG_DEMAND_INDEX + 1) * num_products]
     prices = frame[POSTED_PRICE_INDEX * num_products : (POSTED_PRICE_INDEX + 1) * num_products]
