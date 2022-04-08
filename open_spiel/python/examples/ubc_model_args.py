@@ -35,7 +35,7 @@ def lookup_model_and_args(model_name, state_size, num_actions, num_players, num_
             'num_players': num_players,
             'num_products': num_products, 
             'num_types': num_types, 
-            'input_size': state_size, # TODO: This isn't correct, b/c you to multiply by whatever MAX_ROUNDS you are using here
+            'max_rounds': 25, 
             'hidden_sizes': [128],
             'output_size': num_actions,
         }
