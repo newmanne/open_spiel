@@ -8,12 +8,13 @@ import numpy as np
 from absl import logging
 from open_spiel.python.examples.ubc_utils import FEATURES_PER_PRODUCT, prefix_size, handcrafted_size, turn_based_size, round_index
 from open_spiel.python.pytorch.ubc_dqn import SonnetLinear
+import torch.nn.functional as F
 
 class FlatMLP(nn.Module):
     """
     An RNN model designed for our auction games.
     """
-    def __init__(self, num_players, num_products, num_types, input_size, output_size, normalizer, hidden_sizes, activate_final=False):
+    def __init__(self, num_players, num_products, num_types, max_rounds, output_size, normalizer, hidden_sizes, activate_final=False):
         """
         Initialize the model.
 
@@ -40,23 +41,28 @@ class FlatMLP(nn.Module):
         self.handcrafted_len = handcrafted_size(output_size, num_products)
         self.normalizer = normalizer
 
-        self.lb = self.handcrafted_len + self.turn_based_len
-
         self.num_players = num_players
         self.num_products = num_products
-        
+
+        self.round_index = round_index(self.num_players)
+        self.input_size = self.prefix_len + max_rounds * FEATURES_PER_PRODUCT * num_products
+        print(self.input_size)
+
         self._layers = []
+
         # Hidden layers
+        input_size = self.input_size
         for size in hidden_sizes:
             self._layers.append(SonnetLinear(in_size=input_size, out_size=size))
             input_size = size
-        # Output layer
 
+        # Output layer
         self._layers.append(
             SonnetLinear(
                 in_size=input_size,
                 out_size=output_size,
-                activate_relu=activate_final))
+                activate_relu=activate_final)
+        )
 
         self.model = nn.ModuleList(self._layers)
 
@@ -64,7 +70,13 @@ class FlatMLP(nn.Module):
     def reshape_infostate(self, infostate_tensor):
         # MLP doesn't need to reshape infostates: just use flat tensor
         infostate_tensor = torch.tensor(infostate_tensor) / self.normalizer[:len(infostate_tensor)]
-        return infostate_tensor[self.lb:]
+        infostate_tensor = infostate_tensor[self.turn_based_len + self.handcrafted_len:] # Ignore the handcrafted stuff
+
+        # Pad with zeros
+        if len(infostate_tensor) < self.input_size:
+            infostate_tensor = F.pad(infostate_tensor, (0, self.input_size - len(infostate_tensor)))
+                
+        return infostate_tensor[:self.input_size] # If it's too long, oh well. You can't different between really high rounds
 
     def prep_batch(self, infostate_list):        
         """
