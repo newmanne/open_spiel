@@ -440,6 +440,8 @@ def make_normalizer_for_game(game, game_config):
     # Clock prices (num_products)
     # Current holdings
     # Agg demand
+    # Agg acitvity
+    # Agg activity frac
     # 1 hot type (num_types)
     # While loop over rounds:
         # Submitted demand
@@ -463,6 +465,8 @@ def make_normalizer_for_game(game, game_config):
         [game_max_budget] * (num_products) + \
         game_config['licenses'] + \
         (np.array(game_config['licenses']) * num_players).tolist() + \
+        [max_activity * num_players] + \
+        [1] + \
         [1] * num_types
     for _ in range(max_rounds):
         normalizer += game_config['licenses']
