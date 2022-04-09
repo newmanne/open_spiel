@@ -801,8 +801,8 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
       values[offset] = agg_activity;
       values[offset + 1] = activity_[player] / agg_activity;
     }
-    offset += 2;
   }
+  offset += 2;
 
   /******** END HANDCRAFTED AREA *****/
 
