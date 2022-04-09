@@ -700,8 +700,8 @@ void AuctionState::ObservationTensor(Player player, absl::Span<float> values) co
 }
 
 int SizeHelper(int rounds, int num_actions, int num_products, int num_types) {
-    // SoR profit of each bundle, round, agg_demand, my demand, clock price
-    int handcrafted_size = 2 * num_actions + 3 + 3 * num_products;
+    // SoR profit of each bundle, round, agg_demand, my demand, clock price, agg_activity, activity_Frac
+    int handcrafted_size = 2 * num_actions + 3 + 3 * num_products + 2;
     int size_required = 
       handcrafted_size +
       num_types + // player encoding
@@ -791,6 +791,18 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
     }
   }
   offset += num_products_;
+
+  // Aggregate Activity
+  // Turn off these features for hidden demand because it isn't well-defined
+  if (information_policy_ != kHideDemand) {
+    if (!aggregate_demands_.empty()) {
+      auto& agg_demands = aggregate_demands_.back();
+      double agg_activity = DotProduct(agg_demands, product_activity_);
+      values[offset] = agg_activity;
+      values[offset + 1] = activity_[player] / agg_activity;
+    }
+    offset += 2;
+  }
 
   /******** END HANDCRAFTED AREA *****/
 
