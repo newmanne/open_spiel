@@ -45,7 +45,7 @@ def prefix_size(num_types):
     return num_types
 
 def handcrafted_size(num_actions, num_products):
-    return 2 * num_actions + 3 + 3 * num_products
+    return 2 * num_actions + 3 + 3 * num_products + 2
 
 def clock_price_index(num_players, num_actions):
     # Round, SOR/Clock Profit
