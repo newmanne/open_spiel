@@ -800,7 +800,11 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
       auto& agg_demands = aggregate_demands_.back();
       double agg_activity = DotProduct(agg_demands, product_activity_);
       values[offset] = agg_activity;
-      values[offset + 1] = activity_[player] / agg_activity;
+      if (agg_activity == 0) {
+        values[offset + 1] = 0;  
+      } else {
+        values[offset + 1] = activity_[player] / agg_activity;
+      }
     } else {
       // Assume agg activity is super high and you have a 1/num_players amount
       values[offset] = DotProduct(num_licenses_, product_activity_) * num_players_;
