@@ -742,6 +742,7 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
   offset++;
 
   // SoR profit and Clock Profit
+  // Havne't profiled, but I bet this is a source of slowdown
   for (int b = 0; b < all_bids_.size(); b++) {
     auto& bid = all_bids_[b];
     double bundle_value = bidder->ValuationForPackage(bid);
@@ -800,6 +801,10 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
       double agg_activity = DotProduct(agg_demands, product_activity_);
       values[offset] = agg_activity;
       values[offset + 1] = activity_[player] / agg_activity;
+    } else {
+      // Assume agg activity is super high and you have a 1/num_players amount
+      values[offset] = DotProduct(num_licenses_, product_activity_) * num_players_;
+      values[offset + 1] = 1 / num_players_;
     }
   }
   offset += 2;
