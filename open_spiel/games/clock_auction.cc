@@ -804,7 +804,7 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
     } else {
       // Assume agg activity is super high and you have a 1/num_players amount
       values[offset] = DotProduct(num_licenses_, product_activity_) * num_players_;
-      values[offset + 1] = 1 / num_players_;
+      values[offset + 1] = 1. / num_players_;
     }
   }
   offset += 2;
