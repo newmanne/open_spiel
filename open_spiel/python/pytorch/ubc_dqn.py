@@ -188,7 +188,8 @@ class MLP(nn.Module):
   def reshape_infostate(self, infostate_tensor):
     # MLP doesn't need to reshape infostates: just use flat tensor
     infostate_tensor = torch.tensor(infostate_tensor) / self.normalizer[:len(infostate_tensor)]
-    return infostate_tensor[self.lb: self.ub]
+    retval =  infostate_tensor[self.lb: self.ub]
+    return retval
 
   def prep_batch(self, infostate_list):        
     """
