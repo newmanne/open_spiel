@@ -12,7 +12,7 @@ class AuctionRNN(nn.Module):
     """
     An RNN model designed for our auction games.
     """
-    def __init__(self, num_players, num_products, num_types, input_size, output_size, normalizer, hidden_size=128, num_layers=1, rnn_model='lstm', nonlinearity='tanh'):
+    def __init__(self, num_players, num_products, num_types, input_size, output_size, normalizer, hidden_size=128, num_layers=1, rnn_model='lstm', nonlinearity='tanh', torso_sizes=[]):
         """
         Initialize the model.
 
@@ -23,6 +23,7 @@ class AuctionRNN(nn.Module):
         - hidden_size: dimension of hidden state
         - num_layers: number of recurrent layers to stack in model
         - rnn_model: type of torch model to use; options are "lstm" and "rnn"
+        - torso_sizes: list of hidden layer widths to apply before RNN
         """
         super(AuctionRNN, self).__init__()
 
@@ -50,13 +51,19 @@ class AuctionRNN(nn.Module):
         self.infostate_index_cache = {}
 
         input_size_per_round = self.prefix_len + FEATURES_PER_PRODUCT * num_products 
-        
+
+        all_torso_sizes = [input_size_per_round] + torso_sizes
+        self.torso_layers = nn.ModuleList([
+            nn.Linear(all_torso_sizes[i], all_torso_sizes[i+1]) for i in range(len(all_torso_sizes) - 1)
+        ])
+        torso_output_size = all_torso_sizes[-1]
+
         if rnn_model == 'lstm':
-            self.rnn = nn.LSTM(input_size=input_size_per_round, hidden_size=hidden_size, num_layers=num_layers, batch_first=True)
+            self.rnn = nn.LSTM(input_size=torso_output_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True)
         elif rnn_model == 'rnn':
-            self.rnn = nn.RNN(input_size=input_size_per_round, hidden_size=hidden_size, num_layers=num_layers, batch_first=True, nonlinearity=nonlinearity) 
+            self.rnn = nn.RNN(input_size=torso_output_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True, nonlinearity=nonlinearity) 
         elif rnn_model == 'gru':
-            self.rnn = nn.GRU(input_size=input_size_per_round, hidden_size=hidden_size, num_layers=num_layers, batch_first=True)
+            self.rnn = nn.GRU(input_size=torso_output_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True)
         else:
             raise ValueError('unrecognized RNN model %s' % rnn_model) 
 
@@ -114,6 +121,10 @@ class AuctionRNN(nn.Module):
 
         Outputs: (num_examples, num_actions) tensor of outputs (logit action probabilities or Q values)
         """
+        # Run torso
+        for torso_layer in self.torso_layers:
+            x = nn.utils.rnn.PackedSequence(nn.functional.relu(torso_layer(x.data)), x.batch_sizes)
+
         # Run RNN
         rnn_outputs, _ = self.rnn(x)
         
