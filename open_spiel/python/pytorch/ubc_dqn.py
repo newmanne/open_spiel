@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
+from distutils.log import info
 import math
 import numpy as np
 from scipy import stats
@@ -187,8 +188,8 @@ class MLP(nn.Module):
 
   def reshape_infostate(self, infostate_tensor):
     # MLP doesn't need to reshape infostates: just use flat tensor
-    infostate_tensor = torch.tensor(infostate_tensor) / self.normalizer[:len(infostate_tensor)]
-    retval =  infostate_tensor[self.lb: self.ub]
+    normalized_infostate_tensor = torch.tensor(infostate_tensor) / self.normalizer[:len(infostate_tensor)]
+    retval =  normalized_infostate_tensor[self.lb: self.ub]
     return retval
 
   def prep_batch(self, infostate_list):        
