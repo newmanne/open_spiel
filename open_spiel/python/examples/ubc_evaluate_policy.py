@@ -98,8 +98,10 @@ def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=D
 
         # Let's get allocation and pricing information since we're in the last time step
         infostate = time_step.observations['info_state'][i]
+        # TODO: These next two function calls could be combined for speed
         payment, allocation = payment_and_allocation(num_players, num_actions, num_products, infostate, max_types)
         final_posted_prices = parse_current_round_frame(num_players, num_actions, num_products, infostate, max_types)['posted_prices']
+        allocation = [int(x) for x in allocation]
         payments[i].append(payment)
         episode_alloc.append(allocation)
         allocations[i].append(allocation)
