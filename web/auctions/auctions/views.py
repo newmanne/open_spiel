@@ -198,34 +198,35 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         # TODO: Move this to function?
         # Embeddings
         df = flatten_trees(trees).query('embedding.notna()', engine='python')
-        for player in range(game.num_players):
-            dfp = df.query(f'player_id == {player}').copy()
-            embeddings = np.stack(dfp['embedding'].values).squeeze()
+        if len(df) > 100: #Guard against ValueError: n_components=10 must be between 0 and min(n_samples, n_features)=2 with svd_solver='full'
+            for player in range(game.num_players):
+                dfp = df.query(f'player_id == {player}').copy()
+                embeddings = np.stack(dfp['embedding'].values).squeeze()
 
-            # Reduce embedding to 2D with PCA
-            pca, variance = projectPCA(embeddings)
-            dfp['pca_0'] = pca[:, 0]
-            dfp['pca_1'] = pca[:, 1]
+                # Reduce embedding to 2D with PCA
+                pca, variance = projectPCA(embeddings)
+                dfp['pca_0'] = pca[:, 0]
+                dfp['pca_1'] = pca[:, 1]
 
-            # Reduce embedding to 2D with UMAP
-            # umap = projectUMAP(embeddings)
-            # dfp['umap_0'] = umap[:, 0]
-            # dfp['umap_1'] = umap[:, 1]
+                # Reduce embedding to 2D with UMAP
+                # umap = projectUMAP(embeddings)
+                # dfp['umap_0'] = umap[:, 0]
+                # dfp['umap_1'] = umap[:, 1]
 
-            # Try all numeric columns
-            numerics = ['category', 'int8', 'int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-            newdf = dfp.select_dtypes(include=numerics)
-            IGNORE = ['type', 'depth', 'player_id', 'num_plays', 'pct_plays', 'pca_0', 'pca_1', 'umap_0', 'umap_1']
-            plots = []
-            for k in newdf.columns:
-                if k not in IGNORE:
-                    plot = plot_embedding(dfp, color_col=k, reduction_method='pca')
-                    plots.append(plot)
+                # Try all numeric columns
+                numerics = ['category', 'int8', 'int16', 'int32', 'int64', 'float16', 'float32', 'float64']
+                newdf = dfp.select_dtypes(include=numerics)
+                IGNORE = ['type', 'depth', 'player_id', 'num_plays', 'pct_plays', 'pca_0', 'pca_1', 'umap_0', 'umap_1']
+                plots = []
+                for k in newdf.columns:
+                    if k not in IGNORE:
+                        plot = plot_embedding(dfp, color_col=k, reduction_method='pca')
+                        plots.append(plot)
 
-                    # plot = plot_embedding(dfp, color_col=k, reduction_method='umap')
-                    # plots.append(plot)
+                        # plot = plot_embedding(dfp, color_col=k, reduction_method='umap')
+                        # plots.append(plot)
 
-            plot_html = plots_to_string(plots, 'Clustering')
-            data['clusters_bokeh'][player] = plot_html
+                plot_html = plots_to_string(plots, 'Clustering')
+                data['clusters_bokeh'][player] = plot_html
 
         return Response(data)

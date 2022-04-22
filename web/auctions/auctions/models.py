@@ -49,7 +49,7 @@ class EquilibriumSolverRun(TimeStampedModel):
     config = JSONField(null=True)
 
     def walltime(self):
-        pass # TODO: Iterate and sum?
+        return self.equilibriumsolverruncheckpoint_set.last().walltime
 
     def __str__(self):
         return f'{self.name} ({self.experiment})'

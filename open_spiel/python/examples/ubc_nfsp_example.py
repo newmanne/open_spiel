@@ -143,7 +143,7 @@ def evaluate_nfsp(ep, compute_nash_conv, game, policy, alg_start_time, nash_conv
         }
     return checkpoint
 
-def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, seed, compute_nash_conv, dispatcher, eval_every, eval_every_early, eval_exactly, eval_zero, report_freq, dispatch_br, agent_selector):
+def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, seed, compute_nash_conv, dispatcher, eval_every, eval_every_early, eval_exactly, eval_zero, report_freq, dispatch_br, agent_selector, random_ic=False):
     # This may have already been done, but do it again. Required to do it outside to ensure that networks get initilized the same way, which usually happens elsewhere
     fix_seeds(seed)
     game, policy, env, agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
@@ -162,12 +162,17 @@ def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, see
         if agent_selector is not None:
             agent_selector.new_episode(ep) 
 
-        time_step = env.reset()
-        episode_steps = 0
+        if random_ic:
+            current_eps = env_and_model.agents[0]._rl_agent._get_epsilon(False) 
+            time_step = env.reset(current_eps)
+        else:
+            time_step = env.reset(current_eps)
 
+        episode_steps = 0 # TODO: Does this make any sense with random ICs?
         while not time_step.last():
             episode_steps += 1
             player_id = time_step.observations["current_player"]
+            print(player_id)
             agent = agents[player_id]
             if iterate_br: # Each player alternates between BR and Supervised network
                 if ep % num_players == player_id:

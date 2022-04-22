@@ -139,12 +139,18 @@ def plots_to_html(plots, output_name, title='RegretPlots'):
     output_file(filename=output_name, title=title)
     save(p)
 
-def plot_all_models(ev_df, notebook=True, output_name='plots.html', output_str=False):
+def plot_all_models(ev_df, notebook=True, output_name='plots.html', output_str=False, final_compare=False):
     plots = []
+
+    # One final plot of just the NashConvs
+    if final_compare:
+        plots.append(nash_conv_plots(ev_df))
+
     for model, sub_df in ev_df.groupby('model'):
         plot = plot_from_df(sub_df)
         plots.append(plot)
         
+
     if notebook:
         output_notebook()
         for plot in plots:
@@ -171,8 +177,8 @@ def compare_best_responses(master_df):
     # Draw a nested boxplot 
     fig = plt.figure(figsize=(30, 9))
     # sns.ecdfplot(hue="config", x="Δ to Best Known Response", data=distance_frame.sort_values('config'))
-    sns.boxplot(x="name", y="Δ to Best Known Response", data=distance_frame.sort_values('name'))
-    # sns.despine(offset=10, trim=True)
+    ax = sns.boxplot(x="name", y="Δ to Best Known Response", data=distance_frame.sort_values('name'))
+    ax.set_xticklabels(ax.get_xticklabels(),rotation = 90)
     return fig
 
 def make_true_br_df(d):
@@ -249,6 +255,29 @@ def plot_from_df(ev_df):
 
     plot.add_tools(HoverTool())
     return plot
+
+def nash_conv_plots(ev_df_ungrouped):
+    title = f"Approximate Nash Conv"
+    colors = itertools.cycle(Category20_20) 
+    plot = figure(width=900, height=400, title=title)
+    for grp, ev_df in ev_df_ungrouped.groupby('model'):
+        ev_df = ev_df.copy()
+        model = ev_df['model'].iloc[0]
+
+        ev_df['t'] /= 1e6 # Nicer formatting on x-axis
+
+        # add a circle renderer with a size, color, and alpha
+        source = ColumnDataSource(ev_df.loc[ev_df.groupby('t')['ApproxNashConv'].idxmax()][['t', 'ApproxNashConv']]) 
+        plot.line('t', f'ApproxNashConv', source=source, legend_label=model, color=next(colors), line_width=3)
+ 
+    plot.legend.click_policy = "hide"
+    plot.xaxis.axis_label = 'Iteration (M)'
+    plot.yaxis.axis_label = 'Regret'
+    plot.ray(x=[min(ev_df_ungrouped['t']) / 1e6], y=[0], length=0, angle=0, line_width=5, color='black')
+
+    plot.add_tools(HoverTool())
+    return plot
+
 
 def special_save_fig(fig, file_name, fmt=None, dpi=300, tight=True):
     """Save a Matplotlib figure as EPS/PNG/PDF to the given path and trim it.
