@@ -52,6 +52,7 @@ from __future__ import print_function
 import collections
 
 import enum
+from os import stat
 from absl import logging
 import numpy as np
 
@@ -334,7 +335,7 @@ class Environment(object):
 
     return self.get_time_step()
 
-  def reset(self):
+  def reset(self, epsilon=None):
     """Starts a new sequence and returns the first `TimeStep` of this sequence.
 
     Returns:
@@ -351,7 +352,11 @@ class Environment(object):
     # if self._game.get_type().dynamics == pyspiel.GameType.Dynamics.MEAN_FIELD and self._num_players > 1:
     #   self._state = self._game.new_initial_state_for_population(self._mfg_population)
     # else:
-    self._state = self._game.new_initial_state()
+    if epsilon is not None and np.random.binomial(1, epsilon):
+      self._state = self._random_state()
+    else:
+      self._state = self._game.new_initial_state()
+
     self._sample_external_events(reset=True)
 
     observations = {
@@ -464,3 +469,68 @@ class Environment(object):
   @property
   def get_state(self):
     return self._state
+
+  def _random_state(self):
+    # TODO: You might do better accumulating states in a big buffer first, rather than doing it like this, both in perforamcne and in ammortizing the "warming up" of the chain
+
+    # TODO: This would be better using fast choice
+    n_chance = self._game.max_chance_outcomes()
+    n_actions = self._game.num_distinct_actions()
+    k_max = max(n_chance, n_actions) + 1 # +1 for parent
+
+    n_steps = 0
+    N_STEPS_MAX = 10_000 # TODO: Should be a parameter
+    state = self._game.new_initial_state()
+    action_hist = []
+    state_hist = []
+
+    randomness = np.random.rand(N_STEPS_MAX * 10) # TODO: Better choice here, or just cycle through this
+    rand_index = 0
+
+    def flip_coin(p, rand_index):
+        return randomness[rand_index] < p, rand_index + 1
+
+    failure_count = 0
+    while n_steps < N_STEPS_MAX and not state.is_chance_node():
+        stay = True
+        node_degree = 1 # Parent
+        if state.is_chance_node():
+            legal_actions = state.chance_outcomes()
+        else:
+            legal_actions = state.legal_actions()
+        node_degree += len(legal_actions)
+
+        # Should I stay or should I go?
+        # Stay at node 𝑛 with probability 1−𝑘𝑛/𝑘max
+        stay_prob = 1 - (node_degree / k_max)
+        while stay:
+            stay, rand_index = flip_coin(stay_prob, rand_index)
+            if stay:
+                n_steps += 1 
+                continue
+        else:
+            if state.is_initial_state():
+                transition_to_parent = False
+            else:
+                transition_to_parent, rand_index = flip_coin(1 / node_degree, rand_index)
+            if transition_to_parent:
+                state = state_hist.pop()
+                action = action_hist.pop()
+                n_steps += 1
+            else:
+                if state.is_chance_node():
+                    outcomes = state.chance_outcomes()
+                    action_list, prob_list = zip(*outcomes)
+                    action = np.random.choice(action_list, p=prob_list)
+                else:
+                    action = np.random.choice(state.legal_actions(state.current_player())) # TODO: You surely want to use fast_choice but I can't depend on ubc_utils here
+                # Only go through with this if it's not terminal
+                clone = state.clone()
+                clone.apply_action(action)
+                if not clone.is_terminal(): # TODO: Could be smarter about resmampling here by taking away the same choices
+                    state_hist.append(state.clone())
+                    state = clone
+                    action_hist.append(action)
+                else:
+                    failure_count += 1
+    return state

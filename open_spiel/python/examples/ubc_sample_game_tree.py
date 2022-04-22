@@ -61,10 +61,18 @@ def pretty_information_state(infostate_string, depth):
         res = re.search(big_budget_pattern, infostate_string)
         data_lines = infostate_string[res.end():]
         # ['', '3, 3, 3 | 1, 2, 0', '3, 3, 3 | 3, 2, 0', '3, 6, 6 | 3, 4, 3']
-        _, submitted, processed, aggregate = data_lines.split('\n')
-        submitted_final = submitted.split('|')[-1].strip()
-        processed_final = processed.split('|')[-1].strip()
-        aggregate_final = aggregate.split('|')[-1].strip()
+        try:
+            _, submitted, processed, aggregate = data_lines.split('\n')
+            submitted_final = submitted.split('|')[-1].strip()
+            processed_final = processed.split('|')[-1].strip()
+            aggregate_final = aggregate.split('|')[-1].strip()
+        except Exception as e:
+            # Hide demand doesn't have a concept of submitted vs processed
+            _, processed, aggregate = data_lines.split('\n')
+            processed_final = processed.split('|')[-1].strip()
+            submitted_final = processed_final
+            aggregate_final = aggregate.split('|')[-1].strip()
+
         pretty_str = ''
         if submitted_final != processed_final:
             # Only show processed when it's different from submitted. Maybe we should highlight this in red?

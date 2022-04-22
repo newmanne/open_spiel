@@ -73,6 +73,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--num_training_episodes', type=int, required=True)
         parser.add_argument('--iterate_br', type=util.strtobool, default=1)
+        parser.add_argument('--random_ic', type=util.strtobool, default=0)
         parser.add_argument('--seed', type=int, default=1234)
         parser.add_argument('--network_config_file', type=str, default='network.yml')
         parser.add_argument('--compute_nash_conv', type=bool, default=False)
@@ -194,4 +195,4 @@ class Command(BaseCommand):
         result_saver = DBNFSPSaver(eq_solver_run=eq_solver_run) if not opts.dry_run else NullResultSaver()
         dispatcher = DBBRDispatcher(game.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path) if not opts.dry_run else NullDispatcher()
 
-        run_nfsp(env_and_model, opts.num_training_episodes, opts.iterate_br, result_saver, seed, opts.compute_nash_conv, dispatcher, opts.eval_every, opts.eval_every_early, opts.eval_exactly, opts.eval_zero, opts.report_freq, opts.dispatch_br, agent_selector)
+        run_nfsp(env_and_model, opts.num_training_episodes, opts.iterate_br, result_saver, seed, opts.compute_nash_conv, dispatcher, opts.eval_every, opts.eval_every_early, opts.eval_exactly, opts.eval_zero, opts.report_freq, opts.dispatch_br, agent_selector, opts.random_ic)
