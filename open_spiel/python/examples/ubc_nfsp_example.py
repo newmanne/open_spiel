@@ -166,7 +166,7 @@ def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, see
             current_eps = env_and_model.agents[0]._rl_agent._get_epsilon(False) 
             time_step = env.reset(current_eps)
         else:
-            time_step = env.reset(current_eps)
+            time_step = env.reset()
 
         episode_steps = 0 # TODO: Does this make any sense with random ICs?
         while not time_step.last():
