@@ -48,7 +48,8 @@ constexpr int kDefaultMaxRounds = 250;
 
 // Bidder types
 constexpr int kLinearBidder = 1;
-constexpr int kMarginalBidder = 1;
+constexpr int kMarginalBidder = 2;
+constexpr int kEnumeratedBidder = 3;
 
 // Facts about the game
 const GameType kGameType{/*short_name=*/"clock_auction",
@@ -1010,6 +1011,14 @@ AuctionGame::AuctionGame(const GameParameters& params) :
       CheckRequiredKey(type_object, "value");
       CheckRequiredKey(type_object, "budget");
       CheckRequiredKey(type_object, "prob");
+      int value_format = 0;
+      if (ContainsKey(type_object, "value_format")) {
+        std::string value_format_string = type_object["value_format"].GetString();
+        // TOOD: For legacy reasons other types dont parse via nmae yet
+        if (value_format_string == "full") {
+          value_format = kEnumeratedBidder;
+        }
+      } 
 
       double budget = ParseDouble(type_object["budget"]);
       if (budget > max_budget_) {
@@ -1025,7 +1034,10 @@ AuctionGame::AuctionGame(const GameParameters& params) :
 
       Bidder* bidder;
       auto value_array = type_object["value"].GetArray();
-      if (value_array[0].IsNumber()) {
+      if (value_format == kEnumeratedBidder) {
+        std::vector<double> vals = ParseDoubleArray(value_array);
+        bidder = new EnumeratedValueBidder(vals, budget, pricing_bonus, all_bids_);
+      } else if (value_array[0].IsNumber()) {
         std::vector<double> vals = ParseDoubleArray(value_array);
         if (vals.size() != num_products_) {
           SpielFatalError("Mistmatched size of value and number of licences!");  

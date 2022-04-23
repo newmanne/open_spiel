@@ -172,7 +172,6 @@ def run_nfsp(env_and_model, num_training_episodes, iterate_br, result_saver, see
         while not time_step.last():
             episode_steps += 1
             player_id = time_step.observations["current_player"]
-            print(player_id)
             agent = agents[player_id]
             if iterate_br: # Each player alternates between BR and Supervised network
                 if ep % num_players == player_id:
