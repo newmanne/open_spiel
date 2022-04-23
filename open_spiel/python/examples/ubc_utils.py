@@ -272,7 +272,9 @@ def clock_auction_bounds(game_config, player_id):
     bounds = []
     for t in game_config['players'][player_id]['type']:
         # What if you won the whole supply at opening prices?
-        if isinstance(t['value'][0], list): # Support marginals
+        if t.get('value_format') == 'full':
+            bound = max(0, t['value'][-1] - (p_open @ supply))
+        elif isinstance(t['value'][0], list): # Support marginals
             bound = (np.array(t['value']).sum(axis=1) - p_open).clip(0) @ supply
         else:
             bound = (np.array(t['value']) - p_open).clip(0) @ supply

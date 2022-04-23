@@ -47,6 +47,23 @@ int Factorial(int x) {
   return (x == 0) || (x == 1) ? 1 : x * Factorial(x-1);
 }
 
+// See https://www.geeksforgeeks.org/how-to-find-index-of-a-given-element-in-a-vector-in-cpp/
+template <typename T>
+int FindIndex(std::vector<T> v, T K) {
+    auto it = find(v.begin(), v.end(), K);
+ 
+    // If element was found
+    if (it != v.end()) {
+        // calculating the index
+        int index = it - v.begin();
+        return index;
+    }
+    else {
+      return -1;
+    }
+}
+
+
 class Bidder {
   public:
     virtual const double ValuationForPackage(std::vector<int> const &package) const = 0;
@@ -128,6 +145,41 @@ class MarginalBidder : public Bidder {
     std::vector<std::vector<double>> values_;
     double pricing_bonus_;
 
+};
+
+class EnumeratedValueBidder : public Bidder {
+
+  public:
+    explicit EnumeratedValueBidder(std::vector<double> values, double budget, double pricing_bonus, std::vector<std::vector<int>> all_bids) : values_(values), budget_(budget), pricing_bonus_(pricing_bonus), all_bids_(all_bids) {
+    }
+
+    const double ValuationForPackage(std::vector<int> const &package) const override {
+      int index = FindIndex(all_bids_, package);
+      return values_[index];
+    }
+
+    const double GetBudget() const override {
+      return budget_;
+    }
+
+    const double GetPricingBonus() const override {
+      return pricing_bonus_;
+    }
+
+    operator std::string() const {
+        // TODO: Probably stupidly long
+        std::string value_string = absl::StrJoin(values_, ", ");
+        return absl::StrCat("Values:", value_string, " Budget: ", budget_);
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const LinearBidder& b);
+
+
+  private:
+    double budget_;
+    std::vector<double> values_;
+    double pricing_bonus_;
+    std::vector<std::vector<int>> all_bids_;
 };
 
 

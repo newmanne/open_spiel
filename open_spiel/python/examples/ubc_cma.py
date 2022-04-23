@@ -33,7 +33,7 @@ def allocation_scorer(game_config, normalizer_dict):
     for player in range(len(game_config['players'])):
         player_value_functions = []
         for player_type in game_config['players'][player]['type']:
-            player_value_functions.append(value_for_bundle_function(player_type))
+            player_value_functions.append(value_for_bundle_function(player_type, game_config))
         value_functions.append(player_value_functions)          
         
     def scorer(alloc, types):
@@ -43,9 +43,16 @@ def allocation_scorer(game_config, normalizer_dict):
     return scorer
 
 
-def value_for_bundle_function(t):
+def value_for_bundle_function(t, game_config):
     # Reinvent the C value parser
-    if isinstance(t['value'][0], list):
+    if t.get('value_format') == 'full':
+        # Enum
+        all_bundles = list(map(tuple,action_to_bundles(game_config['licenses']).values()))
+        def val(bundle):
+            bundle_index = all_bundles.index(bundle)
+            return t['value'][bundle_index]
+        return val
+    elif isinstance(t['value'][0], list):
         # Marginal
         def val(bundle):
             v = 0
@@ -93,7 +100,7 @@ def efficient_allocation_from_types(game, game_config, types):
     values = []
     q = 0
     for player in range(num_players):
-        v = value_for_bundle_function(game_config['players'][player]['type'][types[player]])
+        v = value_for_bundle_function(game_config['players'][player]['type'][types[player]], game_config)
         for bundle in bundles:
             values.append(v(bundle))
             var_id_to_player_bundle[q] = (player, bundle)

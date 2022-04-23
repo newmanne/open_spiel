@@ -38,7 +38,10 @@ import seaborn as sns
 from django.db.models import F
 from auctions.models import *
 
-def parse_run(run, max_t=None, conservative=True):
+def parse_run(run, max_t=None, expected_additional_br=1):
+    '''
+    expected_additional_br: In addition to straightforward, how many BRs am I expecting?
+    '''
     players = list(range(run.game.num_players))
 
     br_evals_qs = BREvaluation.objects.filter(best_response__checkpoint__equilibrium_solver_run=run)
@@ -77,9 +80,11 @@ def parse_run(run, max_t=None, conservative=True):
     if ev_df.empty:
         raise ValueError("ev_df is empty!")
 
-    if conservative:
-        # At least it should have an evaluation, a straightforward, and a BR
-        ev_df = ev_df.groupby(['player', 't']).filter(lambda grp: len(grp) >= 3)
+    if expected_additional_br is not None:
+        # At least it should have an evaluation, a straightforward, and a BR. Plus 2 is b/c eval and straightforward
+        # print("BEFORE", len(ev_df))
+        ev_df = ev_df.groupby(['player', 't']).filter(lambda grp: len(grp) >= expected_additional_br + 2)
+        # print("AFTER", len(ev_df))
         if ev_df.empty:
             raise ValueError("ev_df is empty after applying conservative filter! This likely means there are no best responses")
 
@@ -96,6 +101,7 @@ def parse_run(run, max_t=None, conservative=True):
     # Regret for not having played the best response
     baselines = ev_df.groupby(['t', 'player']).apply(get_baseline).reset_index().rename(columns={0: 'Baseline'})
     ev_df = ev_df.merge(baselines)
+
     ev_df['Regret'] = ev_df['reward'] - ev_df['Baseline']
     ev_df['PositiveRegret'] = ev_df['Regret'].clip(lower=0)
 
@@ -105,6 +111,7 @@ def parse_run(run, max_t=None, conservative=True):
     # If player != BR player, this isn't so meaningful
     ev_df = ev_df.merge(ev_df.query('player == br_player').groupby(['t', 'player']).apply(lambda grp: grp['PositiveRegret'].max()).reset_index().rename(columns={0: 'MaxPositiveRegret'}))
     ev_df = ev_df.merge(ev_df.groupby(['t', 'player'])['MaxPositiveRegret'].first().unstack().sum(axis='columns').reset_index().rename(columns={0:'ApproxNashConv'}))
+
 
     # if truth_available:
     #     # TODO: This won't work until you fix it
@@ -117,11 +124,11 @@ def parse_run(run, max_t=None, conservative=True):
     return ev_df.sort_values('t')
 
 
-def get_all_frames(experiment, truth_available=False):
+def get_all_frames(experiment, truth_available=False, expected_additional_br=None):
     frames = []
     for run in tqdm(experiment.equilibriumsolverrun_set.all()):
         try:
-            ev_df = parse_run(run)
+            ev_df = parse_run(run, expected_additional_br=expected_additional_br)
             if ev_df is not None:
                 frames.append(ev_df)
         except:
