@@ -49,6 +49,7 @@ def value_for_bundle_function(t, game_config):
         # Enum
         all_bundles = list(map(tuple,action_to_bundles(game_config['licenses']).values()))
         def val(bundle):
+            bundle = tuple(bundle)
             bundle_index = all_bundles.index(bundle)
             return t['value'][bundle_index]
         return val
