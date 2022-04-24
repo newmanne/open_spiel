@@ -73,6 +73,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--num_training_episodes', type=int, required=True)
         parser.add_argument('--iterate_br', type=util.strtobool, default=1)
+        parser.add_argument('--require_br', type=util.strtobool, default=0)
         parser.add_argument('--random_ic', type=util.strtobool, default=0)
         parser.add_argument('--seed', type=int, default=1234)
         parser.add_argument('--network_config_file', type=str, default='network.yml')
@@ -184,6 +185,7 @@ class Command(BaseCommand):
             
             db_checkpoints = EquilibriumSolverRunCheckpoint.objects.filter(pk__in=opts.rnr_checkpoints)
             other_env_and_models = [db_checkpoint_loader(db_checkpoint) for db_checkpoint in db_checkpoints]
+            # TODO: does the agent selector need opts.require_br?
             agent_selector = UniformRestrictedNashResponseAgentSelector(len(db_checkpoints), game.num_players, exploit_prob=opts.rnr_exploit_prob, iterate_br=opts.iterate_br, rnr_player_id=opts.rnr_player) 
             for player in range(game.num_players):
                 if player == opts.rnr_player:
@@ -195,4 +197,4 @@ class Command(BaseCommand):
         result_saver = DBNFSPSaver(eq_solver_run=eq_solver_run) if not opts.dry_run else NullResultSaver()
         dispatcher = DBBRDispatcher(game.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path) if not opts.dry_run else NullDispatcher()
 
-        run_nfsp(env_and_model, opts.num_training_episodes, opts.iterate_br, result_saver, seed, opts.compute_nash_conv, dispatcher, opts.eval_every, opts.eval_every_early, opts.eval_exactly, opts.eval_zero, opts.report_freq, opts.dispatch_br, agent_selector, opts.random_ic)
+        run_nfsp(env_and_model, opts.num_training_episodes, opts.iterate_br, opts.require_br, result_saver, seed, opts.compute_nash_conv, dispatcher, opts.eval_every, opts.eval_every_early, opts.eval_exactly, opts.eval_zero, opts.report_freq, opts.dispatch_br, agent_selector, opts.random_ic)
