@@ -472,7 +472,7 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
 
   int activity_budget = activity_[player];
 
-  auto& price = posted_price_.back();
+  auto& price = clock_price_.back();
   auto& bidder = bidder_[player];
   double budget = bidder->GetBudget();
 
@@ -483,7 +483,7 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
   for (int b = 0; b < all_bids_.size(); b++) {
     auto& bid = all_bids_[b];
 
-    /* Note we a) use posted prices and b) assume all drops go through. A more sophisticated bidder might think differently (e.g., try to fulfill budget in expectation)
+    /* Note we assume all drops go through. A more sophisticated bidder might think differently (e.g., try to fulfill budget in expectation)
      * Consider e.g. if you drop a product you might get stuck! So you can wind up over your budget if your drop fails
      * Also consider that if you drop a product and get stuck, you only pay SoR on that product
      */
@@ -996,6 +996,29 @@ AuctionGame::AuctionGame(const GameParameters& params) :
     SpielFatalError("Unrecognized information policy rule!");  
   }
 
+  std::vector<std::vector<int>> sequences(num_products_, std::vector<int>());
+  for (int j = 0; j < num_products_; j++) {
+    for (int k = 0; k <= num_licenses_[j]; k++) {
+      sequences[j].push_back(k);
+    }
+  }
+  product(sequences, [&vec = all_bids_](const auto &i) {
+      std::vector<int> tmp;
+      for (auto j : i) {
+        tmp.push_back(j);
+      }
+      vec.push_back(tmp);
+  });
+
+  for (auto& bid: all_bids_) {
+    for (int j = 0; j < num_products_; j++) {
+      SPIEL_CHECK_GE(bid[j], 0);
+      SPIEL_CHECK_LE(bid[j], num_licenses_[j]);
+    }
+    all_bids_activity_.push_back(DotProduct(bid, product_activity_));
+  }
+
+
   // Loop over players, parsing values and budgets
   std::vector<double> max_value_ = std::vector<double>(num_products_, 0.); // TODO: Fix if using
   max_budget_ = 0.;
@@ -1073,29 +1096,6 @@ AuctionGame::AuctionGame(const GameParameters& params) :
   
 
   std::cerr << "Done config parsing" << std::endl;
-
-  std::vector<std::vector<int>> sequences(num_products_, std::vector<int>());
-  for (int j = 0; j < num_products_; j++) {
-    for (int k = 0; k <= num_licenses_[j]; k++) {
-      sequences[j].push_back(k);
-    }
-  }
-  product(sequences, [&vec = all_bids_](const auto &i) {
-      std::vector<int> tmp;
-      for (auto j : i) {
-        tmp.push_back(j);
-      }
-      vec.push_back(tmp);
-  });
-
-  for (auto& bid: all_bids_) {
-    for (int j = 0; j < num_products_; j++) {
-      SPIEL_CHECK_GE(bid[j], 0);
-      SPIEL_CHECK_LE(bid[j], num_licenses_[j]);
-    }
-    all_bids_activity_.push_back(DotProduct(bid, product_activity_));
-  }
-
 
 }
 

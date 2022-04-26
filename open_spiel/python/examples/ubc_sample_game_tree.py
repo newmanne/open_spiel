@@ -15,6 +15,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from xml.etree.ElementInclude import include
 
 from open_spiel.python.examples.ubc_utils import *
 from open_spiel.python.examples.ubc_decorators import CachingAgentDecorator
@@ -85,7 +86,7 @@ def get_input(name, data):
         data[name] = input[0].detach().cpu()
     return hook
 
-def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_model=None, time_step=None, agent_to_dqn_embedding=None, parent=None, clusterer=None):
+def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_model=None, time_step=None, agent_to_dqn_embedding=None, parent=None, clusterer=None, include_embeddings=False):
     node = {'sample_outcomes': defaultdict(list), 'children': {}, 'type': node_type, 'depth': depth} # 'pretty_name': pretty_str}
     pretty_str = str_desc
 
@@ -156,9 +157,9 @@ def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_model=N
                 # TODO: Calling this for each action and not storing the results on the infostate level may lead to excessive calls
                 q_values = check_on_q_values(rl_agent, game, time_step=time_step, return_raw_q_values=True)
                 node['q_value'] = q_values[action_id]
-                # TODO: I want this on the parent...
-                parent['dqn_embedding'] = agent_to_dqn_embedding[player_id].numpy()
-                del agent_to_dqn_embedding[player_id] # Clear embedding for safety to make sure we aren't reusing these values and prevent bugs
+                if include_embeddings:
+                    parent['dqn_embedding'] = agent_to_dqn_embedding[player_id].numpy()
+                    del agent_to_dqn_embedding[player_id] # Clear embedding for safety to make sure we aren't reusing these values and prevent bugs
 
             bundles = action_to_bundles(env_and_model.game_config['licenses'])
 
@@ -226,16 +227,18 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
         torch_hook_handles = []
         agent_to_embedding = {}
         for player, agent in enumerate(agents):
-            handle = agent._avg_network.get_last_layer().register_forward_hook(get_input(player, agent_to_embedding))
-            dqn_handle = agent._rl_agent._q_network.get_last_layer().register_forward_hook(get_input(player, agent_to_dqn_embedding))
-            torch_hook_handles.append(handle)
-            torch_hook_handles.append(dqn_handle)
+            if hasattr(agent, '_avg_network'):
+                handle = agent._avg_network.get_last_layer().register_forward_hook(get_input(player, agent_to_embedding))
+                torch_hook_handles.append(handle)
+            if hasattr(agent, '_rl_agent'):
+                dqn_handle = agent._rl_agent._q_network.get_last_layer().register_forward_hook(get_input(player, agent_to_dqn_embedding))
+                torch_hook_handles.append(dqn_handle)
 
     # EVALUATION PHASE
     logging.info(f"Evaluation phase: {num_samples} episodes")
     alg_start_time = time.time()
 
-    roots = [new_tree_node(NodeType.ROOT, '(root)', 0, clusterer=clusterer) for player in range(num_players)]
+    roots = [new_tree_node(NodeType.ROOT, '(root)', 0, clusterer=clusterer, include_embeddings=include_embeddings) for player in range(num_players)]
 
     for sample_index in tqdm(range(num_samples)):
         if sample_index % report_freq == 0 and sample_index > 0:
@@ -263,7 +266,7 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
             infostate_string = env._state.information_state_string()
             new_infostate = infostate_string not in current_nodes[player_id]['children']
             if new_infostate:
-                current_nodes[player_id]['children'][infostate_string] = new_tree_node(node_type=NodeType.INFORMATION_STATE, str_desc=infostate_string, depth=current_nodes[player_id]['depth'] + 1, env_and_model=env_and_model, time_step=time_step, agent_to_dqn_embedding=agent_to_dqn_embedding, parent=current_nodes[player_id], clusterer=clusterer)
+                current_nodes[player_id]['children'][infostate_string] = new_tree_node(node_type=NodeType.INFORMATION_STATE, str_desc=infostate_string, depth=current_nodes[player_id]['depth'] + 1, env_and_model=env_and_model, time_step=time_step, agent_to_dqn_embedding=agent_to_dqn_embedding, parent=current_nodes[player_id], clusterer=clusterer, include_embeddings=include_embeddings)
             current_nodes[player_id] = current_nodes[player_id]['children'][infostate_string]
             child_list[player_id].append(infostate_string)
             legal_actions = time_step.observations["legal_actions"][player_id]
@@ -282,7 +285,7 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
             # Note that we took this action
             action_string = env._state.action_to_string(agent_output.action)
             if action_string not in current_nodes[player_id]['children']:
-                current_nodes[player_id]['children'][action_string] = new_tree_node(node_type=NodeType.ACTION, str_desc=action_string, depth=current_nodes[player_id]['depth'] + 1, agent_output=agent_output, env_and_model=env_and_model, time_step=time_step, agent_to_dqn_embedding=agent_to_dqn_embedding, parent=current_nodes[player_id], clusterer=clusterer)
+                current_nodes[player_id]['children'][action_string] = new_tree_node(node_type=NodeType.ACTION, str_desc=action_string, depth=current_nodes[player_id]['depth'] + 1, agent_output=agent_output, env_and_model=env_and_model, time_step=time_step, agent_to_dqn_embedding=agent_to_dqn_embedding, parent=current_nodes[player_id], clusterer=clusterer, include_embeddings=include_embeddings)
             current_nodes[player_id] = current_nodes[player_id]['children'][action_string]
             child_list[player_id].append(action_string)
 
@@ -298,7 +301,7 @@ def sample_game_tree(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ
             # Get some representation of the final bids
             final_string = str(env._state).split('\n')[-1]
             if final_string not in current_nodes[i]['children']:
-                current_nodes[i]['children'][final_string] = new_tree_node(node_type=NodeType.FINAL_STATE, str_desc=final_string, depth=current_nodes[i]['depth'] + 1, env_and_model=env_and_model, time_step=time_step, agent_to_dqn_embedding=agent_to_dqn_embedding, parent=current_nodes[i], clusterer=clusterer)
+                current_nodes[i]['children'][final_string] = new_tree_node(node_type=NodeType.FINAL_STATE, str_desc=final_string, depth=current_nodes[i]['depth'] + 1, env_and_model=env_and_model, time_step=time_step, agent_to_dqn_embedding=agent_to_dqn_embedding, parent=current_nodes[i], clusterer=clusterer, include_embeddings=include_embeddings)
             current_nodes[i] = current_nodes[i]['children'][final_string]
             child_list[i].append(final_string)
 

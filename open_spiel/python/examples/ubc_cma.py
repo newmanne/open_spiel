@@ -3,6 +3,7 @@ import pandas as pd
 from collections import Counter
 from open_spiel.python.examples.ubc_utils import *
 from pulp import LpProblem, LpMinimize, LpVariable, LpStatus, LpBinary, lpSum, lpDot, LpMaximize, LpInteger, value
+from tqdm import tqdm
 
 def analyze_checkpoint(checkpoint):
     record = dict()
@@ -76,9 +77,9 @@ def efficient_allocation(game, game_config):
         player_types = list(range(len(game_config['players'][player]['type'])))
         combos.append(player_types)
         
-    type_combos = itertools.product(*combos)
+    type_combos = list(itertools.product(*combos))
     records = []
-    for combo in type_combos:
+    for combo in tqdm(type_combos):
         type_prob = 1.
         for player in range(num_players):
             type_prob *= game_config['players'][player]['type'][combo[player]]['prob']
@@ -127,7 +128,7 @@ def efficient_allocation_from_types(game, game_config, types):
 
     allocation = []
     try: 
-        problem.writeLP(f'efficient_allocation.lp')
+        problem.writeLP(f'efficient_allocation_{random_string(10)}.lp')
         obj = pulp_solve(problem, save_if_failed=True)
         for var_id in range(n_vars):
             # print(var_id, bundle_variables[var_id], value(bundle_variables[var_id]), var_id_to_player_bundle[var_id])

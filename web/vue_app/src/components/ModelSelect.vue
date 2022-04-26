@@ -106,6 +106,7 @@ export default defineComponent({
     },
     getCheckpoints: function () {
       if (this.depth === "run") {
+        this.commitSelection();
         return;
       }
       this.GET_RUN_CHECKPOINTS({

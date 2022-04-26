@@ -120,6 +120,7 @@ def parse_run(run, max_t=None, expected_additional_br=1):
 
     ev_df['num_players'] = run.game.num_players
     ev_df['model'] = run.name
+    ev_df['game'] = run.game.name
 
     return ev_df.sort_values('t')
 
@@ -151,7 +152,8 @@ def plot_all_models(ev_df, notebook=True, output_name='plots.html', output_str=F
 
     # One final plot of just the NashConvs
     if final_compare:
-        plots.append(nash_conv_plots(ev_df))
+        for game_name, grp in ev_df.groupby('game'):
+            plots.append(nash_conv_plots(grp))
 
     for model, sub_df in ev_df.groupby('model'):
         plot = plot_from_df(sub_df)
@@ -264,7 +266,8 @@ def plot_from_df(ev_df):
     return plot
 
 def nash_conv_plots(ev_df_ungrouped):
-    title = f"Approximate Nash Conv"
+    game_name = ev_df_ungrouped['game'].iloc[0]
+    title = f"Approximate Nash Conv {game_name}"
     colors = itertools.cycle(Category20_20) 
     plot = figure(width=900, height=400, title=title)
     for grp, ev_df in ev_df_ungrouped.groupby('model'):

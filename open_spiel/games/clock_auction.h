@@ -50,7 +50,7 @@ int Factorial(int x) {
 // See https://www.geeksforgeeks.org/how-to-find-index-of-a-given-element-in-a-vector-in-cpp/
 template <typename T>
 int FindIndex(std::vector<T> v, T K) {
-    auto it = find(v.begin(), v.end(), K);
+    auto it = std::find(v.begin(), v.end(), K);
  
     // If element was found
     if (it != v.end()) {
@@ -58,9 +58,7 @@ int FindIndex(std::vector<T> v, T K) {
         int index = it - v.begin();
         return index;
     }
-    else {
-      return -1;
-    }
+    SpielFatalError("Could not find bid?");
 }
 
 
