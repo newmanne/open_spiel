@@ -90,6 +90,7 @@ def main(_):
           random.choice(state.legal_actions(pid))
           for pid in range(game.num_players())
       ]
+
       print("Chosen actions: ", [
           state.action_to_string(pid, action)
           for pid, action in enumerate(chosen_actions)

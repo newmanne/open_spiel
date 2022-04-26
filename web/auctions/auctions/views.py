@@ -64,7 +64,7 @@ class EquilibriumSolverRunViewSet(viewsets.ReadOnlyModelViewSet):
             nash_conv_by_t, best_checkpoint, approx_nash_conv = find_best_checkpoint(run)
             for d in data:
                 d['best'] = d['pk'] == best_checkpoint.pk
-                d['ApproxNashConv'] = nash_conv_by_t[d['t']]
+                d['ApproxNashConv'] = nash_conv_by_t.get(d['t'], -9999)
             
             data = sorted(data, key=lambda d: (d['best'], d['t']), reverse=True)
         return Response(data)
@@ -190,7 +190,8 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         seed = int(request.query_params.get('seed', 1234))
 
         # Sample
-        trees = sample_game_tree(env_and_model, num_samples, seed=seed, include_embeddings=True)
+        # TODO: Fix this later
+        trees = sample_game_tree(env_and_model, num_samples, seed=seed, include_embeddings=False)
         data['trees'] = trees
 
         data['clusters_bokeh'] = dict()
