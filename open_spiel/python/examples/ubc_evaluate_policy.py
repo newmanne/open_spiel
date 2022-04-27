@@ -31,16 +31,18 @@ from dataclasses import dataclass
 DEFAULT_NUM_SAMPLES = 100_000
 DEFAULT_REPORT_FREQ = 5000
 DEFAULT_SEED = 1234
+DEFAULT_COMPUTE_EFFICIENCY = False
 
-def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=DEFAULT_SEED):
+def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=DEFAULT_SEED, compute_efficiency=DEFAULT_COMPUTE_EFFICIENCY):
     fix_seeds(seed)
     game, policy, env, agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
     num_players, num_actions, num_products = game_spec(game, game_config)
     max_types = max_num_types(game_config)
 
-    efficiency_df, combo_to_score, efficiency_scorer = efficient_allocation(game, game_config)
-    type_combo_to_prob = efficiency_df.set_index('combo')['prob'].to_dict()
-    type_combo_to_efficiency = defaultdict(list) # Maps from (type_1, type_2, .. type_n) as integers one for each player into efficiency
+    if compute_efficiency:
+      efficiency_df, combo_to_score, efficiency_scorer = efficient_allocation(game, game_config)
+      type_combo_to_prob = efficiency_df.set_index('combo')['prob'].to_dict()
+      type_combo_to_efficiency = defaultdict(list) # Maps from (type_1, type_2, .. type_n) as integers one for each player into efficiency
 
     # Apply cache
     agents = [CachingAgentDecorator(agent) for agent in agents] 
@@ -107,9 +109,10 @@ def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=D
         allocations[i].append(allocation)
 
       episode_lengths.append(episode_length)
-      normalized_efficiency = efficiency_scorer(episode_alloc, episode_types)[1]
-      efficiencies.append(normalized_efficiency)
-      type_combo_to_efficiency[episode_types].append(normalized_efficiency)
+      if compute_efficiency:
+        normalized_efficiency = efficiency_scorer(episode_alloc, episode_types)[1]
+        efficiencies.append(normalized_efficiency)
+        type_combo_to_efficiency[episode_types].append(normalized_efficiency)
       prices.append(final_posted_prices)
     
     for player in range(num_players):
@@ -117,12 +120,13 @@ def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=D
       logging.info(pd.Series(rewards[player]).describe())
       logging.info(f"-------------------")
 
-    overall_efficiency = 0
-    type_combo_to_aggregated_efficiency = dict()
-    for k, v in type_combo_to_efficiency.items():
-      mean_eff = np.mean(v)
-      type_combo_to_aggregated_efficiency[k] = mean_eff
-      overall_efficiency += mean_eff * type_combo_to_prob[k]
+    if compute_efficiency:
+      overall_efficiency = 0
+      type_combo_to_aggregated_efficiency = dict()
+      for k, v in type_combo_to_efficiency.items():
+        mean_eff = np.mean(v)
+        type_combo_to_aggregated_efficiency[k] = mean_eff
+        overall_efficiency += mean_eff * type_combo_to_prob[k]
 
     eval_time = time.time() - alg_start_time
     logging.info(f'Walltime: {pretty_time(eval_time)}')
@@ -135,9 +139,12 @@ def run_eval(env_and_model, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=D
       'allocations': allocations,
       'payments': payments,
       'auction_lengths': list((pd.Series(episode_lengths) / num_players)),
-      'efficiencies': efficiencies,
-      'efficiency_by_type': {','.join(map(str,k)): v for k,v in type_combo_to_aggregated_efficiency.items()}, # JSON cant have tuples as keys
-      'efficiency': overall_efficiency,
       'prices': prices,
     }
+
+    if compute_efficiency:
+      checkpoint['efficiencies'] = efficiencies
+      checkpoint['efficiency_by_type'] = {','.join(map(str,k)): v for k,v in type_combo_to_aggregated_efficiency.items()} # JSON cant have tuples as keys
+      checkpoint['efficiency'] = overall_efficiency
+
     return checkpoint

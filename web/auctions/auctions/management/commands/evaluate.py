@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from open_spiel.python.examples.ubc_evaluate_policy import DEFAULT_NUM_SAMPLES, run_eval, DEFAULT_REPORT_FREQ, DEFAULT_SEED
+from open_spiel.python.examples.ubc_evaluate_policy import DEFAULT_COMPUTE_EFFICIENCY, DEFAULT_NUM_SAMPLES, run_eval, DEFAULT_REPORT_FREQ, DEFAULT_SEED
 from open_spiel.python.examples.ubc_utils import series_to_quantiles, fix_seeds
 import logging
 from auctions.models import *
@@ -10,7 +10,7 @@ from distutils import util
 
 logger = logging.getLogger(__name__)
 
-def eval_command(t, experiment_name, run_name, br_name, br_player, dry_run, seed, report_freq, num_samples):
+def eval_command(t, experiment_name, run_name, br_name, br_player, dry_run, seed, report_freq, num_samples, compute_efficiency):
     fix_seeds(seed)
 
     # Find the equilibrium_solver_run_checkpoint 
@@ -49,7 +49,7 @@ def eval_command(t, experiment_name, run_name, br_name, br_player, dry_run, seed
         env_and_model.agents[br_player] = br_agent 
 
     # RUN EVAL
-    eval_output = run_eval(env_and_model, num_samples, report_freq, seed)
+    eval_output = run_eval(env_and_model, num_samples, report_freq, seed, compute_efficiency=compute_efficiency)
 
     # SAVE EVAL
     if not dry_run:
@@ -86,6 +86,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--eval_num_samples', type=int, default=DEFAULT_NUM_SAMPLES)
         parser.add_argument('--eval_report_freq', type=int, default=DEFAULT_REPORT_FREQ)
+        parser.add_argument('--compute_efficiency', type=util.strtobool, default=0)
         parser.add_argument('--seed', type=int, default=DEFAULT_SEED)
         parser.add_argument('--br_name', type=str, default=None)
 
@@ -102,4 +103,4 @@ class Command(BaseCommand):
         setup_logging()
         opts = AttrDict(options)
 
-        eval_command(opts.t, opts.experiment_name, opts.run_name, opts.br_name, opts.br_player, opts.dry_run, opts.seed, opts.eval_report_freq, opts.eval_num_samples)
+        eval_command(opts.t, opts.experiment_name, opts.run_name, opts.br_name, opts.br_player, opts.dry_run, opts.seed, opts.eval_report_freq, opts.eval_num_samples, opts.compute_efficiency)
