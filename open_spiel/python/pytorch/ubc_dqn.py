@@ -242,6 +242,7 @@ class DQN(rl_agent.AbstractAgent):
                game_config=None,
                double_dqn=True,
                device='cpu',
+               cache_size=50_000,
                ):
     """Initialize the DQN agent."""
 
@@ -288,7 +289,10 @@ class DQN(rl_agent.AbstractAgent):
     self._step_counter = 0
     self._iteration = 0
     self._global_iteration = 0
-    self._cache = LRUCache(maxsize=5000)
+    if cache_size is not None:
+      self._cache = LRUCache(maxsize=cache_size)
+    else:
+      self._cache = None
 
     # Keep track of the last training loss achieved in an update step.
     self._last_loss_value = torch.tensor([0])
@@ -441,18 +445,20 @@ class DQN(rl_agent.AbstractAgent):
       self._prev_action_greedy = False
     else:
       self._prev_action_greedy = True
-      key = hashkey(tuple(info_state_flat))
-      val = self._cache.get(key)
-      if val is not None:
-        return val
-      else:
-        info_state = self._q_network.reshape_infostate(info_state_flat)
-        info_state = self._q_network.prep_batch([info_state]).to(self._device)
-        with torch.no_grad():
-          q_values = self._q_network(info_state).cpu().detach()[0]
-        legal_q_values = q_values[legal_actions]
-        action = legal_actions[torch.argmax(legal_q_values)]
-        probs[action] = 1.0
+      if self._cache is not None:
+        key = hashkey(tuple(info_state_flat))
+        val = self._cache.get(key)
+        if val is not None:
+          return val
+
+      info_state = self._q_network.reshape_infostate(info_state_flat)
+      info_state = self._q_network.prep_batch([info_state]).to(self._device)
+      with torch.no_grad():
+        q_values = self._q_network(info_state).cpu().detach()[0]
+      legal_q_values = q_values[legal_actions]
+      action = legal_actions[torch.argmax(legal_q_values)]
+      probs[action] = 1.0
+      if self._cache is not None:
         self._cache[key] = (action, probs)
     return action, probs
 
@@ -541,7 +547,8 @@ class DQN(rl_agent.AbstractAgent):
     return loss_value
 
   def _clear_cache(self):
-    self._cache.clear()
+    if self._cache is not None:
+      self._cache.clear()
 
   @property
   def q_values(self):

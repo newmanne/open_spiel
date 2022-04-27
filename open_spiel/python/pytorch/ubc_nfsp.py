@@ -93,6 +93,7 @@ class NFSP(rl_agent.AbstractAgent):
                optimizer_str="sgd",
                add_explore_transitions=True, # Should I add transitions to the resevoir buffer if they are caused due to exploration?
                device='cpu',
+               cache_size=50_000,
                **kwargs):
     """Initialize the `NFSP` agent."""
     self.player_id = player_id
@@ -112,7 +113,10 @@ class NFSP(rl_agent.AbstractAgent):
     self._iteration = 0
     self._global_iteration = 0
     self._last_learn_iteration = -1
-    self._cache = LRUCache(maxsize=5000)
+    if cache_size is None:
+      self._cache = None
+    else:
+      self._cache = LRUCache(maxsize=cache_size)
 
     self._device = device
     logging.info(f"Creating NFSP using device: {device} for player {player_id}")
@@ -125,6 +129,7 @@ class NFSP(rl_agent.AbstractAgent):
         "min_buffer_size_to_learn": min_buffer_size_to_learn,
         "optimizer_str": optimizer_str,
         "device": device,
+        "cache_size": cache_size,
     })
     self._rl_agent = ubc_dqn.DQN(
       player_id,
@@ -180,11 +185,15 @@ class NFSP(rl_agent.AbstractAgent):
     if len(legal_actions) == 1: # Let's not run the NN if you are faced with a single action (imagine a case where one player drops out and remaining players duel onwards)
       return single_action_result(legal_actions, self._num_actions)
     else:
-      key = hashkey(tuple(info_state))
-      val = self._cache.get(key)
-      if val is not None:
-        probs = np.array(val)
-      else:
+      val = None
+      if self._cache is not None:
+        key = hashkey(tuple(info_state))
+        val = self._cache.get(key)
+        if val is not None:
+          probs = np.array(val)
+      
+      if val is None:
+        # Miss or no cache
         probs = np.zeros(self._num_actions)
         info_state_reshaped = self._avg_network.reshape_infostate(info_state)
         info_state_batch = self._avg_network.prep_batch([info_state_reshaped]).to(self._device)
@@ -194,7 +203,8 @@ class NFSP(rl_agent.AbstractAgent):
         legal_values = action_values[0][legal_actions]
         probs[legal_actions] = F.softmax(legal_values, dim=0).detach().numpy()
         probs /= sum(probs)
-        self._cache[key] = probs
+        if self._cache is not None:
+          self._cache[key] = probs
       action = fast_choice(range(len(probs)), probs)
     return action, probs
 
@@ -318,7 +328,8 @@ class NFSP(rl_agent.AbstractAgent):
     return loss_value
 
   def _clear_cache(self):
-    self._cache.clear()
+    if self._cache is not None:
+      self._cache.clear()
 
   def _full_checkpoint_name(self, checkpoint_dir, name):
     checkpoint_filename = "_".join([name, "pid" + str(self.player_id)])
