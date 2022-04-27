@@ -489,7 +489,7 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
      */
 
     double bid_price = DotProduct(bid, price); 
-    double profit = bidder->ValuationForPackage(bid) - bid_price;
+    double profit = bidder->ValuationForPackage(bid, b) - bid_price;
     // TODO: Here is another place where linear valuations creep in, might be better to abstract into a class
     bool non_negative_profit = profit >= 0;
     bool positive_profit = profit > 0;
@@ -644,7 +644,7 @@ std::vector<double> AuctionState::Returns() const {
     for (auto p = Player{0}; p < num_players_; p++) {
       auto& final_bid = processed_demand_[p].back();
       auto& bidder = bidder_[p];
-      returns[p] = bidder->ValuationForPackage(final_bid);
+      returns[p] = bidder->ValuationForPackage(final_bid, -1);
       for (int j = 0; j < num_products_; j++) {
         SPIEL_CHECK_GE(final_bid[j], 0);
         double payment = final_price[j] * final_bid[j];
@@ -746,7 +746,7 @@ void AuctionState::InformationStateTensor(Player player, absl::Span<float> value
   // Havne't profiled, but I bet this is a source of slowdown
   for (int b = 0; b < all_bids_.size(); b++) {
     auto& bid = all_bids_[b];
-    double bundle_value = bidder->ValuationForPackage(bid);
+    double bundle_value = bidder->ValuationForPackage(bid, b);
     double sor_bundle_price = DotProduct(bid, sor_price); 
     double clock_bundle_price = DotProduct(bid, clock_price); 
     double sor_profit = bundle_value - sor_bundle_price;

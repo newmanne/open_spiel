@@ -64,7 +64,7 @@ int FindIndex(std::vector<T> v, T K) {
 
 class Bidder {
   public:
-    virtual const double ValuationForPackage(std::vector<int> const &package) const = 0;
+    virtual const double ValuationForPackage(std::vector<int> const &package, int package_index) const = 0;
     virtual const double GetBudget() const = 0;
     virtual const double GetPricingBonus() const = 0;
     virtual operator std::string() const = 0;
@@ -76,7 +76,7 @@ class LinearBidder : public Bidder {
     explicit LinearBidder(std::vector<double> values, double budget, double pricing_bonus) : values_(values), budget_(budget), pricing_bonus_(pricing_bonus) {
     }
 
-    const double ValuationForPackage(std::vector<int> const &package) const override {
+    const double ValuationForPackage(std::vector<int> const &package, int package_index) const override {
       return DotProduct(package, values_);
     }
 
@@ -108,7 +108,7 @@ class MarginalBidder : public Bidder {
     explicit MarginalBidder(std::vector<std::vector<double>> values, double budget, double pricing_bonus) : values_(values), budget_(budget), pricing_bonus_(pricing_bonus) {
     }
 
-    const double ValuationForPackage(std::vector<int> const &package) const override {
+    const double ValuationForPackage(std::vector<int> const &package, int package_index) const override {
       double value = 0.;
       for (int i = 0; i < package.size(); i++) {
         int quantity = package[i];
@@ -151,9 +151,11 @@ class EnumeratedValueBidder : public Bidder {
     explicit EnumeratedValueBidder(std::vector<double> values, double budget, double pricing_bonus, std::vector<std::vector<int>> all_bids) : values_(values), budget_(budget), pricing_bonus_(pricing_bonus), all_bids_(all_bids) {
     }
 
-    const double ValuationForPackage(std::vector<int> const &package) const override {
-      int index = FindIndex(all_bids_, package);
-      return values_[index];
+    const double ValuationForPackage(std::vector<int> const &package, int package_index) const override {
+      if (package_index == -1) {
+        package_index = FindIndex(all_bids_, package);
+      }
+      return values_[package_index];
     }
 
     const double GetBudget() const override {
