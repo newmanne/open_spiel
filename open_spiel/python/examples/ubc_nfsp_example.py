@@ -88,6 +88,7 @@ def setup(game, game_config, config):
             add_explore_transitions=config['add_explore_transitions'],
             device=config['device'],
             sl_loss_str=config['sl_loss_str'],
+            cache_size=config['cache_size'],
             **dqn_kwargs
         )
         agents.append(agent)

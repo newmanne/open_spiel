@@ -141,6 +141,7 @@ def make_dqn_kwargs_from_config(config, game_config=None, player_id=None, includ
       "min_buffer_size_to_learn": config['min_buffer_size_to_learn'],
       "optimizer_str": config['optimizer_str'],
       "device": config['device'],
+      "cache_size": config['cache_size'],
     }
     if not include_nfsp:
         del dqn_kwargs['batch_size']
@@ -148,6 +149,7 @@ def make_dqn_kwargs_from_config(config, game_config=None, player_id=None, includ
         del dqn_kwargs['learn_every']
         del dqn_kwargs['optimizer_str']
         del dqn_kwargs['device']
+        del dqn_kwargs['cache_size']
 
     if game_config is not None and player_id is not None:
         dqn_kwargs['lower_bound_utility'], dqn_kwargs['upper_bound_utility'] = clock_auction_bounds(game_config, player_id)
@@ -325,16 +327,12 @@ def pulp_solve(problem, solve_function=solve, save_if_failed=True):
     return objective_from_lp(problem)
 
 
-# See https://stackoverflow.com/a/58101985. Much faster than np.random.choice, at least for our current version of numpy and our distribution over the arguments
+# Much faster than np.random.choice, at least for our current version of numpy and our distribution over the arguments
 def fast_choice(options, probs):
-    x = np.random.rand()
-    cum = 0
-    for i,p in enumerate(probs):
-        cum += p
-        if x < cum:
-            break
+    cdf = np.cumsum(probs)
+    x = np.random.rand() * cdf[-1] # normalize to avoid rounding issues in cumsum
+    i = np.searchsorted(cdf, x)
     return options[i]
-
 
 def pretty_time(seconds):
     delta = dt.timedelta(seconds=seconds)
@@ -425,6 +423,7 @@ def read_config(config_name):
     config['learn_every'] = config.get('learn_every', 64)
     config['optimizer_str'] = config.get('optimizer_str', 'sgd')
     config['add_explore_transitions'] = config.get('add_explore_transitions', False)
+    config['cache_size'] = config.get('cache_size', 50_000)
 
     return config
 

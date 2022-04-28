@@ -44,7 +44,7 @@ class CachingAgentDecorator(AgentDecorator):
 
     def __init__(self, agent):
         super().__init__(agent)
-        self.cache = LRUCache(maxsize=5000)
+        self.cache = LRUCache(maxsize=50_000)
 
     def step(self, time_step, is_evaluation=False):
         key = hashkey(tuple(time_step.observations["info_state"][self.player_id]))
