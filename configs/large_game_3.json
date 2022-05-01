@@ -1,0 +1,90 @@
+{
+    "activity": [
+        75,
+        50,
+        25
+    ],
+    "increment": 0.1,
+    "max_rounds": 75,
+    "information_policy": "show_demand",
+    "licenses": [
+        3,
+        3,
+        3
+    ],
+    "opening_price": [
+        75,
+        50,
+        25
+    ],
+    "undersell_rule": "undersell",
+    "players": [
+        {
+            "type": [
+                {
+                    "value": [
+                        120,
+                        80,
+                        30
+                    ],
+                    "budget": 500,
+                    "prob": 0.67
+                },
+                {
+                    "value": [
+                        100,
+                        70,
+                        50
+                    ],
+                    "budget": 500,
+                    "prob": 0.33
+                }
+            ]
+        },
+        {
+            "type": [
+                {
+                    "value": [
+                        150,
+                        80,
+                        30
+                    ],
+                    "budget": 500,
+                    "prob": 0.2
+                },
+                {
+                    "value": [
+                        100,
+                        80,
+                        60
+                    ],
+                    "budget": 500,
+                    "prob": 0.8
+                }
+            ]
+        },
+        {
+            "type": [
+                {
+                    "value": [
+                        0,
+                        80,
+                        60
+                    ],
+                    "budget": 250,
+                    "prob": 0.5
+                },
+                {
+                    "value": [
+                        0,
+                        60,
+                        80
+                    ],
+                    "budget": 250,
+                    "prob": 0.5
+                }
+            ]
+        }
+
+    ]
+}

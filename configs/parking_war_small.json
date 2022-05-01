@@ -1,0 +1,45 @@
+{
+    "activity": [
+        10,
+        10
+    ],
+    "increment": 0.1,
+    "information_policy": "hide_demand",
+    "licenses": [
+        2,
+        2
+    ],
+    "opening_price": [
+        15,
+        15
+    ],
+    "undersell_rule": "undersell_allowed",
+    "players": [
+        {
+            "type": [
+                {
+                    "value": [
+                        [21, 20],
+                        [9, 2.5]
+                    ],
+                    "budget": 100,
+                    "prob": 1,
+                    "pricing_bonus": 0.05
+                }
+            ]
+        },
+        {
+            "type": [
+                {
+                    "value": [
+                        [9, 2.5],
+                        [21, 20]
+                    ],
+                    "budget": 100,
+                    "prob": 1,
+                    "pricing_bonus": 0.05
+                }
+            ]
+        }
+    ]
+}

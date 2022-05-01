@@ -1,0 +1,154 @@
+{
+    "activity": [
+        5,
+        15,
+        8
+    ],
+    "increment": 0.1,
+    "information_policy": "show_demand",
+    "licenses": [
+        4,
+        4,
+        4
+    ],
+    "opening_price": [
+        50,
+        150,
+        80
+    ],
+    "undersell_rule": "undersell",
+    "players": [
+        {
+            "type": [
+                {
+                    "value": [
+                        100, 100, 100
+                    ],
+                    "budget": 2656,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        100, 100, 100
+                    ],
+                    "budget": 1962,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        100, 100, 100
+                    ],
+                    "budget": 2540,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        100, 100, 100
+                    ],
+                    "budget": 2572,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        100, 100, 100
+                    ],
+                    "budget": 2142,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                }
+            ]
+        },
+        {
+            "type": [
+                {
+                    "value": [
+                        100, 100, 100
+                    ],
+                    "budget": 2579,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        100, 100, 100
+                    ],
+                    "budget": 2537,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        100, 100, 100
+                    ],
+                    "budget": 2910,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        100, 100, 100
+                    ],
+                    "budget": 2560,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        100, 100, 100
+                    ],
+                    "budget": 3134,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                }
+            ]
+        },
+        {
+            "type": [
+                {
+                    "value": [
+                        100, 100, 100
+                    ],
+                    "budget": 9157,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        100, 100, 100
+                    ],
+                    "budget": 7733,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        100, 100, 100
+                    ],
+                    "budget": 8119,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        100, 100, 100
+                    ],
+                    "budget": 6085,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        100, 100, 100
+                    ],
+                    "budget": 6485,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                }
+            ]
+        }
+    ]
+}
