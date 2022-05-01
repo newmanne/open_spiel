@@ -18,84 +18,24 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from dataclasses import dataclass
-from open_spiel.python import rl_environment
+from open_spiel.python.examples.ubc_nfsp_example_worker import NFSPWorker
 from open_spiel.python.pytorch import ubc_nfsp
 from open_spiel.python.examples.ubc_utils import *
 from open_spiel.python.algorithms.exploitability import nash_conv
 from open_spiel.python.examples.ubc_model_args import lookup_model_and_args
-import pyspiel
-from open_spiel.python.examples.agent_policy import NFSPPolicies
 import numpy as np
 import pandas as pd
-from absl import logging
+import logging
 import torch
 import time
 import os
 import shutil
-from typing import List
-
-@dataclass
-class EnvAndModel:
-    env: rl_environment.Environment
-    nfsp_policies: NFSPPolicies
-    agents: List[ubc_nfsp.NFSP]
-    game: pyspiel.Game
-    game_config: dict
-
-def setup(game, game_config, config):
-    env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=True, terminal_rewards=True)
-    if not env.is_turn_based:
-      raise ValueError("Expected turn based env")
-    
-    state_size = env.observation_spec()["info_state"][0]
-    num_players, num_actions, num_products = game_spec(game, game_config)
-    logging.info(f"Game has a state size of {state_size}, {num_actions} distinct actions, and {num_players} players")
-    logging.info(f"Game has {num_products} products")
-
-    # Get models and default args
-    sl_model, sl_model_args = lookup_model_and_args(config['sl_model'], state_size, num_actions, num_players, max_num_types(game_config), num_products)
-    rl_model, rl_model_args = lookup_model_and_args(config['rl_model'], state_size, num_actions, num_players, max_num_types(game_config), num_products)
-
-    # Override with any user-supplied args
-    sl_model_args.update(config['sl_model_args'])
-    rl_model_args.update(config['rl_model_args'])
-
-    normalizer = make_normalizer_for_game(game, game_config)
-    sl_model_args.update({'normalizer': normalizer})
-    rl_model_args.update({'normalizer': normalizer})
-
-    agents = []
-    for player_id in range(num_players):
-        dqn_kwargs = make_dqn_kwargs_from_config(config, game_config=game_config, player_id=player_id, include_nfsp=False)
-
-        agent = ubc_nfsp.NFSP(
-            player_id,
-            num_actions=num_actions,
-            num_players=num_players,
-            sl_model=sl_model,
-            sl_model_args=sl_model_args,
-            rl_model=rl_model,
-            rl_model_args=rl_model_args,
-            reservoir_buffer_capacity=config['reservoir_buffer_capacity'],
-            anticipatory_param=config['anticipatory_param'],
-            sl_learning_rate=config['sl_learning_rate'],
-            rl_learning_rate=config['rl_learning_rate'],
-            batch_size=config['batch_size'],
-            min_buffer_size_to_learn=config['min_buffer_size_to_learn'],
-            learn_every=config['learn_every'],
-            optimizer_str=config['optimizer_str'],
-            add_explore_transitions=config['add_explore_transitions'],
-            device=config['device'],
-            sl_loss_str=config['sl_loss_str'],
-            cache_size=config['cache_size'],
-            **dqn_kwargs
-        )
-        agents.append(agent)
-
-    expl_policies_avg = NFSPPolicies(env, agents, False)
-    return EnvAndModel(env=env, nfsp_policies=expl_policies_avg, agents=agents, game=game, game_config=game_config)
-
+from absl import logging
+import torch.multiprocessing as mp
+from open_spiel.python.examples.neutral import EnvAndModel, NFSPArgs, setup
+from logging.handlers import QueueHandler, QueueListener
+import gc
+import copy
 
 def setup_directory_structure(output_dir, warn_on_overwrite, database=True):
     if not os.path.exists(output_dir):
@@ -144,80 +84,108 @@ def evaluate_nfsp(ep, compute_nash_conv, game, policy, alg_start_time, nash_conv
         }
     return checkpoint
 
-def run_nfsp(env_and_model, num_training_episodes, iterate_br, require_br, result_saver, seed, compute_nash_conv, dispatcher, eval_every, eval_every_early, eval_exactly, eval_zero, report_freq, dispatch_br, agent_selector, random_ic=False):
+
+
+def run_nfsp(env_and_model, num_training_episodes, iterate_br, require_br, result_saver, seed, compute_nash_conv, dispatcher, eval_every, eval_every_early, eval_exactly, eval_zero, report_freq, dispatch_br, agent_selector, random_ic=False, parallelism=1):
     # This may have already been done, but do it again. Required to do it outside to ensure that networks get initilized the same way, which usually happens elsewhere
     fix_seeds(seed)
     game, policy, env, agents, game_config = env_and_model.game, env_and_model.nfsp_policies, env_and_model.env, env_and_model.agents, env_and_model.game_config
     num_players, num_actions, num_products = game_spec(game, game_config)
+
+    nfsp_args = NFSPArgs(random_ic=random_ic, require_br=require_br, iterate_br=iterate_br)
 
     ### NFSP ALGORITHM
     nash_conv_history = []
     episode_lengths = []
 
     alg_start_time = time.time()
-    for ep in range(1, num_training_episodes + 1):
 
-        # Start of new episode bookkeeping
-        for agent in agents:
-            agent.set_global_iteration(ep)
-        if agent_selector is not None:
-            agent_selector.new_episode(ep) 
-        
-        # Resample best response modes if needed
-        if require_br:
-            while not any([agent._best_response_mode for agent in agents]):
-                for agent in agents:
-                    agent._sample_episode_policy()
+    N_PROCS = 1
+    EPOCH_LENGTH = agents[0]._learn_every
+    CHUNK_SIZE = 50 # THIS PROBABLY SHOULD BE A MUTLIPLE OF LEARN EVERY
 
-        if random_ic:
-            current_eps = env_and_model.agents[0]._rl_agent._get_epsilon(False) 
-            time_step = env.reset(current_eps)
-        else:
-            time_step = env.reset()
+    input_queue = mp.Queue()
+    output_queue = mp.Queue()
+    model_queue = mp.Queue()
 
-        episode_steps = 0 # TODO: Does this make any sense with random ICs?
-        while not time_step.last():
-            episode_steps += 1
-            player_id = time_step.observations["current_player"]
-            agent = agents[player_id]
-            if iterate_br: # Each player alternates between BR and Supervised network
-                if ep % num_players == player_id:
-                    with agent.temp_mode_as(True): # True=Best response mode
-                        agent_output = agent.step(time_step)
+    try:
+
+        for _ in range(N_PROCS):
+            NFSPWorker(input_queue, output_queue, model_queue, game.get_parameters()['game']['filename'], nfsp_args).start()
+
+        n_episodes = EPOCH_LENGTH // N_PROCS
+        logging.info(f'Epochs will be {EPOCH_LENGTH} episodes. There will be {N_PROCS} processes each running {n_episodes} episodes per epoch')
+
+        for epoch in range(1, (num_training_episodes // EPOCH_LENGTH) + 1):
+            logging.info(f'Epoch {epoch}')
+
+            for chunk_num in range(EPOCH_LENGTH // CHUNK_SIZE):
+                chunk = range(chunk_num * CHUNK_SIZE, (chunk_num + 1) * CHUNK_SIZE)
+                input_queue.put(chunk)
+            
+            # Put sentinels
+            for _ in range(N_PROCS):
+                input_queue.put(None)
+
+            logging.info(f"{input_queue.qsize()} {output_queue.qsize()} {model_queue.qsize()}")
+
+            # Retrieve data        
+            data = []
+            for _ in range(N_PROCS):
+                result = copy.deepcopy(output_queue.get()) # Deepcoyp because otherwise we get OS:Error too many files and have no idea why 
+                if isinstance(result, Exception):
+                    raise result
                 else:
-                    agent_output = agent.step(time_step, is_evaluation=True) # Use supervised network and learn nothing
-            else:
-                agent_output = agent.step(time_step)
-            action_list = [agent_output.action]
-            time_step = env.step(action_list)
+                    data.append(result)
 
-        episode_lengths.append(episode_steps)
+            # Add agent data
+            for d in data:
+                for pid in d:
+                    agent = env_and_model.agents[pid]
+                    for replay in d[pid]['replay']:
+                        agent._rl_agent._replay_buffer.add(replay)
+                    for resevoir in d[pid]['resevoir']:
+                        agent._reservoir_buffer.add(resevoir)
 
-        # Episode is over, step all agents with final info state.
-        if iterate_br:
-            for player_id, agent in enumerate(agents):
-                if ep % num_players == player_id:
-                    with agent.temp_mode_as(True): 
-                        agent.step(time_step)
-                else:
-                    agent.step(time_step, is_evaluation=True)
-        else:
+            logging.info("Got data")
+            model = dict()
             for agent in agents:
-                agent.step(time_step)
+                agent._learn()
+                agent._rl_agent.learn()
+                model[agent.player_id] = agent.save()
 
-        eval_step = eval_every
-        if eval_every_early is not None and ep < eval_every:
-            eval_step = eval_every_early
-        should_eval = ep % eval_step == 0 or ep == num_training_episodes or ep in eval_exactly or ep == 1 and eval_zero
-        should_report = should_eval or (ep % report_freq == 0 and ep > 1)
+            # epoch += 1
 
-        if should_report:
-            report_nfsp(ep, episode_lengths, num_players, agents, game, alg_start_time)
-        if should_eval:
-            checkpoint = evaluate_nfsp(ep, compute_nash_conv, game, policy, alg_start_time, nash_conv_history)
-            checkpoint_name = result_saver.save(checkpoint)
-            if dispatch_br:
-                dispatcher.dispatch(checkpoint_name)
+            # Send back model params
+            for _ in range(N_PROCS):
+                model_queue.put(model)
+
+            logging.info(f'EPOCH {epoch} complete')
+
+        # if self._iteration % self._update_target_network_every == 0 and self._last_network_copy < self._iteration:
+        #   # logging.info(f"Copying target Q network for player {self.player_id} after {self._iteration} iterations")
+        #   # state_dict method returns a dictionary containing a whole state of the module.
+        #   self._target_q_network.load_state_dict(self._q_network.state_dict())
+        #   self._last_network_copy = self._iteration
+
+            ep = epoch * EPOCH_LENGTH
+            eval_step = eval_every
+            if eval_every_early is not None and ep < eval_every:
+                eval_step = eval_every_early
+            should_eval = ep % eval_step == 0 or ep == num_training_episodes or ep in eval_exactly or ep == 1 and eval_zero
+            should_report = should_eval or (ep % report_freq == 0 and ep > 1)
+
+            if should_report:
+                report_nfsp(ep, episode_lengths, num_players, agents, game, alg_start_time)
+            if should_eval:
+                checkpoint = evaluate_nfsp(ep, compute_nash_conv, game, policy, alg_start_time, nash_conv_history)
+                checkpoint_name = result_saver.save(checkpoint)
+                if dispatch_br:
+                    dispatcher.dispatch(checkpoint_name)
+    finally:
+        for p in mp.active_children():
+            p.terminate()
+        
 
     logging.info(f"Walltime: {pretty_time(time.time() - alg_start_time)}")
     logging.info('All done. Goodbye!')

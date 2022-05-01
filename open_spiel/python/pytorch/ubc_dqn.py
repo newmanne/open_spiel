@@ -350,14 +350,14 @@ class DQN(rl_agent.AbstractAgent):
     if not is_evaluation:
       self._step_counter += 1
 
-      if self._iteration % self._learn_every == 0 and self._last_learn_iteration < self._iteration:
-        self._last_loss_value = self.learn()
+      # if self._iteration % self._learn_every == 0 and self._last_learn_iteration < self._iteration:
+      #   self._last_loss_value = self.learn()
 
-      if self._iteration % self._update_target_network_every == 0 and self._last_network_copy < self._iteration:
-        # logging.info(f"Copying target Q network for player {self.player_id} after {self._iteration} iterations")
-        # state_dict method returns a dictionary containing a whole state of the module.
-        self._target_q_network.load_state_dict(self._q_network.state_dict())
-        self._last_network_copy = self._iteration
+      # if self._iteration % self._update_target_network_every == 0 and self._last_network_copy < self._iteration:
+      #   # logging.info(f"Copying target Q network for player {self.player_id} after {self._iteration} iterations")
+      #   # state_dict method returns a dictionary containing a whole state of the module.
+      #   self._target_q_network.load_state_dict(self._q_network.state_dict())
+      #   self._last_network_copy = self._iteration
 
       if self._prev_timestep and add_transition_record:
         # We may omit record adding here if it's done elsewhere.

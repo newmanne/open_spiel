@@ -10,6 +10,8 @@ from auctions.webutils import *
 import json
 import open_spiel.python.examples.ubc_dispatch as dispatch
 from distutils import util
+import torch.multiprocessing as mp
+import torch
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +116,7 @@ class Command(BaseCommand):
         add_optional_overrides(parser)
 
     def handle(self, *args, **options):
+        mp.set_start_method('spawn')
         setup_logging()
 
         opts = AttrDict(options)

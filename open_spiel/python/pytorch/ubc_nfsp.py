@@ -248,11 +248,11 @@ class NFSP(rl_agent.AbstractAgent):
     if not is_evaluation:
       self._step_counter += 1
 
-      if self._iteration % self._learn_every == 0 and self._last_learn_iteration < self._iteration:
-        self._last_sl_loss_value = self._learn()
-        # If learn step not triggered by rl policy, learn.
-        if not self._best_response_mode:
-          self._rl_agent.learn()
+      # if self._iteration % self._learn_every == 0 and self._last_learn_iteration < self._iteration:
+      #   self._last_sl_loss_value = self._learn()
+      #   # If learn step not triggered by rl policy, learn.
+      #   if not self._best_response_mode:
+      #     self._rl_agent.learn()
 
       # Prepare for the next episode.
       if time_step.last():
