@@ -56,6 +56,7 @@ class Command(BaseCommand):
         parser.add_argument('--dispatch_rewards', type=util.strtobool, default=0)
         parser.add_argument('--eval_num_samples', type=int, default=DEFAULT_NUM_SAMPLES)
         parser.add_argument('--eval_report_freq', type=int, default=DEFAULT_REPORT_FREQ)
+        parser.add_argument('--eval_compute_efficiency', type=util.strtobool, default=0)
 
         parser.add_argument('--t', type=int)
         parser.add_argument('--experiment_name', type=str)
@@ -92,4 +93,4 @@ class Command(BaseCommand):
 
         # Evaluation
         if opts.dispatch_rewards:
-            eval_command(opts.t, opts.experiment_name, opts.run_name, config_name, opts.br_player, opts.dry_run, opts.seed, opts.eval_report_freq, opts.eval_num_samples)
+            eval_command(opts.t, opts.experiment_name, opts.run_name, config_name, opts.br_player, opts.dry_run, opts.seed, opts.eval_report_freq, opts.eval_num_samples, opts.eval_compute_efficiency)

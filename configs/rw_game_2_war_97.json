@@ -1,0 +1,39 @@
+{
+    "activity": [
+        10
+    ],
+    "max_rounds": 25,
+    "increment": 0.1,
+    "information_policy": "show_demand",
+    "licenses": [
+        2
+    ],
+    "opening_price": [
+        10
+    ],
+    "undersell_rule": "undersell",
+    "players": [
+        {
+            "type": [
+                {
+                    "value": [
+                        [101, 97]
+                    ],
+                    "budget": 200,
+                    "prob": 1
+                }
+            ]
+        },
+        {
+            "type": [
+                {
+                    "value": [
+                        [47, 10.5]
+                    ],
+                    "budget": 200,
+                    "prob": 1
+                }
+            ]
+        }
+    ]
+}
