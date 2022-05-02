@@ -19,5 +19,4 @@ sl_model: 'mlp'
 sl_model_args:
   hidden_sizes: [256, 256,]
 update_target_network_every: 1000
-device: cpu
 cache_size:
