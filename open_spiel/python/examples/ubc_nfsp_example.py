@@ -98,11 +98,9 @@ def run_nfsp(env_and_model, num_training_episodes, iterate_br, require_br, resul
     nash_conv_history = []
     episode_lengths = []
 
-    alg_start_time = time.time()
-
     N_PROCS = 1
     EPOCH_LENGTH = agents[0]._learn_every
-    CHUNK_SIZE = 50 # THIS PROBABLY SHOULD BE A MUTLIPLE OF LEARN EVERY
+    CHUNK_SIZE = 16 # THIS PROBABLY SHOULD BE A MUTLIPLE OF LEARN EVERY
 
     input_queue = mp.Queue()
     output_queue = mp.Queue()
@@ -116,18 +114,25 @@ def run_nfsp(env_and_model, num_training_episodes, iterate_br, require_br, resul
         n_episodes = EPOCH_LENGTH // N_PROCS
         logging.info(f'Epochs will be {EPOCH_LENGTH} episodes. There will be {N_PROCS} processes each running {n_episodes} episodes per epoch')
 
+        alg_start_time = time.time()
         for epoch in range(1, (num_training_episodes // EPOCH_LENGTH) + 1):
             logging.info(f'Epoch {epoch}')
+
+            if epoch == 200:
+                logging.info(f"Walltime: {pretty_time(time.time() - alg_start_time)}")
+                ep = epoch * EPOCH_LENGTH
+                report_nfsp(ep, episode_lengths, num_players, agents, game, alg_start_time)
+                raise
 
             for chunk_num in range(EPOCH_LENGTH // CHUNK_SIZE):
                 chunk = range(chunk_num * CHUNK_SIZE, (chunk_num + 1) * CHUNK_SIZE)
                 input_queue.put(chunk)
             
             # Put sentinels
-            for _ in range(N_PROCS):
-                input_queue.put(None)
+            # for _ in range(N_PROCS):
+            #     input_queue.put(None)
 
-            logging.info(f"{input_queue.qsize()} {output_queue.qsize()} {model_queue.qsize()}")
+            # logging.info(f"{input_queue.qsize()} {output_queue.qsize()} {model_queue.qsize()}")
 
             # Retrieve data        
             data = []
