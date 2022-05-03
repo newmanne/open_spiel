@@ -42,6 +42,12 @@ ILLEGAL_ACTION_LOGITS_PENALTY = -1e9
 MIN_MAPPED_UTILITY = -1
 MAX_MAPPED_UTILITY = 1
 
+def mapRange(value, inMin, inMax, outMin, outMax):
+  return outMin + ((outMax - outMin) / (inMax - inMin)) * (value - inMin)
+
+def unmapRange(y, inMin, inMax, outMin, outMax):
+  return ((y - outMin) / ((outMax - outMin) / (inMax - inMin))) + inMin
+
 class ReplayBuffer(object):
   """ReplayBuffer of fixed size with a FIFO replacement policy.
 
@@ -243,6 +249,7 @@ class DQN(rl_agent.AbstractAgent):
                double_dqn=True,
                device='cpu',
                cache_size=50_000,
+               map_rewards=True,
                ):
     """Initialize the DQN agent."""
 
@@ -252,6 +259,12 @@ class DQN(rl_agent.AbstractAgent):
 
     self.upper_bound_utility = upper_bound_utility
     self.lower_bound_utility = lower_bound_utility
+    if self.upper_bound_utility is not None and self.lower_bound_utility is not None and map_rewards:
+      self.utility_bound = max(abs(self.upper_bound_utility), abs(self.lower_bound_utility))
+      logging.info(f"Utility bounded for player {player_id} between {self.lower_bound_utility} and {self.upper_bound_utility}. Overall mapping uses bound {-self.utility_bound} to {self.utility_bound}")
+    else:
+      self.utility_bound = None
+
     self._num_players = num_players
     self.game_config = game_config
     if self.game_config is None:
@@ -412,6 +425,9 @@ class DQN(rl_agent.AbstractAgent):
     next_info_state_flat = time_step.observations["info_state"][self.player_id][:]
     next_info_state = self._q_network.reshape_infostate(next_info_state_flat).to(self._device)
 
+    if self.utility_bound is not None:
+      reward = self.mapRange(reward)
+      max_profit_still_possible = self.mapRange(max_profit_still_possible)
 
     transition = Transition(
         info_state=info_state,
@@ -472,6 +488,12 @@ class DQN(rl_agent.AbstractAgent):
         (1 - decay_steps / self._epsilon_decay_duration)**power)
     return decayed_epsilon
 
+  def mapRange(self, value):
+    return mapRange(value, -self.utility_bound, self.utility_bound, MIN_MAPPED_UTILITY, MAX_MAPPED_UTILITY)
+
+  def unmapRange(self, value):
+    return unmapRange(value, -self.utility_bound, self.utility_bound, MIN_MAPPED_UTILITY, MAX_MAPPED_UTILITY)
+
   def learn(self):
     """Compute the loss on sampled transitions and perform a Q-network update.
 
@@ -512,7 +534,8 @@ class DQN(rl_agent.AbstractAgent):
 
     # Clamp targets - no point in learning values higher than we know they really are
     if self.lower_bound_utility is not None and self.upper_bound_utility is not None:
-      lbs = torch.tensor([self.lower_bound_utility] * len(self._target_q_values) * self._num_actions).reshape(-1, self._num_actions)
+      lb = self.lower_bound_utility if self.utility_bound is None else self.mapRange(self.lower_bound_utility)
+      lbs = torch.tensor([lb] * len(self._target_q_values) * self._num_actions).reshape(-1, self._num_actions)
       self._target_q_values = torch.clamp(self._target_q_values, min=lbs, max=upper_bounds)
       if self._double_dqn:
         next_q_values = torch.clamp(next_q_values, min=lbs, max=upper_bounds)
@@ -545,6 +568,14 @@ class DQN(rl_agent.AbstractAgent):
     if np.isnan(loss_value):
       raise ValueError("NaN loss - is your RL learning rate too high?")
     return loss_value
+
+  def q_values_for_infostate(self, infostate_tensor):
+    info_state = self._q_network.prep_batch([self._q_network.reshape_infostate(infostate_tensor)]).to(self._device)
+    q_values = self._q_network(info_state).cpu().detach()[0]
+    if self.utility_bound is not None:
+      q_values = self.unmapRange(q_values)
+    return q_values
+
 
   def _clear_cache(self):
     if self._cache is not None:

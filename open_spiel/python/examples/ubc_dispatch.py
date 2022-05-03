@@ -30,7 +30,7 @@ def write_and_submit(experiment_output_dir, experiment_name, job_file_text, subm
     if submit:
         os.system(f'cd {experiment_output_dir} && sbatch {job_file_path}')
 
-def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', submit=True, mem=16, overrides='', cfr_also=False, database=True, n_seeds=1, start_seed=100):
+def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', submit=True, mem=32, overrides='', cfr_also=False, database=True, n_seeds=1, start_seed=100):
     '''yml_config is either a folder or a single config'''
 
     if base_job_name is None:
@@ -109,7 +109,7 @@ eval $CMD
     logging.info(f"Dispatched {len(experiments)} experiments!")
 
 
-def dispatch_br_database(experiment_name, run_name, t, br_player, configs, submit=True, mem=16, overrides=''):
+def dispatch_br_database(experiment_name, run_name, t, br_player, configs, submit=True, mem=32, overrides=''):
     if os.path.exists(config_path_from_config_name(configs)):
         dispatch_single_br_database(experiment_name, run_name, t, br_player, configs, submit, mem, overrides)
     else:
@@ -143,7 +143,7 @@ eval $CMD
 
     logging.info(f"Dispatched experiment!")
 
-def dispatch_eval_database(experiment_name, run_name, t, br_player, br_name, submit=True, mem=8, overrides=''):
+def dispatch_eval_database(experiment_name, run_name, t, br_player, br_name, submit=True, mem=32, overrides=''):
     spiel_path, config_dir, pydir, manage_path = verify_config()
 
     slurm_job_name = f'eval_{run_name}_{t}_{experiment_name}'

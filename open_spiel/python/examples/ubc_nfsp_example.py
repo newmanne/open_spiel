@@ -114,6 +114,7 @@ def setup_directory_structure(output_dir, warn_on_overwrite, database=True):
 def report_nfsp(ep, episode_lengths, num_players, agents, game, start_time):
     logging.info(f"----Episode {ep} ---")
     logging.info(f"Episode length stats:\n{pd.Series(episode_lengths).describe()}")
+    total_train_time = 0
     for player_id in range(num_players):
         logging.info(f"PLAYER {player_id}")
         agent = agents[player_id]
@@ -122,7 +123,9 @@ def report_nfsp(ep, episode_lengths, num_players, agents, game, start_time):
             logging.info(f"Train time {pretty_time(agent._rl_agent._train_time)}")
             logging.info(f"Total time {pretty_time(time.time() - start_time)}")
             logging.info(f"Training the DQN for player {player_id} is a {agent._rl_agent._train_time / (time.time() - start_time):.2f} fraction")
+            total_train_time += agent._rl_agent._train_time
         logging.info(f'Loss (Supervised, RL): {agent.loss}')
+    logging.info(f"Overall, training is a {total_train_time / (time.time() - start_time):.2f} fraction")
 
 def evaluate_nfsp(ep, compute_nash_conv, game, policy, alg_start_time, nash_conv_history):
     logging.info(f"EVALUATION AT ITERATION {ep}")

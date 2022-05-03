@@ -185,7 +185,6 @@ def get_actions(game):
     return action_dict
 
 def check_on_q_values(agent, game, state=None, infostate_tensor=None, legal_actions=None, time_step=None, return_raw_q_values=False):
-    q_network = agent._q_network
 
     if time_step is not None:
         legal_actions = time_step.observations["legal_actions"][agent.player_id]
@@ -201,8 +200,7 @@ def check_on_q_values(agent, game, state=None, infostate_tensor=None, legal_acti
         legal_actions = state.legal_actions()
         it = state.information_state_tensor()
 
-    info_state = q_network.prep_batch([q_network.reshape_infostate(it)]).to(agent._device)
-    q_values = q_network(info_state).cpu().detach()[0]
+    q_values = agent.q_values_for_infostate(it)
     if return_raw_q_values:
         return q_values
 
