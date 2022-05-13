@@ -266,7 +266,6 @@ def my_max_pricing_bonus(game_config, player_id):
 
 def clock_auction_bounds(game_config, player_id):
     # MAX UTILITY
-    player_id = 0
     p_open = np.array(game_config['opening_price'])
     supply = np.array(game_config['licenses'])
     bounds = []
