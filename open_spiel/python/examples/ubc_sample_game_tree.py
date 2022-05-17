@@ -63,16 +63,20 @@ def pretty_information_state(infostate_string, depth):
         data_lines = infostate_string[res.end():]
         # ['', '3, 3, 3 | 1, 2, 0', '3, 3, 3 | 3, 2, 0', '3, 6, 6 | 3, 4, 3']
         try:
-            _, submitted, processed, aggregate = data_lines.split('\n')
+            _, _, submitted, _, processed, _, aggregate, _  = data_lines.split('\n')
             submitted_final = submitted.split('|')[-1].strip()
             processed_final = processed.split('|')[-1].strip()
             aggregate_final = aggregate.split('|')[-1].strip()
         except Exception as e:
             # Hide demand doesn't have a concept of submitted vs processed
-            _, processed, aggregate = data_lines.split('\n')
-            processed_final = processed.split('|')[-1].strip()
-            submitted_final = processed_final
-            aggregate_final = aggregate.split('|')[-1].strip()
+            try:
+                _, processed, _, aggregate = data_lines.split('\n')
+                processed_final = processed.split('|')[-1].strip()
+                submitted_final = processed_final
+                aggregate_final = aggregate.split('|')[-1].strip()
+            except Exception as e:
+                print(f"Failed to parse {data_lines}")
+                raise
 
         pretty_str = ''
         if submitted_final != processed_final:

@@ -27,6 +27,7 @@ from bokeh.io import output_notebook
 from bokeh.models import HoverTool, ColumnDataSource, ColorBar, LogColorMapper, LinearColorMapper
 from bokeh.transform import linear_cmap, log_cmap, factor_cmap
 from bokeh.palettes import Category10_10, Magma256, Spectral10, Category20_20
+from bokeh.models import LinearAxis, Range1d
 
 from bokeh.resources import CDN
 from bokeh.embed import file_html
@@ -37,6 +38,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from django.db.models import F
 from auctions.models import *
+
+PLAYER_COLORS = ['green', 'blue', 'orange']
 
 def parse_run(run, max_t=None, expected_additional_br=1):
     '''
@@ -58,14 +61,17 @@ def parse_run(run, max_t=None, expected_additional_br=1):
         logging.warning(f"Negative BR value ({negative_reward_br['reward']}) shouldn't happen. DQN should always find the drop out strategy... ")
 
     # Get all evaluations corresponding to the run
-    evaluations = Evaluation.objects.filter(checkpoint__equilibrium_solver_run=run).values('mean_rewards', t=F('checkpoint__t'))
+    evaluations = list(Evaluation.objects.filter(checkpoint__equilibrium_solver_run=run).values('mean_rewards', t=F('checkpoint__t'), length=F('samples__auction_lengths')))
     if len(evaluations) == 0:
         logging.warning(f"No evaluations found for {run}")
         return
 
+    for i in range(len(evaluations)):
+        evaluations[i]['median_length'] = pd.Series(evaluations[i]['length']).median()
+        del evaluations[i]['length']
+
     # GOAL: Dataframe with t, reward, player, br_player, config columns
-    eval_values = evaluations
-    evaluations_df = pd.DataFrame.from_records(eval_values)
+    evaluations_df = pd.DataFrame.from_records(evaluations)
     evaluations_df['br_player'] = None
     evaluations_df['name'] = None
     frames = []
@@ -155,10 +161,10 @@ def plot_all_models(ev_df, notebook=True, output_name='plots.html', output_str=F
         for game_name, grp in ev_df.groupby('game'):
             plots.append(nash_conv_plots(grp))
 
-    for model, sub_df in ev_df.groupby('model'):
-        plot = plot_from_df(sub_df)
-        plots.append(plot)
-        
+    for game_name, grp in ev_df.groupby('game'):
+        for model, sub_df in grp.groupby('model'):
+            plots.append(plot_from_df(sub_df))
+            plots.append(utility_plots(sub_df))
 
     if notebook:
         output_notebook()
@@ -234,35 +240,43 @@ def plot_from_df(ev_df):
     plot = figure(width=900, height=400, title=title)
 
     # add a circle renderer with a size, color, and alpha
-    PLAYER_COLORS = iter(['green', 'blue', 'blue', 'purple'])
     for p in players:
-        player_color = next(PLAYER_COLORS)
+        player_color = PLAYER_COLORS[p]
 
         best_br_only_df = ev_df.loc[ev_df.query(f'player == {p} and br_player == {p} and name != "straightforward" and not name.isnull()', engine='python')[['t', 'PositiveRegret', 'name']].groupby('t')['PositiveRegret'].idxmax()]
         best_br_source = ColumnDataSource(best_br_only_df)
         straightforward_source = ColumnDataSource(ev_df.query(f'player == {p} and br_player == {p} and name == "straightforward"', engine='python')[['t', 'PositiveRegret']])
         overall_player_source = ColumnDataSource(ev_df.query(f'player == {p} and br_player == {p}')[['t', 'MaxPositiveRegret']].drop_duplicates())
 
-        plot.line('t', f'PositiveRegret', source=best_br_source, legend_label=f'P{p} BR Regret', color=player_color)
-        plot.line('t', f'PositiveRegret', source=straightforward_source, legend_label=f'P{p} Straightforward Regret', color=player_color, line_dash='dashed')
-        plot.line('t', f'MaxPositiveRegret', source=overall_player_source, legend_label=f'P{p} Approx Regret', color=f'dark{player_color}', line_width=2)
+        label = f'P{p} BR Regret'
+        plot.line('t', f'PositiveRegret', source=best_br_source, legend_label=label, name=label, color=player_color)
+        label = f'P{p} Straightforward Regret'
+        plot.line('t', f'PositiveRegret', source=straightforward_source, legend_label=label, name=label, color=player_color, line_dash='dashed')
+        label = f'P{p} Approx Regret'
+        plot.line('t', f'MaxPositiveRegret', source=overall_player_source, legend_label=label, name=label, color=f'dark{player_color}', line_width=2)
         
-        # TODO: Needs fixing
         regret_col_name = f'p{p}_regret'
         if regret_col_name in ev_df.columns:
-            plot.line('t', regret_col_name, source=source, legend_label=f'P{p} True Regret', color=f'dark{player_color}', line_width=2, line_dash='dotted')
+            label = f'P{p} True Regret'
+            plot.line('t', regret_col_name, source=source, legend_label=label, name=label, color=f'dark{player_color}', line_width=2, line_dash='dotted')
         
     source = ColumnDataSource(ev_df.loc[ev_df.groupby('t')['ApproxNashConv'].idxmax()][['t', 'ApproxNashConv']]) 
-    plot.line('t', f'ApproxNashConv', source=source, legend_label=f'Approximate Nash Conv', color='red', line_width=3)
+    label = f'Approximate Nash Conv'
+    plot.line('t', f'ApproxNashConv', source=source, legend_label=label, name=label, color='red', line_width=3)
     if 'nash_conv' in ev_df.columns:
-        plot.line('t', f'nash_conv', source=source, legend_label=f'True Nash Conv', color='darkred', line_width=3)
+        label = f'True Nash Conv'
+        plot.line('t', f'nash_conv', source=source, legend_label=label, name=label, color='darkred', line_width=3)
 
     plot.legend.click_policy = "hide"
     plot.xaxis.axis_label = 'Iteration (M)'
     plot.yaxis.axis_label = 'Regret'
     plot.ray(x=[min(ev_df['t'])], y=[0], length=0, angle=0, line_width=5, color='black')
 
-    plot.add_tools(HoverTool())
+    TOOLTIPS = [
+        ("Name", "$name",),
+        ("(x, y)", "($data_x, $data_y)"),
+    ]   
+    plot.add_tools(HoverTool(tooltips=TOOLTIPS))
     return plot
 
 def nash_conv_plots(ev_df_ungrouped):
@@ -278,16 +292,67 @@ def nash_conv_plots(ev_df_ungrouped):
 
         # add a circle renderer with a size, color, and alpha
         source = ColumnDataSource(ev_df.loc[ev_df.groupby('t')['ApproxNashConv'].idxmax()][['t', 'ApproxNashConv']]) 
-        plot.line('t', f'ApproxNashConv', source=source, legend_label=model, color=next(colors), line_width=3)
- 
+        color = next(colors)
+        plot.line('t', f'ApproxNashConv', source=source, legend_label=model, name=model, color=color, line_width=3)
+        plot.circle('t', f'ApproxNashConv', source=source, color=color, size=10, name=model)
+
     plot.legend.click_policy = "hide"
     plot.xaxis.axis_label = 'Iteration (M)'
     plot.yaxis.axis_label = 'Regret'
     plot.ray(x=[min(ev_df_ungrouped['t']) / 1e6], y=[0], length=0, angle=0, line_width=5, color='black')
 
-    plot.add_tools(HoverTool())
+    TOOLTIPS = [
+        ("Name", "$name",),
+        ("(x, y)", "($data_x, $data_y)"),
+    ]   
+    plot.add_tools(HoverTool(tooltips=TOOLTIPS))
     return plot
 
+def utility_plots(ev_df):
+    ev_df = ev_df.query('name.isnull() and br_player.isnull()', engine='python').copy()
+    ev_df['t'] /= 1e6 # Nicer formatting on x-axis
+    game_name = ev_df['game'].iloc[0]
+    model = ev_df['model'].iloc[0]
+    players = range(ev_df['num_players'].iloc[0])
+    title = f"Utility {game_name} {model}"
+    colors = itertools.cycle(Category20_20) 
+    plot = figure(width=900, height=400, title=title)
+    plot.yaxis.axis_label = 'Reward'
+
+    # Setting the second y axis range name and range
+    plot.extra_y_ranges["rounds"] = Range1d(start=0, end=50)
+
+    # Adding the second axis to the plot.  
+    plot.add_layout(LinearAxis(y_range_name="rounds", axis_label='Rounds'), 'right')
+
+    # add a circle renderer with a size, color, and alpha
+    for p in players:
+        player_color = PLAYER_COLORS[p]
+
+        source = ColumnDataSource(ev_df.query(f'player == {p}')[['t', 'reward']])
+        label = f'Reward {p}'
+        plot.line('t', f'reward', source=source, legend_label=label, name=label, color=player_color)
+        plot.circle('t', f'reward', source=source, color=player_color, size=10, name=model)
+
+    utility_sum = ev_df.groupby('t')['reward'].sum().to_frame('reward')
+    source = ColumnDataSource(utility_sum) 
+    label = f'Total Reward'
+    plot.line('t', f'reward', source=source, legend_label=label, name=label, color='red', line_width=1)
+
+    median_length = ev_df.groupby('t')['median_length'].first().to_frame('length')
+    source = ColumnDataSource(median_length) 
+    label = f'Median Length'
+    plot.line('t', f'length', source=source, legend_label=label, name=label, color='black', line_width=1, y_range_name="rounds", line_dash='dashed')
+
+    plot.legend.click_policy = "hide"
+    plot.xaxis.axis_label = 'Iteration (M)'
+
+    TOOLTIPS = [
+        ("Name", "$name",),
+        ("(x, y)", "($data_x, $data_y)"),
+    ]   
+    plot.add_tools(HoverTool(tooltips=TOOLTIPS))
+    return plot
 
 def special_save_fig(fig, file_name, fmt=None, dpi=300, tight=True):
     """Save a Matplotlib figure as EPS/PNG/PDF to the given path and trim it.

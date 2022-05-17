@@ -570,19 +570,21 @@ std::string AuctionState::InformationStateString(Player player) const {
     if (undersell_rule_ == kUndersell && agent_memory_ == -1) {
       absl::StrAppend(&result, "Submitted:", "\n");
       for (int i = starting_point; i < submitted_demand_[player].size(); i++) {
-        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(submitted_demand_[player][i], ", "), i == submitted_demand_[player].size() - 1 ? "" : " | "), "\n");
+        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(submitted_demand_[player][i], ", "), i == submitted_demand_[player].size() - 1 ? "" : " | "));
       }
+      absl::StrAppend(&result, "\n");
     }
 
     absl::StrAppend(&result, "Processed:", "\n");
     for (int i = starting_point; i < processed_demand_[player].size(); i++) {
-      absl::StrAppend(&result, absl::StrCat(absl::StrJoin(processed_demand_[player][i], ", "), i == processed_demand_[player].size() - 1 ? "" : " | "),  "\n");
+      absl::StrAppend(&result, absl::StrCat(absl::StrJoin(processed_demand_[player][i], ", "), i == processed_demand_[player].size() - 1 ? "" : " | "));
     }
+    absl::StrAppend(&result, "\n");
   
     absl::StrAppend(&result, "Aggregates:", "\n");
     if (information_policy_ == kShowDemand) {
       for (int i = starting_point; i < aggregate_demands_.size(); i++) {
-        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(aggregate_demands_[i], ", "), i == aggregate_demands_.size() - 1 ? "" : " | "), "\n");  
+        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(aggregate_demands_[i], ", "), i == aggregate_demands_.size() - 1 ? "" : " | "));  
       }
     } else if (information_policy_ == kHideDemand) {
       for (int i = starting_point; i < aggregate_demands_.size(); i++) {
@@ -591,6 +593,7 @@ std::string AuctionState::InformationStateString(Player player) const {
     } else {
       SpielFatalError("Unknown info policy");
     }
+    absl::StrAppend(&result, "\n");
   }
   if (agent_memory_ != -1) {
     // We now need to distinguish information states based on their current prices, because you can't just derive it anymore

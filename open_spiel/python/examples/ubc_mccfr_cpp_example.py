@@ -35,6 +35,9 @@ import itertools
 
 from open_spiel.python import policy
 from open_spiel.python.algorithms import cfr, outcome_sampling_mccfr, expected_game_score, exploitability, get_all_states_with_policy
+from open_spiel.python.algorithms.outcome_sampling_mccfr import OutcomeSamplingSolver
+from open_spiel.python.algorithms.external_sampling_mccfr import ExternalSamplingSolver
+
 import logging
 from open_spiel.python.examples.sharpen_solution import sharpen_solution
 
@@ -210,7 +213,8 @@ def main(_):
                 logger.info("Using outcome sampling")
                 solver = OutcomeSamplingSolver(game)
             else:
-                raise ValueError("Not external")
+                logger.info("Using external sampling")
+                solver = ExternalSamplingSolver(game)
             
     with open(f'{FLAGS.output}/solver.json', 'w') as f:
         json.dump(solver_config, f)
