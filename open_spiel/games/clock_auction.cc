@@ -97,7 +97,8 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
   double switch_penalty_,
   std::vector<std::vector<Bidder*>> bidders,
   std::vector<std::vector<double>> probs,
-  int max_n_types
+  int max_n_types,
+  int agent_memory
 ) :   SimMoveState(game),
       cur_player_(kChancePlayerId), // Chance begins by setting types
       max_rounds_(max_rounds),
@@ -120,7 +121,8 @@ AuctionState::AuctionState(std::shared_ptr<const Game> game,
       all_bids_(all_bids),
       all_bids_activity_(all_bids_activity),
       bidders_(bidders),
-      max_n_types_(max_n_types)
+      max_n_types_(max_n_types),
+      agent_memory_(agent_memory)
        {
 
       num_products_ = num_licenses_.size();
@@ -516,7 +518,11 @@ std::vector<Action> AuctionState::LegalActions(Player player) const {
     // If you have no way to make a profit ever going forwards, just drop out. Helps minimize game size
     actions.clear();
     actions.push_back(0);
+  } else {
+    // At least one bid leads to positive profit. Dropping out is never the right thing to do in this case. It will always be action 0
+    actions.erase(actions.begin());
   }
+  
   return actions;
 }
 
@@ -555,33 +561,42 @@ std::string AuctionState::InformationStateString(Player player) const {
   std::string result = absl::StrCat("Player ", player, "\n");
   if (bidder_.size() > player) {
     std::string bidder_string = std::string(*bidder_[player]);
-    absl::StrAppend(&result, bidder_string);  
+    absl::StrAppend(&result, bidder_string, "\n");  
   }
   if (!submitted_demand_[player].empty()) {
-    for (int i = 0; i < submitted_demand_[player].size(); i++) {
-      absl::StrAppend(&result, absl::StrCat(absl::StrJoin(submitted_demand_[player][i], ", "), i == submitted_demand_[player].size() - 1 ? "" : " | "));
-    }
+    int n_submitted = submitted_demand_[player].size();
+    int starting_point = std::max(0, agent_memory_ == -1 ? 0 : n_submitted - 1 - agent_memory_);
 
-    if (undersell_rule_ == kUndersell) {
-      absl::StrAppend(&result, "\n");
-      for (int i = 0; i < processed_demand_[player].size(); i++) {
-        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(processed_demand_[player][i], ", "), i == processed_demand_[player].size() - 1 ? "" : " | "));
+    if (undersell_rule_ == kUndersell && agent_memory_ == -1) {
+      absl::StrAppend(&result, "Submitted:", "\n");
+      for (int i = starting_point; i < submitted_demand_[player].size(); i++) {
+        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(submitted_demand_[player][i], ", "), i == submitted_demand_[player].size() - 1 ? "" : " | "), "\n");
       }
     }
 
-    absl::StrAppend(&result, "\n");
+    absl::StrAppend(&result, "Processed:", "\n");
+    for (int i = starting_point; i < processed_demand_[player].size(); i++) {
+      absl::StrAppend(&result, absl::StrCat(absl::StrJoin(processed_demand_[player][i], ", "), i == processed_demand_[player].size() - 1 ? "" : " | "),  "\n");
+    }
+  
+    absl::StrAppend(&result, "Aggregates:", "\n");
     if (information_policy_ == kShowDemand) {
-      for (int i = 0; i < aggregate_demands_.size(); i++) {
-        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(aggregate_demands_[i], ", "), i == aggregate_demands_.size() - 1 ? "" : " | "));  
+      for (int i = starting_point; i < aggregate_demands_.size(); i++) {
+        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(aggregate_demands_[i], ", "), i == aggregate_demands_.size() - 1 ? "" : " | "), "\n");  
       }
     } else if (information_policy_ == kHideDemand) {
-      for (int i = 0; i < aggregate_demands_.size(); i++) {
-        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(ToHidden(aggregate_demands_[i]), ", "), i == aggregate_demands_.size() - 1 ? "" : " | "));  
+      for (int i = starting_point; i < aggregate_demands_.size(); i++) {
+        absl::StrAppend(&result, absl::StrCat(absl::StrJoin(ToHidden(aggregate_demands_[i]), ", "), i == aggregate_demands_.size() - 1 ? "" : " | "), "\n");  
       }
     } else {
       SpielFatalError("Unknown info policy");
     }
   }
+  if (agent_memory_ != -1) {
+    // We now need to distinguish information states based on their current prices, because you can't just derive it anymore
+    absl::StrAppend(&result, absl::StrCat("Price: ", absl::StrJoin(posted_price_.back(), ", "), "\n"));
+  }
+
   return result;
 }
 
@@ -615,7 +630,7 @@ std::string AuctionState::ToString() const {
   }
   if (!aggregate_demands_.empty()) {
     absl::StrAppend(&result, absl::StrCat("Aggregate demands: ", absl::StrJoin(aggregate_demands_.back(), ", ")), "\n");
-  }
+}
   if (finished_) {
     std::vector<std::vector<int>> fb;
     for (auto p = Player{0}; p < num_players_; p++) {
@@ -655,10 +670,18 @@ std::vector<double> AuctionState::Returns() const {
     }
 
     // Add in pricing bonuses
+    // for (auto p = Player{0}; p < num_players_; p++) {
+    //   double payment_other = Sum(payments) - payments[p];
+    //   auto& bidder = bidder_[p];
+    //   returns[p] += payment_other * bidder->GetPricingBonus();
+    // }
+
+    // Spitefulness
+    std::vector<double> returns_copy = returns;
     for (auto p = Player{0}; p < num_players_; p++) {
-      double payment_other = Sum(payments) - payments[p];
       auto& bidder = bidder_[p];
-      returns[p] += payment_other * bidder->GetPricingBonus();
+      double returns_other = Sum(returns_copy) - returns[p];
+      returns[p] -= returns_other * bidder->GetPricingBonus();
     }
 
   }
@@ -680,7 +703,7 @@ int AuctionGame::NumDistinctActions() const {
 
 std::unique_ptr<State> AuctionGame::NewInitialState() const {
   std::unique_ptr<AuctionState> state(
-      new AuctionState(shared_from_this(), num_players_, max_rounds_, num_licenses_, increment_, open_price_, product_activity_, all_bids_activity_, all_bids_, undersell_rule_, information_policy_, activity_on_, allow_negative_profit_bids_, tiebreaks_, switch_penalty_, bidders_, type_probs_, max_n_types_));
+      new AuctionState(shared_from_this(), num_players_, max_rounds_, num_licenses_, increment_, open_price_, product_activity_, all_bids_activity_, all_bids_, undersell_rule_, information_policy_, activity_on_, allow_negative_profit_bids_, tiebreaks_, switch_penalty_, bidders_, type_probs_, max_n_types_, agent_memory_));
   return state;
 }
 
@@ -974,6 +997,12 @@ AuctionGame::AuctionGame(const GameParameters& params) :
     switch_penalty_ = ParseDouble(object["switch_penalty"]);
   } else {
     switch_penalty_ = 0.;
+  }
+
+  if (ContainsKey(object, "agent_memory")) {
+    agent_memory_ = ParseDouble(object["agent_memory"]);
+  } else {
+    agent_memory_ = -1;
   }
 
   CheckRequiredKey(object, "undersell_rule");

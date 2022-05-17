@@ -208,7 +208,8 @@ class AuctionState : public SimMoveState {
     double switch_penalty_,
     std::vector<std::vector<Bidder*>>,
     std::vector<std::vector<double>> type_probs,
-    int max_n_types_
+    int max_n_types_,
+    int agent_memory_
   );
 
   void Reset(const GameParameters& params);
@@ -258,6 +259,7 @@ class AuctionState : public SimMoveState {
   bool activity_on_;
   bool allow_negative_profit_bids_;
   bool tiebreaks_;
+  int agent_memory_;
 
   // Type info
   std::vector<std::vector<Bidder*>> bidders_;
@@ -295,6 +297,7 @@ class AuctionState : public SimMoveState {
   std::vector<std::vector<Player>> tie_breaks_needed_;
   std::vector<std::vector<Player>> selected_order_;
   int tie_break_index_; // What product are we currently on a chance node for?
+  int memory_;
 
 
   std::vector<int> num_switches_;
@@ -343,6 +346,7 @@ class AuctionGame : public SimMoveGame {
   int information_policy_;
   bool allow_negative_profit_bids_;
   bool tiebreaks_;
+  int agent_memory_;
 
   int max_chance_outcomes_;
   double max_value_;
