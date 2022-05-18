@@ -167,13 +167,18 @@ def single_action_result(legal_actions, num_actions, as_output=False):
     return action, probs
 
 
-def get_first_actionable_state(game, forced_types=None):
+def get_first_actionable_state(game, forced_types=None, player_id=None):
     state = game.new_initial_state()
     # Skip over chance nodes
     i = 0
     while state.current_player() < 0:
         state = state.child(0 if forced_types is None else forced_types[i]) # Let chance choose first outcome. We're assuming all moves are possible at starting prices for all players, that may not really be true though
         i += 1
+    
+    if player_id is not None:
+        while state.current_player() != player_id:
+            state = state.child(0)
+
     return state
 
 
@@ -196,7 +201,7 @@ def check_on_q_values(agent, game, state=None, infostate_tensor=None, legal_acti
         # Extract from state
         if state is None:
             # TODO: assuming player_id on agent is 0 here, could be smarter
-            state = get_first_actionable_state(game)
+            state = get_first_actionable_state(game, player_id=agent.player_id)
         legal_actions = state.legal_actions()
         it = state.information_state_tensor()
 
@@ -366,6 +371,16 @@ def apply_optional_overrides(args, argv, config):
     # This one argument we special case: I don't consider it part of the config per se, but it's too annoying to refactor out and it impacts the epsilon decay schedule
     config['num_training_episodes'] = args.num_training_episodes
 
+    # These arguments we'll patch in now if not already here
+    n_training_episodes = config['num_training_episodes']
+    reservoir_buffer_capacity = min(2_000_000, int(n_training_episodes / 10))
+    replay_buffer_capacity = min(50_000, int(n_training_episodes / 100))
+
+    config['replay_buffer_capacity'] = config.get('replay_buffer_capacity', replay_buffer_capacity)
+    config['min_buffer_size_to_learn'] = config.get('min_buffer_size_to_learn', 1000)
+    config['reservoir_buffer_capacity'] = config.get('reservoir_buffer_capacity', reservoir_buffer_capacity)
+
+
 class UBCChanceEventSampler(object):
     """Default sampler for external chance events."""
 
@@ -404,23 +419,19 @@ def read_config(config_name):
     with open(config_file, 'rb') as fh: 
         config = yaml.load(fh, Loader=yaml.FullLoader)
 
-    # DEFAULTS GO HERE
-    config['replay_buffer_capacity'] = config.get('replay_buffer_capacity', 50_000)
     config['update_target_network_every'] = config.get('update_target_network_every', 10_000)
     config['loss_str'] = config.get('loss_str', 'mse')
     config['sl_loss_str'] = config.get('sl_loss_str', 'cross_entropy')
     config['double_dqn'] = config.get('double_dqn', True)
     config['device'] = config.get('device', default_device())
-    config['reservoir_buffer_capacity'] = config.get('reservoir_buffer_capacity', 2_000_000)
     config['anticipatory_param'] = config.get('anticipatory_param', 0.1)
     config['sl_learning_rate'] = config.get('sl_learning_rate', 0.01)
     config['rl_learning_rate'] = config.get('rl_learning_rate', 0.01)
     config['batch_size'] = config.get('batch_size', 256)
-    config['min_buffer_size_to_learn'] = config.get('min_buffer_size_to_learn', 1000)
     config['learn_every'] = config.get('learn_every', 64)
     config['optimizer_str'] = config.get('optimizer_str', 'sgd')
     config['add_explore_transitions'] = config.get('add_explore_transitions', False)
-    config['cache_size'] = config.get('cache_size', 50_000)
+    config['cache_size'] = config.get('cache_size', None)
 
     return config
 
