@@ -32,10 +32,12 @@ class VectorEnv(object):
         return self.envs[0].observation_spec()
         
 
-    def step(self, actions, reset_if_done=False):
-        player_id = 0
-        time_steps = [self.envs[i].step([actions[i]]) for i in range(len(self.envs))]
-        reward = [step.rewards[player_id] for step in time_steps]
+    def step(self, step_outputs, reset_if_done=False):
+        if not isinstance(step_outputs, list):
+            step_outputs = [step_outputs]
+        
+        time_steps = [self.envs[i].step([step_outputs[i].action]) for i in range(len(self.envs))]
+        reward = [step.rewards for step in time_steps]
         done = [step.last() for step in time_steps]
 
         if reset_if_done:
@@ -139,6 +141,7 @@ class PPO(nn.Module):
         self, 
         input_size, 
         num_actions, 
+        player_id=0,
         num_envs=1,
         steps_per_batch=128,
         num_minibatches=4,
@@ -178,6 +181,7 @@ class PPO(nn.Module):
         ).to(device)
         self.input_size = input_size
         self.device = device
+        self.player_id = player_id
 
         # Training details
         self.num_envs = num_envs
@@ -232,29 +236,38 @@ class PPO(nn.Module):
         if not isinstance(time_steps, list):
             time_steps = [time_steps]
 
-        obs = torch.Tensor([ts.observations['info_state'][0] for ts in time_steps]).to(self.device)
-        with torch.no_grad():
-            if is_evaluation:
-                # Evaluation: no need track data; just sample an action
+        obs = torch.Tensor([ts.observations['info_state'][self.player_id] for ts in time_steps]).to(self.device)
+        if is_evaluation:
+            # Evaluation: no need track data; just sample an action
+            # TODO: assumes single env 
+            with torch.no_grad():
                 action, _, _, _ = self.get_action_and_value(obs)
-                return StepOutput(action=[action.item()], probs=None)
-            else:
-                # Sample action
-                action, logprob, _, value = self.get_action_and_value(obs)
+            return StepOutput(action=[action.item()], probs=None) 
+        else:
+            # Train if we're done collecting data
+            if self.current_step == self.steps_per_batch:
+                self.learn(time_steps)
+                self.current_step = 0
 
-                # Store 
-                self.obs[self.current_step] = obs
-                self.values[self.current_step] = value.flatten()
-                self.actions[self.current_step] = action
-                self.logprobs[self.current_step] = logprob
+            # Sample action
+            with torch.no_grad():
+                actions, logprob, _, value = self.get_action_and_value(obs)
 
-                # Note: don't update step count until post_step!
-                return action
+            # Store data
+            # Note: more data coming in post_step, so don't update step count until then!
+            self.obs[self.current_step] = obs
+            self.values[self.current_step] = value.flatten()
+            self.actions[self.current_step] = actions
+            self.logprobs[self.current_step] = logprob
+
+            return [StepOutput(action=a.item(), probs=None) for a in actions] 
 
     def post_step(self, reward, done):
-        self.rewards[self.current_step] = torch.tensor(reward).to(self.device).view(-1)
+        # Put extra data into the buffer
+        self.rewards[self.current_step] = torch.tensor(reward).to(self.device)[:, self.player_id].view(-1)
         self.dones[self.current_step] = torch.tensor(done).to(self.device).view(-1)
 
+        # Update counters
         self.current_step += 1
         self.total_steps_done += self.num_envs
 
@@ -270,7 +283,7 @@ class PPO(nn.Module):
 
         # Bootstrap values for non-terminal states
         with torch.no_grad():
-            next_obs = torch.Tensor([ts.observations['info_state'][0] for ts in next_time_steps]).to(self.device)
+            next_obs = torch.Tensor([ts.observations['info_state'][self.player_id] for ts in next_time_steps]).to(self.device)
             next_value = self.get_value(next_obs).reshape(1, -1)
             if self.gae:
                 advantages = torch.zeros_like(self.rewards).to(self.device)
@@ -358,7 +371,6 @@ class PPO(nn.Module):
 
         # Update counters
         self.updates_done += 1
-        self.current_step = 0
 
         # Log to Tensorboard
         if self.writer is not None:
@@ -371,44 +383,35 @@ class PPO(nn.Module):
             self.writer.add_scalar("losses/clipfrac", np.mean(clipfracs), self.total_steps_done)
             self.writer.add_scalar("losses/explained_variance", explained_var, self.total_steps_done)
 
-def run_ppo(env, agents, seed, num_updates, steps_per_update, writer, device):
+def run_ppo(env, agents, seed, num_envs, num_steps, writer, device):
     fix_seeds(seed)
-
-    # TRY NOT TO MODIFY: start the game
     start_time = time.time()
+
     time_step = env.reset()
-
-    for update in range(num_updates):
-        for step in range(steps_per_update):
-            # Note: training loop assumes that each agent will always be called on to play before the game proceeds!
-            # Ask each agent to pick an action
-            for agent in agents:
-                action = agent.step(time_step)
-                time_step, reward, done = env.step(action.cpu().numpy(), reset_if_done=True)
-
-            # Tell all agents their rewards and whether the episode is done
-            for agent in agents:
-                agent.post_step(reward, done)
-
-        # Train
-        for agent in agents:
-            agent.learn(time_step)
-
+    for step in range(0, num_steps, num_envs):
         # Evaluate
-        global_step = agents[0].total_steps_done
-        if update % 1 == 0:
+        if step % 2000 == 0: # TODO: might miss evaluations this way
             logging.info("-" * 80)
-            logging.info("Episode %s", global_step)
+            logging.info("Episode %s", step)
             avg_return = _eval_agent(
                 Environment(pyspiel.load_game('catch'), chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=False, terminal_rewards=False), 
                 agents[0], 
                 100)
             logging.info("Avg return: %s", avg_return)
             
-            writer.add_scalar("charts/avg_return", avg_return, global_step)
+            writer.add_scalar("charts/avg_return", avg_return, step)
 
-        print("SPS:", int(global_step / (time.time() - start_time)))
-        writer.add_scalar("charts/SPS", int(global_step / (time.time() - start_time)), global_step)
+        # Note: training loop assumes that each agent will always be called on to play before the game proceeds!
+        # Ask each agent to pick an action
+        for agent in agents:
+            agent_output = agent.step(time_step)
+            time_step, reward, done = env.step(agent_output, reset_if_done=True)
+
+        # Tell all agents their rewards and whether the episode is done
+        for agent in agents:
+            agent.post_step(reward, done)
+
+        writer.add_scalar("charts/SPS", int(step / (time.time() - start_time)), step)
 
     writer.close()
 
@@ -461,8 +464,7 @@ def main():
         writer=writer,
     )]
 
-    run_ppo(env, agents, args.seed, num_updates, args.num_steps, writer, device)
-
+    run_ppo(env, agents, args.seed, args.num_envs, args.total_timesteps, writer, device)
 
 if __name__ == "__main__":
     main()
