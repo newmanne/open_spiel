@@ -428,6 +428,7 @@ class PPO(nn.Module):
                 advantages = returns - self.values
 
         # Flatten the batch
+        b_legal_actions = self.legal_actions_mask.reshape((-1, self.num_actions))
         b_obs        = self.obs.reshape((-1, self.input_size))
         b_logprobs   = self.logprobs.reshape(-1)
         b_actions    = self.actions.reshape(-1)
@@ -444,7 +445,7 @@ class PPO(nn.Module):
                 end = start + self.minibatch_size
                 mb_inds = b_inds[start:end]
 
-                _, newlogprob, entropy, newvalue = self.get_action_and_value(b_obs[mb_inds], b_actions.long()[mb_inds])
+                _, newlogprob, entropy, newvalue = self.get_action_and_value(b_obs[mb_inds], b_legal_actions[mb_inds], b_actions.long()[mb_inds])
                 logratio = newlogprob - b_logprobs[mb_inds]
                 ratio = logratio.exp()
 
@@ -570,16 +571,14 @@ def main():
     num_players, num_actions, num_products = game_spec(game, game_config)
     env = VectorEnv([
         make_auction_env(args.game_name)
-        # make_catch_env()
         for _ in range(args.num_envs)
     ])
 
-    num_players, num_actions = (1, 3)
-    env = VectorEnv([
-        make_catch_env()
-        for _ in range(args.num_envs)
-    ])
-    # num_players = 
+    # num_players, num_actions = (1, 3)
+    # env = VectorEnv([
+    #     make_catch_env()
+    #     for _ in range(args.num_envs)
+    # ])
 
     info_state_shape = env.observation_spec()["info_state"]
     info_state_size = np.array(info_state_shape).prod()
@@ -610,8 +609,8 @@ def main():
         writer=writer,
     ) for player_id in range(num_players)]
 
-    # eval_env = make_auction_env(args.game_name)
-    eval_env = make_catch_env()
+    eval_env = make_auction_env(args.game_name)
+    # eval_env = make_catch_env()
     def eval_fn(agents):
         return _eval_agent(
             eval_env,
