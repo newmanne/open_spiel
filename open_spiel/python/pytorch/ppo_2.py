@@ -6,10 +6,9 @@ from distutils.util import strtobool
 
 # import gym
 import pyspiel
-from open_spiel.python.rl_environment import Environment
-from open_spiel.python.examples.ubc_utils import UBCChanceEventSampler, fix_seeds
+from open_spiel.python.rl_environment import Environment, TimeStep
+from open_spiel.python.examples.ubc_utils import UBCChanceEventSampler, clock_auction_bounds, fix_seeds, game_spec, load_game_config, make_normalizer_for_game, smart_load_sequential_game, turn_based_size, handcrafted_size
 import logging
-from open_spiel.python.examples.single_agent_catch import _eval_agent
 from open_spiel.python.rl_agent import StepOutput
 import sys
 
@@ -21,6 +20,105 @@ import torch.optim as optim
 from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
 
+class NormalizedEnvironment(Environment):
+    def __init__(
+        self, 
+        game,
+        discount=1.0,
+        chance_event_sampler=None,
+        observation_type=None,
+        include_full_state=False,
+        distribution=None,
+        mfg_population=None,
+        enable_legality_check=False,
+        all_simultaneous=False,
+        terminal_rewards=False,
+        # new args
+        info_state_lb=None, 
+        info_state_ub=None, 
+        info_state_normalizer=None, 
+        reward_normalizer=None,
+        **kwargs
+    ):
+        super().__init__(game,
+            discount,
+            chance_event_sampler,
+            observation_type,
+            include_full_state,
+            distribution,
+            mfg_population,
+            enable_legality_check,
+            all_simultaneous,
+            terminal_rewards,
+            **kwargs
+        )
+        self.lb = info_state_lb
+        self.ub = info_state_ub
+        self.info_state_normalizer = torch.tensor(info_state_normalizer, dtype=torch.float32)
+        self.reward_normalizer = torch.tensor(reward_normalizer)
+
+    def get_time_step(self):
+        # Get time_step from wrapped env as usual
+        time_step = super().get_time_step()
+
+        # Subset and normalize infostate tensor
+        observations = time_step.observations
+        info_state = torch.tensor(observations["info_state"])
+        
+        if self.lb is not None:
+            info_state = info_state[:, self.lb:self.ub]
+        if self.info_state_normalizer is not None:
+            info_state = info_state / self.info_state_normalizer
+        observations["info_state"] = info_state.tolist()
+
+        rewards = time_step.rewards
+        if self.reward_normalizer is not None:
+            rewards = (torch.tensor(time_step.rewards) / self.reward_normalizer).tolist() 
+
+        return TimeStep(
+            observations=observations,
+            rewards=rewards,
+            discounts=time_step.discounts,
+            step_type=time_step.step_type
+        ) 
+
+    def step(self, actions):
+        super().step(actions)
+        return self.get_time_step()
+
+    def reset(self):
+        super().reset()
+        return self.get_time_step()
+
+    def observation_spec(self):
+        spec = super().observation_spec()
+        if self.info_state_normalizer is not None:
+            info_state_size = list(spec['info_state'])
+            info_state_size[-len(self.info_state_normalizer.shape):] = self.info_state_normalizer.shape
+            spec['info_state'] = tuple(info_state_size)
+        return spec
+
+def make_auction_env(game_name):
+    game = smart_load_sequential_game('clock_auction', dict(filename=game_name))
+    game_config = load_game_config(game_name)
+    num_players, num_actions, num_products = game_spec(game, game_config)
+
+    info_state_lb = turn_based_size(num_players)
+    info_state_size = handcrafted_size(num_actions, num_products)
+    info_state_ub = info_state_lb + info_state_size
+    info_state_normalizer = make_normalizer_for_game(game, game_config)[info_state_lb:info_state_ub]
+    reward_normalizer = [np.max(np.abs(clock_auction_bounds(game_config, player_id))) for player_id in range(num_players)]
+
+    return NormalizedEnvironment(
+        game, chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=False, terminal_rewards=False,
+        info_state_lb=info_state_lb, info_state_ub=info_state_ub, info_state_normalizer=info_state_normalizer,
+        reward_normalizer=reward_normalizer
+    ) 
+
+def make_catch_env():
+    game = pyspiel.load_game('catch')
+    return Environment(game, chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=False, terminal_rewards=False)
+
 class VectorEnv(object):
     """
     Greg change: wrapper to make OpenSpiel envs compatible with this code
@@ -30,7 +128,10 @@ class VectorEnv(object):
 
     def observation_spec(self):
         return self.envs[0].observation_spec()
-        
+
+    @property
+    def num_players(self):
+        return self.envs[0].num_players
 
     def step(self, step_outputs, reset_if_done=False):
         if not isinstance(step_outputs, list):
@@ -54,7 +155,6 @@ class VectorEnv(object):
 
 
 def setUpLogging():
-
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
 
@@ -123,16 +223,25 @@ def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
     torch.nn.init.constant_(layer.bias, bias_const)
     return layer
 
-def _eval_agent(env, agent, num_episodes):
+def legal_actions_to_mask(legal_actions_list, num_actions):
+    legal_actions_mask = torch.zeros((len(legal_actions_list), num_actions)).bool()
+    for i, legal_actions in enumerate(legal_actions_list):
+        legal_actions_mask[i, legal_actions] = 1
+    return legal_actions_mask
+
+def _eval_agent(env, agents, num_episodes):
     """Evaluates `agent` for `num_episodes`."""
-    rewards = 0.0
+    rewards = np.zeros(len(agents))
     for _ in range(num_episodes):
         time_step = env.reset()
         episode_reward = 0
         while not time_step.last():
-            agent_output = agent.step(time_step, is_evaluation=True)
-            time_step = env.step(agent_output.action)
-            episode_reward += time_step.rewards[0]
+            for agent in agents:
+                agent_output = agent.step(time_step, is_evaluation=True)
+                time_step = env.step(agent_output.action)
+
+            # Note: assumes rewards come for all agents at the same time
+            episode_reward += np.array(time_step.rewards)
         rewards += episode_reward
     return rewards / num_episodes
 
@@ -141,6 +250,7 @@ class PPO(nn.Module):
         self, 
         input_size, 
         num_actions, 
+        num_players,
         player_id=0,
         num_envs=1,
         steps_per_batch=128,
@@ -164,24 +274,27 @@ class PPO(nn.Module):
         super(PPO, self).__init__()
 
         # Networks
+        self.num_actions = num_actions
+        self.num_players = num_players
+        self.input_size = input_size
+        self.device = device
+        self.player_id = player_id
+
         # TODO: move models to a separate class?
         self.critic = nn.Sequential(
-            layer_init(nn.Linear(input_size, 64)),
+            layer_init(nn.Linear(self.input_size, 64)),
             nn.Tanh(),
             layer_init(nn.Linear(64, 64)),
             nn.Tanh(),
             layer_init(nn.Linear(64, 1), std=1.0),
         ).to(device)
         self.actor = nn.Sequential(
-            layer_init(nn.Linear(input_size, 64)),
+            layer_init(nn.Linear(self.input_size, 64)),
             nn.Tanh(),
             layer_init(nn.Linear(64, 64)),
             nn.Tanh(),
-            layer_init(nn.Linear(64, num_actions), std=0.01),
+            layer_init(nn.Linear(64, self.num_actions), std=0.01),
         ).to(device)
-        self.input_size = input_size
-        self.device = device
-        self.player_id = player_id
 
         # Training details
         self.num_envs = num_envs
@@ -212,12 +325,13 @@ class PPO(nn.Module):
         self.total_steps_done = 0
 
         # Training data
-        self.obs      = torch.zeros((self.steps_per_batch, self.num_envs, self.input_size)).to(device)
-        self.actions  = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
-        self.logprobs = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
-        self.rewards  = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
-        self.dones    = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
-        self.values   = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
+        self.legal_actions_mask = torch.zeros((self.steps_per_batch, self.num_envs, self.num_actions)).to(device)
+        self.obs                = torch.zeros((self.steps_per_batch, self.num_envs, self.input_size)).to(device)
+        self.actions            = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
+        self.logprobs           = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
+        self.rewards            = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
+        self.dones              = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
+        self.values             = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
 
         # Logging
         self.writer = writer
@@ -225,9 +339,16 @@ class PPO(nn.Module):
     def get_value(self, x):
         return self.critic(x)
 
-    def get_action_and_value(self, x, action=None):
-        logits = self.actor(x)
+    def get_action_and_value(self, x, legal_actions_mask=None, action=None):
+        if legal_actions_mask is None:
+            legal_actions_mask = torch.ones((len(x), self.num_actions)).bool()
+        else:
+            legal_actions_mask = legal_actions_mask.bool()
+        
+        logits = torch.full((len(x), self.num_actions), -1e6).to(self.device)
+        logits[legal_actions_mask] = self.actor(x)[legal_actions_mask]
         probs = Categorical(logits=logits)
+            
         if action is None:
             action = probs.sample()
         return action, probs.log_prob(action), probs.entropy(), self.critic(x)
@@ -237,11 +358,14 @@ class PPO(nn.Module):
             time_steps = [time_steps]
 
         obs = torch.Tensor([ts.observations['info_state'][self.player_id] for ts in time_steps]).to(self.device)
+        legal_actions_mask = legal_actions_to_mask(
+            [ts.observations['legal_actions'][self.player_id] for ts in time_steps], self.num_actions
+        ).to(self.device)
         if is_evaluation:
             # Evaluation: no need track data; just sample an action
-            # TODO: assumes single env 
             with torch.no_grad():
-                action, _, _, _ = self.get_action_and_value(obs)
+                action, _, _, _ = self.get_action_and_value(obs, legal_actions_mask)
+            # TODO: assumes single env
             return StepOutput(action=[action.item()], probs=None) 
         else:
             # Train if we're done collecting data
@@ -251,11 +375,12 @@ class PPO(nn.Module):
 
             # Sample action
             with torch.no_grad():
-                actions, logprob, _, value = self.get_action_and_value(obs)
+                actions, logprob, _, value = self.get_action_and_value(obs, legal_actions_mask)
 
             # Store data
             # Note: more data coming in post_step, so don't update step count until then!
             self.obs[self.current_step] = obs
+            self.legal_actions_mask[self.current_step] = legal_actions_mask
             self.values[self.current_step] = value.flatten()
             self.actions[self.current_step] = actions
             self.logprobs[self.current_step] = logprob
@@ -383,7 +508,18 @@ class PPO(nn.Module):
             self.writer.add_scalar("losses/clipfrac", np.mean(clipfracs), self.total_steps_done)
             self.writer.add_scalar("losses/explained_variance", explained_var, self.total_steps_done)
 
-def run_ppo(env, agents, seed, num_envs, num_steps, writer, device):
+            for model_name, model in [('actor', self.actor), ('critic', self.critic)]:
+                for name, param in model.named_parameters():
+                    self.writer.add_histogram(
+                        f"weights/player_{self.player_id}_{model_name}_{name}", 
+                        param.clone().cpu().data.numpy(), 
+                        self.total_steps_done
+                    )
+            
+            self.writer.add_histogram(f'batch/player_{self.player_id}_returns', b_returns.clone().cpu().data.numpy(), self.total_steps_done)
+            self.writer.add_histogram(f'batch/player_{self.player_id}_obs', b_obs.clone().cpu().data.numpy(), self.total_steps_done)
+
+def run_ppo(env, agents, seed, num_envs, num_steps, writer, eval_fn):
     fix_seeds(seed)
     start_time = time.time()
 
@@ -393,13 +529,11 @@ def run_ppo(env, agents, seed, num_envs, num_steps, writer, device):
         if step % 2000 == 0: # TODO: might miss evaluations this way
             logging.info("-" * 80)
             logging.info("Episode %s", step)
-            avg_return = _eval_agent(
-                Environment(pyspiel.load_game('catch'), chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=False, terminal_rewards=False), 
-                agents[0], 
-                100)
+            avg_return = eval_fn(agents)
             logging.info("Avg return: %s", avg_return)
             
-            writer.add_scalar("charts/avg_return", avg_return, step)
+            for i in range(len(agents)):
+                writer.add_scalar(f"charts/avg_return_{i}", avg_return[i], step)
 
         # Note: training loop assumes that each agent will always be called on to play before the game proceeds!
         # Ask each agent to pick an action
@@ -427,15 +561,25 @@ def main():
 
     # Fix seed once here for network initialization
     fix_seeds(args.seed)
-
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
 
     # env setup
-    game = pyspiel.load_game(args.game_name)
+    # game = pyspiel.load_game(args.game_name)
+    game = smart_load_sequential_game('clock_auction', dict(filename=args.game_name))
+    game_config = load_game_config(args.game_name)
+    num_players, num_actions, num_products = game_spec(game, game_config)
     env = VectorEnv([
-        Environment(game, chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=False, terminal_rewards=False) 
+        make_auction_env(args.game_name)
+        # make_catch_env()
         for _ in range(args.num_envs)
     ])
+
+    num_players, num_actions = (1, 3)
+    env = VectorEnv([
+        make_catch_env()
+        for _ in range(args.num_envs)
+    ])
+    # num_players = 
 
     info_state_shape = env.observation_spec()["info_state"]
     info_state_size = np.array(info_state_shape).prod()
@@ -443,7 +587,9 @@ def main():
 
     agents = [PPO(
         info_state_size,
-        game.num_distinct_actions(),
+        num_actions=num_actions,
+        num_players=num_players,
+        player_id=player_id,
         num_envs=args.num_envs,
         steps_per_batch=args.num_steps,
         num_minibatches=args.num_minibatches,
@@ -462,9 +608,18 @@ def main():
         target_kl=args.target_kl,
         device=device,
         writer=writer,
-    )]
+    ) for player_id in range(num_players)]
 
-    run_ppo(env, agents, args.seed, args.num_envs, args.total_timesteps, writer, device)
+    # eval_env = make_auction_env(args.game_name)
+    eval_env = make_catch_env()
+    def eval_fn(agents):
+        return _eval_agent(
+            eval_env,
+            agents, 
+            500
+        )
+
+    run_ppo(env, agents, args.seed, args.num_envs, args.total_timesteps, writer, eval_fn)
 
 if __name__ == "__main__":
     main()
