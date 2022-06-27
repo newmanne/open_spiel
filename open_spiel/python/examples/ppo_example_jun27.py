@@ -4,6 +4,7 @@ import random
 import time
 from distutils.util import strtobool
 from open_spiel.python import rl_agent
+from open_spiel.python import rl_environment
 
 # import gym
 import pyspiel
@@ -61,6 +62,59 @@ class VectorEnv(object):
 
         time_steps = [self.envs[i].reset() if envs_to_reset[i] else self.envs[i].get_time_step() for i in range(len(self.envs))]
         return time_steps
+
+
+class EnvDecorator(object):
+
+    _env: Environment = None
+
+    def __init__(self, env: Environment) -> None:
+        self._env = env
+        self.env_attributes = [attribute for attribute in self._env.__dict__.keys()]
+        self.env_methods = [m for m in dir(self._env) if not m.startswith('_') and m not in self.env_attributes]
+
+    def __getattr__(self, func):
+        if func in self.env_methods:
+            def method(*args):
+                return getattr(self._env, func)(*args)
+            return method
+        elif func in self.agent_attributes:
+            return getattr(self._env, func)
+        else:
+            # For nesting decorators
+            if isinstance(self._env, EnvDecorator):
+                return self._env.__getattr__(func)
+            raise AttributeError(func)
+
+    def step(self, step_outputs):
+        _ = self._env.step(step_outputs)
+        return self.get_time_step()
+
+    def reset(self):
+        _ = self._env.reset()
+        return self.get_time_step()
+
+    @property
+    def env(self) -> Environment:
+        return self._env
+
+class NormalizingEnvDecorator(EnvDecorator):
+
+    def __init__(self, env: Environment, reward_normalizer: torch.tensor = None, info_state_normalizer: torch.tensor = None) -> None:
+        super().__init__(env)
+        self.reward_normalizer = reward_normalizer
+        self.info_state_normalizer = info_state_normalizer
+    
+    def get_time_step(self):
+        time_step = self._env.get_time_step()
+        if self.reward_normalizer is not None:
+            time_step.rewards[:] = (torch.tensor(time_step.rewards) / self.reward_normalizer).tolist() 
+
+        if self.info_state_normalizer is not None:
+            for p in len(time_step.observations['info_state']):
+                time_step.observations['info_state'][p] = (torch.tensor(time_step.observations['info_state'][p]) / self.info_state_normalizer).tolist()
+
+        return time_step
 
 
 def setUpLogging():
@@ -266,14 +320,6 @@ class PPO(nn.Module):
     def get_value(self, x):
         return self.critic(x)
 
-    # def get_action_and_value(self, x, legal_actions_mask=None, action=None):
-    #     logits = self.actor(x)
-    #     probs = Categorical(logits=logits)
-    #     if action is None:
-    #         action = probs.sample()
-    #     return action, probs.probs, probs.log_prob(action), probs.entropy(), self.critic(x)
-
-
     def get_action_and_value(self, x, legal_actions_mask=None, action=None):
         if legal_actions_mask is None:
             # All valid
@@ -288,7 +334,6 @@ class PPO(nn.Module):
         if action is None:
             action = probs.sample()
         return action, probs.probs, probs.log_prob(action), probs.entropy(), self.critic(x)
-
 
     def step(self, time_step, is_evaluation=False):
         if is_evaluation:
@@ -309,7 +354,7 @@ class PPO(nn.Module):
                 legal_actions_mask = legal_actions_to_mask(
                     [ts.observations['legal_actions'][self.player_id] for ts in time_step], self.num_actions
                 ).to(self.device)
-                action, probs, logprob, _, value = agent.get_action_and_value(obs, legal_actions_mask=legal_actions_mask)
+                action, probs, logprob, _, value = self.get_action_and_value(obs, legal_actions_mask=legal_actions_mask)
 
                 # store
                 self.legal_actions_mask[self.cur_batch_idx] = legal_actions_mask
@@ -323,15 +368,15 @@ class PPO(nn.Module):
 
 
     def post_step(self, reward, done):
-        self.rewards[self.cur_batch_idx] = torch.tensor(reward).to(device).view(-1) / 100
-        self.dones[self.cur_batch_idx] = torch.tensor(done).to(device).view(-1)
+        self.rewards[self.cur_batch_idx] = torch.tensor(reward).to(self.device).view(-1) / 100
+        self.dones[self.cur_batch_idx] = torch.tensor(done).to(self.device).view(-1)
 
         self.total_steps_done += self.num_envs
         self.cur_batch_idx += 1
 
             
     def learn(self, time_step):
-        next_obs = torch.Tensor([ts.observations['info_state'][self.player_id] for ts in time_step]).to(device)
+        next_obs = torch.Tensor([ts.observations['info_state'][self.player_id] for ts in time_step]).to(self.device)
 
         # Annealing the rate if instructed to do so.
         if self.num_annealing_updates is not None:
@@ -343,7 +388,7 @@ class PPO(nn.Module):
         with torch.no_grad():
             next_value = self.get_value(next_obs).reshape(1, -1)
             if self.gae:
-                advantages = torch.zeros_like(self.rewards).to(device)
+                advantages = torch.zeros_like(self.rewards).to(self.device)
                 lastgaelam = 0
                 for t in reversed(range(self.steps_per_batch)):
                     nextvalues = next_value if t == self.steps_per_batch - 1 else self.values[t + 1]
@@ -352,7 +397,7 @@ class PPO(nn.Module):
                     advantages[t] = lastgaelam = delta + self.gamma * self.gae_lambda * nextnonterminal * lastgaelam
                 returns = advantages + self.values
             else:
-                returns = torch.zeros_like(self.rewards).to(device)
+                returns = torch.zeros_like(self.rewards).to(self.device)
                 for t in reversed(range(self.steps_per_batch)):
                     next_return = next_value if t == self.steps_per_batch - 1 else returns[t + 1]
                     nextnonterminal = 1.0 - self.dones[t]
@@ -361,7 +406,7 @@ class PPO(nn.Module):
 
         # flatten the batch
         b_legal_actions = self.legal_actions_mask.reshape((-1, self.num_actions))
-        b_obs = self.obs.reshape((-1, info_state_size))
+        b_obs = self.obs.reshape((-1, self.input_size))
         b_logprobs = self.logprobs.reshape(-1)
         b_actions = self.actions.reshape(-1)
         b_advantages = advantages.reshape(-1)
@@ -442,8 +487,7 @@ class PPO(nn.Module):
         self.updates_done += 1
         self.cur_batch_idx = 0
 
-
-if __name__ == "__main__":
+def main():
     setUpLogging()
     args = parse_args()
     run_name = f"{args.game_name}__{args.exp_name}__{args.seed}__{int(time.time())}"
@@ -466,6 +510,10 @@ if __name__ == "__main__":
     game = pyspiel.load_game(args.game_name)
     envs = VectorEnv([
         Environment(game, chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=False, terminal_rewards=False) 
+        # NormalizingEnvDecorator(
+        #     Environment(game, chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=False, terminal_rewards=False), 
+        #     reward_normalizer=torch.tensor([100.])
+        # )
         for _ in range(args.num_envs)
     ])
 
@@ -522,3 +570,7 @@ if __name__ == "__main__":
 
     # envs.close()
     writer.close()
+
+
+if __name__ == "__main__":
+    main()
