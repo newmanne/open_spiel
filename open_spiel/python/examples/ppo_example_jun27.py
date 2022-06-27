@@ -333,7 +333,7 @@ class PPO(nn.Module):
             
         if action is None:
             action = probs.sample()
-        return action, probs.probs, probs.log_prob(action), probs.entropy(), self.critic(x)
+        return action, probs.log_prob(action), probs.entropy(), self.critic(x), probs.probs
 
     def step(self, time_step, is_evaluation=False):
         if is_evaluation:
@@ -345,7 +345,7 @@ class PPO(nn.Module):
                     [ts.observations['legal_actions'][self.player_id] for ts in time_step], self.num_actions
                 ).to(self.device)
                 obs = torch.Tensor([ts.observations['info_state'][self.player_id] for ts in time_step]).to(self.device)
-                action, probs, log_prob, entropy, value = self.get_action_and_value(obs, legal_actions_mask=legal_actions_mask)
+                action, log_prob, entropy, value, probs = self.get_action_and_value(obs, legal_actions_mask=legal_actions_mask)
                 return StepOutput(action=[action.item()], probs=probs)
         else:
             with torch.no_grad():
@@ -354,7 +354,7 @@ class PPO(nn.Module):
                 legal_actions_mask = legal_actions_to_mask(
                     [ts.observations['legal_actions'][self.player_id] for ts in time_step], self.num_actions
                 ).to(self.device)
-                action, probs, logprob, _, value = self.get_action_and_value(obs, legal_actions_mask=legal_actions_mask)
+                action, logprob, _, value, probs = self.get_action_and_value(obs, legal_actions_mask=legal_actions_mask)
 
                 # store
                 self.legal_actions_mask[self.cur_batch_idx] = legal_actions_mask
@@ -368,7 +368,7 @@ class PPO(nn.Module):
 
 
     def post_step(self, reward, done):
-        self.rewards[self.cur_batch_idx] = torch.tensor(reward).to(self.device).view(-1) / 100
+        self.rewards[self.cur_batch_idx] = torch.tensor(reward).to(self.device).view(-1)
         self.dones[self.cur_batch_idx] = torch.tensor(done).to(self.device).view(-1)
 
         self.total_steps_done += self.num_envs
@@ -422,7 +422,7 @@ class PPO(nn.Module):
                 end = start + self.minibatch_size
                 mb_inds = b_inds[start:end]
 
-                _, _, newlogprob, entropy, newvalue = self.get_action_and_value(b_obs[mb_inds], legal_actions_mask=b_legal_actions[mb_inds], action=b_actions.long()[mb_inds])
+                _, newlogprob, entropy, newvalue, _ = self.get_action_and_value(b_obs[mb_inds], legal_actions_mask=b_legal_actions[mb_inds], action=b_actions.long()[mb_inds])
                 logratio = newlogprob - b_logprobs[mb_inds]
                 ratio = logratio.exp()
 
@@ -509,12 +509,10 @@ def main():
     # (Greg change)
     game = pyspiel.load_game(args.game_name)
     envs = VectorEnv([
-        Environment(game, chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=False, terminal_rewards=False) 
-        # NormalizingEnvDecorator(
-        #     Environment(game, chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=False, terminal_rewards=False), 
-        #     reward_normalizer=torch.tensor([100.])
-        # )
-        for _ in range(args.num_envs)
+        NormalizingEnvDecorator(
+            Environment(game, chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=False, terminal_rewards=False), 
+            reward_normalizer=torch.tensor([100.])
+        )        for _ in range(args.num_envs)
     ])
 
 
