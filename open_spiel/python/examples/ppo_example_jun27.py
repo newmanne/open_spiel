@@ -10,7 +10,6 @@ import pyspiel
 from open_spiel.python.rl_environment import Environment
 from open_spiel.python.examples.ubc_utils import UBCChanceEventSampler
 import logging
-from open_spiel.python.examples.single_agent_catch import _eval_agent
 from open_spiel.python.rl_agent import StepOutput
 import sys
 
@@ -22,33 +21,12 @@ import torch.optim as optim
 from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
 
-# class VectorEnv(object):
-#     """
-#     Greg change: wrapper to make OpenSpiel envs compatible with this code
-#     """
-#     def __init__(self, envs):
-#         self.envs = envs
+def legal_actions_to_mask(legal_actions_list, num_actions):
+    legal_actions_mask = torch.zeros((len(legal_actions_list), num_actions), dtype=torch.bool)
+    for i, legal_actions in enumerate(legal_actions_list):
+        legal_actions_mask[i, legal_actions] = 1
+    return legal_actions_mask
 
-#     def observation_spec(self):
-#         return self.envs[0].observation_spec()
-
-#     def step(self, actions):
-#         player_id = 0
-#         time_steps = [self.envs[i].step([actions[i]]) for i in range(len(self.envs))]
-#         next_obs = [step.observations['info_state'][player_id] for step in time_steps]
-#         reward = [step.rewards[player_id] for step in time_steps]
-#         done = [step.last() for step in time_steps]
-#         info = [{} for step in time_steps]
-#         return next_obs, reward, done, info
-
-#     def reset(self, envs_to_reset=None):
-#         player_id = 0
-#         if envs_to_reset is None:
-#             envs_to_reset = [True for _ in range(len(self.envs))]
-
-#         time_steps = [self.envs[i].reset() if envs_to_reset[i] else self.envs[i].get_time_step() for i in range(len(self.envs))]
-#         next_obs = [step.observations['info_state'][player_id] for step in time_steps]
-#         return next_obs
 
 class VectorEnv(object):
     """
@@ -271,6 +249,7 @@ class PPO(nn.Module):
         self.optimizer = optim.Adam(self.parameters(), lr=self.learning_rate, eps=1e-5)
         
         # Initialize training buffers
+        self.legal_actions_mask = torch.zeros((self.steps_per_batch, self.num_envs, self.num_actions), dtype=torch.bool).to(device)
         self.obs = torch.zeros((self.steps_per_batch, self.num_envs, self.input_size)).to(device)
         self.actions = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
         self.logprobs = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
@@ -287,46 +266,73 @@ class PPO(nn.Module):
     def get_value(self, x):
         return self.critic(x)
 
-    def get_action_and_value(self, x, action=None):
-        logits = self.actor(x)
+    # def get_action_and_value(self, x, legal_actions_mask=None, action=None):
+    #     logits = self.actor(x)
+    #     probs = Categorical(logits=logits)
+    #     if action is None:
+    #         action = probs.sample()
+    #     return action, probs.probs, probs.log_prob(action), probs.entropy(), self.critic(x)
+
+
+    def get_action_and_value(self, x, legal_actions_mask=None, action=None):
+        if legal_actions_mask is None:
+            # All valid
+            legal_actions_mask = torch.ones((len(x), self.num_actions)).bool()
+        
+        # Fill with invalids
+        INVALID_ACTION_PENALTY = -1e6
+        logits = torch.full((len(x), self.num_actions), INVALID_ACTION_PENALTY).to(self.device)
+        logits[legal_actions_mask] = self.actor(x)[legal_actions_mask]
         probs = Categorical(logits=logits)
+            
         if action is None:
             action = probs.sample()
-        return action, probs.log_prob(action), probs.entropy(), self.critic(x)
+        return action, probs.probs, probs.log_prob(action), probs.entropy(), self.critic(x)
+
 
     def step(self, time_step, is_evaluation=False):
         if is_evaluation:
+            if not isinstance(time_step, list):
+                time_step = [time_step]
+
             with torch.no_grad():
-                obs = torch.Tensor(time_step.observations['info_state'][self.player_id]).to(self.device)
-                action, log_prob, entropy, value = self.get_action_and_value(obs)
-                return StepOutput(action=[action.item()], probs=None)
+                legal_actions_mask = legal_actions_to_mask(
+                    [ts.observations['legal_actions'][self.player_id] for ts in time_step], self.num_actions
+                ).to(self.device)
+                obs = torch.Tensor([ts.observations['info_state'][self.player_id] for ts in time_step]).to(self.device)
+                action, probs, log_prob, entropy, value = self.get_action_and_value(obs, legal_actions_mask=legal_actions_mask)
+                return StepOutput(action=[action.item()], probs=probs)
         else:
             with torch.no_grad():
                 # act
                 obs = torch.Tensor([ts.observations['info_state'][self.player_id] for ts in time_step]).to(self.device)
-                action, logprob, _, value = agent.get_action_and_value(obs)
-
+                legal_actions_mask = legal_actions_to_mask(
+                    [ts.observations['legal_actions'][self.player_id] for ts in time_step], self.num_actions
+                ).to(self.device)
+                action, probs, logprob, _, value = agent.get_action_and_value(obs, legal_actions_mask=legal_actions_mask)
 
                 # store
-                agent.obs[self.cur_batch_idx] = next_obs
-                agent.actions[self.cur_batch_idx] = action
-                agent.logprobs[self.cur_batch_idx] = logprob
-                agent.values[self.cur_batch_idx] = value.flatten()
+                self.legal_actions_mask[self.cur_batch_idx] = legal_actions_mask
+                self.obs[self.cur_batch_idx] = obs
+                self.actions[self.cur_batch_idx] = action
+                self.logprobs[self.cur_batch_idx] = logprob
+                self.values[self.cur_batch_idx] = value.flatten()
 
-
-                agent_output = [StepOutput(action=a.item(), probs=None) for a in action] 
+                agent_output = [StepOutput(action=a.item(), probs=probs) for a in action] 
                 return agent_output
 
 
     def post_step(self, reward, done):
-        agent.rewards[self.cur_batch_idx - 1] = torch.tensor(reward).to(device).view(-1) / 100
-        agent.dones[self.cur_batch_idx - 1] = torch.tensor(done).to(device).view(-1)
+        self.rewards[self.cur_batch_idx] = torch.tensor(reward).to(device).view(-1) / 100
+        self.dones[self.cur_batch_idx] = torch.tensor(done).to(device).view(-1)
 
         self.total_steps_done += self.num_envs
         self.cur_batch_idx += 1
 
             
-    def learn(self, next_obs):
+    def learn(self, time_step):
+        next_obs = torch.Tensor([ts.observations['info_state'][self.player_id] for ts in time_step]).to(device)
+
         # Annealing the rate if instructed to do so.
         if self.num_annealing_updates is not None:
             frac = 1.0 - (self.updates_done) / self.num_annealing_updates
@@ -354,6 +360,7 @@ class PPO(nn.Module):
                 advantages = returns - self.values
 
         # flatten the batch
+        b_legal_actions = self.legal_actions_mask.reshape((-1, self.num_actions))
         b_obs = self.obs.reshape((-1, info_state_size))
         b_logprobs = self.logprobs.reshape(-1)
         b_actions = self.actions.reshape(-1)
@@ -370,7 +377,7 @@ class PPO(nn.Module):
                 end = start + self.minibatch_size
                 mb_inds = b_inds[start:end]
 
-                _, newlogprob, entropy, newvalue = self.get_action_and_value(b_obs[mb_inds], b_actions.long()[mb_inds])
+                _, _, newlogprob, entropy, newvalue = self.get_action_and_value(b_obs[mb_inds], legal_actions_mask=b_legal_actions[mb_inds], action=b_actions.long()[mb_inds])
                 logratio = newlogprob - b_logprobs[mb_inds]
                 ratio = logratio.exp()
 
@@ -421,18 +428,19 @@ class PPO(nn.Module):
         explained_var = np.nan if var_y == 0 else 1 - np.var(y_true - y_pred) / var_y
 
         # TRY NOT TO MODIFY: record rewards for plotting purposes
-        self.writer.add_scalar("charts/learning_rate", self.optimizer.param_groups[0]["lr"], global_step)
-        self.writer.add_scalar("losses/value_loss", v_loss.item(), global_step)
-        self.writer.add_scalar("losses/policy_loss", pg_loss.item(), global_step)
-        self.writer.add_scalar("losses/entropy", entropy_loss.item(), global_step)
-        self.writer.add_scalar("losses/old_approx_kl", old_approx_kl.item(), global_step)
-        self.writer.add_scalar("losses/approx_kl", approx_kl.item(), global_step)
-        self.writer.add_scalar("losses/clipfrac", np.mean(clipfracs), global_step)
-        self.writer.add_scalar("losses/explained_variance", explained_var, global_step)
-        self.writer.add_scalar("charts/SPS", int(global_step / (time.time() - self.start_time)), global_step)
+        self.writer.add_scalar("charts/learning_rate", self.optimizer.param_groups[0]["lr"], self.total_steps_done)
+        self.writer.add_scalar("losses/value_loss", v_loss.item(), self.total_steps_done)
+        self.writer.add_scalar("losses/policy_loss", pg_loss.item(), self.total_steps_done)
+        self.writer.add_scalar("losses/entropy", entropy_loss.item(), self.total_steps_done)
+        self.writer.add_scalar("losses/old_approx_kl", old_approx_kl.item(), self.total_steps_done)
+        self.writer.add_scalar("losses/approx_kl", approx_kl.item(), self.total_steps_done)
+        self.writer.add_scalar("losses/clipfrac", np.mean(clipfracs), self.total_steps_done)
+        self.writer.add_scalar("losses/explained_variance", explained_var, self.total_steps_done)
+        self.writer.add_scalar("charts/SPS", int(self.total_steps_done / (time.time() - self.start_time)), self.total_steps_done)
 
         # Update counters 
         self.updates_done += 1
+        self.cur_batch_idx = 0
 
 
 if __name__ == "__main__":
@@ -490,55 +498,27 @@ if __name__ == "__main__":
         writer=writer,
     )
 
-    # TRY NOT TO MODIFY: start the game
-    global_step = 0
     time_step = envs.reset()
-    next_obs = torch.Tensor([ts.observations['info_state'][0] for ts in time_step]).to(device)
-
-
     for update in range(1, num_updates + 1):
         for step in range(0, args.num_steps):
-            global_step += 1 * args.num_envs
-            agent.obs[step] = next_obs
-
-            # ALGO LOGIC: action logic
-            with torch.no_grad():
-                action, logprob, _, value = agent.get_action_and_value(next_obs)
-                agent_output = [StepOutput(action=a.item(), probs=None) for a in action] 
-
-
-            # TRY NOT TO MODIFY: execute the game and log data.
+            agent_output = agent.step(time_step)
             time_step, reward, done = envs.step(agent_output, reset_if_done=True)
-            
-            # next_obs = envs.reset(envs_to_reset=done) # Greg change: reset env if done
-
-            agent.actions[step] = action
-            agent.logprobs[step] = logprob
-            agent.values[step] = value.flatten()
-            agent.rewards[step] = torch.tensor(reward).to(device).view(-1) / 100
-            agent.dones[step] = torch.tensor(done).to(device).view(-1)
-            next_obs = torch.Tensor([ts.observations['info_state'][0] for ts in time_step]).to(device)
-            # next_obs = torch.Tensor(next_obs).to(device)
-
-            # want:
-            # agent_output = agent.step(time_step)
-            # envs.step(agent_output.actions)
-
+            agent.post_step(reward, done)
 
         # Learn
-        agent.learn(next_obs)
+        agent.learn(time_step)
 
         # Evaluate
         if update % 2 == 0:
             logging.info("-" * 80)
-            logging.info("Episode %s", global_step)
+            logging.info("Episode %s", agent.total_steps_done)
             # logging.info("Loss: %s", loss.detach().cpu().numpy())
             avg_return = _eval_agent(
                 Environment(pyspiel.load_game(args.game_name), chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=False, terminal_rewards=False), 
                 agent, 
                 100)
             logging.info("Avg return: %s", avg_return)
-            writer.add_scalar('charts/player_0_avg_returns', avg_return, global_step)
+            writer.add_scalar('charts/player_0_avg_returns', avg_return, agent.total_steps_done)
 
     # envs.close()
     writer.close()
