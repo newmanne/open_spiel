@@ -13,6 +13,7 @@ from open_spiel.python.examples.ubc_utils import UBCChanceEventSampler
 import logging
 from open_spiel.python.rl_agent import StepOutput
 import sys
+import open_spiel.python.games
 
 
 import numpy as np
@@ -35,6 +36,9 @@ class VectorEnv(object):
     """
     def __init__(self, envs):
         self.envs = envs
+        
+    def __len__(self):
+        return len(self.envs)
 
     def observation_spec(self):
         return self.envs[0].observation_spec()
@@ -210,6 +214,32 @@ def _eval_agent(env, agent, num_episodes):
         rewards += episode_reward
     return rewards / num_episodes
     
+def _eval_agent_parallel(env, agent, num_episodes):
+    """Evaluates `agent` for `num_episodes`."""
+    if isinstance(env, VectorEnv):
+        num_envs = len(env)
+    else:
+        num_envs = 1
+
+    total_rewards = np.zeros(num_envs)
+    episode_counter = num_envs
+    time_step = env.reset()
+
+    while episode_counter < num_episodes:
+        agent_output = agent.step(time_step, is_evaluation=True)
+        time_step, rewards, dones = env.step(agent_output, reset_if_done=True)
+        total_rewards += np.array(rewards)[:, agent.player_id]
+        episode_counter += sum(dones)
+
+    finished = np.zeros(num_envs, dtype=bool)
+    while not np.all(finished):
+        agent_output = agent.step(time_step, is_evaluation=True)
+        time_step, rewards, dones = env.step(agent_output, reset_if_done=True)
+        total_rewards[~finished] += np.array(rewards)[~finished, agent.player_id]
+        finished |= dones
+
+    return total_rewards.sum() / episode_counter
+
 class PPONetwork(nn.Module):
     def __init__(self, mode, input_size, num_actions=1, hidden_sizes=[64, 64]):
         super().__init__()
@@ -346,11 +376,12 @@ class PPO(nn.Module):
                 ).to(self.device)
                 obs = torch.Tensor([ts.observations['info_state'][self.player_id] for ts in time_step]).to(self.device)
                 action, log_prob, entropy, value, probs = self.get_action_and_value(obs, legal_actions_mask=legal_actions_mask)
-                return StepOutput(action=[action.item()], probs=probs)
+
+                return [StepOutput(action=a.item(), probs=None) for a in action]
         else:
             with torch.no_grad():
                 # act
-                obs = torch.Tensor([ts.observations['info_state'][self.player_id] for ts in time_step]).to(self.device)
+                obs = torch.Tensor(np.array([ts.observations['info_state'][self.player_id] for ts in time_step])).to(self.device)
                 legal_actions_mask = legal_actions_to_mask(
                     [ts.observations['legal_actions'][self.player_id] for ts in time_step], self.num_actions
                 ).to(self.device)
@@ -363,7 +394,7 @@ class PPO(nn.Module):
                 self.logprobs[self.cur_batch_idx] = logprob
                 self.values[self.cur_batch_idx] = value.flatten()
 
-                agent_output = [StepOutput(action=a.item(), probs=probs) for a in action] 
+                agent_output = [StepOutput(action=a.item(), probs=None) for a in action] 
                 return agent_output
 
 
@@ -511,7 +542,7 @@ def main():
     envs = VectorEnv([
         NormalizingEnvDecorator(
             Environment(game, chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=False, terminal_rewards=False), 
-            reward_normalizer=torch.tensor([100.])
+            reward_normalizer=torch.tensor([3200.])
         )        for _ in range(args.num_envs)
     ])
 
@@ -559,15 +590,19 @@ def main():
             logging.info("-" * 80)
             logging.info("Episode %s", agent.total_steps_done)
             # logging.info("Loss: %s", loss.detach().cpu().numpy())
-            avg_return = _eval_agent(
-                Environment(pyspiel.load_game(args.game_name), chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=False, terminal_rewards=False), 
+            avg_return = _eval_agent_parallel(
+                VectorEnv([
+                    Environment(game, chance_event_sampler=UBCChanceEventSampler(), all_simultaneous=False, terminal_rewards=False, enable_legality_check=True) 
+                    for _ in range(64)
+                ]),
                 agent, 
-                100)
+                512)
             logging.info("Avg return: %s", avg_return)
             writer.add_scalar('charts/player_0_avg_returns', avg_return, agent.total_steps_done)
 
     # envs.close()
     writer.close()
+    logging.info("ALL DONE. GOODBYE. Have a pleasant day :)")
 
 
 if __name__ == "__main__":
