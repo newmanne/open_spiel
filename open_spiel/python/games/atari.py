@@ -1,34 +1,16 @@
-# Copyright 2019 DeepMind Technologies Ltd. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# Lint as python3
-
-import os
-from typing import Callable
-
 import gym
 import numpy as np
 import pyspiel
 
-from stable_baselines3.common.atari_wrappers import (  # isort:skip
+from stable_baselines3.common.atari_wrappers import (
     ClipRewardEnv,
     EpisodicLifeEnv,
     FireResetEnv,
     MaxAndSkipEnv,
+    NoopResetEnv
 )
 
-### NOTE: Bug w/ numpy rand
+### NOTE: We include this wrapper by hand because the default wrapper threw errors (see modified lines).
 class NoopResetEnv(gym.Wrapper):
     """
     Sample initial states by taking random number of no-ops on reset.
@@ -49,7 +31,9 @@ class NoopResetEnv(gym.Wrapper):
         if self.override_num_noops is not None:
             noops = self.override_num_noops
         else:
+          #### MODIFIED LINES ###
           noops = self.unwrapped.np_random.integers(1, self.noop_max + 1)
+          ### END MODIFIED LIENS ###
         assert noops > 0
         obs = np.zeros(0)
         for _ in range(noops):
@@ -87,18 +71,19 @@ class AtariGame(pyspiel.Game):
 
   def __init__(self, params=None):
     super().__init__(_GAME_TYPE, _GAME_INFO, params or dict())
-    # TODO: Doubling up on defaults with above I think?
-    self.gym_id = params.get('gym_id', 'ALE/Breakout-v5')
+    self.gym_id = params.get('gym_id', 'BreakoutNoFrameskip-v4')
     self.seed = params.get('seed', 1)
     self.idx = params.get('idx', 0)
     self.capture_video = params.get('capture_video', False)
-    self.run_name = params.get('run_name', 'abcde')
+    self.run_name = params.get('run_name', 'default')
     self.use_episodic_life_env = params.get('use_episodic_life_env', True)
 
     env = gym.make(self.gym_id) 
     env = gym.wrappers.RecordEpisodeStatistics(env)
     if self.capture_video and self.idx == 0:
         env = gym.wrappers.RecordVideo(env, f"videos/{self.run_name}")
+    
+    # Wrappers are a bit specialized right nwo to Breakout - different games may want different wrappers.
     env = NoopResetEnv(env, noop_max=30)
     env = MaxAndSkipEnv(env, skip=4)
     if self.use_episodic_life_env:
@@ -156,7 +141,6 @@ class AtariState(pyspiel.State):
     return self.observation
 
   def _action_to_string(self, player, action):
-    """Action -> string."""
     return self.env.get_action_meanings()[action]
 
   def is_terminal(self):
