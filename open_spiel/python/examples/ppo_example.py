@@ -150,7 +150,6 @@ def main():
         )
         agent_fn = PPOAgent
 
-
     game = envs.envs[0]._game
     info_state_shape = tuple(np.array(envs.observation_spec()["info_state"]).flatten()) 
     num_updates = args.total_timesteps // args.batch_size

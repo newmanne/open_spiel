@@ -384,8 +384,9 @@ def apply_optional_overrides(args, argv, config):
 class UBCChanceEventSampler(object):
     """Default sampler for external chance events."""
 
-    def __init__(self, deterministic_types=None) -> None:
+    def __init__(self, seed=None, deterministic_types=None) -> None:
         self.deterministic_types = deterministic_types
+        self.seed = None # TODO: actually use this
 
     def __call__(self, state, reset=False):
         """Sample a chance event in the given state."""
