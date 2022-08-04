@@ -135,8 +135,6 @@ class DQN(rl_agent.AbstractAgent):
 
     # This call to locals() is used to store every argument used to initialize
     # the class instance, so it can be copied with no hyperparameter change.
-
-    self._double_dqn = False
     self._kwargs = locals()
 
     self.player_id = player_id
@@ -325,19 +323,12 @@ class DQN(rl_agent.AbstractAgent):
 
     self._q_values = self._q_network(info_states)
     self._target_q_values = self._target_q_network(next_info_states).detach()
-    if self._double_dqn:
-      next_q_values = self._q_network(next_info_states).cpu().detach()
 
+    illegal_actions_mask = 1 - legal_actions_mask
+    legal_target_q_values = self._target_q_values.masked_fill(
+        illegal_actions_mask, ILLEGAL_ACTION_LOGITS_PENALTY)
+    max_next_q = torch.max(legal_target_q_values, dim=1)[0]
 
-    illegal_actions = 1 - legal_actions_mask
-    illegal_logits = illegal_actions * ILLEGAL_ACTION_LOGITS_PENALTY
-    if self._double_dqn:
-      # pick the action that has the highest Q value according to the normal Q network, and
-      max_indices = torch.argmax(next_q_values + illegal_logits, dim=1)
-      # grab the Q value of that action from the target Q network
-      max_next_q = torch.gather(self._target_q_values, 1, max_indices.view(-1, 1)).squeeze()
-    else:
-      max_next_q = torch.max(self._target_q_values + illegal_logits, dim=1)[0]
     target = (
         rewards + (1 - are_final_steps) * self._discount_factor * max_next_q)
     action_indices = torch.stack([

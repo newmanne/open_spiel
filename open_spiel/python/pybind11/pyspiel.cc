@@ -17,7 +17,6 @@
 
 #include "open_spiel/algorithms/matrix_game_utils.h"
 #include "open_spiel/algorithms/nfg_writer.h"
-#include "open_spiel/algorithms/get_all_infostates.h"
 #include "open_spiel/algorithms/tensor_game_utils.h"
 #include "open_spiel/canonical_game_strings.h"
 #include "open_spiel/game_parameters.h"
@@ -600,10 +599,6 @@ PYBIND11_MODULE(pyspiel, m) {
             py::cpp_function(&testing::DefaultStateChecker),
         py::arg("mean_field_population") = -1, "Run the C++ tests on a game");
 
-
-  // TODO: Really should be in algortihms.cc or something
-  m.def("get_all_infostates", &open_spiel::algorithms::GetAllInformationStates, py::arg("game"), py::arg("depth_limit") = -1);
-
   // Set an error handler that will raise exceptions. These exceptions are for
   // the Python interface only. When used from C++, OpenSpiel will never raise
   // exceptions - the process will be terminated instead.
@@ -612,7 +607,6 @@ PYBIND11_MODULE(pyspiel, m) {
     throw SpielException(string);
   });
   py::register_exception<SpielException>(m, "SpielError", PyExc_RuntimeError);
-
 
   // Register other bits of the API.
   init_pyspiel_bots(m);                   // Bots and bot-related algorithms.

@@ -21,7 +21,6 @@
 #include "open_spiel/algorithms/cfr_br.h"
 #include "open_spiel/algorithms/deterministic_policy.h"
 #include "open_spiel/algorithms/expected_returns.h"
-#include "open_spiel/algorithms/explorative_cfr.h"
 #include "open_spiel/algorithms/external_sampling_mccfr.h"
 #include "open_spiel/algorithms/is_mcts.h"
 #include "open_spiel/algorithms/mcts.h"
@@ -39,15 +38,9 @@ namespace {
 using ::open_spiel::ActionsAndProbs;
 using ::open_spiel::algorithms::Exploitability;
 using ::open_spiel::algorithms::NashConv;
-using ::open_spiel::algorithms::PlayerRegrets;
 using ::open_spiel::algorithms::TabularBestResponse;
 using ::open_spiel::algorithms::TabularBestResponseMDP;
 using ::open_spiel::algorithms::TabularBestResponseMDPInfo;
-using ::open_spiel::algorithms::ValuesMapT;
-using ::open_spiel::algorithms::EpsilonCFRSolver;
-using ::open_spiel::algorithms::ConditionalValuesEntry;
-using ::open_spiel::algorithms::ConditionalValuesTable;
-using ::open_spiel::algorithms::BRInfo;
 
 namespace py = ::pybind11;
 }  // namespace
@@ -100,6 +93,29 @@ void init_pyspiel_policy(py::module& m) {
       .def("policy_table",
            py::overload_cast<>(&open_spiel::TabularPolicy::PolicyTable));
 
+  py::class_<open_spiel::PartialTabularPolicy,
+             std::shared_ptr<open_spiel::PartialTabularPolicy>,
+             open_spiel::TabularPolicy>(
+      m, "PartialTabularPolicy")
+      .def(py::init<>())
+      .def(py::init<const std::unordered_map<std::string, ActionsAndProbs>&>())
+      .def(py::init<const std::unordered_map<std::string, ActionsAndProbs>&,
+                    std::shared_ptr<Policy>>())
+      .def("get_state_policy",
+          (ActionsAndProbs(open_spiel::Policy::*)(const State&) const)
+          &open_spiel::PartialTabularPolicy::GetStatePolicy)
+      .def("get_state_policy",
+          (ActionsAndProbs(open_spiel::Policy::*)(const State&, Player) const)
+          &open_spiel::PartialTabularPolicy::GetStatePolicy)
+      .def("get_state_policy",
+           (ActionsAndProbs(open_spiel::Policy::*)(const std::string&) const)
+          &open_spiel::PartialTabularPolicy::GetStatePolicy)
+      .def("set_prob", &open_spiel::PartialTabularPolicy::SetProb)
+      .def("set_state_policy",
+           &open_spiel::PartialTabularPolicy::SetStatePolicy)
+      .def("policy_table",
+           py::overload_cast<>(&open_spiel::PartialTabularPolicy::PolicyTable));
+
   m.def("UniformRandomPolicy", &open_spiel::GetUniformPolicy);
   py::class_<open_spiel::UniformPolicy,
              std::shared_ptr<open_spiel::UniformPolicy>, open_spiel::Policy>(
@@ -118,8 +134,6 @@ void init_pyspiel_policy(py::module& m) {
       .def(py::init<const Game&>())
       .def("evaluate_and_update_policy",
            &open_spiel::algorithms::CFRSolver::EvaluateAndUpdatePolicy)
-      .def("info_state_values_table",
-           &open_spiel::algorithms::CFRSolver::InfoStateValuesTable)
       .def("current_policy", &open_spiel::algorithms::CFRSolver::CurrentPolicy)
       .def("average_policy", &open_spiel::algorithms::CFRSolver::AveragePolicy)
       .def("tabular_average_policy",
@@ -168,17 +182,6 @@ void init_pyspiel_policy(py::module& m) {
       .value("SIMPLE", open_spiel::algorithms::AverageType::kSimple)
       .value("FULL", open_spiel::algorithms::AverageType::kFull);
 
-
-  py::class_<open_spiel::algorithms::CFRInfoStateValues> CFRInfoStateValues(m, "CFRInfoStateValues");
-  CFRInfoStateValues.def_readonly("legal_actions", &open_spiel::algorithms::CFRInfoStateValues::legal_actions)
-                    .def_readonly("cumulative_regrets", &open_spiel::algorithms::CFRInfoStateValues::cumulative_regrets)
-                    .def_readonly("cumulative_policy", &open_spiel::algorithms::CFRInfoStateValues::cumulative_policy)
-                    .def_readonly("current_policy", &open_spiel::algorithms::CFRInfoStateValues::current_policy)
-                    .def_readonly("instantaneous_regrets", &open_spiel::algorithms::CFRInfoStateValues::instantaneous_regrets)
-                    .def("apply_regret_matching", &open_spiel::algorithms::CFRInfoStateValues::ApplyRegretMatching)
-                    ;
-
-
   py::class_<open_spiel::algorithms::ExternalSamplingMCCFRSolver>(
       m, "ExternalSamplingMCCFRSolver")
       .def(py::init<const Game&, int, open_spiel::algorithms::AverageType>(),
@@ -189,10 +192,6 @@ void init_pyspiel_policy(py::module& m) {
                                    ExternalSamplingMCCFRSolver::RunIteration))
       .def("average_policy",
            &open_spiel::algorithms::ExternalSamplingMCCFRSolver::AveragePolicy)
-      .def("current_policy",
-           &open_spiel::algorithms::ExternalSamplingMCCFRSolver::CurrentPolicy)
-      .def("info_state_values_table",
-           &open_spiel::algorithms::ExternalSamplingMCCFRSolver::InfoStateValuesTable)
       .def(py::pickle(
           [](const open_spiel::algorithms::ExternalSamplingMCCFRSolver&
                  solver) {  // __getstate__
@@ -214,8 +213,6 @@ void init_pyspiel_policy(py::module& m) {
                                    OutcomeSamplingMCCFRSolver::RunIteration))
       .def("average_policy",
            &open_spiel::algorithms::OutcomeSamplingMCCFRSolver::AveragePolicy)
-      .def("info_state_values_table",
-           &open_spiel::algorithms::OutcomeSamplingMCCFRSolver::InfoStateValuesTable)
       .def(py::pickle(
           [](const open_spiel::algorithms::OutcomeSamplingMCCFRSolver&
                  solver) {  // __getstate__
@@ -245,48 +242,10 @@ void init_pyspiel_policy(py::module& m) {
            &TabularBestResponseMDP::ComputeBestResponse, py::arg("max_player"))
       .def("nash_conv", &TabularBestResponseMDP::NashConv)
       .def("exploitability", &TabularBestResponseMDP::Exploitability);
-  // Start Explorative CFR stuff
-  py::class_<ConditionalValuesEntry> cventry(m, "ConditionalValuesEntry");
-  cventry.def_readonly("player", &ConditionalValuesEntry::player)
-      .def_readonly("info_state_key", &ConditionalValuesEntry::info_state_key)
-      .def_readonly("value", &ConditionalValuesEntry::value)
-      .def_readonly("max_qv_diff", &ConditionalValuesEntry::max_qv_diff)
-      .def_readonly("legal_actions", &ConditionalValuesEntry::legal_actions)
-      .def_readonly("action_values", &ConditionalValuesEntry::action_values);
-
-  py::class_<BRInfo> br_info(m, "BRInfo");
-  br_info.def_readonly("nash_conv", &BRInfo::nash_conv)
-      .def_readonly("on_policy_values", &BRInfo::on_policy_values)
-      .def_readonly("deviation_incentives", &BRInfo::deviation_incentives)
-      .def_readonly("cvtables", &BRInfo::cvtables);
-
-  py::class_<ConditionalValuesTable>(m, "ConditionalValuesTable")
-      .def(py::init<int>(), py::arg("num_players"))
-      .def("add_entry", &ConditionalValuesTable::add_entry)
-      .def("num_players", &ConditionalValuesTable::num_players)
-      .def("max_qv_diff", &ConditionalValuesTable::max_qv_diff)
-      .def("avg_qv_diff", &ConditionalValuesTable::avg_qv_diff)
-      .def("import", &ConditionalValuesTable::Import)
-      .def("table", &ConditionalValuesTable::table);
-
-  py::class_<open_spiel::algorithms::EpsilonCFRSolver>(m, "EpsilonCFRSolver")
-      .def(py::init<const Game&, double>(), py::arg("game"),
-           py::arg("epsilon"))
-      .def("epsilon", &EpsilonCFRSolver::epsilon)
-      .def("set_epsilon", &EpsilonCFRSolver::SetEpsilon)
-      .def("evaluate_and_update_policy",
-           &EpsilonCFRSolver::EvaluateAndUpdatePolicy)
-      .def("current_policy", &EpsilonCFRSolver::CurrentPolicy)
-      .def("average_policy", &EpsilonCFRSolver::AveragePolicy)
-      .def("tabular_average_policy", &EpsilonCFRSolver::TabularAveragePolicy);
-
-  m.def("merge_tables", &open_spiel::algorithms::MergeTables);
-
-  m.def("nash_conv_with_eps", &open_spiel::algorithms::NashConvWithEps);
 
   m.def("expected_returns",
         py::overload_cast<const State&, const std::vector<const Policy*>&, int,
-                          bool, float, ValuesMapT*>(
+                          bool, float>(
                               &open_spiel::algorithms::ExpectedReturns),
         "Computes the undiscounted expected returns from a depth-limited "
         "search.",
@@ -294,12 +253,11 @@ void init_pyspiel_policy(py::module& m) {
         py::arg("policies"),
         py::arg("depth_limit"),
         py::arg("use_infostate_get_policy"),
-        py::arg("prob_cut_threshold") = 0.0,
-        py::arg("state_values") = nullptr);
+        py::arg("prob_cut_threshold") = 0.0);
 
   m.def("expected_returns",
         py::overload_cast<const State&, const Policy&, int,
-                          bool, float, ValuesMapT*>(
+                          bool, float>(
                               &open_spiel::algorithms::ExpectedReturns),
         "Computes the undiscounted expected returns from a depth-limited "
         "search.",
@@ -307,8 +265,7 @@ void init_pyspiel_policy(py::module& m) {
         py::arg("joint_policy"),
         py::arg("depth_limit"),
         py::arg("use_infostate_get_policy"),
-        py::arg("prob_cut_threshold") = 0.0,
-        py::arg("state_values") = nullptr);
+        py::arg("prob_cut_threshold") = 0.0);
 
   m.def("exploitability",
         py::overload_cast<const Game&, const Policy&>(&Exploitability),
@@ -354,13 +311,6 @@ void init_pyspiel_policy(py::module& m) {
       "that each player could obtain by unilaterally changing their strategy "
       "while the opposing player maintains their current strategy (which "
       "for a Nash equilibrium, this value is 0).");
-
-  m.def(
-      "player_regrets",
-      py::overload_cast<
-          const Game&, const Policy&, bool>(
-          &PlayerRegrets),
-      "Return regret vector");
 
   m.def("num_deterministic_policies",
         &open_spiel::algorithms::NumDeterministicPolicies,
