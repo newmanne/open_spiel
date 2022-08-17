@@ -4,8 +4,6 @@ add_test(benchmark_game_test benchmark_game --game=tic_tac_toe --sims=100 --atte
 add_executable(cfr_example cfr_example.cc ${OPEN_SPIEL_OBJECTS})
 add_test(cfr_example_test cfr_example)
 
-add_executable(cfr_seq_eq_example cfr_seq_eq_example.cc ${OPEN_SPIEL_OBJECTS})
-
 add_executable(cfr_multi_equilibria_example cfr_multi_equilibria_example.cc
                ${OPEN_SPIEL_OBJECTS})
 add_executable(ubc_cfr_example ubc_cfr_example.cc ${OPEN_SPIEL_OBJECTS})

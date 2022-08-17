@@ -8,6 +8,7 @@ from collections import defaultdict
 import logging
 from django_extensions.db.models import TimeStampedModel
 import pickle
+import pyspiel
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,9 @@ class Game(TimeStampedModel):
 
     def __str__(self):
         return self.name
+
+    def load_as_spiel(self):
+        return pyspiel.load_game('python_clock_auction', dict(filename=self.name))
 
     def supply(self):
         return list(self.config['licenses'])

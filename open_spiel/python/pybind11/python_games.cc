@@ -198,6 +198,7 @@ PyObserver::PyObserver(py::object py_observer)
 
 void PyObserver::WriteTensor(const State& state, int player,
                              Allocator* allocator) const {
+
   using Array = py::array_t<float, py::array::c_style | py::array::forcecast>;
   const PyState& py_state = open_spiel::down_cast<const PyState&>(state);
   set_from_(py_state, player);

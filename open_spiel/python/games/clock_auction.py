@@ -1,5 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
+from multiprocessing.sharedctypes import Value
 from tkinter.messagebox import NO
 import numpy as np
 import pandas as pd
@@ -12,6 +13,7 @@ import itertools
 from typing import List, Dict, Tuple, Optional, Any, Union, Iterable
 import math
 from open_spiel.python.games import clock_auction_bidders
+from functools import cached_property
 
 DEFAULT_MAX_ROUNDS = 25
 
@@ -52,24 +54,46 @@ class AuctionParams:
   default_player_order: List[List[int]] = None
 
   tiebreaks: bool = True
-  agent_memory: int = -1
+  agent_memory: int = DEFAULT_MAX_ROUNDS
 
-  @property
+  @cached_property
   def max_activity(self):
     return np.array(self.activity) @ np.array(self.licenses)
+
+  @cached_property
+  def max_budget(self):
+    budgets = []
+    for types in self.player_types.values():
+        for t in types:
+          budget = t['bidder'].get_budget()
+          budgets.append(budget)
+    return max(budgets)
+
+  def max_opponent_spend(self, player_id):
+    max_opps_budgets = []
+    for p, types in self.player_types.items():
+      if p == player_id:
+        continue
+      budgets = []
+      for t in types:
+        budget = t['bidder'].get_budget()
+        budgets.append(budget)
+      max_opps_budgets.append(max(budgets))
+    return np.array(max_opps_budgets).sum()
 
 @dataclass
 class TieBreakState:
   tie_breaks_needed: List = field(default_factory=lambda : [])
   selected_order: List = field(default_factory=lambda : [])
-  tie_break_index: int = 0
-  order: List = lambda: field(default_factory=lambda : [])
+
+  def reset(self):
+    self.tie_breaks_needed = []
+    self.selected_order = []
 
 @dataclass
 class BidderState:
   processed_demand: List[List[int]] = field(default_factory=lambda : [])
   submitted_demand: List[List[int]] = field(default_factory=lambda : [])
-  num_switches: int = 0
   activity: int = None
   bidder: clock_auction_bidders.Bidder = None
   type_index: int = None
@@ -85,9 +109,9 @@ def action_to_bundles(licenses):
     return actions
 
 _GAME_TYPE = pyspiel.GameType(
-    short_name="clock_auction_py",
-    long_name="ClockAuctionPython",
-    dynamics=pyspiel.GameType.Dynamics.SIMULTANEOUS,
+    short_name="python_clock_auction",
+    long_name="Python Clock Auction",
+    dynamics=pyspiel.GameType.Dynamics.SEQUENTIAL,
     chance_mode=pyspiel.GameType.ChanceMode.EXPLICIT_STOCHASTIC,
     information=pyspiel.GameType.Information.IMPERFECT_INFORMATION,
     utility=pyspiel.GameType.Utility.GENERAL_SUM,
@@ -98,11 +122,11 @@ _GAME_TYPE = pyspiel.GameType(
     provides_information_state_tensor=True,
     provides_observation_string=True,
     provides_observation_tensor=True,
+    provides_factored_observation_string=True,
     parameter_specification={
       "filename": 'parameters.json'
       }
     )
-
 
 def parse_auction_params(file_name):
   if file_name.startswith('/'):
@@ -122,7 +146,7 @@ def parse_auction_params(file_name):
     players = game_params['players']
 
     opening_prices = game_params['opening_price']
-    licenses = game_params['licenses']
+    licenses = np.array(game_params['licenses'])
     num_products = len(licenses)
 
     if len(opening_prices) != num_products:
@@ -190,7 +214,7 @@ def parse_auction_params(file_name):
       undersell_policy=undersell_policy,
       information_policy=information_policy,
       tiebreaks=game_params.get('tiebreaks', True),
-      agent_memory=game_params.get('agent_memory', -1),
+      agent_memory=game_params.get('agent_memory', DEFAULT_MAX_ROUNDS),
       default_player_order=[[p for p in range(len(players))] for _ in range(num_products)]
     )
 
@@ -202,16 +226,34 @@ class ClockAuctionGame(pyspiel.Game):
     num_players = len(self.auction_params.player_types)
 
     # Max of # of type draws and tie-breaking
-    max_chance_outcomes = max(max([len(v) for v in self.auction_params.player_types.values()]), math.factorial(num_players) * self.auction_params.num_products)
+    max_chance_outcomes = max(max([len(v) for v in self.auction_params.player_types.values()]), math.factorial(num_players))
 
     # You can bid for [0...M_j] for any of the j products
-    num_actions = np.array(self.auction_params.licenses).prod()
+    num_actions = (1 + np.array(self.auction_params.licenses)).prod()
+
+    # MAX AND MIN UTILITY
+    self.upper_bounds = []
+    self.lower_bounds = []
+    total_supply_cost = self.auction_params.licenses @ self.auction_params.opening_prices
+    for player_id, types in self.auction_params.player_types.items():
+      player_upper_bounds = []
+      player_lower_bounds = []
+      for t in types:
+        bidder = t['bidder']
+        # What if you won the whole supply at opening prices?
+        bound = max(0, bidder.value_for_package(self.auction_params.licenses) - total_supply_cost)
+        player_upper_bounds.append(bound)
+        # What if you spent your entire budget and got nothing? (A tighter not implemented bound: if you got the single worst item for you, since you must be paying for something)
+        player_lower_bounds.append(-bidder.budget)
+      self.upper_bounds.append(max(player_upper_bounds))
+      self.lower_bounds.append(min(player_lower_bounds))
+
     game_info = pyspiel.GameInfo(
         num_distinct_actions=num_actions,
         max_chance_outcomes=max_chance_outcomes, 
         num_players=num_players,
         min_utility=-99999,
-        max_utility=99999,
+        max_utility=max(self.upper_bounds),
         utility_sum=-99999,
         max_game_length=9999)
 
@@ -242,7 +284,6 @@ class ClockAuctionState(pyspiel.State):
     self._game_over = False
     self._auction_finished = False
     self._is_chance = True
-    self.info = dict()
     self.tie_break_state = TieBreakState()
     self.bidders = []
     self.posted_prices = [np.array(self.auction_params.opening_prices)]
@@ -250,6 +291,9 @@ class ClockAuctionState(pyspiel.State):
     self.clock_prices = [(1 + self.auction_params.increment) * self.sor_prices[0]]
     self.aggregate_demand = []
     self.round = 1
+    self._cur_player = 0
+    self._final_payments = None
+
 
   def current_player(self) -> pyspiel.PlayerId:
     """Returns the current player.
@@ -262,7 +306,7 @@ class ClockAuctionState(pyspiel.State):
     elif self._is_chance:
       return pyspiel.PlayerId.CHANCE
     else:
-      return pyspiel.PlayerId.SIMULTANEOUS
+      return self._cur_player
 
   def _legal_actions(self, player):
     """Returns a list of legal actions, sorted in ascending order."""
@@ -290,7 +334,7 @@ class ClockAuctionState(pyspiel.State):
     legal_actions = np.ones(len(self.auction_params.all_bids), dtype=np.bool)
 
     if self.auction_params.activity_policy == ActivityPolicy.ON:
-      legal_actions[np.where(bidder.activity <  self.auction_params.all_bids_activity)[0]] = 0
+      legal_actions[np.where(bidder.activity < self.auction_params.all_bids_activity)[0]] = 0
 
     if hard_budget_on:
       legal_actions[np.where(prices > budget)[0]] = 0
@@ -310,52 +354,147 @@ class ClockAuctionState(pyspiel.State):
     
     return legal_actions.nonzero()[0]
 
-
-
   def _apply_action(self, action):
-    assert self.is_chance_node()
+    """Applies the specified action to the state.
+    """
+    if not self.is_chance_node():
+      # Colelct the bid in submitted demand
+      assert not self._game_over
+      bidder = self.bidders[self._cur_player]
+      assert len(bidder.processed_demand) == len(bidder.submitted_demand)
+      assert self.round - 1 == len(bidder.submitted_demand)
+      bid = self.auction_params.all_bids[action]
 
-    if self.round == 1:
-      if len(self.bidders) < self.num_players(): # Chance node assigns a value and budget to a player
-        self.bidders.append(
-          BidderState(
-            bidder=self.auction_params.player_types[len(self.bidders)][action]['bidder'],
-            activity=self.auction_params.max_activity,
-            type_index=action,
+      if self.auction_params.activity_policy == ActivityPolicy.ON:
+        bid_activity_cost = self.auction_params.all_bids_activity[action]
+        if bidder.activity < bid_activity_cost:
+          raise ValueError(f"Bidder {self._cur_player} is not active enough ({bidder.activity}) to bid on {bid} with cost of {bid_activity_cost}")
+
+      bidder.submitted_demand.append(np.array(bid))
+
+      # Collect bids until we've got from all players: only then can we process the demand
+      if self._cur_player == self.num_players() - 1:
+        self._handle_bids()
+      else:
+        self._cur_player += 1 # Advance player and collect more bids
+
+    else: # CHANCE NODE
+      if self.round == 1:
+        if len(self.bidders) < self.num_players(): # Chance node assigns a value and budget to a player
+          self.bidders.append(
+            BidderState(
+              bidder=self.auction_params.player_types[len(self.bidders)][action]['bidder'],
+              activity=self.auction_params.max_activity,
+              type_index=action,
+            )
           )
-        )
-    
-      if len(self.bidders) == self.num_players(): # All of the assignments have been made
-        self._is_chance = False
+        if len(self.bidders) == self.num_players(): # All of the assignments have been made
+          self._is_chance = False
+      else:
+        # Tie breaking 
+        ts = self.tie_break_state
+
+        # Assign ordering for this product by indexing into the list of permutations with action
+        j = len(ts.selected_order)
+        order = list(list(itertools.permutations(ts.tie_breaks_needed[j]))[action])
+
+        # Pad with players that aren't in the list so we have a complete ordering (recall that tie_breaks_needed has only the players in conflict)
+        for player_id in range(self.num_players()):
+          if player_id not in order:
+            order.append(player_id)
+        ts.selected_order.append(order)
+        j += 1
+
+        # Skip ahead to the next point we need a tie
+        while j < self.auction_params.num_products:
+          if len(ts.tie_breaks_needed[j]) <= 1:
+            ts.selected_order.append(list(self.auction_params.default_player_order[j]))
+            j += 1
+          else:
+            break # We need to actually do this one and it will require another chance node
+        
+        if j == self.auction_params.num_products: # Done with chance nodes
+          self._process_bids(ts.selected_order)
+
+  def _handle_bids(self):
+    # Demand Processing
+    if self.round == 1 or self.auction_params.undersell_policy == UndersellPolicy.UNDERSELL_ALLOWED:
+      # Just copy it straight over
+      for bidder in self.bidders:
+        bid = bidder.submitted_demand[-1]
+        bidder.processed_demand.append(np.array(bid))
+      self._post_process()
+    elif self.auction_params.undersell_policy == UndersellPolicy.UNDERSELL:
+      tiebreaks_not_needed = self._determine_tiebreaks()
+      if tiebreaks_not_needed: # No chance node required. Just get on with the game 
+        self._process_bids(self.auction_params.default_player_order)
+      else:
+        self._is_chance = True
     else:
-      
-      ts = self.tie_break_state
+      raise ValueError("Unknown undersell policy")
 
-      # Pad if needed
-      while (len(ts.selected_order) < ts.tie_break_index):
-        ts.selected_order.append(list(range(self.num_players())))
-      
-      # Assign ordering for this index
-      order = list(list(itertools.permutations(ts.tie_breaks_needed[ts.tie_break_index]))[action])
+  def _action_to_string(self, player, action):
+    """Action -> string."""
+    if player == pyspiel.PlayerId.CHANCE:
+      if len(self.bidders) < self.num_players():
+        return f'Assign player {len(self.bidders)} type {self.auction_params.player_types[len(self.bidders)][action]["bidder"]}'
+      else:
+        return f'Tie-break action {action}'
+    else:
+      bid = self.auction_params.all_bids[action]
+      activity = self.auction_params.all_bids_activity[action]
+      price = bid @ self.clock_prices[-1] 
+      return f'Bid for {bid} licenses @ ${price:.2f} with activity {activity}'
 
-      # Pad with players that aren't in the list
-      for player_id in range(self.num_players()):
-        if player_id not in order:
-          order.append(player_id)
-      ts.selected_order.append(order)
+  def is_terminal(self):
+    """Returns True if the game is over."""
+    return self._game_over
 
-      ts.tie_break_index += 1
+  def returns(self):
+    """Total reward for each player over the course of the game so far."""
+    assert self._game_over
 
-      while ts.tie_break_index < self.auction_params.num_products:
-        if len(ts.tie_breaks_needed[ts.tie_break_index]) == 0:
-          order = self.auction_params.default_player_order[ts.tie_break_index]
-          ts.selected_order.append(order)
-          ts.tie_break_index += 1
-        else:
-          break # We need to actually do this one and it will require another chance node
-      
-      if ts.tie_break_index == self.auction_params.num_products: # Done with chance nodes
-        self.process_bids(ts.selected_order)
+    # TODO: Maybe give large negative number if game went on for too long
+    assert self._auction_finished
+
+    self._final_payments = np.zeros(self.num_players())
+    returns = np.zeros_like(self._final_payments)
+    final_prices = self.posted_prices[-1]
+
+    for player_id, bidder in enumerate(self.bidders):
+      final_bid = bidder.processed_demand[-1]
+      payment = final_bid @ final_prices
+      self._final_payments[player_id] = payment
+      returns[player_id] = bidder.bidder.value_for_package(final_bid, -1) - payment
+
+    return returns
+
+  def __str__(self):
+    with np.printoptions(precision=3):
+
+      """String for debug purposes. No particular semantics are required."""
+      result = f'Round: {self.round}\n'
+
+      # Player types
+      for player_id, bidder in enumerate(self.bidders):
+        result += f'Player {player_id}: {bidder.bidder}\n'
+
+      if self.round > 1:
+        result += f'Price: {self.posted_prices[-1]}\n'
+
+        result += 'Processed Demand:\n'
+        for player_id, player in enumerate(self.bidders):
+          if len(player.processed_demand) > 0:
+            result += f'{player.processed_demand[-1]}\n'
+
+        if len(self.aggregate_demand) > 0:
+          result += f'Aggregate demand: {self.aggregate_demand[-1]}\n'
+
+      if self._auction_finished:
+        for player_id, player in enumerate(self.bidders):
+          result += f'Final bids player {player_id}: {player.processed_demand[-1]}\n'
+
+    return result
 
   def chance_outcomes(self):
     """Returns the possible chance outcomes and their probabilities."""
@@ -366,55 +505,14 @@ class ClockAuctionState(pyspiel.State):
       probs = [t['prob'] for t in player_types]
     else: # Chance node is breaking a tie
       ts = self.tie_break_state
-      chance_outcomes_required = math.factorial(len(ts.tie_breaks_needed[ts.tie_break_index]))
+      chance_outcomes_required = math.factorial(len(ts.tie_breaks_needed[len(ts.selected_order)]))
       probs = [1 / chance_outcomes_required] * chance_outcomes_required
     
     return list(enumerate(probs))
 
-  def _apply_actions(self, actions: List[int]):
-    """Applies the specified action to the state.
-    """
-    assert not self._game_over
-    assert isinstance(actions, Iterable)
-    assert len(actions) == self.get_game().num_players(), (f"Each player does not have an actions. Actions has {len(actions)} elements, it should have {self.get_game().num_players()}.")
-
-    for player_id, action in enumerate(actions):
-      bidder = self.bidders[player_id]
-      assert len(bidder.processed_demand) == len(bidder.submitted_demand)
-      assert self.round - 1 == len(bidder.submitted_demand)
-      bid = self.auction_params.all_bids[action]
-
-      if len(bidder.submitted_demand) > 0:
-        prev_bid = bidder.submitted_demand[-1]
-        if (not np.array_equal(bid, prev_bid)):
-          bidder.num_switches += 1
-      if self.auction_params.activity_policy == ActivityPolicy.ON:
-        assert bidder.activity >= self.auction_params.all_bids_activity[action]
-
-      bidder.submitted_demand.append(np.array(bid))
-
-    # Demand Processing
-    if self.round == 1 or self.auction_params.undersell_policy == UndersellPolicy.UNDERSELL_ALLOWED:
-      # Just copy it straight over
-      for player_id, bidder in enumerate(self.bidders):
-        bid = bidder.submitted_demand[-1]
-        bidder.processed_demand.append(np.array(bid))
-      self.post_process()
-    elif self.auction_params.undersell_policy == UndersellPolicy.UNDERSELL:
-      tiebreaks_not_needed = True
-      if self.auction_params.tiebreaks and self.round > 1:
-        tiebreaks_not_needed = self.determine_tiebreaks()
-      if tiebreaks_not_needed: # No chance node required. Just get on with the game 
-        self.process_bids(self.auction_params.default_player_order)
-      else:
-        self._is_chance = True
-    else:
-      raise ValueError("Unknown undersell policy")
-
-
-  def post_process(self):
+  def _post_process(self):
     # Calculate aggregate demand
-    aggregate_demand = np.zeros(self.auction_params.num_products)
+    aggregate_demand = np.zeros(self.auction_params.num_products, dtype=np.int)
     for bidder in self.bidders:
       bid = bidder.processed_demand[-1]
       
@@ -430,12 +528,9 @@ class ClockAuctionState(pyspiel.State):
     if excess_demand.any():
       # Normal case: Increment price for overdemanded items, leave other items alone
       next_price = np.zeros(self.auction_params.num_products)
-      next_clock = np.zeros(self.auction_params.num_products)
+      next_clock = np.zeros_like(next_price)
       for j in range(self.auction_params.num_products):
-        if excess_demand[j]:
-          next_price[j] = self.clock_prices[-1][j]
-        else:
-          next_price[j] = self.sor_prices[-1][j]
+        next_price[j] = self.clock_prices[-1][j] if excess_demand[j] else self.sor_prices[-1][j]
         next_clock[j] = next_price[j] * (1 + self.auction_params.increment)
       self.posted_prices.append(next_price)
       self.sor_prices.append(next_price)
@@ -444,11 +539,13 @@ class ClockAuctionState(pyspiel.State):
       # Demand <= supply for each item. We are finished
       self._auction_finished = True
       self._game_over = True
-      self.posted_prices.append(list(self.posted_prices[-1]))
+      self.posted_prices.append(np.array(self.posted_prices[-1]))
 
     self.round += 1
+    self._cur_player = 0
+    self._is_chance = False
 
-  def process_bids(self, player_order):
+  def _process_bids(self, player_order):
     assert len(player_order) == self.auction_params.num_products
     for j in range(self.auction_params.num_products):
       assert len(player_order[j]) == self.num_players()
@@ -512,124 +609,68 @@ class ClockAuctionState(pyspiel.State):
       bidder.processed_demand.append(np.array(bids[player_id]))
       assert len(bidder.processed_demand) == len(bidder.submitted_demand)
         
-    self.post_process()
+    self._post_process()
 
-  def determine_tiebreaks(self):
+  def _determine_tiebreaks(self):
     # Step 1: Figure out for each product whether we may be in a tie-breaking situation. Note that we can have false positives, they "just" make the game bigger. 
     #         One necessary condition: At least two people want to drop the same product AND the combined dropping will take the product below supply
     #         Note that this doesn't consider demand that might be added to the product - this could resolve the issue, but if that pick-up can only be processed conditional on another drop, it gets more complicated... We ignore this for now.
     #
 
-    ts = self.tie_break_state
-    ts.tie_breaks_needed = []
-    ts.selected_order = []
-    tie_breaking_not_needed = True
-    drops_per_product = []
-    current_agg = self.aggregate_demand[-1]
+    # TODO: A much simpler impl would just select one of factorial(num_players) arrangements for each product in advance and use that, tie breaks required or not (i.e., always put a chance node before bids are processed that determines processing order). So why do it this way? Because that's much worse for tabular algorithms, and they can help debug
 
-    for j in range(self.auction_params.num_products):
-      drops = []
-      for player_id, bidder in enumerate(self.bidders):
-        delta = bidder.submitted_demand[-1][j] - bidder.processed_demand[-1][j]
-        drops.append(-delta if delta < 0 else 0)
-      drops_per_product.append(drops)
-    
+    ts = self.tie_break_state
+    ts.reset()
+
+    if not self.auction_params.tiebreaks or self.round == 1:
+      return False
+
+    drops_per_product = np.zeros((self.num_players(), self.auction_params.num_products))
+    for player_id, bidder in enumerate(self.bidders):
+      drops_per_product[player_id] = np.abs(bidder.processed_demand[-1] - bidder.submitted_demand[-1])
+
+    total_drops = np.sum(drops_per_product, axis=0)
+
+    tie_breaking_not_needed = True    
+    current_agg = self.aggregate_demand[-1]
     for j in range(self.auction_params.num_products):
       tiebreaks = []
-      if current_agg[j] - sum(drops_per_product[j]) < self.auction_params.licenses[j]:
-        for player_id, bidder in enumerate(self.bidders):
-          if drops_per_product[j][player_id] > 0:
+      if current_agg[j] - total_drops[j] < self.auction_params.licenses[j]:
+        for player_id in range(self.num_players()):
+          if drops_per_product[player_id][j] > 0:
             tiebreaks.append(player_id)
-      if len(tiebreaks) <= 1:
-        tiebreaks = [] # No tie-breaking if only one person dropping
+      if len(tiebreaks) > 1: 
+        tie_breaking_not_needed = False
       else:
-        if tie_breaking_not_needed: # First time we've realized we'll need to tie-break. Set the intial index appropriately
-          tie_breaking_not_needed = False
-          self.tie_break_index = j
-      self.tie_break_state.tie_breaks_needed.append(tiebreaks)
+        ts.selected_order.append(list(self.auction_params.default_player_order[j]))
+      ts.tie_breaks_needed.append(tiebreaks)
 
     return tie_breaking_not_needed
 
-  def _action_to_string(self, player, action):
-    """Action -> string."""
-    if player == pyspiel.PlayerId.CHANCE:
-      if len(self.bidders) < self.num_players():
-        return f'Assign player {len(self.bidders)} type {self.auction_params.player_types[len(self.bidders)][action]["bidder"]}'
-      else:
-        return f'Tie-break action {action}'
-    else:
-      bid = self.auction_params.all_bids[action]
-      activity = self.auction_params.all_bids_activity[action]
-      price = bid @ self.clock_prices[-1] 
-      return f'Bid for {bid} licenses @ ${price:.2f} with activity {activity}'
 
-  def is_terminal(self):
-    """Returns True if the game is over."""
-    return self._game_over
-
-  def returns(self):
-    """Total reward for each player over the course of the game so far."""
+  def get_final_payments(self):
     assert self._game_over
+    return self._final_payments
 
-    # TODO: Maybe give large negative number if game went on for too long
-    assert self._auction_finished
+  def get_allocation(self):
+    assert self._game_over
+    return [bidder.processed_demand[-1] for bidder in self.bidders]
 
-    payments = np.zeros(self.num_players())
-    returns = np.zeros_like(payments)
-    final_prices = self.posted_prices[-1]
-
-    for player_id, bidder in enumerate(self.bidders):
-      final_bid = bidder.processed_demand[-1]
-      payment = final_bid @ final_prices
-      payments[player_id] = payment
-      returns[player_id] = bidder.bidder.value_for_package(final_bid, -1) - payment
-
-    return returns
-    # Spitefulness TODO:
-
-  def __str__(self):
-    with np.printoptions(precision=3):
-
-      """String for debug purposes. No particular semantics are required."""
-      result = f'Round: {self.round}\n'
-
-      # Player types
-      for player_id, bidder in enumerate(self.bidders):
-        result += f'Player {player_id}: {bidder.bidder}\n'
-
-      if self.round > 1:
-        result += f'Price: {self.posted_prices[-1]}\n'
-
-        result += 'Processed Demand:\n'
-        for player_id, player in enumerate(self.bidders):
-          if len(player.processed_demand) > 0:
-            result += f'{player.processed_demand[-1]}\n'
-
-        if len(self.aggregate_demand) > 0:
-          result += f'Aggregate demand: {self.aggregate_demand[-1]}\n'
-
-      if self._auction_finished:
-        for player_id, player in enumerate(self.bidders):
-          result += f'Final bids player {player_id}: {player.processed_demand[-1]}\n'
-
-    return result
-
-# TODO: How I could actually ensure the RL environment would pass these on?
 
 class ClockAuctionObserver:
   """Observer, conforming to the PyObserver interface (see observation.py)."""
   
-  N_ROUNDS = 25
-
   def __init__(self, iig_obs_type, params):
     auction_params = params.get('auction_params')
+    self.normalize = params.get('normalize', True) # Raw features? Or normalized ones
     if not isinstance(auction_params, AuctionParams):
       raise ValueError("params must be an AuctionParams object")
     self.auction_params = auction_params
 
     num_players = len(auction_params.player_types)
     num_products = auction_params.num_products
-    self.round_buffer = ClockAuctionObserver.N_ROUNDS if iig_obs_type.perfect_recall else auction_params.agent_memory
+
+    self.round_buffer = 100 if iig_obs_type.perfect_recall else auction_params.agent_memory
     length = self.round_buffer * num_products
     shape = (self.round_buffer, num_products)
 
@@ -644,10 +685,14 @@ class ClockAuctionObserver:
 
       pieces.append(("submitted_demand_history", length, shape))
       pieces.append(("processed_demand_history", length, shape))
+      num_bundles = len(auction_params.all_bids)
+      pieces.append(("sor_profits", num_bundles, (num_bundles,)))
+
     if iig_obs_type.public_info:
-      pieces.append(("round", 1, (1,)))
+      # 1-hot round encoding
+      pieces.append(("round", self.round_buffer, (self.round_buffer,)))
       pieces.append(("agg_demand_history", length, shape))
-      pieces.append(("posted_price_history", length, shape))
+      pieces.append(("posted_price_history", (self.round_buffer + 1) * num_products, (self.round_buffer + 1, num_products))) # slightly different shape b/c there is a real initial value
 
     # Build the single flat tensor.
     total_size = sum(size for name, size, shape in pieces)
@@ -663,24 +708,54 @@ class ClockAuctionObserver:
   def set_from(self, state, player):
     """Updates `tensor` and `dict` to reflect `state` from PoV of `player`."""
     self.tensor.fill(0)
-    cur_round = state.round
-    length = cur_round * self.auction_params.num_products
+    length = min(state.round - 1, self.round_buffer)
+    start_ind = max(0, state.round - self.round_buffer)
+    end_ind = start_ind + length
+
     if "player" in self.dict:
       self.dict["player"][player] = 1
-    if "bidder_type" in self.dict:
-      self.dict["bidder_type"][state.bidders[player].type_index] = 1
-    if "activity" in self.dict:
-      self.dict["activity"][0] = state.bidders[player].activity
     if "round" in self.dict:
-      self.dict["round"][0] = state.round
-    if "agg_demand_history" in self.dict:
-      self.dict["agg_demand_history"][:length] = np.array(state.aggregate_demand).flatten()
-    if "submitted_demand_history" in self.dict:
-      self.dict["submitted_demand_history"][:length] = np.array(state.bidders[player].submitted_demand).flatten()
-    if "processed_demand_history" in self.dict:
-      self.dict["processed_demand_history"][:length] = np.array(state.bidders[player].processed_demand).flatten()
+      self.dict["round"][state.round - 1] = 1
+
+    # These require the bidder to be initialized
+    if len(state.bidders) > player:
+      if "bidder_type" in self.dict:
+        self.dict["bidder_type"][state.bidders[player].type_index] = 1
+      if "activity" in self.dict:
+        activity = state.bidders[player].activity
+        if self.normalize:
+          activity /= self.auction_params.max_activity
+        self.dict["activity"][0] = activity
+      if "sor_profits" in self.dict:
+        price = np.array(state.sor_prices[-1])
+        prices = np.array([price @ bid for bid in self.auction_params.all_bids])
+        profits = state.bidders[player].bidder.get_profits(prices)
+        if self.normalize:
+          profits = profits / self.auction_params.max_budget
+        self.dict["sor_profits"] = profits
+
+    if state.round > 1:
+      if "agg_demand_history" in self.dict:
+        agg_demand_history = np.array(state.aggregate_demand)[start_ind:end_ind]
+        if self.normalize:
+          agg_demand_history = agg_demand_history / self.auction_params.licenses
+        self.dict["agg_demand_history"][:length] = agg_demand_history
+      if "submitted_demand_history" in self.dict:
+        submitted_demand_history = np.array(state.bidders[player].submitted_demand)[start_ind:end_ind]
+        if self.normalize:
+          submitted_demand_history = submitted_demand_history / self.auction_params.licenses
+        self.dict["submitted_demand_history"][:length] = submitted_demand_history
+      if "processed_demand_history" in self.dict:
+        processed_demand_history = np.array(state.bidders[player].processed_demand)[start_ind:end_ind]
+        if self.normalize:
+          processed_demand_history = processed_demand_history / self.auction_params.licenses
+        self.dict["processed_demand_history"][:length] = processed_demand_history
+
     if "posted_price_history" in self.dict:
-      self.dict["posted_price_history"][:length] = np.array(state.posted_prices).flatten()
+      posted_prices = np.array(state.posted_prices)[start_ind:end_ind + 1]
+      if self.normalize:
+        posted_prices = posted_prices / self.auction_params.max_budget
+      self.dict["posted_price_history"][:length + 188] = posted_prices
 
   def string_from(self, state, player):
     """Observation of `state` from the PoV of `player`, as a string."""
@@ -702,7 +777,6 @@ class ClockAuctionObserver:
     if "posted_price_history" in self.dict:
       pieces.append(f"posted{state.posted_prices}")
     return " ".join(str(p) for p in pieces)
-
 
 # Register the game with the OpenSpiel library
 pyspiel.register_game(_GAME_TYPE, ClockAuctionGame)

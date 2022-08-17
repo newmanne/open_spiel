@@ -48,9 +48,10 @@ See open_spiel/python/examples/rl_example.py for example usages.
 import collections
 
 import enum
-from os import stat
 from absl import logging
 import numpy as np
+from open_spiel.python.observation import make_observation
+from copy import deepcopy
 
 import pyspiel
 
@@ -151,8 +152,7 @@ class Environment(object):
                mfg_distribution=None,
                mfg_population=None,
                enable_legality_check=False,
-               all_simultaneous=False,
-               terminal_rewards=False,
+               use_observer_api=False,
                **kwargs):
     """Constructor.
 
@@ -176,9 +176,6 @@ class Environment(object):
     self._mfg_distribution = mfg_distribution
     self._mfg_population = mfg_population
     self._enable_legality_check = enable_legality_check
-    self._all_simultaneous = all_simultaneous
-    self._terminal_rewards = terminal_rewards
-
 
     if isinstance(game, str):
       if kwargs:
@@ -193,8 +190,6 @@ class Environment(object):
       self._game = game
 
     self._num_players = self._game.num_players()
-    self._is_turn_based = ((self._game.get_type().dynamics == pyspiel.GameType.Dynamics.SEQUENTIAL) or (self._game.get_type().dynamics == pyspiel.GameType.Dynamics.MEAN_FIELD))
-
     self._state = None
     self._should_reset = True
 
@@ -222,8 +217,13 @@ class Environment(object):
       assert mfg_population is not None
       assert 0 <= mfg_population < self._num_players
 
+    # MODIFIED
+    self.observer = None
+    if self.use_observer_api:
+      self.observer = make_observation(self._game)
+
   def seed(self, seed=None):
-    self._chance_event_sampler.seed(seed)
+    self._chance_event_sampler.seed(self._game)
 
   def get_time_step(self):
     """Returns a `TimeStep` without updating the environment.
@@ -238,43 +238,39 @@ class Environment(object):
           `StepType.FIRST`.
         step_type: A `StepType` value.
     """
-    current_player = self._state.current_player()
     observations = {
         "info_state": [],
         "legal_actions": [],
-        "current_player": current_player,
-        "serialized_state": []
+        "current_player": [],
+        "serialized_state": [],
     }
+    if self.observer is not None:
+      observations['info_dict'] = []
     rewards = []
     step_type = StepType.LAST if self._state.is_terminal() else StepType.MID
     self._should_reset = step_type == StepType.LAST
 
-    if self._all_simultaneous and self._terminal_rewards and step_type != StepType.LAST:
-      for player_id in range(self.num_players):
-        rewards.append(0) # Rewards are terminal - let's not bother
-        if player_id == current_player:
-          info_state = self._state.observation_tensor(player_id) if self._use_observation else self._state.information_state_tensor(player_id)
-          observations['info_state'].append(info_state)
-          observations["legal_actions"].append(self._state.legal_actions(player_id))
-        else:
-          observations['info_state'].append(None) # Let's not bother computing this one - we won't ever look at it
-          observations["legal_actions"].append(None)
-    else:
-      cur_rewards = self._state.rewards()
-      for player_id in range(self.num_players):
-        rewards.append(cur_rewards[player_id])
-        observations["info_state"].append(self._state.observation_tensor(player_id) if self._use_observation else self._state.information_state_tensor(player_id))
-        observations["legal_actions"].append(self._state.legal_actions(player_id))
+    cur_rewards = self._state.rewards()
+    for player_id in range(self.num_players):
+      rewards.append(cur_rewards[player_id])
+      if self.observer is None:
+        info_state = self._state.observation_tensor(player_id) if self._use_observation else self._state.information_state_tensor(player_id)
+      else:
+        self.observer.set_from(self._state, player=player_id)
+        info_state = np.array(self.observer.tensor)
+        observations['info_dict'].append(deepcopy(self.observer.dict))
+
+      observations["info_state"].append(info_state)
+      observations["legal_actions"].append(self._state.legal_actions(player_id))
+    observations["current_player"] = self._state.current_player()
     discounts = self._discounts
     if step_type == StepType.LAST:
       # When the game is in a terminal state set the discount to 0.
       discounts = [0. for _ in discounts]
 
     if self._include_full_state:
-      observations["serialized_state"] = pyspiel.serialize_game_and_state(self._game, self._state)
-
-    if hasattr(self._state, 'last_info'):
-      observations['info'] = self._state.last_info
+      observations["serialized_state"] = pyspiel.serialize_game_and_state(
+          self._game, self._state)
 
     return TimeStep(
         observations=observations,
@@ -319,7 +315,9 @@ class Environment(object):
           `StepType.FIRST`.
         step_type: A `StepType` value.
     """
-    assert len(actions) == self.num_actions_per_step, ("Invalid number of actions! Expected {}".format(self.num_actions_per_step))
+    assert len(actions) == self.num_actions_per_step, (
+        "Invalid number of actions! Expected {}".format(
+            self.num_actions_per_step))
     if self._should_reset:
       return self.reset()
 
@@ -334,7 +332,7 @@ class Environment(object):
 
     return self.get_time_step()
 
-  def reset(self, epsilon=None):
+  def reset(self):
     """Starts a new sequence and returns the first `TimeStep` of this sequence.
 
     Returns:
@@ -348,15 +346,12 @@ class Environment(object):
         step_type: A `StepType` value.
     """
     self._should_reset = False
-    # if self._game.get_type().dynamics == pyspiel.GameType.Dynamics.MEAN_FIELD and self._num_players > 1:
-    #   self._state = self._game.new_initial_state_for_population(self._mfg_population)
-    # else:
-    if epsilon is not None and np.random.binomial(1, epsilon):
-      self._state = self._random_state()
+    if self._game.get_type().dynamics == pyspiel.GameType.Dynamics.MEAN_FIELD and self._num_players > 1:
+      self._state = self._game.new_initial_state_for_population(
+          self._mfg_population)
     else:
       self._state = self._game.new_initial_state()
-
-    self._sample_external_events(reset=True)
+    self._sample_external_events()
 
     observations = {
         "info_state": [],
@@ -364,13 +359,22 @@ class Environment(object):
         "current_player": [],
         "serialized_state": []
     }
+    if self.observer is not None:
+      observations['info_dict'] = []
     for player_id in range(self.num_players):
-      observations["info_state"].append(self._state.observation_tensor(player_id) if self._use_observation else self._state.information_state_tensor(player_id))
+      if self.observer is None:
+        info_state = self._state.observation_tensor(player_id) if self._use_observation else self._state.information_state_tensor(player_id)
+      else:
+        self.observer.set_from(self._state, player=player_id)
+        info_state = np.array(self.observer.tensor)
+        observations['info_dict'].append(deepcopy(self.observer.dict))
+      observations["info_state"].append(info_state)
       observations["legal_actions"].append(self._state.legal_actions(player_id))
     observations["current_player"] = self._state.current_player()
 
     if self._include_full_state:
-      observations["serialized_state"] = pyspiel.serialize_game_and_state(self._game, self._state)
+      observations["serialized_state"] = pyspiel.serialize_game_and_state(
+          self._game, self._state)
 
     return TimeStep(
         observations=observations,
@@ -378,12 +382,20 @@ class Environment(object):
         discounts=None,
         step_type=StepType.FIRST)
 
-  def _sample_external_events(self, reset=False):
+  def _sample_external_events(self):
     """Sample chance events until we get to a decision node."""
-    # Modified function for speedup since we aren't interested in mean field games
-    while self._state.is_chance_node(): 
-      outcome = self._chance_event_sampler(self._state, reset=reset)
-      self._state.apply_action(outcome)
+    while self._state.is_chance_node() or (self._state.current_player()
+                                           == pyspiel.PlayerId.MEAN_FIELD):
+      if self._state.is_chance_node():
+        outcome = self._chance_event_sampler(self._state)
+        self._state.apply_action(outcome)
+      if self._state.current_player() == pyspiel.PlayerId.MEAN_FIELD:
+        dist_to_register = self._state.distribution_support()
+        dist = [
+            self._mfg_distribution.value_str(str_state, default_value=0.0)
+            for str_state in dist_to_register
+        ]
+        self._state.update_distribution(dist)
 
   def observation_spec(self):
     """Defines the observation per player provided by the environment.
@@ -446,7 +458,10 @@ class Environment(object):
   # New RL calls for more advanced use cases (e.g. search + RL).
   @property
   def is_turn_based(self):
-    return self._is_turn_based
+    return ((self._game.get_type().dynamics
+             == pyspiel.GameType.Dynamics.SEQUENTIAL) or
+            (self._game.get_type().dynamics
+             == pyspiel.GameType.Dynamics.MEAN_FIELD))
 
   @property
   def max_game_length(self):
@@ -462,7 +477,8 @@ class Environment(object):
 
   def set_state(self, new_state):
     """Updates the game state."""
-    assert new_state.get_game() == self.game, ("State must have been created by the same game.")
+    assert new_state.get_game() == self.game, (
+        "State must have been created by the same game.")
     self._state = new_state
 
   @property
@@ -478,68 +494,3 @@ class Environment(object):
     assert (
         self._game.get_type().dynamics == pyspiel.GameType.Dynamics.MEAN_FIELD)
     self._mfg_distribution = mfg_distribution
-    
-  def _random_state(self):
-    # TODO: You might do better accumulating states in a big buffer first, rather than doing it like this, both in perforamcne and in ammortizing the "warming up" of the chain
-
-    # TODO: This would be better using fast choice
-    n_chance = self._game.max_chance_outcomes()
-    n_actions = self._game.num_distinct_actions()
-    k_max = max(n_chance, n_actions) + 1 # +1 for parent
-
-    n_steps = 0
-    N_STEPS_MAX = 10_000 # TODO: Should be a parameter
-    state = self._game.new_initial_state()
-    action_hist = []
-    state_hist = []
-
-    randomness = np.random.rand(N_STEPS_MAX * 10) # TODO: Better choice here, or just cycle through this
-    rand_index = 0
-
-    def flip_coin(p, rand_index):
-        return randomness[rand_index] < p, rand_index + 1
-
-    failure_count = 0
-    while n_steps < N_STEPS_MAX and not state.is_chance_node():
-        stay = True
-        node_degree = 1 # Parent
-        if state.is_chance_node():
-            legal_actions = state.chance_outcomes()
-        else:
-            legal_actions = state.legal_actions()
-        node_degree += len(legal_actions)
-
-        # Should I stay or should I go?
-        # Stay at node 𝑛 with probability 1−𝑘𝑛/𝑘max
-        stay_prob = 1 - (node_degree / k_max)
-        while stay:
-            stay, rand_index = flip_coin(stay_prob, rand_index)
-            if stay:
-                n_steps += 1 
-                continue
-        else:
-            if state.is_initial_state():
-                transition_to_parent = False
-            else:
-                transition_to_parent, rand_index = flip_coin(1 / node_degree, rand_index)
-            if transition_to_parent:
-                state = state_hist.pop()
-                action = action_hist.pop()
-                n_steps += 1
-            else:
-                if state.is_chance_node():
-                    outcomes = state.chance_outcomes()
-                    action_list, prob_list = zip(*outcomes)
-                    action = np.random.choice(action_list, p=prob_list)
-                else:
-                    action = np.random.choice(state.legal_actions(state.current_player())) # TODO: You surely want to use fast_choice but I can't depend on ubc_utils here
-                # Only go through with this if it's not terminal
-                clone = state.clone()
-                clone.apply_action(action)
-                if not clone.is_terminal(): # TODO: Could be smarter about resmampling here by taking away the same choices
-                    state_hist.append(state.clone())
-                    state = clone
-                    action_hist.append(action)
-                else:
-                    failure_count += 1
-    return state

@@ -71,12 +71,22 @@ class JointRLAgentPolicy(policy.Policy):
         if self._use_observation else state.information_state_tensor(player_id))
     self._obs["legal_actions"][player_id] = legal_actions
 
-    info_state = rl_environment.TimeStep(
-        observations=self._obs, rewards=None, discounts=None, step_type=None)
+    info_state = rl_environment.TimeStep(observations=self._obs, rewards=None, discounts=None, step_type=None)
 
     p = self._agents[player_id].step(info_state, is_evaluation=True).probs
     prob_dict = {action: p[action] for action in legal_actions}
+
     return prob_dict
+
+  def save(self):
+      output = dict()
+      for player, agent in enumerate(self._agents):
+          output[player] = agent.save()
+      return output
+
+  def restore(self, restore_dict):
+      for player, agent in enumerate(self._agents):
+          agent.restore(restore_dict[player])
 
 
 class RLAgentPolicy(JointRLAgentPolicy):
@@ -96,5 +106,4 @@ class RLAgentPolicy(JointRLAgentPolicy):
     super().__init__(game, {player_id: agent}, use_observation)
 
   def action_probabilities(self, state, player_id=None):
-    return super().action_probabilities(
-        state, self._player_id if player_id is None else player_id)
+    return super().action_probabilities(state, self._player_id if player_id is None else player_id)

@@ -4,7 +4,7 @@ from absl import logging
 import glob
 import os
 from pathlib import Path
-from open_spiel.python.examples.ubc_utils import EVAL_DIR, BR_DIR, CHECKPOINT_FOLDER, CONFIG_ROOT, config_path_from_config_name, safe_config_name
+from open_spiel.python.examples.ubc_utils import EVAL_DIR, BR_DIR, CONFIG_ROOT, config_path_from_config_name, safe_config_name
 
 def verify_config():
     spiel_path = os.environ.get('OPENSPIEL_CLUSTER_PATH')
@@ -30,7 +30,7 @@ def write_and_submit(experiment_output_dir, experiment_name, job_file_text, subm
     if submit:
         os.system(f'cd {experiment_output_dir} && sbatch {job_file_path}')
 
-def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', submit=True, mem=32, overrides='', cfr_also=False, database=True, n_seeds=1, start_seed=100):
+def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', submit=True, mem=32, overrides='', cfr_also=False, database=True, n_seeds=1, start_seed=100, alg='ppo'):
     '''yml_config is either a folder or a single config'''
 
     if base_job_name is None:
@@ -83,7 +83,7 @@ def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', 
             config = experiment['config']
             if database:
                 # Note that seed will not get passed onwards to BR/eval. I don't think this matters.
-                command = f'python {manage_path} nfsp --seed {seed} --filename {game_name}.json --network_config_file {config} --experiment_name {base_job_name} --job_name "{experiment_name}" --dispatch_br true {overrides}'
+                command = f'python {manage_path} {alg} --seed {seed} --filename {game_name}.json --network_config_file {config} --experiment_name {base_job_name} --job_name "{experiment_name}" --dispatch_br true {overrides}'
             else:
                 command = f'python {pydir}/ubc_nfsp_example.py --alsologtostderr -- --filename {game_name}.json --network_config_file {yml_config_dir}/{config}.yml --output_dir {output_dir} --dispatch_br true {overrides} --job_name {experiment_name}'
 
@@ -118,9 +118,9 @@ def dispatch_br_database(experiment_name, run_name, t, br_player, configs, submi
             dispatch_single_br_database(experiment_name, run_name, t, br_player, br_config_path.replace(f'{CONFIG_ROOT}/', '').replace('.yml', ''), submit, mem, overrides)
 
 
-def dispatch_single_br_database(experiment_name, run_name, t, br_player, config, submit, mem, overrides):
+def dispatch_single_br_database(experiment_name, run_name, t, br_player, config, submit, mem, overrides, django_command='ppo_br'):
     spiel_path, config_dir, pydir, manage_path = verify_config()
-    command = f'python {manage_path} bestrespond --experiment_name {experiment_name} --run_name {run_name} --t {t} --br_player {br_player} --dispatch_rewards True {overrides} --config {config}'
+    command = f'python {manage_path} {django_command} --experiment_name {experiment_name} --run_name {run_name} --t {t} --br_player {br_player} --dispatch_rewards True {overrides} --config {config}'
 
     slurm_job_name = f'br_{br_player}_{experiment_name}_{run_name}_{t}_{config.replace("/", "_")}'
     job_file_text = f"""#!/bin/sh
@@ -143,11 +143,11 @@ eval $CMD
 
     logging.info(f"Dispatched experiment!")
 
-def dispatch_eval_database(experiment_name, run_name, t, br_player, br_name, submit=True, mem=32, overrides=''):
+def dispatch_eval_database(experiment_name, run_name, t, br_player, br_name, submit=True, mem=32, overrides='', django_command='ppo_eval'):
     spiel_path, config_dir, pydir, manage_path = verify_config()
 
     slurm_job_name = f'eval_{run_name}_{t}_{experiment_name}'
-    command = f'python {manage_path} evaluate --experiment_name {experiment_name} --run_name {run_name} --t {t} {overrides}'
+    command = f'python {manage_path} {django_command} --experiment_name {experiment_name} --run_name {run_name} --t {t} {overrides}'
     if br_player is not None and br_name is not None:
         command += f' --br_name {br_name} --br_player {br_player}'
         slurm_job_name += f'_{safe_config_name(br_name)}_{br_player}'

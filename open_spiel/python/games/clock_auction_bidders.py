@@ -29,7 +29,7 @@ class LinearBidder(Bidder):
 
   def __init__(self, values, budget, pricing_bonus, all_bids) -> None:
     super().__init__(values, budget, pricing_bonus, all_bids)
-    self.bundle_values = np.array([[np.array(self.values) @ bid] for bid in all_bids])
+    self.bundle_values = np.array([self.values @ bid for bid in all_bids])
 
   def value_for_package(self, package, package_index=None):
     return np.array(package) @ self.values

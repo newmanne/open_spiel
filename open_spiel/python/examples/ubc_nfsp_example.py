@@ -14,10 +14,6 @@
 
 """Tests for open_spiel.python.algorithms.nfsp."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from dataclasses import dataclass
 from open_spiel.python import rl_environment
 from open_spiel.python.pytorch import ubc_nfsp
@@ -96,20 +92,6 @@ def setup(game, game_config, config):
     expl_policies_avg = NFSPPolicies(env, agents, False)
     return EnvAndModel(env=env, nfsp_policies=expl_policies_avg, agents=agents, game=game, game_config=game_config)
 
-
-def setup_directory_structure(output_dir, warn_on_overwrite, database=True):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    else:
-        if warn_on_overwrite:
-            raise ValueError("You are overwriting a folder!")
-        shutil.rmtree(output_dir)
-        os.makedirs(output_dir)
-    
-    os.makedirs(os.path.join(output_dir, BR_DIR))
-    os.makedirs(os.path.join(output_dir, EVAL_DIR))
-    if not database:
-        os.makedirs(os.path.join(output_dir, CHECKPOINT_FOLDER))
 
 def report_nfsp(ep, episode_lengths, num_players, agents, game, start_time):
     logging.info(f"----Episode {ep} ---")

@@ -178,6 +178,10 @@ class PPO(nn.Module):
         self.updates_done = 0
         self.start_time = time.time()
 
+        self._savers = [
+            ("ppo_network", self.network),
+        ]
+
     def get_value(self, x):
         return self.network.get_value(x)
 
@@ -197,7 +201,7 @@ class PPO(nn.Module):
                 ).to(self.device)
                 obs = torch.Tensor(np.array([ts.observations['info_state'][self.player_id] for ts in time_step])).to(self.device)
                 action, log_prob, entropy, value, probs = self.get_action_and_value(obs, legal_actions_mask=legal_actions_mask)
-
+                probs = probs.cpu().numpy()
                 if singular_env:
                     return StepOutput(action=action[0].item(), probs=probs[0])
                 else:
@@ -342,3 +346,13 @@ class PPO(nn.Module):
         # Update counters 
         self.updates_done += 1
         self.cur_batch_idx = 0
+
+    def save(self):
+        restore_dict = dict()
+        for name, model in self._savers:
+            restore_dict[name] = model.state_dict()
+        return restore_dict
+
+    def restore(self, restore_dict):
+        for name, model in self._savers:
+            model.load_state_dict(restore_dict[name])
