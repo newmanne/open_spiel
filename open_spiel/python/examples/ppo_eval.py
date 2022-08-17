@@ -72,12 +72,13 @@ def eval_agents_parallel(env, agents, num_episodes, flat_rewards=False):
         'walltime': eval_time,
     }
 
-DEFAULT_NUM_SAMPLES = 100_000
-DEFAULT_REPORT_FREQ = 5000
-DEFAULT_SEED = 1234
-DEFAULT_COMPUTE_EFFICIENCY = False
+class EvalDefaults:
+    DEFAULT_NUM_SAMPLES = 100_000
+    DEFAULT_REPORT_FREQ = 5000
+    DEFAULT_SEED = 1234
+    DEFAULT_COMPUTE_EFFICIENCY = False
 
-def run_eval(env_and_policy, num_samples, report_freq=DEFAULT_REPORT_FREQ, seed=DEFAULT_SEED, compute_efficiency=DEFAULT_COMPUTE_EFFICIENCY):
+def run_eval(env_and_policy, num_samples=EvalDefaults.DEFAULT_NUM_SAMPLES, report_freq=EvalDefaults.DEFAULT_REPORT_FREQ, seed=EvalDefaults.DEFAULT_SEED, compute_efficiency=EvalDefaults.DEFAULT_COMPUTE_EFFICIENCY):
     checkpoint = eval_agents_parallel(env_and_policy.env, env_and_policy.agents, num_samples)
     
     d = []

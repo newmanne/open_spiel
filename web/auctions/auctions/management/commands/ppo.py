@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
-from open_spiel.python.examples.ppo_utils import run_ppo, EpisodeTimer
-from open_spiel.python.examples.ubc_utils import fix_seeds, read_config, apply_optional_overrides, default_device, setup_directory_structure
+from open_spiel.python.examples.ppo_utils import run_ppo, EpisodeTimer, read_ppo_config
+from open_spiel.python.examples.ubc_utils import fix_seeds, apply_optional_overrides, default_device, setup_directory_structure
 import sys
 import logging
 from auctions.models import *
@@ -15,7 +15,7 @@ class Command(BaseCommand):
     help = 'Runs PPO and saves the results'
 
     def add_arguments(self, parser):
-        parser.add_argument('--total-timesteps', type=int, required=True)
+        parser.add_argument('--total_timesteps', type=int, required=True)
         parser.add_argument('--seed', type=int, default=1234)
         parser.add_argument('--network_config_file', type=str, default='network.yml')
         parser.add_argument('--compute_nash_conv', type=bool, default=False)
@@ -61,7 +61,7 @@ class Command(BaseCommand):
         fix_seeds(seed)
 
         # 0) Read the config file
-        config = read_config(config_name)
+        config = read_ppo_config(config_name)
         apply_optional_overrides(opts, sys.argv, config)
         
         logging.info(f'Network params: {config}')
@@ -97,5 +97,8 @@ class Command(BaseCommand):
 
         result_saver = DBPolicySaver(eq_solver_run=eq_solver_run) if not opts.dry_run else None
         dispatcher = DBBRDispatcher(game_db.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path) if not opts.dry_run else None
+        # NOTE: THESE ARE CURRENTLY PHRASED IN UNITS OF UPDATES, NOT STEPS!!!
         eval_episode_timer = EpisodeTimer(opts.eval_every, early_frequency=opts.eval_every_early, fixed_episodes=opts.eval_exactly, eval_zero=opts.eval_zero)
-        run_ppo(env_and_policy, opts.num_training_episodes, result_saver, seed, opts.compute_nash_conv, dispatcher, opts.report_freq, opts.dispatch_br, eval_episode_timer=eval_episode_timer)
+        report_timer = EpisodeTimer(opts.report_freq)
+
+        run_ppo(env_and_policy, opts.total_timesteps, result_saver=result_saver, seed=seed, compute_nash_conv=opts.compute_nash_conv, dispatcher=dispatcher, report_timer=report_timer, eval_timer=eval_episode_timer)

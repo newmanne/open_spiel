@@ -1,4 +1,3 @@
-import itertools
 import numpy as np
 
 class Bidder:
@@ -44,11 +43,9 @@ class MarginalValueBidder(Bidder):
     self.bundle_values = [self.value_for_package(bid) for bid in all_bids]
 
   def value_for_package(self, package, package_index=None):
-    # TODO: Use indexing
     value = 0
     for i, quantity in enumerate(package):
-      for j in range(quantity):
-        value += self.values[i][j]
+      value += self.values[i][:quantity].sum()
     return value
 
   def __str__(self) -> str:
@@ -64,14 +61,3 @@ class EnumeratedValueBidder(Bidder):
     if package_index is None:
       package_index = self.all_bids.find(package)
     return self.values[package_index]
-
-# TODO: Duplicate of ubc_utils
-def action_to_bundles(licenses):
-    bids = []
-    for n in licenses:
-        b = []
-        for i in range(n + 1):
-            b.append(i)
-        bids.append(b)
-    actions = np.array(list(itertools.product(*bids)))
-    return actions

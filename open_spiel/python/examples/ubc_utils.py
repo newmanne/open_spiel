@@ -48,7 +48,7 @@ def fix_seeds(seed):
     logging.info(f"Setting numpy and torch seed to {seed}")
     np.random.seed(seed)
     torch.manual_seed(seed)
-    torch.use_deterministic_algorithms(True)
+    # torch.use_deterministic_algorithms(True) # See https://github.com/pytorch/pytorch/issues/50469
 
 def single_action_result(legal_actions, num_actions, as_output=False):
     probs = np.zeros(num_actions)
@@ -124,7 +124,7 @@ def pretty_time(seconds):
 def default_device():
     return 'cuda' if torch.cuda.is_available() else 'cpu'
 
-def apply_optional_overrides(args, argv, config, nfsp=False):
+def apply_optional_overrides(args, argv, config):
     # Override any top-level yaml args with command line arguments
     for arg in vars(args):
         if f'--{arg}' in argv:
@@ -133,6 +133,8 @@ def apply_optional_overrides(args, argv, config, nfsp=False):
             if name in config:
                 logging.warning(f'Overriding {name} from command line')
                 config[name] = value
+
+    config['seed'] = args.seed
 
 class UBCChanceEventSampler(object):
     """Default sampler for external chance events."""

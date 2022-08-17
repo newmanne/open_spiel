@@ -219,7 +219,7 @@ class Environment(object):
 
     # MODIFIED
     self.observer = None
-    if self.use_observer_api:
+    if use_observer_api:
       self.observer = make_observation(self._game)
 
   def seed(self, seed=None):

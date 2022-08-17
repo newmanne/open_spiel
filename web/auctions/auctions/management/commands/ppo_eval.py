@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from open_spiel.python.examples.ppo_eval import DEFAULT_COMPUTE_EFFICIENCY, DEFAULT_NUM_SAMPLES, run_eval, DEFAULT_REPORT_FREQ, DEFAULT_SEED
+from open_spiel.python.examples.ppo_eval import run_eval, EvalDefaults
 from open_spiel.python.examples.ubc_utils import series_to_quantiles, fix_seeds
 import logging
 from auctions.models import *
@@ -85,10 +85,10 @@ class Command(BaseCommand):
     help = 'Evaluates a policy and saves the result'
 
     def add_arguments(self, parser):
-        parser.add_argument('--eval_num_samples', type=int, default=DEFAULT_NUM_SAMPLES)
-        parser.add_argument('--eval_report_freq', type=int, default=DEFAULT_REPORT_FREQ)
-        parser.add_argument('--eval_compute_efficiency', type=util.strtobool, default=0)
-        parser.add_argument('--seed', type=int, default=DEFAULT_SEED)
+        parser.add_argument('--eval_num_samples', type=int, default=EvalDefaults.DEFAULT_NUM_SAMPLES)
+        parser.add_argument('--eval_report_freq', type=int, default=EvalDefaults.DEFAULT_REPORT_FREQ)
+        parser.add_argument('--eval_compute_efficiency', type=util.strtobool, default=EvalDefaults.DEFAULT_COMPUTE_EFFICIENCY)
+        parser.add_argument('--seed', type=int, default=EvalDefaults.DEFAULT_SEED)
         parser.add_argument('--br_name', type=str, default=None)
 
         # Needed to identify the checkpoint

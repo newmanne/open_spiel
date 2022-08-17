@@ -16,6 +16,7 @@ from open_spiel.python.games import clock_auction_bidders
 from functools import cached_property
 
 DEFAULT_MAX_ROUNDS = 25
+DEFAULT_AGENT_MEMORY = 3
 
 class ActivityPolicy(enum.IntEnum):
   ON = 0
@@ -54,7 +55,7 @@ class AuctionParams:
   default_player_order: List[List[int]] = None
 
   tiebreaks: bool = True
-  agent_memory: int = DEFAULT_MAX_ROUNDS
+  agent_memory: int = DEFAULT_AGENT_MEMORY
 
   @cached_property
   def max_activity(self):
@@ -234,14 +235,14 @@ class ClockAuctionGame(pyspiel.Game):
     # MAX AND MIN UTILITY
     self.upper_bounds = []
     self.lower_bounds = []
-    total_supply_cost = self.auction_params.licenses @ self.auction_params.opening_prices
+    open_prices_per_bundles = np.array([self.auction_params.opening_prices @ bid for bid in self.auction_params.all_bids])
     for player_id, types in self.auction_params.player_types.items():
       player_upper_bounds = []
       player_lower_bounds = []
       for t in types:
         bidder = t['bidder']
-        # What if you won the whole supply at opening prices?
-        bound = max(0, bidder.value_for_package(self.auction_params.licenses) - total_supply_cost)
+        # What if you won your favorite package at opening prices?
+        bound = bidder.get_profits(open_prices_per_bundles).max()
         player_upper_bounds.append(bound)
         # What if you spent your entire budget and got nothing? (A tighter not implemented bound: if you got the single worst item for you, since you must be paying for something)
         player_lower_bounds.append(-bidder.budget)
@@ -670,7 +671,8 @@ class ClockAuctionObserver:
     num_players = len(auction_params.player_types)
     num_products = auction_params.num_products
 
-    self.round_buffer = 100 if iig_obs_type.perfect_recall else auction_params.agent_memory
+    # self.round_buffer = 100 if iig_obs_type.perfect_recall else auction_params.agent_memory
+    self.round_buffer = auction_params.agent_memory # TODO: We are abusing the API here a bit. Only offers binary perfect recall or not, but we want to interpolate.
     length = self.round_buffer * num_products
     shape = (self.round_buffer, num_products)
 
@@ -755,7 +757,10 @@ class ClockAuctionObserver:
       posted_prices = np.array(state.posted_prices)[start_ind:end_ind + 1]
       if self.normalize:
         posted_prices = posted_prices / self.auction_params.max_budget
-      self.dict["posted_price_history"][:length + 188] = posted_prices
+      self.dict["posted_price_history"][:length + 1] = posted_prices
+
+    if np.isnan(self.tensor).any():
+      raise ValueError(f"NaN in observation {self.dict}")
 
   def string_from(self, state, player):
     """Observation of `state` from the PoV of `player`, as a string."""

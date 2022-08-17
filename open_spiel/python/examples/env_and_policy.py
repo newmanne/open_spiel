@@ -14,4 +14,4 @@ class EnvAndPolicy:
         if agents is None:
             agents = self.agents
         agent_dict = {agent.player_id: agent for agent in agents}
-        return JointRLAgentPolicy(self.game, agent_dict)
+        return JointRLAgentPolicy(self.game, agent_dict, False)

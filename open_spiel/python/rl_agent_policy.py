@@ -78,14 +78,15 @@ class JointRLAgentPolicy(policy.Policy):
 
     return prob_dict
 
+  # UBC added
   def save(self):
       output = dict()
-      for player, agent in enumerate(self._agents):
+      for player, agent in self._agents.items():
           output[player] = agent.save()
       return output
 
   def restore(self, restore_dict):
-      for player, agent in enumerate(self._agents):
+      for player, agent in self._agents.items():
           agent.restore(restore_dict[player])
 
 

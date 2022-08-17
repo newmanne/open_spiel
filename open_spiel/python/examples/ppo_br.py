@@ -17,7 +17,7 @@ from open_spiel.python.algorithms.exploitability import best_response
 from absl import logging
 import time
 from open_spiel.python.examples.env_and_policy import EnvAndPolicy
-from open_spiel.python.examples.ppo_utils import EpisodeTimer, PPOTrainingLoop, make_ppo_agent, training_loop
+from open_spiel.python.examples.ppo_utils import EpisodeTimer, PPOTrainingLoop, make_ppo_agent
 
 def run_br(env_and_policy: EnvAndPolicy, br_player, total_timesteps, config, report_freq=1000, result_saver=None, seed=1234, compute_exact_br=False):
     fix_seeds(seed) # This was probably done above (to deal with network initilization), but do it again for good measure

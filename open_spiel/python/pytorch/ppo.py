@@ -50,6 +50,9 @@ class PPOAgent(nn.Module):
             legal_actions_mask = torch.ones((len(x), self.num_actions)).bool()
 
         logits = self.actor(x)
+        if torch.isnan(logits).any():
+            raise ValueError("Training is messed up - logits are NaN")
+
         probs = CategoricalMasked(logits=logits, masks=legal_actions_mask, mask_value=self.mask_value)
         if action is None:
             action = probs.sample()
@@ -127,6 +130,12 @@ class PPO(nn.Module):
         agent_fn=PPOAtariAgent,
         ):
         super().__init__()
+
+        if isinstance(agent_fn, str):
+            if agent_fn == 'PPOAgent':
+                agent_fn = PPOAgent
+            else:
+                raise ValueError(f"Unknown agent_fn {agent_fn}")
 
         self.input_shape = input_shape
         self.num_actions = num_actions

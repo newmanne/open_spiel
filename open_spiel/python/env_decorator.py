@@ -45,9 +45,12 @@ class NormalizingEnvDecorator(EnvDecorator):
     
     def get_time_step(self):
         time_step = self._env.get_time_step()
+
         if self.reward_normalizer is not None:
             time_step.rewards[:] = (torch.tensor(time_step.rewards) / self.reward_normalizer).tolist() 
 
+        if np.isnan(time_step.rewards).any():
+            raise ValueError("Nan reward after normalization!")
         return time_step
 
 class AuctionStatTrackingDecorator(EnvDecorator):
