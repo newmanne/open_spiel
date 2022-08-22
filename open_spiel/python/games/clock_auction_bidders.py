@@ -61,3 +61,6 @@ class EnumeratedValueBidder(Bidder):
     if package_index is None:
       package_index = self.all_bids.find(package)
     return self.values[package_index]
+
+  def __str__(self) -> str:
+    return f'EnumeratedValues: {self.values} Budget: {self.budget}'

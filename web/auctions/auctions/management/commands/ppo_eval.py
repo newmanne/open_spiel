@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 def eval_command(t, experiment_name, run_name, br_name, br_player, dry_run, seed, report_freq, num_samples, compute_efficiency):
     fix_seeds(seed)
 
+    logging.info("EVALUATION STARTING")
     # Find the equilibrium_solver_run_checkpoint 
     equilibrium_solver_run_checkpoint = get_checkpoint_by_name(experiment_name, run_name, t)
 
@@ -50,7 +51,7 @@ def eval_command(t, experiment_name, run_name, br_name, br_player, dry_run, seed
         env_and_policy.agents[br_player] = br_agent 
 
     # RUN EVAL
-    eval_output = run_eval(env_and_policy, num_samples, report_freq, seed, compute_efficiency=compute_efficiency)
+    eval_output = run_eval(env_and_policy, num_samples=num_samples, report_freq=report_freq, seed=seed, compute_efficiency=compute_efficiency)
 
     # SAVE EVAL
     if not dry_run:
@@ -59,8 +60,10 @@ def eval_command(t, experiment_name, run_name, br_name, br_player, dry_run, seed
             mean_rewards = []
             for player in range(equilibrium_solver_run_checkpoint.equilibrium_solver_run.game.num_players):
                 mean_rewards.append(
-                    pd.Series(eval_output['rewards'][player]).mean()
+                    pd.Series(eval_output['raw_rewards'][player]).mean()
                 )
+            
+            eval_output = convert_pesky_np(eval_output)
             Evaluation.objects.create(
                 walltime = eval_output.pop('walltime'),
                 checkpoint = equilibrium_solver_run_checkpoint,
@@ -69,7 +72,7 @@ def eval_command(t, experiment_name, run_name, br_name, br_player, dry_run, seed
             )
             
         else:
-            br_rewards = pd.Series(eval_output['rewards'][br_player])
+            br_rewards = pd.Series(eval_output['raw_rewards'][br_player])
             BREvaluation.objects.create(
                 best_response = best_response,
                 walltime = eval_output['walltime'],

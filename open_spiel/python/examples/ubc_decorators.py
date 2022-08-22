@@ -70,6 +70,9 @@ class TakeSingleActionDecorator(AgentDecorator):
         self.num_actions = num_actions
 
     def step(self, time_step, is_evaluation=False):
+        if isinstance(time_step, list):
+            return [self.step(time_step[i], is_evaluation=is_evaluation) for i in range(len(time_step))]
+
         legal_actions = time_step.observations["legal_actions"][self.player_id]
         if len(legal_actions) == 1:
             return single_action_result(legal_actions, self.num_actions, as_output=True)

@@ -28,7 +28,7 @@ def run_br(env_and_policy: EnvAndPolicy, br_player, total_timesteps, config, rep
     policy = env_and_policy.make_policy(agents)
 
     # TRAINING PHASE
-    def report_hook(update):
+    def report_hook(update, total_steps):
         logging.info(f"Update {update}. Training for {pretty_time(time.time() - alg_start_time)}")
         if compute_exact_br:
             logging.info("Computing exact BR")
@@ -46,7 +46,7 @@ def run_br(env_and_policy: EnvAndPolicy, br_player, total_timesteps, config, rep
     checkpoint = {
       'br_player': br_player,
       'walltime': walltime_train,
-      'agent': agents[br_player].state_dict(),
+      'agent': agents[br_player].save(),
       'config': config,
       'episode': total_timesteps
     }

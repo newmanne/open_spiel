@@ -123,3 +123,15 @@ def find_best_checkpoint(run, max_t=None):
     nash_conv_by_t = ev_df.groupby('t')['ApproxNashConv'].first()
     best_checkpoint = get_checkpoint(run, t=best_t)
     return nash_conv_by_t, best_checkpoint, nash_conv_by_t.min()
+
+def convert_pesky_np(d):
+    '''Django complains it doesn't know to JSON serialize numpy arrays'''
+    new_d = dict()
+    for k, v in d.items():
+        if isinstance(v, np.ndarray):
+            new_d[k] = v.tolist()
+        elif isinstance(v, dict):
+            new_d[k] = convert_pesky_np(v)
+        else:
+            new_d[k] = v
+    return new_d

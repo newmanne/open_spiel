@@ -294,7 +294,7 @@ class ClockAuctionState(pyspiel.State):
     self.round = 1
     self._cur_player = 0
     self._final_payments = None
-
+    self.price_increments = np.zeros(self.auction_params.num_products)
 
   def current_player(self) -> pyspiel.PlayerId:
     """Returns the current player.
@@ -454,8 +454,6 @@ class ClockAuctionState(pyspiel.State):
   def returns(self):
     """Total reward for each player over the course of the game so far."""
     assert self._game_over
-
-    # TODO: Maybe give large negative number if game went on for too long
     assert self._auction_finished
 
     self._final_payments = np.zeros(self.num_players())
@@ -531,6 +529,8 @@ class ClockAuctionState(pyspiel.State):
       next_price = np.zeros(self.auction_params.num_products)
       next_clock = np.zeros_like(next_price)
       for j in range(self.auction_params.num_products):
+        if excess_demand[j]:
+          self.price_increments[j] += 1
         next_price[j] = self.clock_prices[-1][j] if excess_demand[j] else self.sor_prices[-1][j]
         next_clock[j] = next_price[j] * (1 + self.auction_params.increment)
       self.posted_prices.append(next_price)
@@ -542,7 +542,12 @@ class ClockAuctionState(pyspiel.State):
       self._game_over = True
       self.posted_prices.append(np.array(self.posted_prices[-1]))
 
-    self.round += 1
+    if not self._auction_finished:
+      self.round += 1
+      if self.round > self.auction_params.max_round:
+        # An alternative: set game_over = True (auction_finished will still be false) and simply track this. Maybe give large negative rewards. But right now this seems more obvious as a way of triggering
+        raise ValueError("Auction went on too long")
+
     self._cur_player = 0
     self._is_chance = False
 
@@ -678,23 +683,29 @@ class ClockAuctionObserver:
 
     """Initializes an empty observation tensor."""
     # Determine which observation pieces we want to include.
+    # NOTE: It should be possible to use the params to exclude some of these if we want a smaller input to the NN (or to have the NN reassamble the tensor from specific pieces).
+
     pieces = [("player", num_players, (num_players,))] 
     if iig_obs_type.private_info == pyspiel.PrivateInfoType.SINGLE_PLAYER:
       # 1-hot type encoding
       max_num_types = max([len(p) for p in auction_params.player_types.values()])
       pieces.append(("bidder_type", max_num_types, (max_num_types,)))
       pieces.append(("activity", 1, (1,)))
+      pieces.append(("sor_exposure", 1, (1,)))
 
       pieces.append(("submitted_demand_history", length, shape))
       pieces.append(("processed_demand_history", length, shape))
       num_bundles = len(auction_params.all_bids)
       pieces.append(("sor_profits", num_bundles, (num_bundles,)))
+      pieces.append(("clock_profits", num_bundles, (num_bundles,)))
 
     if iig_obs_type.public_info:
       # 1-hot round encoding
       pieces.append(("round", self.round_buffer, (self.round_buffer,)))
       pieces.append(("agg_demand_history", length, shape))
       pieces.append(("posted_price_history", (self.round_buffer + 1) * num_products, (self.round_buffer + 1, num_products))) # slightly different shape b/c there is a real initial value
+      pieces.append(("clock_prices", num_products, (num_products,)))
+      pieces.append(("price_increments", num_products, (num_products,)))
 
     # Build the single flat tensor.
     total_size = sum(size for name, size, shape in pieces)
@@ -735,6 +746,13 @@ class ClockAuctionObserver:
         if self.normalize:
           profits = profits / self.auction_params.max_budget
         self.dict["sor_profits"] = profits
+      if "clock_profits" in self.dict:
+        price = np.array(state.clock_prices[-1])
+        prices = np.array([price @ bid for bid in self.auction_params.all_bids])
+        profits = state.bidders[player].bidder.get_profits(prices)
+        if self.normalize:
+          profits = profits / self.auction_params.max_budget
+        self.dict["clock_profits"] = profits
 
     if state.round > 1:
       if "agg_demand_history" in self.dict:
@@ -752,12 +770,29 @@ class ClockAuctionObserver:
         if self.normalize:
           processed_demand_history = processed_demand_history / self.auction_params.licenses
         self.dict["processed_demand_history"][:length] = processed_demand_history
+      if "sor_exposure" in self.dict:
+        sor_exposure = state.bidders[player].processed_demand[-1] @ state.sor_prices[-1]
+        if self.normalize:
+          sor_exposure = sor_exposure / self.auction_params.max_budget # TODO: Why not use a player specific bound here?
+        self.dict["sor_exposure"] = sor_exposure
 
     if "posted_price_history" in self.dict:
       posted_prices = np.array(state.posted_prices)[start_ind:end_ind + 1]
       if self.normalize:
         posted_prices = posted_prices / self.auction_params.max_budget
       self.dict["posted_price_history"][:length + 1] = posted_prices
+
+    if "clock_prices" in self.dict:
+      clock_prices = np.array(state.clock_prices[-1])
+      if self.normalize:
+        clock_prices = clock_prices / self.auction_params.max_budget
+      self.dict['clock_prices'] = clock_prices
+
+    if "price_increments" in self.dict:
+      price_increments = np.array(state.price_increments)
+      if self.normalize:
+        price_increments = price_increments / self.auction_params.max_round
+      self.dict['price_increments'] = price_increments
 
     if np.isnan(self.tensor).any():
       raise ValueError(f"NaN in observation {self.dict}")
@@ -781,6 +816,13 @@ class ClockAuctionObserver:
       pieces.append(f"proc{state.bidders[player].processed_demand}")
     if "posted_price_history" in self.dict:
       pieces.append(f"posted{state.posted_prices}")
+    if "clock_prices" in self.dict:
+      pieces.append(f"clock{state.clock_prices[-1]}")
+    if "sor_exposure" in self.dict and state.round > 1:
+      pieces.append(f"sor_exposure{state.bidders[player].processed_demand[-1] @ state.sor_prices[-1]}")
+    if "price_increments" in self.dict and state.round > 1:
+      pieces.append(f"increments{state.price_increments}")
+
     return " ".join(str(p) for p in pieces)
 
 # Register the game with the OpenSpiel library

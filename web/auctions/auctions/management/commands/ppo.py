@@ -97,7 +97,7 @@ class Command(BaseCommand):
 
         result_saver = DBPolicySaver(eq_solver_run=eq_solver_run) if not opts.dry_run else None
         dispatcher = DBBRDispatcher(game_db.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path) if not opts.dry_run else None
-        # NOTE: THESE ARE CURRENTLY PHRASED IN UNITS OF UPDATES, NOT STEPS!!!
+        # NOTE: THESE ARE PHRASED IN UNITS OF UPDATES, NOT STEPS!!!
         eval_episode_timer = EpisodeTimer(opts.eval_every, early_frequency=opts.eval_every_early, fixed_episodes=opts.eval_exactly, eval_zero=opts.eval_zero)
         report_timer = EpisodeTimer(opts.report_freq)
 

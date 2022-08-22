@@ -40,10 +40,6 @@ def setup_directory_structure(output_dir, warn_on_overwrite, database=True):
     if not database:
         os.makedirs(os.path.join(output_dir, CHECKPOINT_FOLDER))
 
-def num_increments(price, increment, starting_price):
-    num_increments = (np.log(price) - np.log(starting_price)) / np.log(increment)
-    return int(np.round(num_increments)) - 1
-
 def fix_seeds(seed):
     logging.info(f"Setting numpy and torch seed to {seed}")
     np.random.seed(seed)

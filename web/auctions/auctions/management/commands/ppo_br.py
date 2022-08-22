@@ -68,5 +68,4 @@ class Command(BaseCommand):
 
         # Evaluation
         if opts.dispatch_rewards:
-            # TODO:
             eval_command(opts.t, opts.experiment_name, opts.run_name, config_name, opts.br_player, opts.dry_run, opts.seed, opts.eval_report_freq, opts.eval_num_samples, opts.eval_compute_efficiency)

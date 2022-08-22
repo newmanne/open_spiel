@@ -5,8 +5,6 @@ import numpy as np
 
 class EnvDecorator(object):
 
-    _env: Environment = None
-
     def __init__(self, env: Environment) -> None:
         self._env = env
         self.env_attributes = [attribute for attribute in self._env.__dict__.keys()]
@@ -64,7 +62,7 @@ class AuctionStatTrackingDecorator(EnvDecorator):
 
     def get_time_step(self):
         time_step = self._env.get_time_step()
-        state = self._env.get_state()
+        state = self._env._state
         
         if time_step.last():
             for player_id, reward in enumerate(time_step.rewards):
@@ -72,7 +70,7 @@ class AuctionStatTrackingDecorator(EnvDecorator):
             for player_id, payment in enumerate(state.get_final_payments()):
                 self.payments[player_id].append(payment)
             for player_id, allocation in enumerate(state.get_allocation()):
-                self.allocations[player_id].append(allocation)
+                self.allocations[player_id].append(allocation.tolist())
             self.auction_lengths.append(state.round)
 
         # TODO: Prices, types, efficiency
@@ -81,7 +79,7 @@ class AuctionStatTrackingDecorator(EnvDecorator):
 
     def stats_dict(self):
         return {
-            'rewards': self.rewards,
+            'raw_rewards': self.rewards,
             'allocations': self.allocations,
             'payments': self.payments,
             'auction_lengths': self.auction_lengths,
