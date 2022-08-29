@@ -313,10 +313,9 @@ class ClockAuctionState(pyspiel.State):
     """Returns a list of legal actions, sorted in ascending order."""
     assert player >= 0 
     legal_actions = []
-
     bidder = self.bidders[player]
 
-    if len(bidder.submitted_demand) > 0 and sum(bidder.submitted_demand[-1] == 0):
+    if len(bidder.submitted_demand) > 0 and sum(bidder.submitted_demand[-1]) == 0:
       # Don't need to recalculate - can only bid 0
       return [0]
 
@@ -332,7 +331,7 @@ class ClockAuctionState(pyspiel.State):
     # Consider e.g. if you drop a product you might get stuck! So you can wind up over your budget if your drop fails
     # Also consider that if you drop a product and get stuck, you only pay SoR on that product
 
-    legal_actions = np.ones(len(self.auction_params.all_bids), dtype=np.bool)
+    legal_actions = np.ones(len(self.auction_params.all_bids), dtype=bool)
 
     if self.auction_params.activity_policy == ActivityPolicy.ON:
       legal_actions[np.where(bidder.activity < self.auction_params.all_bids_activity)[0]] = 0
@@ -343,6 +342,7 @@ class ClockAuctionState(pyspiel.State):
     if positive_profit_on:
       legal_actions[np.where(profits < 0)[0]] = 0
 
+    # TODO: Shouldn't I be using LegalProfits here? (i.e., accounting for the fact that it needs to be a legal bundle?)
     if not (profits > 0).any():
       # If you have no way to make a profit ever going forwards, just drop out. Helps minimize game size
       return [0]
@@ -511,7 +511,7 @@ class ClockAuctionState(pyspiel.State):
 
   def _post_process(self):
     # Calculate aggregate demand
-    aggregate_demand = np.zeros(self.auction_params.num_products, dtype=np.int)
+    aggregate_demand = np.zeros(self.auction_params.num_products, dtype=int)
     for bidder in self.bidders:
       bid = bidder.processed_demand[-1]
       

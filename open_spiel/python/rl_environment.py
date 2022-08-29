@@ -351,7 +351,7 @@ class Environment(object):
           self._mfg_population)
     else:
       self._state = self._game.new_initial_state()
-    self._sample_external_events()
+    self._sample_external_events(reset=True)
 
     observations = {
         "info_state": [],
@@ -382,12 +382,12 @@ class Environment(object):
         discounts=None,
         step_type=StepType.FIRST)
 
-  def _sample_external_events(self):
+  def _sample_external_events(self, reset=False):
     """Sample chance events until we get to a decision node."""
     while self._state.is_chance_node() or (self._state.current_player()
                                            == pyspiel.PlayerId.MEAN_FIELD):
       if self._state.is_chance_node():
-        outcome = self._chance_event_sampler(self._state)
+        outcome = self._chance_event_sampler(self._state, reset=reset)
         self._state.apply_action(outcome)
       if self._state.current_player() == pyspiel.PlayerId.MEAN_FIELD:
         dist_to_register = self._state.distribution_support()

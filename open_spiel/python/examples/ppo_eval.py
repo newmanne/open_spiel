@@ -94,6 +94,7 @@ def run_eval(env_and_policy, num_samples=EvalDefaults.DEFAULT_NUM_SAMPLES, repor
     d = []
     for e in env_and_policy.env.envs:
         d.append(e.stats_dict())
+        print(e.stats_dict())
 
     stats_dict = d[0]
     for other_dict in d[1:]:
@@ -103,6 +104,7 @@ def run_eval(env_and_policy, num_samples=EvalDefaults.DEFAULT_NUM_SAMPLES, repor
                     stats_dict[k][k2] += v2
             else:
                 stats_dict[k] += v
+
 
     checkpoint.update(stats_dict)
     return checkpoint

@@ -137,7 +137,10 @@ class UBCChanceEventSampler(object):
 
     def __init__(self, seed=None, deterministic_types=None) -> None:
         self.deterministic_types = deterministic_types
-        self.seed = None # TODO: actually use this
+        self.seed(seed)
+
+    def seed(self, seed=None):
+        self._rng = np.random.RandomState(seed)
 
     def __call__(self, state, reset=False):
         """Sample a chance event in the given state."""
@@ -147,7 +150,7 @@ class UBCChanceEventSampler(object):
                 return deterministic_action
 
         actions, probs = zip(*state.chance_outcomes())
-        return fast_choice(actions, probs)
+        return fast_choice(actions, probs, rng=self._rng)
 
 
 def series_to_quantiles(s: pd.Series):

@@ -10,6 +10,7 @@ import logging
 from open_spiel.python.algorithms.exploitability import nash_conv
 from open_spiel.python.vector_env import SyncVectorEnv
 from open_spiel.python.env_decorator import NormalizingEnvDecorator, AuctionStatTrackingDecorator
+from typing import List
 
 logger = logging.getLogger(__name__)
 
@@ -52,13 +53,14 @@ class EnvParams:
   seed: int = 1234
   track_stats: bool = False
   sync: bool = True
+  deterministic_types: List = None
 
   def make_env(self, game):
     if not self.sync and self.num_envs > 1:
       raise ValueError("Sync must be True if num_envs > 1")
 
     def gen_env(seed):
-        env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(seed=seed), use_observer_api=True)
+        env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(seed=seed, deterministic_types=self.deterministic_types), use_observer_api=True)
         if self.track_stats:
           env = AuctionStatTrackingDecorator(env)
         if self.normalize_rewards:
