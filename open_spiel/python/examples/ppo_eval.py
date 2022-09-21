@@ -48,7 +48,7 @@ def eval_agents_parallel(env, agents, num_episodes, report_timer=None, flat_rewa
     episode_counter = num_envs
     time_step = env.reset()
 
-    while episode_counter < num_episodes:
+    while episode_counter < num_episodes - num_envs:
         if report_timer is not None and report_timer.should_trigger(episode_counter):
             # TODO: This logging only works sporadically because episode counter can increment by more than 1 - how do we not miss logs?
             logging.info(f"Evaluated {episode_counter}/{num_episodes} episodes")
@@ -60,20 +60,26 @@ def eval_agents_parallel(env, agents, num_episodes, report_timer=None, flat_rewa
         total_rewards += np.array(rewards)
         episode_counter += sum(dones)
 
-    finished = np.zeros(num_envs, dtype=bool)
-    while not np.all(finished):
-        for agent in agents:
-            agent_output = agent.step(time_step, is_evaluation=True)
-            time_step, rewards, dones, _ = env.step(agent_output, reset_if_done=True)
+    if episode_counter == num_episodes:
+        logging.info("No surplus episodes needed")
+    else:
+        logging.info("Starting surplus episodes")
+        finished = np.zeros(num_envs, dtype=bool)
+        while not np.all(finished):
+            logging.info(f"Unfinished surplus episodes: {(~finished).sum()}")
+            for agent in agents:
+                agent_output = agent.step(time_step, is_evaluation=True)
+                time_step, rewards, dones, _ = env.step(agent_output, reset_if_done=True)
 
-        # Note: This might mean the decoartor for auction stats still adds episodes we don't really want to bias
-        total_rewards[~finished] += np.array(rewards)[~finished]
-        finished |= dones
+            # Note: This might mean the decoartor for auction stats still adds episodes we don't really want to bias
+            total_rewards[~finished] += np.array(rewards)[~finished]
+            finished |= dones
+        episode_counter += num_envs # Note: This is not (necessarily) the same as the number of episodes we actually evaluated
 
     rewards = total_rewards.sum(axis=0) / episode_counter
 
     eval_time = time.time() - alg_start_time
-    logging.info(f"Eval took {pretty_time(eval_time)} for the episodes")
+    logging.info(f"Finished a total of {episode_counter} episodes in {pretty_time(eval_time)}")
 
     return {
         'rewards': rewards, # These will probably be normalized
@@ -85,6 +91,7 @@ class EvalDefaults:
     DEFAULT_REPORT_FREQ = 5000
     DEFAULT_SEED = 1234
     DEFAULT_COMPUTE_EFFICIENCY = False
+    DEFAULT_NUM_ENVS = 8
 
 def run_eval(env_and_policy, num_samples=EvalDefaults.DEFAULT_NUM_SAMPLES, report_freq=EvalDefaults.DEFAULT_REPORT_FREQ, seed=EvalDefaults.DEFAULT_SEED, compute_efficiency=EvalDefaults.DEFAULT_COMPUTE_EFFICIENCY):
     # TODO: So many unused vars here
@@ -94,7 +101,6 @@ def run_eval(env_and_policy, num_samples=EvalDefaults.DEFAULT_NUM_SAMPLES, repor
     d = []
     for e in env_and_policy.env.envs:
         d.append(e.stats_dict())
-        print(e.stats_dict())
 
     stats_dict = d[0]
     for other_dict in d[1:]:

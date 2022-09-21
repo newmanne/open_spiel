@@ -16,7 +16,7 @@ import pandas as pd
 from django.http import HttpResponse
 import datetime
 from auctions.webutils import *
-from open_spiel.python.examples.ubc_sample_game_tree import sample_game_tree, flatten_trees
+from open_spiel.python.examples.ubc_sample_game_tree import sample_game_tree, sample_game_from_position, flatten_trees
 from open_spiel.python.examples.ubc_decorators import TakeSingleActionDecorator
 from open_spiel.python.examples.straightforward_agent import StraightforwardAgent
 from open_spiel.python.examples.ubc_plotting_utils import plot_all_models, parse_run, plot_embedding, plots_to_string
@@ -231,4 +231,40 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
         #         plot_html = plots_to_string(plots, 'Clustering')
         #         data['clusters_bokeh'][player] = plot_html
 
+        return Response(data)
+
+    @action(detail=True)
+    def samples_from_state(self, request, pk=None):
+        game = self.get_object()
+        # Parse query params
+        num_samples = int(request.query_params.get('num_samples', 0))
+        seed = int(request.query_params.get('seed', 1234))
+        player_0_checkpoint_pk = int(request.query_params['player_0_checkpoint_pk'])
+        history_prefix = list(map(int, request.GET.getlist('history_prefix[]')))
+
+        checkpoint = EquilibriumSolverRunCheckpoint.objects.get(pk=player_0_checkpoint_pk)
+        # TODO: Modify this if you want to collect samples in parallel
+        env_params = EnvParams(track_stats=True, seed=seed, num_envs=1, sync=False, history_prefix=history_prefix)
+        env_and_policy = ppo_db_checkpoint_loader(checkpoint, env_params=env_params)
+
+        for player in range(game.num_players):
+            checkpoint_pk = int(request.query_params[f'player_{player}_checkpoint_pk'])
+            best_response_pk = request.query_params.get(f'player_{player}_br_pk')
+            if best_response_pk is not None:
+                best_response_pk = int(best_response_pk)
+                br = BestResponse.objects.get(pk=best_response_pk)
+                if br.name == 'straightforward':
+                    env_and_policy.agents[player] = StraightforwardAgent(player, game.config, game.num_actions)
+                else:
+                    env_and_policy.agents[player] = load_ppo_agent(br)
+            else:
+                checkpoint = EquilibriumSolverRunCheckpoint.objects.get(pk=checkpoint_pk)
+                env_and_model_temp = ppo_db_checkpoint_loader(checkpoint)
+                env_and_policy.agents[player] = env_and_model_temp.agents[player]
+
+        data = dict()
+
+        # Sample
+        actions = sample_game_from_position(env_and_policy, num_samples, seed=seed)
+        data['actions'] = actions
         return Response(data)

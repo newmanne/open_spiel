@@ -8,6 +8,7 @@ import pytz
 import datetime
 import torch
 import pyspiel
+from distutils import util
 
 NORMALIZATION_DATE = datetime.datetime(2022, 3, 23, 4, 33, 3, 722237, tzinfo=pytz.UTC)
 
@@ -135,3 +136,32 @@ def convert_pesky_np(d):
         else:
             new_d[k] = v
     return new_d
+
+def add_profiling_flags(parser):
+    parser.add_argument('--pprofile', type=util.strtobool, default=0)
+    parser.add_argument('--pprofile_file', type=str, default='profile.txt')
+    parser.add_argument('--cprofile', type=util.strtobool, default=0)
+    parser.add_argument('--cprofile_file', type=str, default='cprofile.txt')
+
+def profile_cmd(cmd, pprofile, pprofile_file, cprofile, cprofile_file):
+    if pprofile:
+        import pprofile
+        profiler = pprofile.Profile()
+        with profiler:
+            cmd()
+        profiler.dump_stats(pprofile_file)
+    elif cprofile:
+        import cProfile, pstats, io
+        profiler = cProfile.Profile()
+        profiler.enable()
+        cmd()
+        profiler.disable()
+
+        s = io.StringIO()
+        ps = pstats.Stats(profiler, stream=s).sort_stats('cumtime')
+        ps.print_stats()
+
+        with open(cprofile_file, 'w+') as f:
+            f.write(s.getvalue())
+    else:
+        cmd()

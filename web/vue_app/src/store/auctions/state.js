@@ -14,6 +14,7 @@ export default function () {
     config: {},
     experiments: [],
     samples: {},
+    samples_from_state: [],
     games: [],
     bidderColors: BIDDERS_COLOR_MAPPING,
   };

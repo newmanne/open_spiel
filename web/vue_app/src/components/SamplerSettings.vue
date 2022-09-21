@@ -4,28 +4,20 @@
       v-model.number="num_samples"
       type="number"
       label="Number of samples"
-      @keydown.enter.prevent="getSamples()"
+      @update:model-value="getSamples"
     />
     <q-input
       v-model.number="seed"
       type="seed"
       label="Random seed"
-      @keydown.enter.prevent="getSamples()"
+      @update:model-value="getSamples"
     />
     <br />
-    <q-btn
-      label="Run"
-      icon="model_training"
-      color="primary"
-      :disabled="!readyForSamples"
-      :loading="loading_samples"
-      @click="getSamples()"
-    />
   </div>
 </template>
 
 <script>
-import { defineComponent, ref } from "vue";
+import { defineComponent } from "vue";
 import { createNamespacedHelpers } from "vuex";
 const { mapState, mapActions } = createNamespacedHelpers("auctions");
 
@@ -40,9 +32,14 @@ export default defineComponent({
   mounted() {},
   computed: mapState({}),
   methods: {
-    gameSelected() {},
-    ...mapActions(["GET_GAMES"]),
-  },
+    getSamples() {
+      sample_params = {
+        num_samples: this.num_samples,
+        seed: this.seed,
+      };
+      this.$emit('input', sample_params);
+    }
+  }
 });
 </script>
 

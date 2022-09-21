@@ -59,6 +59,14 @@ export const GET_SAMPLES = (context, {gamePk, url_params}) => {
   return simpleGetter(context, `game/${gamePk}/samples/`, 'SET_SAMPLES', url_params)
 };
 
+export const ADD_SAMPLES_FROM_STATE = (context, {gamePk, url_params}) => {
+  return simpleGetter(context, `game/${gamePk}/samples_from_state/`, 'ADD_SAMPLES_FROM_STATE', url_params)
+};
+
+export const POP_SAMPLES_FROM_STATE = (context, {depth}) => {
+  return context.commit('POP_SAMPLES_FROM_STATE', {depth})
+};
+
 export const GET_GAME_EXPERIMENTS = (context, {gamePk}) => {
   return simpleGetter(context, `game/${gamePk}/experiments`);
 };

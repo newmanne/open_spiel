@@ -57,6 +57,10 @@ import pyspiel
 
 SIMULTANEOUS_PLAYER_ID = pyspiel.PlayerId.SIMULTANEOUS
 
+def fastcopy(d):
+  """assumes d is a dict of np arrays"""
+  return {k: v.copy() for k, v in d.items()}
+
 
 class TimeStep(
     collections.namedtuple(
@@ -147,6 +151,7 @@ class Environment(object):
                game,
                discount=1.0,
                chance_event_sampler=None,
+               history_prefix=None,
                observation_type=None,
                include_full_state=False,
                mfg_distribution=None,
@@ -172,6 +177,9 @@ class Environment(object):
       **kwargs: dict, additional settings passed to the Open Spiel game.
     """
     self._chance_event_sampler = chance_event_sampler or ChanceEventSampler()
+    if history_prefix is None:
+      history_prefix = []
+    self._history_prefix = history_prefix
     self._include_full_state = include_full_state
     self._mfg_distribution = mfg_distribution
     self._mfg_population = mfg_population
@@ -258,7 +266,7 @@ class Environment(object):
       else:
         self.observer.set_from(self._state, player=player_id)
         info_state = np.array(self.observer.tensor)
-        observations['info_dict'].append(deepcopy(self.observer.dict))
+        observations['info_dict'].append(fastcopy(self.observer.dict))
 
       observations["info_state"].append(info_state)
       observations["legal_actions"].append(self._state.legal_actions(player_id))
@@ -347,11 +355,15 @@ class Environment(object):
     """
     self._should_reset = False
     if self._game.get_type().dynamics == pyspiel.GameType.Dynamics.MEAN_FIELD and self._num_players > 1:
-      self._state = self._game.new_initial_state_for_population(
-          self._mfg_population)
+      self._state = self._game.new_initial_state_for_population(self._mfg_population)
     else:
       self._state = self._game.new_initial_state()
-    self._sample_external_events(reset=True)
+    for action in self._history_prefix:
+      if self.is_turn_based:
+        self._state.apply_action(action)
+      else:
+        self._state.apply_actions(action)
+    self._sample_external_events()
 
     observations = {
         "info_state": [],
@@ -367,7 +379,7 @@ class Environment(object):
       else:
         self.observer.set_from(self._state, player=player_id)
         info_state = np.array(self.observer.tensor)
-        observations['info_dict'].append(deepcopy(self.observer.dict))
+        observations['info_dict'].append(fastcopy(self.observer.dict))
       observations["info_state"].append(info_state)
       observations["legal_actions"].append(self._state.legal_actions(player_id))
     observations["current_player"] = self._state.current_player()
@@ -382,12 +394,12 @@ class Environment(object):
         discounts=None,
         step_type=StepType.FIRST)
 
-  def _sample_external_events(self, reset=False):
+  def _sample_external_events(self):
     """Sample chance events until we get to a decision node."""
     while self._state.is_chance_node() or (self._state.current_player()
                                            == pyspiel.PlayerId.MEAN_FIELD):
       if self._state.is_chance_node():
-        outcome = self._chance_event_sampler(self._state, reset=reset)
+        outcome = self._chance_event_sampler(self._state)
         self._state.apply_action(outcome)
       if self._state.current_player() == pyspiel.PlayerId.MEAN_FIELD:
         dist_to_register = self._state.distribution_support()

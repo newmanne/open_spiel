@@ -41,11 +41,17 @@ class Command(BaseCommand):
         parser.add_argument("--eval_exactly", nargs="+", default=[], type=int)
         parser.add_argument("--eval_zero", type=util.strtobool, default=1)
 
+        # WANDB
+        parser.add_argument('--use_wandb', type=util.strtobool, default=1) 
+        parser.add_argument('--wandb_note', type=str, default='') 
+
         # Dispatching
         parser.add_argument('--dispatch_br', type=util.strtobool, default=1)
         parser.add_argument('--br_portfolio_path', type=str, default=None)
         parser.add_argument('--br_overrides', type=str, default='', help='These are arguments you want to pass to BR. DO NOT INCLUDE EVAL ARGS HERE')
         parser.add_argument('--eval_overrides', type=str, default='', help="These are arguments you want to pass directly through to evaluate. They ALSO get passed to best respones")
+
+        add_profiling_flags(parser)
 
     def handle(self, *args, **options):
         setup_logging()
@@ -57,7 +63,7 @@ class Command(BaseCommand):
         experiment_name = opts.experiment_name
         seed = opts.seed
         overwrite_db = opts.overwrite_db
-
+        
         fix_seeds(seed)
 
         # 0) Read the config file
@@ -66,6 +72,10 @@ class Command(BaseCommand):
         
         logging.info(f'Network params: {config}')
         logging.info(f'Command line commands {opts}')
+
+        if opts.use_wandb:
+            import wandb
+            wandb.init(project=experiment_name, entity="ubc-algorithms", notes=opts.wandb_note, config=config, tags=[game_name, run_name])
 
         # 1) Make the game if it doesn't exist
         game_db = get_or_create_game(game_name)
@@ -101,4 +111,6 @@ class Command(BaseCommand):
         eval_episode_timer = EpisodeTimer(opts.eval_every, early_frequency=opts.eval_every_early, fixed_episodes=opts.eval_exactly, eval_zero=opts.eval_zero)
         report_timer = EpisodeTimer(opts.report_freq)
 
-        run_ppo(env_and_policy, opts.total_timesteps, result_saver=result_saver, seed=seed, compute_nash_conv=opts.compute_nash_conv, dispatcher=dispatcher, report_timer=report_timer, eval_timer=eval_episode_timer)
+        cmd = lambda: run_ppo(env_and_policy, opts.total_timesteps, result_saver=result_saver, seed=seed, compute_nash_conv=opts.compute_nash_conv, dispatcher=dispatcher, report_timer=report_timer, eval_timer=eval_episode_timer)
+        profile_cmd(cmd, opts.pprofile, opts.pprofile_file, opts.cprofile, opts.cprofile_file)
+        

@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from open_spiel.python.examples.ubc_utils import apply_optional_overrides, fix_seeds, default_device, apply_optional_overrides
+from open_spiel.python.examples.ubc_utils import apply_optional_overrides, fix_seeds, default_device, apply_optional_overrides, random_string
 from open_spiel.python.examples.ppo_utils import read_ppo_config
 import logging
 from auctions.models import *
@@ -22,11 +22,15 @@ class Command(BaseCommand):
         parser.add_argument('--br_name', type=str)
         parser.add_argument('--config', type=str, required=True)
         
-        parser.add_argument('--report_freq', type=int, default=50_000)
+        parser.add_argument('--report_freq', type=int, default=100)
         parser.add_argument('--compute_exact_br', type=bool, default=False, help='Whether to compute an exact best response. Usually not possible')
         parser.add_argument('--dry_run', type=bool, default=False, help='If true, do not save')
         parser.add_argument('--device', type=str, default=default_device)
         parser.add_argument('--seed', type=int, default=1234)
+
+        # WANDB
+        parser.add_argument('--use_wandb', type=util.strtobool, default=1)
+        parser.add_argument('--wandb_note', type=str, default='') 
 
         # Rewards dispatching
         parser.add_argument('--dispatch_rewards', type=util.strtobool, default=0)
@@ -62,6 +66,10 @@ class Command(BaseCommand):
         # Read config from file system and apply command line overrides
         config = read_ppo_config(config_name)
         apply_optional_overrides(opts, sys.argv, config)
+
+        if opts.use_wandb:
+            import wandb
+            wandb.init(project=experiment_name, entity="ubc-algorithms", notes=opts.wandb_note, config=config, tags=[equilibrium_solver_run_checkpoint.equilibrium_solver_run.game.name, run_name], job_type='BR')
 
         # Run best response
         run_br(env_and_policy, br_player, opts.total_timesteps, config, report_freq=opts.report_freq, result_saver=result_saver, seed=opts.seed, compute_exact_br=opts.compute_exact_br)

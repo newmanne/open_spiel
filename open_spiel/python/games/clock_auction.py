@@ -177,14 +177,18 @@ def parse_auction_params(file_name):
     for player_id, player in enumerate(players):
       player_types = player['type']
       for player_type in player_types:
-        value_format = player_type.get('value_format', ValueFormat.LINEAR)
+        values = player_type['value']
+        if np.array(values).ndim == 2:
+          default_assumption = ValueFormat.MARGINAL
+        else:
+          default_assumption = ValueFormat.LINEAR
+        value_format = player_type.get('value_format', default_assumption)
         if isinstance(value_format, str):
           value_format = ValueFormat[value_format.upper()]
         budget = player_type['budget']
         prob = player_type['prob']
         pricing_bonus = player_type.get('pricing_bonus', 0)
 
-        values = player_type['value']
         if value_format == ValueFormat.LINEAR:
           if len(values) != num_products:
             raise ValueError("Number of values must match number of products.")
@@ -295,6 +299,7 @@ class ClockAuctionState(pyspiel.State):
     self._cur_player = 0
     self._final_payments = None
     self.price_increments = np.zeros(self.auction_params.num_products)
+    self.legal_action_mask = np.ones(len(self.auction_params.all_bids), dtype=bool)
 
   def current_player(self) -> pyspiel.PlayerId:
     """Returns the current player.
@@ -324,23 +329,23 @@ class ClockAuctionState(pyspiel.State):
     hard_budget_on = True # TODO: Make param
     positive_profit_on = False # TODO: Make param
 
-    prices = np.array([price @ bid for bid in self.auction_params.all_bids])
+    prices = self.auction_params.all_bids @ price
     profits = bidder.bidder.get_profits(prices)
 
     # Note we assume all drops go through. A more sophisticated bidder might think differently (e.g., try to fulfill budget in expectation)
     # Consider e.g. if you drop a product you might get stuck! So you can wind up over your budget if your drop fails
     # Also consider that if you drop a product and get stuck, you only pay SoR on that product
 
-    legal_actions = np.ones(len(self.auction_params.all_bids), dtype=bool)
+    legal_actions = self.legal_action_mask.copy()
 
     if self.auction_params.activity_policy == ActivityPolicy.ON:
       legal_actions[np.where(bidder.activity < self.auction_params.all_bids_activity)[0]] = 0
 
     if hard_budget_on:
-      legal_actions[np.where(prices > budget)[0]] = 0
+      legal_actions[prices > budget] = 0
 
     if positive_profit_on:
-      legal_actions[np.where(profits < 0)[0]] = 0
+      legal_actions[profits < 0] = 0
 
     # TODO: Shouldn't I be using LegalProfits here? (i.e., accounting for the fact that it needs to be a legal bundle?)
     if not (profits > 0).any():
@@ -464,7 +469,7 @@ class ClockAuctionState(pyspiel.State):
       final_bid = bidder.processed_demand[-1]
       payment = final_bid @ final_prices
       self._final_payments[player_id] = payment
-      returns[player_id] = bidder.bidder.value_for_package(final_bid, -1) - payment
+      returns[player_id] = bidder.bidder.value_for_package(final_bid) - payment
 
     return returns
 
@@ -741,14 +746,14 @@ class ClockAuctionObserver:
         self.dict["activity"][0] = activity
       if "sor_profits" in self.dict:
         price = np.array(state.sor_prices[-1])
-        prices = np.array([price @ bid for bid in self.auction_params.all_bids])
+        prices = self.auction_params.all_bids @ price
         profits = state.bidders[player].bidder.get_profits(prices)
         if self.normalize:
           profits = profits / self.auction_params.max_budget
         self.dict["sor_profits"] = profits
       if "clock_profits" in self.dict:
         price = np.array(state.clock_prices[-1])
-        prices = np.array([price @ bid for bid in self.auction_params.all_bids])
+        prices = self.auction_params.all_bids @ price
         profits = state.bidders[player].bidder.get_profits(prices)
         if self.normalize:
           profits = profits / self.auction_params.max_budget

@@ -17,6 +17,7 @@ from locale import normalize
 from xml.etree.ElementInclude import include
 
 from open_spiel.python.examples.ubc_utils import *
+from open_spiel.python.rl_agent import StepOutput
 
 import numpy as np
 import pandas as pd
@@ -38,6 +39,7 @@ class NodeType:
     INFORMATION_STATE = 0
     ACTION = 1
     FINAL_STATE = 2
+    CHANCE = 3
 
 def pretty_information_state(info_dict, state, player_id):
     if state.round == 1:
@@ -47,7 +49,7 @@ def pretty_information_state(info_dict, state, player_id):
         submitted = info_dict['submitted_demand_history'][-1]
         processed = info_dict['processed_demand_history'][-1]
         aggregate = info_dict['agg_demand_history'][-1]
-        if not np.array_equals(submitted, processed):
+        if not np.array_equal(submitted, processed):
             pretty_str += f'Processed: {processed}\n'
         pretty_str += f'Aggregate: {aggregate}'
         return pretty_str
@@ -57,7 +59,7 @@ def get_input(name, data):
         data[name] = input[0].detach().cpu()
     return hook
 
-def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_policy=None, time_step=None, agent_to_dqn_embedding=None, parent=None, clusterer=None, include_embeddings=False):
+def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_policy=None, time_step=None, agent_to_dqn_embedding=None, parent=None, clusterer=None, include_embeddings=False, include_features=True, chance_action=None, chance_probability=None):
     node = {
         'sample_outcomes': defaultdict(list),
         'children': {},
@@ -72,7 +74,8 @@ def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_policy=
             node['cluster'] = -1
         elif node_type == NodeType.FINAL_STATE:
             node['cluster'] = -2
-            node['cluster_from'] = parent['cluster']
+            if parent is not None:
+                node['cluster_from'] = parent['cluster']
 
     if node_type in [NodeType.INFORMATION_STATE, NodeType.ACTION]:
         player_id = time_step.observations["current_player"]
@@ -85,7 +88,8 @@ def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_policy=
 
         node['player_id'] = player_id
         node['round'] = state.round
-        node['feature_vector'] = time_step.observations["info_state"][player_id]
+        if include_features:
+            node['feature_vector'] = time_step.observations["info_state"][player_id]
 
         if node_type == NodeType.INFORMATION_STATE:
             pretty_str = pretty_information_state(info_dict, env._state, player_id)
@@ -120,6 +124,8 @@ def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_policy=
 
             node['straightforward_clock_profit'] = profit
             node['max_cp'] = mapped_action_id == max_cp_idx
+            node['action'] = action_id
+            node['action_probability'] = agent_output.probs[action_id]
 
             if include_embeddings:
                 # TODO:`    `
@@ -135,23 +141,24 @@ def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_policy=
                 # Integrate over all actions
                 expected_bid = sum([p * q[i] for p, q in zip(agent_output.probs, bundles)])
                 node[f'expected_bid {letter}'] = expected_bid
-                parent[f'expected_bid {letter}'] = expected_bid
+                if parent is not None:
+                    parent[f'expected_bid {letter}'] = expected_bid
             
             activity = game.auction_params.activity
-            parent['expected_activity'] = sum([p * (q @ activity) for p, q in zip(agent_output.probs, bundles)])
-            parent['expected_cost'] = sum([p * (q @ clock_prices) for p, q in zip(agent_output.probs, bundles)])
+            if parent is not None:
+                parent['expected_activity'] = sum([p * (q @ activity) for p, q in zip(agent_output.probs, bundles)])
+                parent['expected_cost'] = sum([p * (q @ clock_prices) for p, q in zip(agent_output.probs, bundles)])
 
             if clusterer is not None:
                 node['cluster'] = parent['cluster']
+    elif node_type == NodeType.CHANCE:
+        node['action'] = chance_action
+        node['action_probability'] = chance_probability
 
     node['pretty_str'] = pretty_str
     return node
 
 def aggregate_results(node, num_samples):
-    # Count number of observations
-
-    node['num_plays'] = len(node['sample_outcomes']['profit'])
-    node['pct_plays'] = (node['num_plays'] / num_samples) * 100
     # Add means in place
     # TODO: save other stats?
     for k in node['sample_outcomes']:
@@ -162,6 +169,11 @@ def aggregate_results(node, num_samples):
                 node[f'Avg Alloc {letter}'] = avgs[i]
         else:
             node[f'avg_{k}'] = np.mean(node['sample_outcomes'][k], axis=0)
+
+    # Count number of observations
+    node['num_plays'] = len(node['sample_outcomes']['rounds'])
+    node['pct_plays'] = (node['num_plays'] / num_samples) * 100
+
     del node['sample_outcomes']
 
     for child in node['children']:
@@ -279,7 +291,92 @@ def sample_game_tree(env_and_policy, num_samples, report_freq=GameTreeSampleDefa
     for i in range(num_players):
         aggregate_results(roots[i], num_samples) 
 
-    return roots           
+    return roots
+
+def sample_game_from_position(env_and_policy, num_samples, report_freq=GameTreeSampleDefaults.DEFAULT_REPORT_FREQ, seed=GameTreeSampleDefaults.DEFAULT_SEED):
+    fix_seeds(seed)
+
+    game, env, agents = env_and_policy.game, env_and_policy.env, env_and_policy.agents
+
+    # Get action probabilities
+    # first, get state directly from the game in case this is a chance node (which are skipped by RL environments)
+    state = game.new_initial_state()
+    for action in env._history_prefix:
+        state.apply_action(action)
+
+    terminal = False
+    if state.is_terminal():
+        terminal = True
+        action_nodes = {0: new_tree_node(
+            node_type=NodeType.FINAL_STATE,
+            str_desc=str(state.get_allocation()),
+            depth=len(env._history_prefix), 
+        )}
+        num_samples = 1
+    elif state.is_chance_node():
+        # if it's a chance node, get action probabilities directly from chance_outcomes
+        legal_actions, action_probabilities = zip(*state.chance_outcomes())
+        action_nodes = {action: new_tree_node(
+            node_type=NodeType.CHANCE, 
+            str_desc=state.action_to_string(action),
+            depth=len(env._history_prefix), 
+            chance_action=action,
+            chance_probability=action_probabilities[action],
+            include_features=False
+        ) for action in legal_actions}
+    else:
+        time_step = env.reset()
+        current_player = time_step.observations['current_player']
+        agent_output = agents[current_player].step(time_step, is_evaluation=True)
+        action_probabilities = agent_output.probs
+        legal_actions = time_step.observations['legal_actions'][current_player]
+        # TODO: add critic values (with hooks?)
+
+        # Build nodes
+        action_nodes = {}
+        for action in legal_actions:
+            agent_output_action = StepOutput(action=action, probs=action_probabilities)
+            action_nodes[action] = new_tree_node(
+                node_type=NodeType.ACTION, 
+                str_desc=env._state.action_to_string(action),
+                depth=len(env._history_prefix), 
+                agent_output=agent_output_action, 
+                env_and_policy=env_and_policy, 
+                time_step=time_step, 
+                agent_to_dqn_embedding=None, 
+                parent=None, 
+                clusterer=None, 
+                include_embeddings=False,
+                include_features=False,
+            )
+
+    
+    for sample_index in range(num_samples):
+        if sample_index % report_freq == 0 and sample_index > 0:
+            logging.info(f"----Episode {sample_index} ---")
+            
+        # Sample history
+        time_step = env.reset()      
+        while not time_step.last():
+            current_player = time_step.observations['current_player']
+            agent_output = agents[current_player].step(time_step, is_evaluation=True)
+            time_step = env.step([agent_output.action])  
+
+        # Save stats
+        stat_dict = env.stats_dict()
+        node_action = 0 if terminal else env._state.history()[len(env._history_prefix)]
+        node = action_nodes[node_action]
+        node['sample_outcomes']['rounds'].append(stat_dict['auction_lengths'][-1])
+        for i in range(len(agents)):
+            node['sample_outcomes'][f'p{i}_profit'].append(stat_dict['raw_rewards'][i][-1])
+            node['sample_outcomes'][f'p{i}_payment'].append(stat_dict['payments'][i][-1])
+            node['sample_outcomes'][f'p{i}_allocation'].append(stat_dict['allocations'][i][-1])
+
+    for action in action_nodes:
+        aggregate_results(action_nodes[action], num_samples)
+        del action_nodes[action]['children']
+    return [action_nodes[k] for k in action_nodes]
+
 
 def flatten_tree(node):
     records = []

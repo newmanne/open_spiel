@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from open_spiel.python import rl_environment
 from open_spiel.python.examples.env_and_policy import EnvAndPolicy
 from open_spiel.python.examples.ubc_utils import *
@@ -33,6 +33,7 @@ PPO_DEFAULTS = {
   'max_grad_norm': 0.5,
   'target_kl': None,
   'device': default_device(),
+  'use_wandb': False,
 }
 
 def read_ppo_config(config_name):
@@ -53,14 +54,14 @@ class EnvParams:
   seed: int = 1234
   track_stats: bool = False
   sync: bool = True
-  deterministic_types: List = None
+  history_prefix: List = field(default_factory=lambda: [])
 
   def make_env(self, game):
     if not self.sync and self.num_envs > 1:
       raise ValueError("Sync must be True if num_envs > 1")
 
     def gen_env(seed):
-        env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(seed=seed, deterministic_types=self.deterministic_types), use_observer_api=True)
+        env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(seed=seed), use_observer_api=True, history_prefix=self.history_prefix)
         if self.track_stats:
           env = AuctionStatTrackingDecorator(env)
         if self.normalize_rewards:
@@ -102,9 +103,9 @@ class EpisodeTimer:
     return False
 
   def _should_trigger(self, ep):
-    return ep % self.cur_frequency == 0 or \
+    return (ep > 0 and ep % self.cur_frequency == 0) or \
       ep in self.fixed_episodes or\
-      ep == 1 and self.eval_zero
+      ep == 0 and self.eval_zero
 
 
 def make_ppo_kwargs_from_config(config):
@@ -143,7 +144,7 @@ class PPOTrainingLoop:
     self.agents = agents
     self.total_timesteps = total_timesteps
     self.players_to_train = players_to_train if players_to_train is not None else list(range(game.num_players()))
-    self.fixed_agents = set(self.players_to_train) - set(range(game.num_players()))
+    self.fixed_agents = set(range(game.num_players())) - set(self.players_to_train)
     self.report_timer = report_timer     
     self.report_hooks = []
     self.eval_timer = eval_timer
@@ -156,11 +157,12 @@ class PPOTrainingLoop:
     self.eval_hooks.append(hook)
 
   def training_loop(self):
-    num_steps = self.agents[0].steps_per_batch
+    num_steps = self.agents[self.players_to_train[0]].steps_per_batch # Assuming it's all the same across agents...
     batch_size = int(len(self.env) * num_steps)
     num_updates = self.total_timesteps // batch_size
 
     logging.info(f"Training for {num_updates} updates")
+    logging.info(f"Fixed agents are {self.fixed_agents}. Learning agents are {self.players_to_train}")
     for update in range(1, num_updates + 1):
       if self.report_timer is not None and self.report_timer.should_trigger(update):
         for hook in self.report_hooks:
@@ -170,7 +172,7 @@ class PPOTrainingLoop:
           hook(update, update * num_steps)
 
       time_step = self.env.reset()
-      for step in range(0, num_steps):
+      for _ in range(num_steps):
           for player_id, agent in enumerate(self.agents): 
               agent_output = agent.step(time_step, is_evaluation=player_id in self.fixed_agents)
               time_step, reward, done, unreset_time_steps = self.env.step(agent_output, reset_if_done=True)

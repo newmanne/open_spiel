@@ -135,20 +135,14 @@ def apply_optional_overrides(args, argv, config):
 class UBCChanceEventSampler(object):
     """Default sampler for external chance events."""
 
-    def __init__(self, seed=None, deterministic_types=None) -> None:
-        self.deterministic_types = deterministic_types
+    def __init__(self, seed=None) -> None:
         self.seed(seed)
 
     def seed(self, seed=None):
         self._rng = np.random.RandomState(seed)
 
-    def __call__(self, state, reset=False):
+    def __call__(self, state):
         """Sample a chance event in the given state."""
-        if reset and self.deterministic_types is not None:
-            deterministic_action = self.deterministic_types[len(state.history())]
-            if deterministic_action is not None:
-                return deterministic_action
-
         actions, probs = zip(*state.chance_outcomes())
         return fast_choice(actions, probs, rng=self._rng)
 

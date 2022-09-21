@@ -10,7 +10,7 @@ from distutils import util
 
 logger = logging.getLogger(__name__)
 
-def eval_command(t, experiment_name, run_name, br_name, br_player, dry_run, seed, report_freq, num_samples, compute_efficiency):
+def eval_command(t, experiment_name, run_name, br_name, br_player, dry_run, seed, report_freq, num_samples, compute_efficiency, num_envs=EvalDefaults.DEFAULT_NUM_ENVS):
     fix_seeds(seed)
 
     logging.info("EVALUATION STARTING")
@@ -18,7 +18,7 @@ def eval_command(t, experiment_name, run_name, br_name, br_player, dry_run, seed
     equilibrium_solver_run_checkpoint = get_checkpoint_by_name(experiment_name, run_name, t)
 
     # Load the environment
-    env_params = EnvParams(track_stats=True, seed=seed)
+    env_params = EnvParams(track_stats=True, seed=seed, num_envs=num_envs)
     env_and_policy = ppo_db_checkpoint_loader(equilibrium_solver_run_checkpoint, env_params=env_params)
 
     # Replace agents if necessary
@@ -90,6 +90,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--eval_num_samples', type=int, default=EvalDefaults.DEFAULT_NUM_SAMPLES)
         parser.add_argument('--eval_report_freq', type=int, default=EvalDefaults.DEFAULT_REPORT_FREQ)
+        parser.add_argument('--eval_num_envs', type=int, default=EvalDefaults.DEFAULT_NUM_ENVS)
         parser.add_argument('--eval_compute_efficiency', type=util.strtobool, default=EvalDefaults.DEFAULT_COMPUTE_EFFICIENCY)
         parser.add_argument('--seed', type=int, default=EvalDefaults.DEFAULT_SEED)
         parser.add_argument('--br_name', type=str, default=None)
@@ -103,8 +104,11 @@ class Command(BaseCommand):
         parser.add_argument('--br_player', type=int)
         parser.add_argument('--dry_run', type=util.strtobool, default=0)
 
+        add_profiling_flags(parser)
+
     def handle(self, *args, **options):
         setup_logging()
         opts = AttrDict(options)
 
-        eval_command(opts.t, opts.experiment_name, opts.run_name, opts.br_name, opts.br_player, opts.dry_run, opts.seed, opts.eval_report_freq, opts.eval_num_samples, opts.eval_compute_efficiency)
+        cmd = lambda: eval_command(opts.t, opts.experiment_name, opts.run_name, opts.br_name, opts.br_player, opts.dry_run, opts.seed, opts.eval_report_freq, opts.eval_num_samples, opts.eval_compute_efficiency, num_envs=opts.eval_num_envs)
+        profile_cmd(cmd, opts.pprofile, opts.pprofile_file, opts.cprofile, opts.cprofile_file)

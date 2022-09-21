@@ -133,6 +133,7 @@ def dispatch_single_br_database(experiment_name, run_name, t, br_player, config,
 export OPENSPIEL_PATH={spiel_path}
 export PYTHONPATH=${{OPENSPIEL_PATH}}:$PYTHONPATH
 export PYTHONPATH=${{OPENSPIEL_PATH}}/build/python:$PYTHONPATH
+
 CMD=`{command}`
 echo $CMD
 eval $CMD

@@ -28,7 +28,7 @@ class LinearBidder(Bidder):
 
   def __init__(self, values, budget, pricing_bonus, all_bids) -> None:
     super().__init__(values, budget, pricing_bonus, all_bids)
-    self.bundle_values = np.array([self.values @ bid for bid in all_bids])
+    self.bundle_values = all_bids @ self.values
 
   def value_for_package(self, package, package_index=None):
     return np.array(package) @ self.values
@@ -59,7 +59,7 @@ class EnumeratedValueBidder(Bidder):
 
   def value_for_package(self, package, package_index=None):
     if package_index is None:
-      package_index = self.all_bids.find(package)
+      package_index = np.where((self.all_bids == package).all(axis=1))[0][0]
     return self.values[package_index]
 
   def __str__(self) -> str:

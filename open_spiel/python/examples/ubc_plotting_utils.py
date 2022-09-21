@@ -315,7 +315,6 @@ def utility_plots(ev_df):
     model = ev_df['model'].iloc[0]
     players = range(ev_df['num_players'].iloc[0])
     title = f"Utility {game_name} {model}"
-    colors = itertools.cycle(Category20_20) 
     plot = figure(width=900, height=400, title=title)
     plot.yaxis.axis_label = 'Reward'
 

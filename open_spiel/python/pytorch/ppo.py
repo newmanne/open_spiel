@@ -127,6 +127,7 @@ class PPO(nn.Module):
         target_kl=None,
         device='cpu', 
         writer=None, # Tensorboard SummaryWriter
+        use_wandb=True,
         agent_fn=PPOAtariAgent,
         ):
         super().__init__()
@@ -167,6 +168,8 @@ class PPO(nn.Module):
 
         # Logging
         self.writer = writer
+        self.use_wandb = use_wandb
+        self.watch_output = None
 
         # Initialize networks
         self.network = agent_fn(self.num_actions, self.input_shape, device).to(device)
@@ -244,6 +247,10 @@ class PPO(nn.Module):
 
             
     def learn(self, time_step):
+        if self.use_wandb and self.watch_output is None:
+            import wandb
+            wandb.watch(self, log_freq=5)
+
         next_obs = torch.Tensor(np.array([ts.observations['info_state'][self.player_id] for ts in time_step])).to(self.device)
 
         # Annealing the rate if instructed to do so.
@@ -351,6 +358,22 @@ class PPO(nn.Module):
             self.writer.add_scalar("losses/clipfrac", np.mean(clipfracs), self.total_steps_done)
             self.writer.add_scalar("losses/explained_variance", explained_var, self.total_steps_done)
             self.writer.add_scalar("charts/SPS", int(self.total_steps_done / (time.time() - self.start_time)), self.total_steps_done)
+
+        if self.use_wandb:
+            import wandb
+            wandb.log({
+                "learning_rate": self.optimizer.param_groups[0]["lr"],
+                "value_loss": v_loss.item(),
+                "policy_loss": pg_loss.item(),
+                "entropy": entropy_loss.item(),
+                "old_approx_kl": old_approx_kl.item(),
+                "approx_kl": approx_kl.item(),
+                "clipfrac": np.mean(clipfracs),
+                "explained_variance": explained_var,
+                "SPS": int(self.total_steps_done / (time.time() - self.start_time)),
+                "total_steps_done": self.total_steps_done,
+                "updates_done": self.updates_done,
+            })
 
         # Update counters 
         self.updates_done += 1
