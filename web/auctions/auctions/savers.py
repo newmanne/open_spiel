@@ -39,7 +39,6 @@ class DBBRDispatcher:
     def dispatch(self, t):
         eq = self.eq_solver_run
         for player in range(self.num_players):
-            # TODO: Need to change these commands!!!
             dispatch.dispatch_br_database(eq.experiment.name, eq.name, t, player, self.br_portfolio_path, overrides=self.br_overrides + " " + self.eval_overrides)
             dispatch.dispatch_eval_database(eq.experiment.name, eq.name, t, player, 'straightforward', overrides=self.eval_overrides) # Straightforward eval
         dispatch.dispatch_eval_database(eq.experiment.name, eq.name, t, None, None, overrides=self.eval_overrides)

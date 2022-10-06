@@ -179,6 +179,7 @@ class PPO(nn.Module):
         self.legal_actions_mask = torch.zeros((self.steps_per_batch, self.num_envs, self.num_actions), dtype=torch.bool).to(device)
         self.obs = torch.zeros((self.steps_per_batch, self.num_envs) + self.input_shape).to(device)
         self.actions = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
+        self.probs = torch.zeros((self.steps_per_batch, self.num_envs, self.num_actions)).to(device)
         self.logprobs = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
         self.rewards = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
         self.dones = torch.zeros((self.steps_per_batch, self.num_envs)).to(device)
@@ -189,6 +190,8 @@ class PPO(nn.Module):
         self.total_steps_done = 0
         self.updates_done = 0
         self.start_time = time.time()
+
+        self.max_policy_diff = 9999
 
         self._savers = [
             ("ppo_network", self.network),
@@ -231,6 +234,7 @@ class PPO(nn.Module):
                 self.legal_actions_mask[self.cur_batch_idx] = legal_actions_mask
                 self.obs[self.cur_batch_idx] = obs
                 self.actions[self.cur_batch_idx] = action
+                self.probs[self.cur_batch_idx] = probs
                 self.logprobs[self.cur_batch_idx] = logprob
                 self.values[self.cur_batch_idx] = value.flatten()
 
@@ -284,6 +288,7 @@ class PPO(nn.Module):
         b_obs = self.obs.reshape((-1,) + self.input_shape)
         b_logprobs = self.logprobs.reshape(-1)
         b_actions = self.actions.reshape(-1)
+        b_probs = self.probs.reshape((-1, self.num_actions))
         b_advantages = advantages.reshape(-1)
         b_returns = returns.reshape(-1)
         b_values = self.values.reshape(-1)
@@ -347,6 +352,11 @@ class PPO(nn.Module):
         var_y = np.var(y_true)
         explained_var = np.nan if var_y == 0 else 1 - np.var(y_true - y_pred) / var_y
 
+        # compute L_\infty change in probabilities
+        # TODO: split into minibatches?
+        _, _, _, _, new_probs = self.get_action_and_value(b_obs, legal_actions_mask=b_legal_actions_mask, action=b_actions.long())
+        self.max_policy_diff = (new_probs - b_probs).abs().max().item()
+
         # TRY NOT TO MODIFY: record rewards for plotting purposes
         if self.writer is not None:
             self.writer.add_scalar("charts/learning_rate", self.optimizer.param_groups[0]["lr"], self.total_steps_done)
@@ -362,17 +372,18 @@ class PPO(nn.Module):
         if self.use_wandb:
             import wandb
             wandb.log({
-                "learning_rate": self.optimizer.param_groups[0]["lr"],
-                "value_loss": v_loss.item(),
-                "policy_loss": pg_loss.item(),
-                "entropy": entropy_loss.item(),
-                "old_approx_kl": old_approx_kl.item(),
-                "approx_kl": approx_kl.item(),
-                "clipfrac": np.mean(clipfracs),
-                "explained_variance": explained_var,
-                "SPS": int(self.total_steps_done / (time.time() - self.start_time)),
-                "total_steps_done": self.total_steps_done,
-                "updates_done": self.updates_done,
+                f"learning_rate_{self.player_id}": self.optimizer.param_groups[0]["lr"],
+                f"value_loss_{self.player_id}": v_loss.item(),
+                f"policy_loss_{self.player_id}": pg_loss.item(),
+                f"entropy_{self.player_id}": entropy_loss.item(),
+                f"old_approx_kl_{self.player_id}": old_approx_kl.item(),
+                f"approx_kl_{self.player_id}": approx_kl.item(),
+                f"clipfrac_{self.player_id}": np.mean(clipfracs),
+                f"explained_variance_{self.player_id}": explained_var,
+                f"SPS_{self.player_id}": int(self.total_steps_done / (time.time() - self.start_time)),
+                f"total_steps_done_{self.player_id}": self.total_steps_done,
+                f"updates_done_{self.player_id}": self.updates_done,
+                f"max_policy_diff_{self.player_id}": self.max_policy_diff,
             })
 
         # Update counters 
@@ -388,3 +399,7 @@ class PPO(nn.Module):
     def restore(self, restore_dict):
         for name, model in self._savers:
             model.load_state_dict(restore_dict[name])
+
+    def get_max_policy_diff(self):
+        return self.max_policy_diff
+        

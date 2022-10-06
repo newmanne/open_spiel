@@ -1,3 +1,4 @@
+from tkinter import N
 from django.core.management.base import BaseCommand
 from open_spiel.python.examples.ppo_utils import run_ppo, EpisodeTimer, read_ppo_config
 from open_spiel.python.examples.ubc_utils import fix_seeds, apply_optional_overrides, default_device, setup_directory_structure
@@ -33,6 +34,9 @@ class Command(BaseCommand):
         parser.add_argument('--job_name', type=str, default='auction')
         parser.add_argument('--filename', type=str, default='parameters.json') # Select clock auction game
         parser.add_argument('--game_name', type=str, default='python_clock_auction')
+
+        # Start From Checkpoint
+        parser.add_argument('--parent_checkpoint_pk', type=int, default=None)
 
         # Reporting and evaluation
         parser.add_argument('--report_freq', type=int, default=50_000)
@@ -80,6 +84,13 @@ class Command(BaseCommand):
         # 1) Make the game if it doesn't exist
         game_db = get_or_create_game(game_name)
 
+        parent_checkpoint = None
+        if opts.parent_checkpoint_pk is not None:
+            parent_checkpoint = EquilibriumSolverRunCheckpoint.objects.get(pk=opts.parent_checkpoint_pk)
+        
+        # Parse env params
+        env_params = EnvParams.from_config(config)
+
         if not opts.dry_run:
             # 2) Make the experiment if it doesn't exist
             experiment, _ = Experiment.objects.get_or_create(name=experiment_name)
@@ -98,12 +109,19 @@ class Command(BaseCommand):
                     pass
 
             # 3) Make an EquilibriumSolverRun
-            eq_solver_run = EquilibriumSolverRun.objects.create(experiment=experiment, name=run_name, game=game_db, config=config)
+            generation = 0 if parent_checkpoint is None else parent_checkpoint.equilibrium_solver_run.generation + 1
+            eq_solver_run = EquilibriumSolverRun.objects.create(experiment=experiment, name=run_name, game=game_db, config=config, parent=parent_checkpoint, generation=generation)
 
             # Load the environment from the database
-            env_and_policy = env_and_policy_from_run(eq_solver_run)
+            if opts.parent_checkpoint_pk is not None:
+                env_and_policy = ppo_db_checkpoint_loader(parent_checkpoint, env_params=env_params)
+            else:
+                env_and_policy = env_and_policy_from_run(eq_solver_run, env_params=env_params)
         else:
-            env_and_policy = env_and_policy_for_dry_run(game_db, config)
+            if opts.parent_checkpoint_pk is not None:
+                env_and_policy = ppo_db_checkpoint_loader(parent_checkpoint, env_params=env_params)
+            else:
+                env_and_policy = env_and_policy_for_dry_run(game_db, config, env_params=env_params)
 
         result_saver = DBPolicySaver(eq_solver_run=eq_solver_run) if not opts.dry_run else None
         dispatcher = DBBRDispatcher(game_db.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path) if not opts.dry_run else None

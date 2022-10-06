@@ -9,8 +9,10 @@ import time
 import logging
 from open_spiel.python.algorithms.exploitability import nash_conv
 from open_spiel.python.vector_env import SyncVectorEnv
-from open_spiel.python.env_decorator import NormalizingEnvDecorator, AuctionStatTrackingDecorator
-from typing import List
+from open_spiel.python.env_decorator import NormalizingEnvDecorator, AuctionStatTrackingDecorator, RewardShapingEnvDecorator, StateSavingEnvDecorator
+from typing import Callable, List
+from dataclasses import asdict
+
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +48,27 @@ def read_ppo_config(config_name):
 
     return config
 
+def make_schedule_function(func_name, max_t, initial_frac = 0.5):
+  if func_name == 'linear':
+    return lambda t: initial_frac * (1- (t/max_t))
+  elif func_name == 'constant':
+    return lambda t: initial_frac
+  else: 
+    raise NotImplementedError()
+
+def make_reward_function(func_name):
+  if func_name.startswith('neg_'):
+    reward_function = make_reward_function(func_name[4:])
+    return lambda state: -reward_function(state)
+  else:
+    def generic_reward(state):
+      attr = getattr(state, func_name)
+      if isinstance(attr, Callable):
+        return attr()
+      else:
+        return attr
+    return generic_reward
+
 @dataclass
 class EnvParams:
 
@@ -55,6 +78,15 @@ class EnvParams:
   track_stats: bool = False
   sync: bool = True
   history_prefix: List = field(default_factory=lambda: [])
+  num_states_to_save: int = 0
+
+  # Stuff related to reward shaping
+  reward_function: str = None
+  schedule_function: str = None
+  initial_frac: float = 0.5
+  total_timesteps: int = None
+
+  use_wandb: bool = False
 
   def make_env(self, game):
     if not self.sync and self.num_envs > 1:
@@ -62,10 +94,18 @@ class EnvParams:
 
     def gen_env(seed):
         env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(seed=seed), use_observer_api=True, history_prefix=self.history_prefix)
+        if self.num_states_to_save:
+          env = StateSavingEnvDecorator(env, self.num_states_to_save)
         if self.track_stats:
-          env = AuctionStatTrackingDecorator(env)
+          env = AuctionStatTrackingDecorator(env, self.use_wandb)
         if self.normalize_rewards:
           env = NormalizingEnvDecorator(env, reward_normalizer=torch.tensor(np.maximum(game.upper_bounds, game.lower_bounds)))
+        if self.reward_function is not None or self.schedule_function is not None:
+          if self.reward_function is None or self.schedule_function is None:
+            raise ValueError("Must specify both reward_function and schedule_function")
+          reward_function = make_reward_function(self.reward_function)
+          schedule_function = make_schedule_function(self.schedule_function, self.total_timesteps / self.num_envs, self.initial_frac)
+          env = RewardShapingEnvDecorator(env, reward_function, schedule_function)
         return env
     
     if self.sync:
@@ -75,6 +115,13 @@ class EnvParams:
     else:
       env = gen_env(self.seed)
     return env
+
+  @staticmethod
+  def from_config(config):
+    ## Config is a dict of params you want to override
+    defaults = asdict(EnvParams())
+    env_config = {k:v for k,v in config.items() if k in defaults}
+    return EnvParams(**{**defaults, **env_config})
 
 class EpisodeTimer:
 
@@ -138,7 +185,7 @@ def make_env_and_policy(game, config, env_params=None):
 
 class PPOTrainingLoop:
 
-  def __init__(self, game, env, agents, total_timesteps, players_to_train=None, report_timer=None, eval_timer=None):
+  def __init__(self, game, env, agents, total_timesteps, players_to_train=None, report_timer=None, eval_timer=None, policy_diff_threshold=1e-3, max_policy_diff_count=5):
     self.game = game
     self.env = env
     self.agents = agents
@@ -149,6 +196,9 @@ class PPOTrainingLoop:
     self.report_hooks = []
     self.eval_timer = eval_timer
     self.eval_hooks = []
+    self.policy_diff_threshold = policy_diff_threshold
+    self.max_policy_diff_count = max_policy_diff_count
+    self.policy_diff_count = 0
 
   def add_report_hook(self, hook):
     self.report_hooks.append(hook)
@@ -181,9 +231,23 @@ class PPOTrainingLoop:
             if player_id in self.players_to_train:  
               agent.post_step([r[player_id] for r in reward], done)
 
+      policy_changed = False
       for player_id, agent in enumerate(self.agents):
         if player_id in self.players_to_train:
           agent.learn(time_step)
+        if agent.get_max_policy_diff() >= self.policy_diff_threshold:
+          policy_changed = True
+      
+      if not policy_changed:
+        self.policy_diff_count += 1
+        if self.policy_diff_count >= self.max_policy_diff_count:
+          logging.info("Policy has not changed for {} updates. Stopping training".format(self.max_policy_diff_count))
+          break
+      else:
+        self.policy_diff_count = 0  
+
+
+    logging.info(f"Terminating PPO training after {update} updates")
 
     # Lastly, call all hooks
     for hook in self.report_hooks:

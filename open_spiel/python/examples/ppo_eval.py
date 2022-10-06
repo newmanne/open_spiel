@@ -96,21 +96,5 @@ class EvalDefaults:
 def run_eval(env_and_policy, num_samples=EvalDefaults.DEFAULT_NUM_SAMPLES, report_freq=EvalDefaults.DEFAULT_REPORT_FREQ, seed=EvalDefaults.DEFAULT_SEED, compute_efficiency=EvalDefaults.DEFAULT_COMPUTE_EFFICIENCY):
     # TODO: So many unused vars here
     checkpoint = eval_agents_parallel(env_and_policy.env, env_and_policy.agents, num_samples, report_timer=EpisodeTimer(report_freq))
-    
-    # TODO: Move to a classmethod on AuctionStatTrackingDecorator
-    d = []
-    for e in env_and_policy.env.envs:
-        d.append(e.stats_dict())
-
-    stats_dict = d[0]
-    for other_dict in d[1:]:
-        for k, v in other_dict.items():
-            if isinstance(v, collections.defaultdict):
-                for k2, v2 in v.items():
-                    stats_dict[k][k2] += v2
-            else:
-                stats_dict[k] += v
-
-
-    checkpoint.update(stats_dict)
+    checkpoint.update(AuctionStatTrackingDecorator.merge_stats(env_and_policy.env))
     return checkpoint

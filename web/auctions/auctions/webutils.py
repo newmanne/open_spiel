@@ -42,9 +42,9 @@ def env_and_policy_from_run(run, env_params=None):
     env_and_policy = make_env_and_policy(game, dict(run.config), env_params=env_params)
     return env_and_policy
 
-def env_and_policy_for_dry_run(game_db_obj, config):
+def env_and_policy_for_dry_run(game_db_obj, config, env_params=None):
     game = game_db_obj.load_as_spiel()
-    env_and_policy = make_env_and_policy(game, dict(config))
+    env_and_policy = make_env_and_policy(game, dict(config), env_params=env_params)
     return env_and_policy
 
 def ppo_db_checkpoint_loader(checkpoint, env_params=None):
@@ -131,6 +131,8 @@ def convert_pesky_np(d):
     for k, v in d.items():
         if isinstance(v, np.ndarray):
             new_d[k] = v.tolist()
+        elif isinstance(v, np.int64):
+            new_d[k] = int(v)
         elif isinstance(v, dict):
             new_d[k] = convert_pesky_np(v)
         else:

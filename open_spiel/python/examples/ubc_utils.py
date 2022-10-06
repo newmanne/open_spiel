@@ -131,6 +131,8 @@ def apply_optional_overrides(args, argv, config):
                 config[name] = value
 
     config['seed'] = args.seed
+    config['total_timesteps'] = args.total_timesteps
+    config['use_wandb'] = args.use_wandb
 
 class UBCChanceEventSampler(object):
     """Default sampler for external chance events."""

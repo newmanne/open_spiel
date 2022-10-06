@@ -64,6 +64,7 @@ def eval_command(t, experiment_name, run_name, br_name, br_player, dry_run, seed
                 )
             
             eval_output = convert_pesky_np(eval_output)
+
             Evaluation.objects.create(
                 walltime = eval_output.pop('walltime'),
                 checkpoint = equilibrium_solver_run_checkpoint,

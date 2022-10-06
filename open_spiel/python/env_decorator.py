@@ -1,7 +1,10 @@
+from builtins import classmethod
 from open_spiel.python.rl_environment import Environment
 import torch
 from collections import defaultdict
 import numpy as np
+import collections
+from typing import Callable
 
 class EnvDecorator(object):
 
@@ -51,31 +54,98 @@ class NormalizingEnvDecorator(EnvDecorator):
             raise ValueError("Nan reward after normalization!")
         return time_step
 
+
+class RewardShapingEnvDecorator(EnvDecorator):
+
+    def __init__(self, env: Environment, reward_function: Callable, schedule_function: Callable) -> None:
+        super().__init__(env)
+        self.reward_function = reward_function
+        self.schedule_function = schedule_function
+        self.t = 0
+    
+    def get_time_step(self):
+        time_step = self._env.get_time_step()
+        state = self._env._state
+        lam = self.schedule_function(self.t)
+        new_rewards = lam * self.reward_function(state) + (1 - lam) * torch.tensor(time_step.rewards)
+        time_step.rewards[:] = new_rewards
+        return time_step
+
+    def step(self, step_outputs):
+        _ = self._env.step(step_outputs)
+        self.t += 1
+        return self.get_time_step()
+
+class StateSavingEnvDecorator(EnvDecorator):
+
+    def __init__(self, env: Environment, num_states_to_save = 100) -> None:
+        super().__init__(env)
+        self.num_states_to_save = num_states_to_save
+        self.num_players = env.num_players
+        self.states = [collections.deque() for _ in range(self.num_players)]
+    
+    def step(self, step_outputs):
+        time_step = self._env.get_time_step()
+        if not time_step.last():
+            current_player = time_step.current_player()
+            self.states[current_player].append(time_step.observations['info_state'][current_player])
+
+        _ = self._env.step(step_outputs)
+        return time_step
+
+    def get_states(self):
+        return [list(d) for d in self.states]
+
+    @staticmethod
+    def merge_states(sync_env):
+        d = []
+        for e in sync_env.envs:
+            d += e.get_states()
+        return d
+
+
 class AuctionStatTrackingDecorator(EnvDecorator):
 
-    def __init__(self, env: Environment) -> None:
+    def __init__(self, env: Environment, use_wandb: bool = False) -> None:
         super().__init__(env)
         self.rewards = defaultdict(list)
         self.payments = defaultdict(list)
         self.allocations = defaultdict(list)
         self.auction_lengths = []
+        self.welfares = []
+        self.revenues = []
 
-    def get_time_step(self):
+        self.use_wandb = use_wandb
+
+    def step(self, step_outputs):
+        _ = self._env.step(step_outputs)
         time_step = self._env.get_time_step()
         state = self._env._state
-        
+
         if time_step.last():
             for player_id, reward in enumerate(time_step.rewards):
                 self.rewards[player_id].append(reward)
             for player_id, payment in enumerate(state.get_final_payments()):
                 self.payments[player_id].append(payment)
+            self.revenues.append(state.revenue)
             for player_id, allocation in enumerate(state.get_allocation()):
                 self.allocations[player_id].append(allocation.tolist())
             self.auction_lengths.append(state.round)
+            self.welfares.append(state.get_welfare())
 
-        # TODO: Prices, types, efficiency
-
-        return time_step
+            if self.use_wandb:
+                import wandb
+                wandb.log({
+                    'revenue': self.revenues[-1],
+                    'auction_length': self.auction_lengths[-1],
+                    'welfare': self.welfares[-1],
+                })
+                for player_id in range(self._env.num_players):
+                    wandb.log({
+                        f'player_{player_id}_reward': self.rewards[player_id][-1],
+                        f'player_{player_id}_payment': self.payments[player_id][-1],
+                        # f'player_{player_id}_allocation': self.allocations[player_id][-1], # TODO?
+                    })
 
     def stats_dict(self):
         return {
@@ -83,4 +153,23 @@ class AuctionStatTrackingDecorator(EnvDecorator):
             'allocations': self.allocations,
             'payments': self.payments,
             'auction_lengths': self.auction_lengths,
+            'revenues': self.revenues,
+            'welfares': self.welfares,
         }
+
+    @staticmethod
+    def merge_stats(sync_env):
+        d = []
+        for e in sync_env.envs:
+            d.append(e.stats_dict())
+
+        stats_dict = d[0]
+        for other_dict in d[1:]:
+            for k, v in other_dict.items():
+                if isinstance(v, collections.defaultdict):
+                    for k2, v2 in v.items():
+                        stats_dict[k][k2] += v2
+                else:
+                    stats_dict[k] += v
+        return stats_dict
+

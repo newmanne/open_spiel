@@ -83,7 +83,7 @@ def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', 
             config = experiment['config']
             if database:
                 # Note that seed will not get passed onwards to BR/eval. I don't think this matters.
-                command = f'python {manage_path} {alg} --seed {seed} --filename {game_name}.json --network_config_file {config} --experiment_name {base_job_name} --job_name "{experiment_name}" --dispatch_br true {overrides}'
+                command = f'python {manage_path} {alg} --seed {seed} --filename {game_name}.json --network_config_file {config} --experiment_name {base_job_name} --job_name "{experiment_name}" {overrides}'
             else:
                 command = f'python {pydir}/ubc_nfsp_example.py --alsologtostderr -- --filename {game_name}.json --network_config_file {yml_config_dir}/{config}.yml --output_dir {output_dir} --dispatch_br true {overrides} --job_name {experiment_name}'
 
@@ -171,3 +171,31 @@ eval $CMD
 """
     write_and_submit(experiment_dir, slurm_job_name, job_file_text, submit)
     logging.info(f"Dispatched experiment!")
+
+def dispatch_from_checkpoint(checkpoint_pk, game_name, config, experiment_name, base_job_name, mem=32, overrides=''):
+    overrides += f' --parent_checkpoint_pk {checkpoint_pk}'
+    spiel_path, config_dir, pydir, manage_path = verify_config()
+    experiment_output_dir = f'/shared/outputs/{base_job_name}'
+    output_dir = f'{experiment_output_dir}/{experiment_name}'
+
+    command = f'python {manage_path} ppo --seed 1234 --filename {game_name}.json --network_config_file {config} --experiment_name {base_job_name} --job_name "{experiment_name}" {overrides}'
+
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+    slurm_job_name = experiment_name + '_' + base_job_name
+    job_file_text = f"""#!/bin/sh
+#SBATCH --cpus-per-task={int(mem/4)}
+#SBATCH --job-name={slurm_job_name}
+#SBATCH --time=5-0:00:00 # days-hh:mm:ss
+#SBATCH -e slurm-%j-{slurm_job_name}.err
+#SBATCH -o slurm-%j-{slurm_job_name}.out
+
+export OPENSPIEL_PATH={spiel_path}
+export PYTHONPATH=${{OPENSPIEL_PATH}}:$PYTHONPATH
+export PYTHONPATH=${{OPENSPIEL_PATH}}/build/python:$PYTHONPATH
+
+CMD=`{command}`
+echo $CMD
+eval $CMD
+"""
+    write_and_submit(experiment_output_dir, experiment_name, job_file_text, True)

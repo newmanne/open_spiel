@@ -1,9 +1,11 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
+from distutils.command.build import build
 from multiprocessing.sharedctypes import Value
 from tkinter.messagebox import NO
 import numpy as np
 import pandas as pd
+from open_spiel.python.examples.ubc_utils import players_not_me, pulp_solve, random_string
 import pyspiel
 import json
 import os
@@ -14,6 +16,7 @@ from typing import List, Dict, Tuple, Optional, Any, Union, Iterable
 import math
 from open_spiel.python.games import clock_auction_bidders
 from functools import cached_property
+from pulp import LpProblem, LpMinimize, LpVariable, LpStatus, LpBinary, lpSum, lpDot, LpMaximize, LpInteger, value
 
 DEFAULT_MAX_ROUNDS = 25
 DEFAULT_AGENT_MEMORY = 3
@@ -61,26 +64,23 @@ class AuctionParams:
   def max_activity(self):
     return np.array(self.activity) @ np.array(self.licenses)
 
+  def max_budget_for_player(self, player_id):
+    return max([t['bidder'].get_budget() for t in self.player_types[player_id]])
+
   @cached_property
   def max_budget(self):
-    budgets = []
-    for types in self.player_types.values():
-        for t in types:
-          budget = t['bidder'].get_budget()
-          budgets.append(budget)
-    return max(budgets)
+    return max([self.max_budget_for_player(p) for p in range(len(self.player_types))])
+
+  @cached_property
+  def max_total_spend(self):
+    return sum([self.max_budget_for_player(p) for p in range(len(self.player_types))])
 
   def max_opponent_spend(self, player_id):
-    max_opps_budgets = []
-    for p, types in self.player_types.items():
-      if p == player_id:
-        continue
-      budgets = []
-      for t in types:
-        budget = t['bidder'].get_budget()
-        budgets.append(budget)
-      max_opps_budgets.append(max(budgets))
-    return np.array(max_opps_budgets).sum()
+    return sum([self.max_budget_for_player(p) for p in range(len(self.player_types)) if p != player_id])
+
+  @cached_property
+  def max_opponent_spends(self):
+    return np.array([self.max_opponent_spend(p) for p in range(len(self.player_types))])
 
 @dataclass
 class TieBreakState:
@@ -300,6 +300,7 @@ class ClockAuctionState(pyspiel.State):
     self._final_payments = None
     self.price_increments = np.zeros(self.auction_params.num_products)
     self.legal_action_mask = np.ones(len(self.auction_params.all_bids), dtype=bool)
+    self.welfare = 0
 
   def current_player(self) -> pyspiel.PlayerId:
     """Returns the current player.
@@ -469,7 +470,9 @@ class ClockAuctionState(pyspiel.State):
       final_bid = bidder.processed_demand[-1]
       payment = final_bid @ final_prices
       self._final_payments[player_id] = payment
-      returns[player_id] = bidder.bidder.value_for_package(final_bid) - payment
+      value = bidder.bidder.value_for_package(final_bid)
+      self.welfare += value
+      returns[player_id] = value - payment
 
     return returns
 
@@ -663,9 +666,96 @@ class ClockAuctionState(pyspiel.State):
     assert self._game_over
     return self._final_payments
 
+  @property
+  def revenue(self):
+    assert self._game_over
+    return sum(self.get_final_payments())
+
+  # METRICS
+  def get_revenue_sparse_normalized(self):
+    return self.revenue / self.auction_params.max_total_spend if self._game_over else 0
+
+  def get_final_payments_sparse_normalized(self):
+    return self.get_final_payments() / self.auction_params.max_total_spend if self._game_over else 0
+
+  def get_pricing_sparse_normalized(self):
+    if self._game_over:
+      # Define pricing as opponent payments - oppnonent cost of bundle at starting prices
+      increased_cost = np.zeros(self.num_players)
+      allocation = self.get_allocation()
+      for player_id, bidder in enumerate(self.bidders):
+        increased_cost[player_id] = (self.posted_prices[-1] - self.auction_params.opening_prices) @ allocation[player_id]
+      pricing = np.zeros_like(increased_cost)
+      for player_id in range(self.num_players()):
+        for other_player_id in players_not_me(player_id,  self.num_players()):
+            pricing[player_id] += increased_cost[other_player_id]
+      return pricing / self.auction_params.max_opponent_spends
+    else:
+      return 0
+
   def get_allocation(self):
     assert self._game_over
     return [bidder.processed_demand[-1] for bidder in self.bidders]
+
+  def get_welfare(self):
+    assert self._game_over
+    return float(self.welfare)
+
+  def get_welfare_sparse_normalized(self):
+    if self._game_over:
+      max_welfare, alloc = self.efficent_allocation()
+      return self.get_welfare() / max_welfare
+    else:
+      return 0
+
+  def get_auction_length_sparse_normalized(self):
+    return self.round / self.auction_params.max_rounds if self._game_over else 0
+
+  def efficient_allocation(self):
+    num_actions = len(self.auction_params.all_bids)
+    num_players = self.num_players()
+    n_vars = num_players * num_actions
+    var_id_to_player_bundle = dict() # VarId -> (player, bundle)
+
+    values = []
+    q = 0
+    for player, bidder in enumerate(self.bidders):
+        v = bidder.bidder.get_values()
+        values += v
+        for val, bundle in zip(v, self.auction_params.all_bids):
+          var_id_to_player_bundle[q] = (player, bundle)
+          q += 1
+
+    problem = LpProblem(f"EfficientAllocation", LpMaximize)
+    bundle_variables = LpVariable.dicts("X", np.arange(n_vars), cat=LpBinary)
+
+    # OBJECTIVE
+    problem += lpDot(values, bundle_variables.values())
+
+    # Constraint: Only 1 bundle per bidder
+    for i in range(num_players):
+        problem += lpSum(list(bundle_variables.values())[i * num_actions: (i+1) * num_actions]) == 1, f"1-per-bidder-{i}"
+        
+    # Constraint: Can't overallocate any items
+    supply = self.auction_params.licenses
+    for i in range(self.auction_params.num_products):
+        product_amounts = [bundle[i] for (player, bundle) in var_id_to_player_bundle.values()]
+        problem += lpDot(bundle_variables.values(), product_amounts) <= supply[i], f"supply-{i}"
+
+    allocation = []
+    try: 
+        problem.writeLP(f'efficient_allocation_{random_string(10)}.lp')
+        obj = pulp_solve(problem, save_if_failed=True)
+        for var_id in range(n_vars):
+            # print(var_id, bundle_variables[var_id], value(bundle_variables[var_id]), var_id_to_player_bundle[var_id])
+            if value(bundle_variables[var_id]) > .99: # Rounding stupidness
+                allocation.append(var_id_to_player_bundle[var_id][1])
+    except ValueError as e:
+        # if MIP is infeasible, drop out - TODO: Should this ever happen?
+        feasible_result = False
+        logging.warning(f'Failed to solve MIP; dropping out')
+
+    return obj, allocation
 
 
 class ClockAuctionObserver:

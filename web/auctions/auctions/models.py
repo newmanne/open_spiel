@@ -51,6 +51,8 @@ class EquilibriumSolverRun(TimeStampedModel):
     name = models.TextField()
     game = models.ForeignKey(Game, on_delete=CASCADE)
     config = JSONField(null=True)
+    parent = models.ForeignKey('equilibriumsolverruncheckpoint', on_delete=CASCADE, null=True)
+    generation = models.PositiveIntegerField(default=0)
 
     def walltime(self):
         return self.equilibriumsolverruncheckpoint_set.last().walltime
