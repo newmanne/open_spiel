@@ -371,20 +371,21 @@ class PPO(nn.Module):
 
         if self.use_wandb:
             import wandb
+            prefix = f'network_{self.player_id}'
             wandb.log({
-                f"learning_rate_{self.player_id}": self.optimizer.param_groups[0]["lr"],
-                f"value_loss_{self.player_id}": v_loss.item(),
-                f"policy_loss_{self.player_id}": pg_loss.item(),
-                f"entropy_{self.player_id}": entropy_loss.item(),
-                f"old_approx_kl_{self.player_id}": old_approx_kl.item(),
-                f"approx_kl_{self.player_id}": approx_kl.item(),
-                f"clipfrac_{self.player_id}": np.mean(clipfracs),
-                f"explained_variance_{self.player_id}": explained_var,
-                f"SPS_{self.player_id}": int(self.total_steps_done / (time.time() - self.start_time)),
-                f"total_steps_done_{self.player_id}": self.total_steps_done,
-                f"updates_done_{self.player_id}": self.updates_done,
-                f"max_policy_diff_{self.player_id}": self.max_policy_diff,
-            })
+                f"{prefix}/learning_rate": self.optimizer.param_groups[0]["lr"],
+                f"{prefix}/value_loss": v_loss.item(),
+                f"{prefix}/policy_loss": pg_loss.item(),
+                f"{prefix}/entropy": entropy_loss.item(),
+                f"{prefix}/old_approx_kl": old_approx_kl.item(),
+                f"{prefix}/approx_kl": approx_kl.item(),
+                f"{prefix}/clipfrac": np.mean(clipfracs),
+                f"{prefix}/explained_variance": explained_var,
+                f"{prefix}/SPS": int(self.total_steps_done / (time.time() - self.start_time)), # TODO: This is a bit silly if you do anything like an inline eval
+                f"{prefix}/total_steps_done": self.total_steps_done,
+                f"{prefix}/updates_done": self.updates_done,
+                f"{prefix}/max_policy_diff": self.max_policy_diff,
+            }, commit=False)
 
         # Update counters 
         self.updates_done += 1

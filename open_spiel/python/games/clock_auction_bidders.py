@@ -2,12 +2,13 @@ import numpy as np
 
 class Bidder:
 
-  def __init__(self, values, budget, pricing_bonus, all_bids) -> None:
+  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic) -> None:
     self.values = np.array(values)
     self.budget = budget
     self.pricing_bonus = pricing_bonus
     self.all_bids = all_bids
     self.bundle_values = None
+    self.drop_out_heuristic = drop_out_heuristic
 
   def value_for_package(package, package_index=None):
     raise NotImplementedError()
@@ -26,8 +27,8 @@ class Bidder:
 
 class LinearBidder(Bidder):
 
-  def __init__(self, values, budget, pricing_bonus, all_bids) -> None:
-    super().__init__(values, budget, pricing_bonus, all_bids)
+  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic) -> None:
+    super().__init__(values, budget, pricing_bonus, all_bids, drop_out_heuristic)
     self.bundle_values = all_bids @ self.values
 
   def value_for_package(self, package, package_index=None):
@@ -38,8 +39,8 @@ class LinearBidder(Bidder):
 
 class MarginalValueBidder(Bidder):
 
-  def __init__(self, values, budget, pricing_bonus, all_bids) -> None:
-    super().__init__(values, budget, pricing_bonus, all_bids)
+  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic) -> None:
+    super().__init__(values, budget, pricing_bonus, all_bids, drop_out_heuristic)
     self.bundle_values = [self.value_for_package(bid) for bid in all_bids]
 
   def value_for_package(self, package, package_index=None):
@@ -53,8 +54,8 @@ class MarginalValueBidder(Bidder):
 
 class EnumeratedValueBidder(Bidder):
 
-  def __init__(self, values, budget, pricing_bonus, all_bids) -> None:
-    super().__init__(values, budget, pricing_bonus, all_bids)
+  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic) -> None:
+    super().__init__(values, budget, pricing_bonus, all_bids, drop_out_heuristic)
     self.bundle_values = self.values
 
   def value_for_package(self, package, package_index=None):

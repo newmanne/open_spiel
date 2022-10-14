@@ -38,6 +38,7 @@ class EnvDecorator(object):
     def env(self) -> Environment:
         return self._env
 
+
 class NormalizingEnvDecorator(EnvDecorator):
 
     def __init__(self, env: Environment, reward_normalizer: torch.tensor = None) -> None:
@@ -54,6 +55,44 @@ class NormalizingEnvDecorator(EnvDecorator):
             raise ValueError("Nan reward after normalization!")
         return time_step
 
+
+class PotentialShapingEnvDecorator(EnvDecorator):
+
+    def __init__(self, env: Environment, potential_function: Callable, use_wandb: bool) -> None:
+        super().__init__(env)
+        self.potential_function = potential_function
+        self.n_players = 2
+        self.last_potential = np.zeros(self.n_players)
+        self.use_wandb = use_wandb
+    
+    def get_time_step(self):
+        time_step = self._env.get_time_step()
+        state = self._env._state
+        if time_step.last():
+            # There's no reason to add the current potential just to subtract it - it won't make a difference. So let's just undo all the potentials right now
+            shaped_reward = -self.last_potential
+        else:
+            current_potential = self.potential_function(state)
+            shaped_reward = current_potential - self.last_potential
+            self.last_potential = current_potential
+
+        new_rewards = torch.tensor(time_step.rewards) + shaped_reward
+
+        if self.use_wandb:
+            import wandb
+            metrics = dict()
+            for player_id in range(self.n_players):
+                metrics[f'metrics/player_{player_id}_unshaped_reward'] = time_step.rewards[player_id]
+                metrics[f'metrics/player_{player_id}_shaped_reward'] = new_rewards[player_id] - time_step.rewards[player_id]
+            wandb.log(metrics, commit=False)
+
+        time_step.rewards[:] = new_rewards
+        return time_step
+
+    def reset(self):
+        _ = self._env.reset()
+        self.last_potential = np.zeros(self.n_players)
+        return self.get_time_step()
 
 class RewardShapingEnvDecorator(EnvDecorator):
 
@@ -135,17 +174,18 @@ class AuctionStatTrackingDecorator(EnvDecorator):
 
             if self.use_wandb:
                 import wandb
-                wandb.log({
-                    'revenue': self.revenues[-1],
-                    'auction_length': self.auction_lengths[-1],
-                    'welfare': self.welfares[-1],
-                })
+                metrics = {
+                    'metrics/revenue': self.revenues[-1],
+                    'metrics/auction_length': self.auction_lengths[-1],
+                    'metrics/welfare': self.welfares[-1],
+                }
                 for player_id in range(self._env.num_players):
-                    wandb.log({
-                        f'player_{player_id}_reward': self.rewards[player_id][-1],
-                        f'player_{player_id}_payment': self.payments[player_id][-1],
-                        # f'player_{player_id}_allocation': self.allocations[player_id][-1], # TODO?
-                    })
+                    metrics[f'metrics/player_{player_id}_reward'] = self.rewards[player_id][-1]
+                    metrics[f'metrics/player_{player_id}_payment'] = self.payments[player_id][-1]
+                    # f'player_{player_id}_allocation': self.allocations[player_id][-1], # TODO? Probably needs to be per product
+                wandb.log(metrics, commit=False)
+
+        return self.get_time_step()
 
     def stats_dict(self):
         return {

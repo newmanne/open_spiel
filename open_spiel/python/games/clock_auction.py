@@ -98,6 +98,7 @@ class BidderState:
   activity: int = None
   bidder: clock_auction_bidders.Bidder = None
   type_index: int = None
+  drop_out_heuristic: bool = True
 
 def action_to_bundles(licenses):
     bids = []
@@ -188,17 +189,18 @@ def parse_auction_params(file_name):
         budget = player_type['budget']
         prob = player_type['prob']
         pricing_bonus = player_type.get('pricing_bonus', 0)
+        drop_out_heuristic = player_type.get('drop_out_heuristic', True)
 
         if value_format == ValueFormat.LINEAR:
           if len(values) != num_products:
             raise ValueError("Number of values must match number of products.")
-          bidder = clock_auction_bidders.LinearBidder(values, budget, pricing_bonus, all_bids)  
+          bidder = clock_auction_bidders.LinearBidder(values, budget, pricing_bonus, all_bids, drop_out_heuristic)  
         elif value_format == ValueFormat.FULL:
           if len(values) != len(all_bids):
             raise ValueError("Number of values must match number of bids.")
-          bidder = clock_auction_bidders.EnumeratedValueBidder(values, budget, pricing_bonus, all_bids)
+          bidder = clock_auction_bidders.EnumeratedValueBidder(values, budget, pricing_bonus, all_bids, drop_out_heuristic)
         elif value_format == ValueFormat.MARGINAL:
-          bidder = clock_auction_bidders.MarginalValueBidder(values, budget, pricing_bonus, all_bids)
+          bidder = clock_auction_bidders.MarginalValueBidder(values, budget, pricing_bonus, all_bids, drop_out_heuristic)
         else:
           raise ValueError("Unknown value format")
         
@@ -293,7 +295,7 @@ class ClockAuctionState(pyspiel.State):
     self.bidders = []
     self.posted_prices = [np.array(self.auction_params.opening_prices)]
     self.sor_prices = [np.array(self.auction_params.opening_prices)]
-    self.clock_prices = [(1 + self.auction_params.increment) * self.sor_prices[0]]
+    self.clock_prices = [np.array(self.auction_params.opening_prices)]
     self.aggregate_demand = []
     self.round = 1
     self._cur_player = 0
@@ -353,8 +355,10 @@ class ClockAuctionState(pyspiel.State):
       # If you have no way to make a profit ever going forwards, just drop out. Helps minimize game size
       return [0]
     else:
-      # At least one bid leads to positive profit. Dropping out is never the right thing to do in this case. It will always be action 0
-      legal_actions[0] = 0
+      if bidder.bidder.drop_out_heuristic:
+        print("HERE")
+        # At least one bid leads to positive profit. Dropping out is never the right thing to do in this case. It will always be action 0
+        legal_actions[0] = 0
 
     if sum(legal_actions) == 0:
       raise ValueError("No legal actions!")
@@ -672,26 +676,50 @@ class ClockAuctionState(pyspiel.State):
     return sum(self.get_final_payments())
 
   # METRICS
-  def get_revenue_sparse_normalized(self):
-    return self.revenue / self.auction_params.max_total_spend if self._game_over else 0
+  @property
+  def revenue_potential(self):
+    if self.round == 1:
+      return 0
 
-  def get_final_payments_sparse_normalized(self):
-    return self.get_final_payments() / self.auction_params.max_total_spend if self._game_over else 0
+    guaranteed_to_sell = np.minimum(self.auction_params.licenses, self.aggregate_demand[-1])
+    return guaranteed_to_sell @ self.posted_prices[-1]
+    
+  @property
+  def revenue_potential_normalized(self):
+    return self.revenue_potential / self.auction_params.max_total_spend
 
-  def get_pricing_sparse_normalized(self):
-    if self._game_over:
+  @property
+  def pricing_potential(self):
+      if self.round == 1:
+        return np.zeros(self.num_players())
+
       # Define pricing as opponent payments - oppnonent cost of bundle at starting prices
-      increased_cost = np.zeros(self.num_players)
-      allocation = self.get_allocation()
+      increased_cost = np.zeros(self.num_players())
+      allocation = [bidder.processed_demand[-1] for bidder in self.bidders]
       for player_id, bidder in enumerate(self.bidders):
         increased_cost[player_id] = (self.posted_prices[-1] - self.auction_params.opening_prices) @ allocation[player_id]
       pricing = np.zeros_like(increased_cost)
       for player_id in range(self.num_players()):
         for other_player_id in players_not_me(player_id,  self.num_players()):
             pricing[player_id] += increased_cost[other_player_id]
-      return pricing / self.auction_params.max_opponent_spends
-    else:
-      return 0
+      return pricing 
+
+  @property
+  def pricing_potential_normalized(self):
+    return self.pricing_potential / self.auction_params.max_opponent_spends
+
+  @property
+  def auction_length_potential(self):
+    return self.round
+
+  @property
+  def auction_length_potential_normalized(self):
+    return self.round / self.auction_params.max_round
+
+  @property
+  def welfare_potential(self):
+    # TODO: Calculate on-demand welfare of current solutoin
+    raise
 
   def get_allocation(self):
     assert self._game_over
@@ -707,9 +735,6 @@ class ClockAuctionState(pyspiel.State):
       return self.get_welfare() / max_welfare
     else:
       return 0
-
-  def get_auction_length_sparse_normalized(self):
-    return self.round / self.auction_params.max_rounds if self._game_over else 0
 
   def efficient_allocation(self):
     num_actions = len(self.auction_params.all_bids)

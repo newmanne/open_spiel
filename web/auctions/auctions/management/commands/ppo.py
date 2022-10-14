@@ -79,7 +79,7 @@ class Command(BaseCommand):
 
         if opts.use_wandb:
             import wandb
-            wandb.init(project=experiment_name, entity="ubc-algorithms", notes=opts.wandb_note, config=config, tags=[game_name, run_name])
+            wandb.init(project=experiment_name, entity="ubc-algorithms", name=run_name, notes=opts.wandb_note, config=config, tags=[game_name])
 
         # 1) Make the game if it doesn't exist
         game_db = get_or_create_game(game_name)

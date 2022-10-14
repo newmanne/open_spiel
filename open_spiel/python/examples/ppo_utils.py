@@ -9,10 +9,9 @@ import time
 import logging
 from open_spiel.python.algorithms.exploitability import nash_conv
 from open_spiel.python.vector_env import SyncVectorEnv
-from open_spiel.python.env_decorator import NormalizingEnvDecorator, AuctionStatTrackingDecorator, RewardShapingEnvDecorator, StateSavingEnvDecorator
+from open_spiel.python.env_decorator import NormalizingEnvDecorator, AuctionStatTrackingDecorator, RewardShapingEnvDecorator, StateSavingEnvDecorator, PotentialShapingEnvDecorator, FinalDecorator
 from typing import Callable, List
 from dataclasses import asdict
-
 
 logger = logging.getLogger(__name__)
 
@@ -48,25 +47,42 @@ def read_ppo_config(config_name):
 
     return config
 
-def make_schedule_function(func_name, max_t, initial_frac = 0.5):
-  if func_name == 'linear':
-    return lambda t: initial_frac * (1- (t/max_t))
-  elif func_name == 'constant':
-    return lambda t: initial_frac
-  else: 
-    raise NotImplementedError()
+# def make_schedule_function(func_name, max_t, initial_frac = 0.5):
+#   if func_name == 'linear':
+#     return lambda t: initial_frac * (1- (t/max_t))
+#   elif func_name == 'constant':
+#     return lambda t: initial_frac
+#   else: 
+#     raise NotImplementedError()
 
-def make_reward_function(func_name):
+# def make_reward_function(func_name):
+#   if func_name.startswith('neg_'):
+#     reward_function = make_reward_function(func_name[4:])
+#     return lambda state: -reward_function(state)
+#   else:
+#     def generic_reward(state):
+#       attr = getattr(state, func_name)
+#       if isinstance(attr, Callable):
+#         return attr()
+#       else:
+#         return attr
+#     return generic_reward
+
+
+def make_potential_function(func_name):
+  if '_potential_normalized' not in func_name:
+    func_name += '_potential_normalized'
   if func_name.startswith('neg_'):
-    reward_function = make_reward_function(func_name[4:])
+    reward_function = make_potential_function(func_name[4:])
     return lambda state: -reward_function(state)
   else:
     def generic_reward(state):
-      attr = getattr(state, func_name)
-      if isinstance(attr, Callable):
-        return attr()
-      else:
-        return attr
+      return getattr(state, func_name)
+      # attr = getattr(state, func_name)
+      # if isinstance(attr, Callable):
+      #   return attr()
+      # else:
+      #   return attr
     return generic_reward
 
 @dataclass
@@ -81,10 +97,12 @@ class EnvParams:
   num_states_to_save: int = 0
 
   # Stuff related to reward shaping
-  reward_function: str = None
-  schedule_function: str = None
-  initial_frac: float = 0.5
-  total_timesteps: int = None
+  # reward_function: str = None
+  # schedule_function: str = None
+  # initial_frac: float = 0.5
+  # total_timesteps: int = None
+
+  potential_function: str =  None
 
   use_wandb: bool = False
 
@@ -92,25 +110,32 @@ class EnvParams:
     if not self.sync and self.num_envs > 1:
       raise ValueError("Sync must be True if num_envs > 1")
 
-    def gen_env(seed):
+    def gen_env(seed, env_id=0):
+        # Only track env_id == 0 so we don't have multi-valued metrics
+
         env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(seed=seed), use_observer_api=True, history_prefix=self.history_prefix)
         if self.num_states_to_save:
           env = StateSavingEnvDecorator(env, self.num_states_to_save)
         if self.track_stats:
-          env = AuctionStatTrackingDecorator(env, self.use_wandb)
+          env = AuctionStatTrackingDecorator(env, self.use_wandb and env_id == 0)
         if self.normalize_rewards:
           env = NormalizingEnvDecorator(env, reward_normalizer=torch.tensor(np.maximum(game.upper_bounds, game.lower_bounds)))
-        if self.reward_function is not None or self.schedule_function is not None:
-          if self.reward_function is None or self.schedule_function is None:
-            raise ValueError("Must specify both reward_function and schedule_function")
-          reward_function = make_reward_function(self.reward_function)
-          schedule_function = make_schedule_function(self.schedule_function, self.total_timesteps / self.num_envs, self.initial_frac)
-          env = RewardShapingEnvDecorator(env, reward_function, schedule_function)
+        if self.potential_function:
+          potential_function = make_potential_function(self.potential_function)
+          logger.info("Shaping potential with function: {}".format(self.potential_function))
+          env = PotentialShapingEnvDecorator(env, potential_function, self.use_wandb and env_id == 0)
+        
+        # if self.reward_function is not None or self.schedule_function is not None:
+        #   if self.reward_function is None or self.schedule_function is None:
+        #     raise ValueError("Must specify both reward_function and schedule_function")
+        #   reward_function = make_reward_function(self.reward_function)
+        #   schedule_function = make_schedule_function(self.schedule_function, self.total_timesteps / self.num_envs, self.initial_frac)
+        #   env = RewardShapingEnvDecorator(env, reward_function, schedule_function)
         return env
     
     if self.sync:
       env = SyncVectorEnv(
-          [gen_env(self.seed + i) for i in range(self.num_envs)]
+          [gen_env(self.seed + i, env_id=i) for i in range(self.num_envs)]
       )
     else:
       env = gen_env(self.seed)
