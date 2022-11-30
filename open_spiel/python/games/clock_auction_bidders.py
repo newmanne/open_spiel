@@ -54,9 +54,10 @@ class MarginalValueBidder(Bidder):
 
 class EnumeratedValueBidder(Bidder):
 
-  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic) -> None:
+  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic, name) -> None:
     super().__init__(values, budget, pricing_bonus, all_bids, drop_out_heuristic)
     self.bundle_values = self.values
+    self.name = name
 
   def value_for_package(self, package, package_index=None):
     if package_index is None:
@@ -64,4 +65,6 @@ class EnumeratedValueBidder(Bidder):
     return self.values[package_index]
 
   def __str__(self) -> str:
+    if self.name is not None:
+      return self.name
     return f'EnumeratedValues: {self.values} Budget: {self.budget}'

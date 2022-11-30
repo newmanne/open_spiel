@@ -18,7 +18,7 @@ from open_spiel.python.games import clock_auction_bidders
 from functools import cached_property
 from pulp import LpProblem, LpMinimize, LpVariable, LpStatus, LpBinary, lpSum, lpDot, LpMaximize, LpInteger, value
 
-DEFAULT_MAX_ROUNDS = 25
+DEFAULT_MAX_ROUNDS = 100
 DEFAULT_AGENT_MEMORY = 3
 
 class ActivityPolicy(enum.IntEnum):
@@ -120,11 +120,11 @@ _GAME_TYPE = pyspiel.GameType(
     reward_model=pyspiel.GameType.RewardModel.TERMINAL,
     max_num_players=10,
     min_num_players=2,
-    provides_information_state_string=True,
-    provides_information_state_tensor=True,
+    provides_information_state_string=False,
+    provides_information_state_tensor=False,
     provides_observation_string=True,
     provides_observation_tensor=True,
-    provides_factored_observation_string=True,
+    provides_factored_observation_string=False,
     parameter_specification={
       "filename": 'parameters.json'
       }
@@ -190,6 +190,7 @@ def parse_auction_params(file_name):
         prob = player_type['prob']
         pricing_bonus = player_type.get('pricing_bonus', 0)
         drop_out_heuristic = player_type.get('drop_out_heuristic', True)
+        name = player_type.get('name', None)
 
         if value_format == ValueFormat.LINEAR:
           if len(values) != num_products:
@@ -198,7 +199,7 @@ def parse_auction_params(file_name):
         elif value_format == ValueFormat.FULL:
           if len(values) != len(all_bids):
             raise ValueError("Number of values must match number of bids.")
-          bidder = clock_auction_bidders.EnumeratedValueBidder(values, budget, pricing_bonus, all_bids, drop_out_heuristic)
+          bidder = clock_auction_bidders.EnumeratedValueBidder(values, budget, pricing_bonus, all_bids, drop_out_heuristic, name)
         elif value_format == ValueFormat.MARGINAL:
           bidder = clock_auction_bidders.MarginalValueBidder(values, budget, pricing_bonus, all_bids, drop_out_heuristic)
         else:
@@ -221,7 +222,7 @@ def parse_auction_params(file_name):
       undersell_policy=undersell_policy,
       information_policy=information_policy,
       tiebreaks=game_params.get('tiebreaks', True),
-      agent_memory=game_params.get('agent_memory', DEFAULT_MAX_ROUNDS),
+      agent_memory=game_params.get('agent_memory', DEFAULT_AGENT_MEMORY),
       default_player_order=[[p for p in range(len(players))] for _ in range(num_products)]
     )
 
@@ -296,13 +297,12 @@ class ClockAuctionState(pyspiel.State):
     self.posted_prices = [np.array(self.auction_params.opening_prices)]
     self.sor_prices = [np.array(self.auction_params.opening_prices)]
     self.clock_prices = [np.array(self.auction_params.opening_prices)]
-    self.aggregate_demand = []
+    self.aggregate_demand = [np.zeros(self.auction_params.num_products, dtype=int)]
     self.round = 1
     self._cur_player = 0
     self._final_payments = None
-    self.price_increments = np.zeros(self.auction_params.num_products)
+    self.price_increments = np.zeros(self.auction_params.num_products, dtype=int)
     self.legal_action_mask = np.ones(len(self.auction_params.all_bids), dtype=bool)
-    self.welfare = 0
 
   def current_player(self) -> pyspiel.PlayerId:
     """Returns the current player.
@@ -323,7 +323,7 @@ class ClockAuctionState(pyspiel.State):
     legal_actions = []
     bidder = self.bidders[player]
 
-    if len(bidder.submitted_demand) > 0 and sum(bidder.submitted_demand[-1]) == 0:
+    if len(bidder.submitted_demand) > 1 and bidder.submitted_demand[-1].sum() == 0:
       # Don't need to recalculate - can only bid 0
       return [0]
 
@@ -351,16 +351,16 @@ class ClockAuctionState(pyspiel.State):
       legal_actions[profits < 0] = 0
 
     # TODO: Shouldn't I be using LegalProfits here? (i.e., accounting for the fact that it needs to be a legal bundle?)
-    if not (profits > 0).any():
+    if not (profits[legal_actions] > 0).any():
       # If you have no way to make a profit ever going forwards, just drop out. Helps minimize game size
       return [0]
     else:
       if bidder.bidder.drop_out_heuristic:
-        print("HERE")
         # At least one bid leads to positive profit. Dropping out is never the right thing to do in this case. It will always be action 0
         legal_actions[0] = 0
 
-    if sum(legal_actions) == 0:
+    if legal_actions.sum() == 0:
+      print(self)
       raise ValueError("No legal actions!")
     
     return legal_actions.nonzero()[0]
@@ -373,7 +373,7 @@ class ClockAuctionState(pyspiel.State):
       assert not self._game_over
       bidder = self.bidders[self._cur_player]
       assert len(bidder.processed_demand) == len(bidder.submitted_demand)
-      assert self.round - 1 == len(bidder.submitted_demand)
+      assert self.round == len(bidder.submitted_demand)
       bid = self.auction_params.all_bids[action]
 
       if self.auction_params.activity_policy == ActivityPolicy.ON:
@@ -394,6 +394,8 @@ class ClockAuctionState(pyspiel.State):
         if len(self.bidders) < self.num_players(): # Chance node assigns a value and budget to a player
           self.bidders.append(
             BidderState(
+              submitted_demand=[np.zeros(self.auction_params.num_products, dtype=int)], # Start with this dummy entry so we can always index by round
+              processed_demand=[np.zeros(self.auction_params.num_products, dtype=int)],
               bidder=self.auction_params.player_types[len(self.bidders)][action]['bidder'],
               activity=self.auction_params.max_activity,
               type_index=action,
@@ -433,7 +435,7 @@ class ClockAuctionState(pyspiel.State):
       # Just copy it straight over
       for bidder in self.bidders:
         bid = bidder.submitted_demand[-1]
-        bidder.processed_demand.append(np.array(bid))
+        bidder.processed_demand.append(np.asarray(bid))
       self._post_process()
     elif self.auction_params.undersell_policy == UndersellPolicy.UNDERSELL:
       tiebreaks_not_needed = self._determine_tiebreaks()
@@ -475,7 +477,6 @@ class ClockAuctionState(pyspiel.State):
       payment = final_bid @ final_prices
       self._final_payments[player_id] = payment
       value = bidder.bidder.value_for_package(final_bid)
-      self.welfare += value
       returns[player_id] = value - payment
 
     return returns
@@ -498,8 +499,7 @@ class ClockAuctionState(pyspiel.State):
           if len(player.processed_demand) > 0:
             result += f'{player.processed_demand[-1]}\n'
 
-        if len(self.aggregate_demand) > 0:
-          result += f'Aggregate demand: {self.aggregate_demand[-1]}\n'
+        result += f'Aggregate demand: {self.aggregate_demand[-1]}\n'
 
       if self._auction_finished:
         for player_id, player in enumerate(self.bidders):
@@ -525,7 +525,7 @@ class ClockAuctionState(pyspiel.State):
     # Calculate aggregate demand
     aggregate_demand = np.zeros(self.auction_params.num_products, dtype=int)
     for bidder in self.bidders:
-      bid = bidder.processed_demand[-1]
+      bid = bidder.processed_demand[-1].copy()
       
       # Lower activity based on processed demand (TODO: May want to revisit this for grace period)
       bidder.activity = bid @ self.auction_params.activity
@@ -568,7 +568,7 @@ class ClockAuctionState(pyspiel.State):
     for j in range(self.auction_params.num_products):
       assert len(player_order[j]) == self.num_players()
     
-    current_agg = self.aggregate_demand[-1]
+    current_agg = self.aggregate_demand[-1].copy()
 
     # Copy over the current aggregate demand
     # TODO: For now points is a zero vector, but possible grace period implementations would change that
@@ -577,7 +577,7 @@ class ClockAuctionState(pyspiel.State):
     requested_changes = []
     points = [bidder.activity for bidder in self.bidders]
     for player_id, bidder in enumerate(self.bidders):
-      last_round_holdings = bidder.processed_demand[-1]
+      last_round_holdings = bidder.processed_demand[-1].copy()
       bids.append(last_round_holdings)
 
       rq = np.zeros(self.auction_params.num_products)
@@ -624,7 +624,7 @@ class ClockAuctionState(pyspiel.State):
         assert bids[player_id][product_id] <= self.auction_params.licenses[product_id]
         assert bids[player_id][product_id] <= max(bidder.submitted_demand[-1][product_id], bidder.processed_demand[-1][product_id]) # Either what you asked for, or what you used to have
 
-      bidder.processed_demand.append(np.array(bids[player_id]))
+      bidder.processed_demand.append(np.asarray(bids[player_id]))
       assert len(bidder.processed_demand) == len(bidder.submitted_demand)
         
     self._post_process()
@@ -650,7 +650,7 @@ class ClockAuctionState(pyspiel.State):
     total_drops = np.sum(drops_per_product, axis=0)
 
     tie_breaking_not_needed = True    
-    current_agg = self.aggregate_demand[-1]
+    current_agg = self.aggregate_demand[-1].copy()
     for j in range(self.auction_params.num_products):
       tiebreaks = []
       if current_agg[j] - total_drops[j] < self.auction_params.licenses[j]:
@@ -681,6 +681,7 @@ class ClockAuctionState(pyspiel.State):
     if self.round == 1:
       return 0
 
+    # TODO: Assumes undersell is turned on, or this is completely wrong
     guaranteed_to_sell = np.minimum(self.auction_params.licenses, self.aggregate_demand[-1])
     return guaranteed_to_sell @ self.posted_prices[-1]
     
@@ -718,16 +719,25 @@ class ClockAuctionState(pyspiel.State):
 
   @property
   def welfare_potential(self):
-    # TODO: Calculate on-demand welfare of current solutoin
-    raise
+    # Calculate on-demand welfare of current solution
+    return self.get_welfare()
+
+  @property
+  def welfare_potential_normalized(self):
+    # TODO: This is a real bound but too expensive to compute. No reason we couldn't use something much looser.
+    # For example, you could find the type of each player that values the full bundle the most and then sum over the best-types for each player
+    return self.get_welfare() / self.efficent_allocation()[0] 
 
   def get_allocation(self):
     assert self._game_over
     return [bidder.processed_demand[-1] for bidder in self.bidders]
 
   def get_welfare(self):
-    assert self._game_over
-    return float(self.welfare)
+    welfare = 0
+    allocation = [bidder.processed_demand[-1] for bidder in self.bidders]
+    for bidder, package in zip(self.bidders, allocation):
+      welfare += bidder.bidder.value_for_package(package)
+    return float(welfare)
 
   def get_welfare_sparse_normalized(self):
     if self._game_over:
@@ -821,9 +831,9 @@ class ClockAuctionObserver:
 
     if iig_obs_type.public_info:
       # 1-hot round encoding
-      pieces.append(("round", self.round_buffer, (self.round_buffer,)))
+      pieces.append(("round", self.auction_params.max_round, (self.auction_params.max_round,))) # Always remember what round you are in, regardless of anything else
       pieces.append(("agg_demand_history", length, shape))
-      pieces.append(("posted_price_history", (self.round_buffer + 1) * num_products, (self.round_buffer + 1, num_products))) # slightly different shape b/c there is a real initial value
+      pieces.append(("posted_price_history", self.round_buffer * num_products, (self.round_buffer, num_products)))
       pieces.append(("clock_prices", num_products, (num_products,)))
       pieces.append(("price_increments", num_products, (num_products,)))
 
@@ -840,9 +850,13 @@ class ClockAuctionObserver:
 
   def set_from(self, state, player):
     """Updates `tensor` and `dict` to reflect `state` from PoV of `player`."""
+
+    # BE VERY VERY CAREFUL NOT TO OVERRIDE THE DICT ENTRIES FROM POINTING INTO THE TENSOR
+    # Very subtle e.g., self.dict["sor_profits"][:] = profits vs self.dict["sor_profits"] = profits
     self.tensor.fill(0)
-    length = min(state.round - 1, self.round_buffer)
-    start_ind = max(0, state.round - self.round_buffer)
+
+    length = min(state.round, self.round_buffer)
+    start_ind = max(1, state.round - self.round_buffer)
     end_ind = start_ind + length
 
     if "player" in self.dict:
@@ -865,54 +879,54 @@ class ClockAuctionObserver:
         profits = state.bidders[player].bidder.get_profits(prices)
         if self.normalize:
           profits = profits / self.auction_params.max_budget
-        self.dict["sor_profits"] = profits
+        self.dict["sor_profits"][:] = profits
       if "clock_profits" in self.dict:
         price = np.array(state.clock_prices[-1])
         prices = self.auction_params.all_bids @ price
         profits = state.bidders[player].bidder.get_profits(prices)
         if self.normalize:
           profits = profits / self.auction_params.max_budget
-        self.dict["clock_profits"] = profits
+        self.dict["clock_profits"][:] = profits
 
     if state.round > 1:
       if "agg_demand_history" in self.dict:
         agg_demand_history = np.array(state.aggregate_demand)[start_ind:end_ind]
         if self.normalize:
           agg_demand_history = agg_demand_history / self.auction_params.licenses
-        self.dict["agg_demand_history"][:length] = agg_demand_history
+        self.dict["agg_demand_history"][:min(length, len(agg_demand_history))] = agg_demand_history
       if "submitted_demand_history" in self.dict:
         submitted_demand_history = np.array(state.bidders[player].submitted_demand)[start_ind:end_ind]
         if self.normalize:
           submitted_demand_history = submitted_demand_history / self.auction_params.licenses
-        self.dict["submitted_demand_history"][:length] = submitted_demand_history
+        self.dict["submitted_demand_history"][:min(length, len(submitted_demand_history))] = submitted_demand_history
       if "processed_demand_history" in self.dict:
         processed_demand_history = np.array(state.bidders[player].processed_demand)[start_ind:end_ind]
         if self.normalize:
           processed_demand_history = processed_demand_history / self.auction_params.licenses
-        self.dict["processed_demand_history"][:length] = processed_demand_history
+        self.dict["processed_demand_history"][:min(length, len(processed_demand_history))] = processed_demand_history
       if "sor_exposure" in self.dict:
         sor_exposure = state.bidders[player].processed_demand[-1] @ state.sor_prices[-1]
         if self.normalize:
           sor_exposure = sor_exposure / self.auction_params.max_budget # TODO: Why not use a player specific bound here?
-        self.dict["sor_exposure"] = sor_exposure
+        self.dict["sor_exposure"][0] = sor_exposure
 
     if "posted_price_history" in self.dict:
-      posted_prices = np.array(state.posted_prices)[start_ind:end_ind + 1]
+      posted_prices = np.array(state.posted_prices)[start_ind:end_ind]
       if self.normalize:
         posted_prices = posted_prices / self.auction_params.max_budget
-      self.dict["posted_price_history"][:length + 1] = posted_prices
+      self.dict["posted_price_history"][:min(length, len(posted_prices))] = posted_prices
 
     if "clock_prices" in self.dict:
       clock_prices = np.array(state.clock_prices[-1])
       if self.normalize:
         clock_prices = clock_prices / self.auction_params.max_budget
-      self.dict['clock_prices'] = clock_prices
+      self.dict['clock_prices'][:] = clock_prices
 
     if "price_increments" in self.dict:
       price_increments = np.array(state.price_increments)
       if self.normalize:
         price_increments = price_increments / self.auction_params.max_round
-      self.dict['price_increments'] = price_increments
+      self.dict['price_increments'][:] = price_increments
 
     if np.isnan(self.tensor).any():
       raise ValueError(f"NaN in observation {self.dict}")
