@@ -87,8 +87,8 @@ def eval_agents_parallel(env, agents, num_episodes, report_timer=None, flat_rewa
     }
 
 class EvalDefaults:
-    DEFAULT_NUM_SAMPLES = 100_000
-    DEFAULT_REPORT_FREQ = 5000
+    DEFAULT_NUM_SAMPLES = 10_000
+    DEFAULT_REPORT_FREQ = 2500
     DEFAULT_SEED = 1234
     DEFAULT_COMPUTE_EFFICIENCY = False
     DEFAULT_NUM_ENVS = 8

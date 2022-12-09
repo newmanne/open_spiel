@@ -19,7 +19,7 @@ import time
 from open_spiel.python.examples.env_and_policy import EnvAndPolicy
 from open_spiel.python.examples.ppo_utils import EpisodeTimer, PPOTrainingLoop, make_ppo_agent
 
-def run_br(env_and_policy: EnvAndPolicy, br_player: int, total_timesteps: int, config, report_freq=1000, result_saver=None, seed=1234, compute_exact_br=False):
+def run_br(env_and_policy: EnvAndPolicy, br_player: int, total_timesteps: int, config, report_freq=1000, result_saver=None, seed=1234, compute_exact_br=False, use_wandb=False):
     fix_seeds(seed) # This was probably done above (to deal with network initilization), but do it again for good measure
     alg_start_time = time.time()
 
@@ -37,7 +37,7 @@ def run_br(env_and_policy: EnvAndPolicy, br_player: int, total_timesteps: int, c
             logging.info(f"Gap between BR and current strategy: {gap}")
 
     report_timer = EpisodeTimer(report_freq)
-    trainer = PPOTrainingLoop(game, env, agents, total_timesteps, players_to_train=[br_player], report_timer=report_timer)
+    trainer = PPOTrainingLoop(game, env, agents, total_timesteps, players_to_train=[br_player], report_timer=report_timer, use_wandb=use_wandb)
     trainer.add_report_hook(report_hook)
     trainer.training_loop()
 

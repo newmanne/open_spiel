@@ -78,11 +78,12 @@ def eval_command(t, experiment_name, run_name, br_name, br_player, dry_run, seed
                 best_response = best_response,
                 walltime = eval_output['walltime'],
                 expected_value_cdf = series_to_quantiles(br_rewards),
-                expected_value_stats = br_rewards.describe().to_dict()
+                expected_value_stats = br_rewards.describe().to_dict(),
             )
         logging.info("Saved to DB")
     # TODO: Using an atomic transaction, make changes to the approx_nash_conv field?
 
+    return eval_output
 
 
 class Command(BaseCommand):

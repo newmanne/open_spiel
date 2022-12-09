@@ -122,7 +122,7 @@ def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_policy=
             max_cp_idx = pd.Series(profits[legal_actions]).idxmax()
             mapped_action_id = legal_actions.index(action_id)
 
-            node['straightforward_clock_profit'] = profit
+            node['clock_profit'] = profit
             node['max_cp'] = mapped_action_id == max_cp_idx
             node['action'] = action_id
             node['action_probability'] = agent_output.probs[action_id]

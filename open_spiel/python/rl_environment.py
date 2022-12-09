@@ -158,6 +158,7 @@ class Environment(object):
                mfg_population=None,
                enable_legality_check=False,
                use_observer_api=False,
+               observer_params=None,
                **kwargs):
     """Constructor.
 
@@ -228,7 +229,7 @@ class Environment(object):
     # MODIFIED
     self.observer = None
     if use_observer_api:
-      self.observer = make_observation(self._game)
+      self.observer = make_observation(self._game, params=observer_params)
 
   def seed(self, seed=None):
     self._chance_event_sampler.seed(self._game)

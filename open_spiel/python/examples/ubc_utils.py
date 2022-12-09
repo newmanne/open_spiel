@@ -130,9 +130,16 @@ def apply_optional_overrides(args, argv, config):
                 logging.warning(f'Overriding {name} from command line')
                 config[name] = value
 
+    # These always get overridden from the command line
     config['seed'] = args.seed
     config['total_timesteps'] = args.total_timesteps
     config['use_wandb'] = args.use_wandb
+    if hasattr(args, 'potential_function') and args.potential_function is not None:
+        logging.warning(f'Overriding potential function from command line to {args.potential_function}')
+        config['potential_function'] = args.potential_function
+    if config.get('anneal_lr', False):
+        config['num_annealing_updates'] = config['total_timesteps']
+
 
 class UBCChanceEventSampler(object):
     """Default sampler for external chance events."""
@@ -170,3 +177,49 @@ def players_not_me(my_player_id, num_players):
         if i == my_player_id:
             continue
         yield i
+
+def factorial(k):
+    return np.math.factorial(k)
+
+def convert_seed_to_swaps(seed):
+    """
+    arguments:
+    - seed: non-negative int
+    
+    returns: 
+    - list (f_0, f_1, f_2, ..., f_k) such that \sum_{i=0}^k f_i * i! = seed
+    """
+    ret = [0]
+    while seed > 0:
+        divisor = len(ret) + 1
+        ret.append(seed % divisor)
+        seed //= divisor
+    return ret
+
+def permute_array(arr, seed):
+    """
+    Permute an array into a canonical permutation.
+
+    Arguments:
+    - arr: list
+    - seed: int in range [0, len(arr)! - 1]
+    
+    Returns:
+    - A permutation of arr
+    """
+
+    if len(arr) == 0:
+        return arr
+
+    if seed >= factorial(len(arr)):
+        raise ValueError(f'seed {seed} too large for array of length {len(arr)}') 
+    
+    # Fisher-Yates shuffle
+    permuted_arr = [a for a in arr]
+    swap_indices = convert_seed_to_swaps(seed)
+    swap_indices = swap_indices + [0] * (len(permuted_arr) - len(swap_indices))
+    
+    for i, swap_idx in enumerate(swap_indices):
+        permuted_arr[i], permuted_arr[swap_idx] = permuted_arr[swap_idx], permuted_arr[i]
+    return permuted_arr
+    

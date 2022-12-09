@@ -22,7 +22,7 @@ class Command(BaseCommand):
         parser.add_argument('--br_name', type=str)
         parser.add_argument('--config', type=str, required=True)
         
-        parser.add_argument('--report_freq', type=int, default=100)
+        parser.add_argument('--report_freq', type=int, default=50_000)
         parser.add_argument('--compute_exact_br', type=bool, default=False, help='Whether to compute an exact best response. Usually not possible')
         parser.add_argument('--dry_run', type=bool, default=False, help='If true, do not save')
         parser.add_argument('--device', type=str, default=default_device)
@@ -60,19 +60,28 @@ class Command(BaseCommand):
         # Build the result saver
         result_saver = DBBRResultSaver(equilibrium_solver_run_checkpoint, config_name, dry_run)
 
-        # Load the environment from the database
-        env_and_policy = ppo_db_checkpoint_loader(equilibrium_solver_run_checkpoint)
-
         # Read config from file system and apply command line overrides
         config = read_ppo_config(config_name)
         apply_optional_overrides(opts, sys.argv, config)
 
         if opts.use_wandb:
             import wandb
-            wandb.init(project=experiment_name, entity="ubc-algorithms", notes=opts.wandb_note, config=config, tags=[equilibrium_solver_run_checkpoint.equilibrium_solver_run.game.name, run_name], job_type='BR')
+            game_name = equilibrium_solver_run_checkpoint.equilibrium_solver_run.game.name
+            config['game_name'] = game_name
+            config['br_player'] = br_player
+            config['track_stats'] = True
+            config['clear_on_report'] = True
+            config['run_name'] = run_name
+            wandb.init(project=experiment_name, name=f'BR_{br_player}_{run_name}', entity="ubc-algorithms", notes=opts.wandb_note, config=config, tags=[game_name], job_type='BR')
+
+        # Parse env params
+        env_params = EnvParams.from_config(config)
+
+        # Load the environment from the database
+        env_and_policy = ppo_db_checkpoint_loader(equilibrium_solver_run_checkpoint, env_params=env_params)
 
         # Run best response
-        run_br(env_and_policy, br_player, opts.total_timesteps, config, report_freq=opts.report_freq, result_saver=result_saver, seed=opts.seed, compute_exact_br=opts.compute_exact_br)
+        run_br(env_and_policy, br_player, opts.total_timesteps, config, report_freq=opts.report_freq, result_saver=result_saver, seed=opts.seed, compute_exact_br=opts.compute_exact_br, use_wandb=opts.use_wandb)
 
         # Evaluation
         if opts.dispatch_rewards:

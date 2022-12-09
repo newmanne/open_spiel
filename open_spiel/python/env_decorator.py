@@ -58,13 +58,25 @@ class NormalizingEnvDecorator(EnvDecorator):
 
 class PotentialShapingEnvDecorator(EnvDecorator):
 
-    def __init__(self, env: Environment, potential_function: Callable, use_wandb: bool) -> None:
+    def __init__(self, env: Environment, potential_function: Callable, n_players: int, scale_coef: float = 1.) -> None:
         super().__init__(env)
         self.potential_function = potential_function
-        self.n_players = 2
+        self.n_players = n_players
         self.last_potential = np.zeros(self.n_players)
-        self.use_wandb = use_wandb
+        self.scale_coef = scale_coef
+        # TODO: Store potentials for wandb and decide how to log them
+        # TODO: Are these way too small to be useful?
     
+    def step(self, step_outputs):
+        state = self._env._state
+        current_player = state.current_player()
+        if current_player == self.n_players - 1:
+            # Update potentials once
+            current_potential = self.potential_function(state)
+            self.last_potential= current_potential
+        _ = self._env.step(step_outputs)
+        return self.get_time_step()
+
     def get_time_step(self):
         time_step = self._env.get_time_step()
         state = self._env._state
@@ -74,17 +86,13 @@ class PotentialShapingEnvDecorator(EnvDecorator):
         else:
             current_potential = self.potential_function(state)
             shaped_reward = current_potential - self.last_potential
-            self.last_potential = current_potential
 
-        new_rewards = torch.tensor(time_step.rewards) + shaped_reward
+        new_rewards = torch.tensor(time_step.rewards) + shaped_reward * self.scale_coef
 
-        if self.use_wandb:
-            import wandb
-            metrics = dict()
-            for player_id in range(self.n_players):
-                metrics[f'metrics/player_{player_id}_unshaped_reward'] = time_step.rewards[player_id]
-                metrics[f'metrics/player_{player_id}_shaped_reward'] = new_rewards[player_id] - time_step.rewards[player_id]
-            wandb.log(metrics, commit=False)
+        # Logging chage in rewards as a percentage due to potential function
+        # TODO: zeros...
+        # diff = ((new_rewards - torch.tensor(time_step.rewards)) / torch.tensor(time_step.rewards).abs()) * 100
+        # print(diff)
 
         time_step.rewards[:] = new_rewards
         return time_step
@@ -145,16 +153,18 @@ class StateSavingEnvDecorator(EnvDecorator):
 
 class AuctionStatTrackingDecorator(EnvDecorator):
 
-    def __init__(self, env: Environment, use_wandb: bool = False) -> None:
+    def __init__(self, env: Environment, clear_on_report: bool = False) -> None:
         super().__init__(env)
+        self.clear_on_report = clear_on_report
+        self.clear()
+
+    def clear(self):
         self.rewards = defaultdict(list)
         self.payments = defaultdict(list)
         self.allocations = defaultdict(list)
         self.auction_lengths = []
         self.welfares = []
         self.revenues = []
-
-        self.use_wandb = use_wandb
 
     def step(self, step_outputs):
         _ = self._env.step(step_outputs)
@@ -172,19 +182,6 @@ class AuctionStatTrackingDecorator(EnvDecorator):
             self.auction_lengths.append(state.round)
             self.welfares.append(state.get_welfare())
 
-            if self.use_wandb:
-                import wandb
-                metrics = {
-                    'metrics/revenue': self.revenues[-1],
-                    'metrics/auction_length': self.auction_lengths[-1],
-                    'metrics/welfare': self.welfares[-1],
-                }
-                for player_id in range(self._env.num_players):
-                    metrics[f'metrics/player_{player_id}_reward'] = self.rewards[player_id][-1]
-                    metrics[f'metrics/player_{player_id}_payment'] = self.payments[player_id][-1]
-                    # f'player_{player_id}_allocation': self.allocations[player_id][-1], # TODO? Probably needs to be per product
-                wandb.log(metrics, commit=False)
-
         return self.get_time_step()
 
     def stats_dict(self):
@@ -201,7 +198,12 @@ class AuctionStatTrackingDecorator(EnvDecorator):
     def merge_stats(sync_env):
         d = []
         for e in sync_env.envs:
-            d.append(e.stats_dict())
+            if hasattr(e, 'stats_dict'):
+                d.append(e.stats_dict())
+                if e.clear_on_report:
+                    e.clear()
+            else:
+                d.append(dict())
 
         stats_dict = d[0]
         for other_dict in d[1:]:

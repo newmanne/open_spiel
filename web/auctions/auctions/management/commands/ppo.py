@@ -38,6 +38,9 @@ class Command(BaseCommand):
         # Start From Checkpoint
         parser.add_argument('--parent_checkpoint_pk', type=int, default=None)
 
+        # Potential
+        parser.add_argument('--potential_function', type=str, default=None) 
+
         # Reporting and evaluation
         parser.add_argument('--report_freq', type=int, default=50_000)
         parser.add_argument('--eval_every', type=int, default=300_000)
@@ -79,6 +82,10 @@ class Command(BaseCommand):
 
         if opts.use_wandb:
             import wandb
+            config['track_stats'] = True
+            config['clear_on_report'] = True
+            config['game_name'] = game_name
+            config['cfg'] = config_name
             wandb.init(project=experiment_name, entity="ubc-algorithms", name=run_name, notes=opts.wandb_note, config=config, tags=[game_name])
 
         # 1) Make the game if it doesn't exist
@@ -124,11 +131,10 @@ class Command(BaseCommand):
                 env_and_policy = env_and_policy_for_dry_run(game_db, config, env_params=env_params)
 
         result_saver = DBPolicySaver(eq_solver_run=eq_solver_run) if not opts.dry_run else None
-        dispatcher = DBBRDispatcher(game_db.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path) if not opts.dry_run else None
-        # NOTE: THESE ARE PHRASED IN UNITS OF UPDATES, NOT STEPS!!!
+        dispatcher = DBBRDispatcher(game_db.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path, opts.dispatch_br) if not opts.dry_run else None
         eval_episode_timer = EpisodeTimer(opts.eval_every, early_frequency=opts.eval_every_early, fixed_episodes=opts.eval_exactly, eval_zero=opts.eval_zero)
         report_timer = EpisodeTimer(opts.report_freq)
 
-        cmd = lambda: run_ppo(env_and_policy, opts.total_timesteps, result_saver=result_saver, seed=seed, compute_nash_conv=opts.compute_nash_conv, dispatcher=dispatcher, report_timer=report_timer, eval_timer=eval_episode_timer)
+        cmd = lambda: run_ppo(env_and_policy, opts.total_timesteps, result_saver=result_saver, seed=seed, compute_nash_conv=opts.compute_nash_conv, dispatcher=dispatcher, report_timer=report_timer, eval_timer=eval_episode_timer, use_wandb=opts.use_wandb)
         profile_cmd(cmd, opts.pprofile, opts.pprofile_file, opts.cprofile, opts.cprofile_file)
         

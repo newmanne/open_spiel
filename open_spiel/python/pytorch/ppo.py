@@ -21,23 +21,44 @@ class CategoricalMasked(Categorical):
         logits = torch.where(masks.bool(), logits, mask_value)
         super(CategoricalMasked, self).__init__(probs, logits, validate_args)
 
+def string_to_activation(activation_string):
+    activations = {
+        'relu': nn.ReLU,
+        'tanh': nn.Tanh,
+    }
+    try:
+        return activations[activation_string.lower()]
+    except KeyError:
+        raise ValueError(f'Invalid activation {activation_string}; valid activations are {list(activations.keys())}')
+
+def build_sequential_network(observation_shape, output_size, hidden_sizes, activation, final_std):
+    layers = []
+    layers.append(layer_init(nn.Linear(np.array(observation_shape).prod(), hidden_sizes[0])))
+    layers.append(activation())
+    for i in range(len(hidden_sizes) - 1):
+        layers.append(layer_init(nn.Linear(hidden_sizes[i], hidden_sizes[i + 1])))
+        layers.append(activation())
+    layers.append(layer_init(nn.Linear(hidden_sizes[-1], output_size), std=final_std))
+    return nn.Sequential(*layers)
+
 class PPOAgent(nn.Module):
-    def __init__(self, num_actions, observation_shape, device):
+    def __init__(self, num_actions, observation_shape, device, actor_hidden_sizes=None, actor_activation=nn.Tanh, critic_hidden_sizes=None, critic_activation=nn.Tanh):
         super().__init__()
-        self.critic = nn.Sequential(
-            layer_init(nn.Linear(np.array(observation_shape).prod(), 64)),
-            nn.Tanh(),
-            layer_init(nn.Linear(64, 64)),
-            nn.Tanh(),
-            layer_init(nn.Linear(64, 1), std=1.0),
-        )
-        self.actor = nn.Sequential(
-            layer_init(nn.Linear(np.array(observation_shape).prod(), 64)),
-            nn.Tanh(),
-            layer_init(nn.Linear(64, 64)),
-            nn.Tanh(),
-            layer_init(nn.Linear(64, num_actions), std=0.01),
-        )
+
+        if actor_hidden_sizes is None:
+            actor_hidden_sizes = [64, 64]
+        if critic_hidden_sizes is None:
+            critic_hidden_sizes = [64, 64]
+
+        if isinstance(actor_activation, str):
+            actor_activation = string_to_activation(actor_activation)
+        if isinstance(critic_activation, str):
+            critic_activation = string_to_activation(critic_activation)
+
+        # Construct networks
+        self.critic = build_sequential_network(observation_shape, 1, critic_hidden_sizes, critic_activation, final_std=1.0)
+        self.actor = build_sequential_network(observation_shape, num_actions, actor_hidden_sizes, actor_activation, final_std=0.01)
+
         self.device = device
         self.num_actions = num_actions
         self.register_buffer("mask_value", torch.tensor(INVALID_ACTION_PENALTY))
@@ -103,6 +124,15 @@ def legal_actions_to_mask(legal_actions_list, num_actions):
     return legal_actions_mask
 
 class PPO(nn.Module):
+    """PPO Agent implementation in PyTorch.
+
+    See open_spiel/python/examples/ppo_example.py for an usage example.
+
+    Note that PPO runs multiple environments concurrently on each step (see 
+    open_spiel/python/vector_env.py). In practice, this tends to improve PPO's
+    performance. The number of parallel environments is controlled by the 
+    num_envs argument. 
+    """
     def __init__(
         self, 
         input_shape, 
@@ -129,8 +159,12 @@ class PPO(nn.Module):
         writer=None, # Tensorboard SummaryWriter
         use_wandb=True,
         agent_fn=PPOAtariAgent,
+        agent_fn_kwargs=None,
         ):
         super().__init__()
+
+        if agent_fn_kwargs is None:
+            agent_fn_kwargs = {}
 
         if isinstance(agent_fn, str):
             if agent_fn == 'PPOAgent':
@@ -172,7 +206,7 @@ class PPO(nn.Module):
         self.watch_output = None
 
         # Initialize networks
-        self.network = agent_fn(self.num_actions, self.input_shape, device).to(device)
+        self.network = agent_fn(self.num_actions, self.input_shape, device, **agent_fn_kwargs).to(device)
         self.optimizer = optim.Adam(self.parameters(), lr=self.learning_rate, eps=1e-5)
         
         # Initialize training buffers
@@ -252,8 +286,9 @@ class PPO(nn.Module):
             
     def learn(self, time_step):
         if self.use_wandb and self.watch_output is None:
-            import wandb
-            wandb.watch(self, log_freq=5)
+            pass # Honestly, this hasn't been super useful and takes up a lot of log bandwidth, but uncomment to watch the weights in wandb
+            # import wandb
+            # wandb.watch(self, log_freq=5)
 
         next_obs = torch.Tensor(np.array([ts.observations['info_state'][self.player_id] for ts in time_step])).to(self.device)
 

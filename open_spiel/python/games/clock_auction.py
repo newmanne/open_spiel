@@ -5,7 +5,7 @@ from multiprocessing.sharedctypes import Value
 from tkinter.messagebox import NO
 import numpy as np
 import pandas as pd
-from open_spiel.python.examples.ubc_utils import players_not_me, pulp_solve, random_string
+from open_spiel.python.examples.ubc_utils import players_not_me, pulp_solve, random_string, permute_array, num_to_letter
 import pyspiel
 import json
 import os
@@ -42,6 +42,7 @@ class ValueFormat(enum.IntEnum):
 class AuctionParams:
   opening_prices: List[float] = field(default_factory=lambda : [])
   licenses: List[int] = field(default_factory=lambda : [])
+  license_names: List[str] = field(default_factory=lambda : [])
   activity: List[int] = field(default_factory=lambda : [])
   num_products: int = 0
   increment: float = 0.1
@@ -55,9 +56,7 @@ class AuctionParams:
   activity_policy: ActivityPolicy = ActivityPolicy.ON
   undersell_policy: UndersellPolicy = UndersellPolicy.UNDERSELL
   information_policy: InformationPolicy = InformationPolicy.SHOW_DEMAND
-  default_player_order: List[List[int]] = None
 
-  tiebreaks: bool = True
   agent_memory: int = DEFAULT_AGENT_MEMORY
 
   @cached_property
@@ -81,15 +80,6 @@ class AuctionParams:
   @cached_property
   def max_opponent_spends(self):
     return np.array([self.max_opponent_spend(p) for p in range(len(self.player_types))])
-
-@dataclass
-class TieBreakState:
-  tie_breaks_needed: List = field(default_factory=lambda : [])
-  selected_order: List = field(default_factory=lambda : [])
-
-  def reset(self):
-    self.tie_breaks_needed = []
-    self.selected_order = []
 
 @dataclass
 class BidderState:
@@ -149,6 +139,11 @@ def parse_auction_params(file_name):
 
     opening_prices = game_params['opening_price']
     licenses = np.array(game_params['licenses'])
+    if 'license_names' in game_params:
+      license_names = game_params['license_names']
+    else:
+      license_names = [num_to_letter(i) for i in range(len(licenses))]
+
     num_products = len(licenses)
 
     if len(opening_prices) != num_products:
@@ -211,6 +206,7 @@ def parse_auction_params(file_name):
   return AuctionParams(
       opening_prices=opening_prices,
       licenses=licenses,
+      license_names=license_names,
       num_products=num_products,
       activity=activity,
       increment=game_params.get('increment', 0.1),
@@ -221,9 +217,7 @@ def parse_auction_params(file_name):
       activity_policy=activity_policy,
       undersell_policy=undersell_policy,
       information_policy=information_policy,
-      tiebreaks=game_params.get('tiebreaks', True),
       agent_memory=game_params.get('agent_memory', DEFAULT_AGENT_MEMORY),
-      default_player_order=[[p for p in range(len(players))] for _ in range(num_products)]
     )
 
 class ClockAuctionGame(pyspiel.Game):
@@ -292,7 +286,6 @@ class ClockAuctionState(pyspiel.State):
     self._game_over = False
     self._auction_finished = False
     self._is_chance = True
-    self.tie_break_state = TieBreakState()
     self.bidders = []
     self.posted_prices = [np.array(self.auction_params.opening_prices)]
     self.sor_prices = [np.array(self.auction_params.opening_prices)]
@@ -303,6 +296,7 @@ class ClockAuctionState(pyspiel.State):
     self._final_payments = None
     self.price_increments = np.zeros(self.auction_params.num_products, dtype=int)
     self.legal_action_mask = np.ones(len(self.auction_params.all_bids), dtype=bool)
+    self.processing_queue = None
 
   def current_player(self) -> pyspiel.PlayerId:
     """Returns the current player.
@@ -405,29 +399,18 @@ class ClockAuctionState(pyspiel.State):
           self._is_chance = False
       else:
         # Tie breaking 
-        ts = self.tie_break_state
+        self.processing_queue = permute_array(self.processing_queue, action)
+        self._process_bids()
 
-        # Assign ordering for this product by indexing into the list of permutations with action
-        j = len(ts.selected_order)
-        order = list(list(itertools.permutations(ts.tie_breaks_needed[j]))[action])
-
-        # Pad with players that aren't in the list so we have a complete ordering (recall that tie_breaks_needed has only the players in conflict)
-        for player_id in range(self.num_players()):
-          if player_id not in order:
-            order.append(player_id)
-        ts.selected_order.append(order)
-        j += 1
-
-        # Skip ahead to the next point we need a tie
-        while j < self.auction_params.num_products:
-          if len(ts.tie_breaks_needed[j]) <= 1:
-            ts.selected_order.append(list(self.auction_params.default_player_order[j]))
-            j += 1
-          else:
-            break # We need to actually do this one and it will require another chance node
-        
-        if j == self.auction_params.num_products: # Done with chance nodes
-          self._process_bids(ts.selected_order)
+  def _generate_processing_queue(self):
+    # Generate a processing queue, in a fixed order, where each element is a bid of the form (player, product, delta)
+    self.processing_queue = []
+    for player_id, bidder in enumerate(self.bidders):
+      for product_id in range(self.auction_params.num_products):
+        current = bidder.processed_demand[-1][product_id]
+        requested = bidder.submitted_demand[-1][product_id]
+        if current != requested:
+          self.processing_queue.append((player_id, product_id, requested - current))
 
   def _handle_bids(self):
     # Demand Processing
@@ -438,11 +421,8 @@ class ClockAuctionState(pyspiel.State):
         bidder.processed_demand.append(np.asarray(bid))
       self._post_process()
     elif self.auction_params.undersell_policy == UndersellPolicy.UNDERSELL:
-      tiebreaks_not_needed = self._determine_tiebreaks()
-      if tiebreaks_not_needed: # No chance node required. Just get on with the game 
-        self._process_bids(self.auction_params.default_player_order)
-      else:
-        self._is_chance = True
+      self._generate_processing_queue()
+      self._is_chance = True
     else:
       raise ValueError("Unknown undersell policy")
 
@@ -515,10 +495,8 @@ class ClockAuctionState(pyspiel.State):
       player_types = self.auction_params.player_types[player_index]
       probs = [t['prob'] for t in player_types]
     else: # Chance node is breaking a tie
-      ts = self.tie_break_state
-      chance_outcomes_required = math.factorial(len(ts.tie_breaks_needed[len(ts.selected_order)]))
+      chance_outcomes_required = math.factorial(len(self.processing_queue))
       probs = [1 / chance_outcomes_required] * chance_outcomes_required
-    
     return list(enumerate(probs))
 
   def _post_process(self):
@@ -563,59 +541,79 @@ class ClockAuctionState(pyspiel.State):
     self._cur_player = 0
     self._is_chance = False
 
-  def _process_bids(self, player_order):
-    assert len(player_order) == self.auction_params.num_products
-    for j in range(self.auction_params.num_products):
-      assert len(player_order[j]) == self.num_players()
-    
-    current_agg = self.aggregate_demand[-1].copy()
+  def _apply_bid(self, change_request, bid, points, current_agg):
+    (player_id, product_id, delta) = change_request
+    changed = False
 
+    # Process drop
+    if delta < 0:
+      drop_room = current_agg[product_id] - self.auction_params.licenses[product_id]
+      if drop_room > 0:
+        amount = min(drop_room, -delta)
+        bid[product_id] -= amount
+        delta += amount
+        assert bid[product_id] >= 0
+        changed = True
+        points[player_id] += amount * self.auction_params.activity[product_id]
+        current_agg[product_id] -= amount
+  
+    # Process pickup
+    while delta > 0 and (self.auction_params.activity_policy == ActivityPolicy.OFF or points[player_id] >= self.auction_params.activity[product_id]):
+      bid[product_id] += 1
+      assert bid[product_id] <= self.auction_params.licenses[product_id]
+      current_agg[product_id] += 1
+      changed = True
+      points[player_id] -= self.auction_params.activity[product_id]
+      delta -= 1
+
+    return changed, delta
+
+  def _process_bids(self):
     # Copy over the current aggregate demand
     # TODO: For now points is a zero vector, but possible grace period implementations would change that
-
-    bids = []
-    requested_changes = []
     points = [bidder.activity for bidder in self.bidders]
+    bids = []
     for player_id, bidder in enumerate(self.bidders):
-      last_round_holdings = bidder.processed_demand[-1].copy()
-      bids.append(last_round_holdings)
-
-      rq = np.zeros(self.auction_params.num_products)
+      last_round_holdings = bidder.processed_demand[-1]
       for j in range(self.auction_params.num_products):
-        delta = bidder.submitted_demand[-1][j] - last_round_holdings[j]
-        rq[j] = delta
         points[player_id] -= last_round_holdings[j] * self.auction_params.activity[j]
-      requested_changes.append(rq)
+      bids.append(last_round_holdings.copy())
 
-    changed = True
+    """
+    for (player_id, product_id, delta) in self.processing_queue:
+      - try to process it
+      - if it fails, add it to the unfinished queue
 
-    while changed:
-      changed = False
-      for j in range(self.auction_params.num_products):
-        for player_id in player_order[j]:
-          bid = bids[player_id]
-          changes = requested_changes[player_id]
+      - try:
+        - process each bid in the unfinished queue; restart from beginning of unfinished queue if even partially successful
+      - until nothing changes
+    """
+    current_agg = self.aggregate_demand[-1].copy()
+    starting_agg_demand = current_agg.copy()
+    self.unfinished_queue = []
 
-          # Process drops
-          if changes[j] < 0:
-            drop_room = current_agg[j] - self.auction_params.licenses[j]
-            if drop_room > 0:
-              amount = min(drop_room, -changes[j])
-              bid[j] -= amount
-              assert bid[j] >= 0
-              changed = True
-              points[player_id] += amount * self.auction_params.activity[j]
-              current_agg[j] -= amount
-              changes[j] += amount
-        
-          # Process pickups
-          while changes[j] > 0 and (self.auction_params.activity_policy == ActivityPolicy.OFF or points[player_id] >= self.auction_params.activity[j]):
-            bid[j] += 1
-            assert bid[j] <= self.auction_params.licenses[j]
-            current_agg[j] += 1
-            changed = True
-            points[player_id] -= self.auction_params.activity[j]
-            changes[j] -= 1
+    for change_request in self.processing_queue:
+      (player_id, product_id, delta) = change_request
+      _, new_delta = self._apply_bid(change_request, bids[player_id], points, current_agg)
+
+      if new_delta != 0: # The bid is not fully finished
+        self.unfinished_queue.append((player_id, product_id, new_delta))
+
+      unfinished_processing = True
+
+      # Try to process the unfinished queue
+      while unfinished_processing:
+        unfinished_processing = False
+        for idx, unfinished_change_request in enumerate(list(self.unfinished_queue)):
+          (player_id, product_id, delta) = unfinished_change_request
+          unfinished_change, new_delta = self._apply_bid(unfinished_change_request, bids[player_id], points, current_agg)
+          if new_delta == 0:
+            del self.unfinished_queue[idx]
+          else:
+            self.unfinished_queue[idx] = (player_id, product_id, new_delta)
+          if unfinished_change:
+            unfinished_processing = True
+            break
 
     # Finally, copy over submitted -> processed
     for player_id, bidder in enumerate(self.bidders):
@@ -626,44 +624,12 @@ class ClockAuctionState(pyspiel.State):
 
       bidder.processed_demand.append(np.asarray(bids[player_id]))
       assert len(bidder.processed_demand) == len(bidder.submitted_demand)
-        
-    self._post_process()
-
-  def _determine_tiebreaks(self):
-    # Step 1: Figure out for each product whether we may be in a tie-breaking situation. Note that we can have false positives, they "just" make the game bigger. 
-    #         One necessary condition: At least two people want to drop the same product AND the combined dropping will take the product below supply
-    #         Note that this doesn't consider demand that might be added to the product - this could resolve the issue, but if that pick-up can only be processed conditional on another drop, it gets more complicated... We ignore this for now.
-    #
-
-    # TODO: A much simpler impl would just select one of factorial(num_players) arrangements for each product in advance and use that, tie breaks required or not (i.e., always put a chance node before bids are processed that determines processing order). So why do it this way? Because that's much worse for tabular algorithms, and they can help debug
-
-    ts = self.tie_break_state
-    ts.reset()
-
-    if not self.auction_params.tiebreaks or self.round == 1:
-      return False
-
-    drops_per_product = np.zeros((self.num_players(), self.auction_params.num_products))
-    for player_id, bidder in enumerate(self.bidders):
-      drops_per_product[player_id] = np.abs(bidder.processed_demand[-1] - bidder.submitted_demand[-1])
-
-    total_drops = np.sum(drops_per_product, axis=0)
-
-    tie_breaking_not_needed = True    
-    current_agg = self.aggregate_demand[-1].copy()
+    
     for j in range(self.auction_params.num_products):
-      tiebreaks = []
-      if current_agg[j] - total_drops[j] < self.auction_params.licenses[j]:
-        for player_id in range(self.num_players()):
-          if drops_per_product[player_id][j] > 0:
-            tiebreaks.append(player_id)
-      if len(tiebreaks) > 1: 
-        tie_breaking_not_needed = False
-      else:
-        ts.selected_order.append(list(self.auction_params.default_player_order[j]))
-      ts.tie_breaks_needed.append(tiebreaks)
+      if (current_agg[j] < self.auction_params.licenses[j]) and (current_agg[j] < starting_agg_demand[j]):
+        raise ValueError("Aggregate demand fell for underdemanded product {}".format(j))
 
-    return tie_breaking_not_needed
+    self._post_process()
 
 
   def get_final_payments(self):

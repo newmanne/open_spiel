@@ -18,33 +18,42 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import random
 from absl import app
 from absl import flags
 import numpy as np
 
-import open_spiel.python.games
+import open_spiel.python.games # Need this import to detect python games
 import pyspiel
+from open_spiel.python.observation import make_observation
+from open_spiel.python.examples.ubc_utils import fix_seeds
+
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string("game", "clock_auction", "Name of the game")
+flags.DEFINE_string("game", "python_clock_auction", "Name of the game")
 flags.DEFINE_string("filename", 'parameters.json', "Filename with parameters")
 flags.DEFINE_string("parameters", None, "String to be evaluated")
 flags.DEFINE_bool("turn_based", False, "Convert simultaneous to turn based")
+flags.DEFINE_bool("show_obs", False, "Show observation")
+
 flags.DEFINE_integer("num_plays", 1, "Number of times to play")
+flags.DEFINE_integer("seed", None, "Seed")
 
 flags.DEFINE_string("load_state", None,
                     "A file containing a string to load a specific state")
 
 
 def main(_):
+  if FLAGS.seed:
+    print(f"FIXING SEED {FLAGS.seed}")
+    fix_seeds(FLAGS.seed)
+
   action_string = None
 
   print("Creating game: " + FLAGS.game)
   load_function = pyspiel.load_game if not FLAGS.turn_based else pyspiel.load_game_as_turn_based
   params = dict()
-  if FLAGS.game == 'clock_auction':
+  if FLAGS.game == 'python_clock_auction':
       params['filename'] = FLAGS.filename
   elif FLAGS.parameters:
     params = eval(FLAGS.parameters)
@@ -53,6 +62,9 @@ def main(_):
       FLAGS.game,
       params,
   )
+
+  if FLAGS.show_obs:
+    observation = make_observation(game, params=dict(normalize=False))
 
   # Get a new state
   if FLAGS.load_state is not None:
@@ -94,7 +106,7 @@ def main(_):
       elif state.is_simultaneous_node():
         # Simultaneous node: sample actions for all players.
         chosen_actions = [
-            random.choice(state.legal_actions(pid))
+            np.random.choice(state.legal_actions(pid))
             for pid in range(game.num_players())
         ]
 
@@ -105,10 +117,15 @@ def main(_):
         state.apply_actions(chosen_actions)
 
       else:
+        if FLAGS.show_obs:
+          observation.set_from(state, player=state.current_player())
+          print(f"OBSERVATION DICT P{state.current_player()}", observation.dict)
+          # print(observation.tensor)
+
         # Decision node: sample action for the single current player
-        action = random.choice(state.legal_actions(state.current_player()))
+        action = np.random.choice(state.legal_actions(state.current_player()))
         action_string = state.action_to_string(state.current_player(), action)
-        print("Player ", state.current_player(), ", randomly sampled action: ",
+        print("Player", state.current_player(), "randomly sampled action: ",
               action_string)
         state.apply_action(action)
 

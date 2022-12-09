@@ -9,6 +9,12 @@ class StraightforwardAgent(AbstractAgent):
         self.num_actions = game.num_distinct_actions()
 
     def step(self, time_step, is_evaluation=False):
+        if isinstance(time_step, list):
+            return [self._act(ts) for ts in time_step]
+        else:
+            return self._act(time_step)
+
+    def _act(self, time_step):
         if time_step.last():
             return
 
@@ -18,6 +24,8 @@ class StraightforwardAgent(AbstractAgent):
         legal_profits = [profits[i] for i in legal_actions]
         
         action = legal_actions[np.argmax(legal_profits)]
+
+        # print("I AM PLAYING ACTION ", action, f"AND MY NAME IS PLAYER {self.player_id}")
 
         probs = np.zeros(self.num_actions)
         probs[action] = 1.0

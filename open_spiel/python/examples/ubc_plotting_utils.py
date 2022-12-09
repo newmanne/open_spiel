@@ -192,7 +192,7 @@ def compare_best_responses(master_df):
     # Draw a nested boxplot 
     fig = plt.figure(figsize=(30, 9))
     # sns.ecdfplot(hue="config", x="Δ to Best Known Response", data=distance_frame.sort_values('config'))
-    ax = sns.boxplot(x="name", y="Δ to Best Known Response", data=distance_frame.sort_values('name'))
+    ax = sns.boxplot(x="name", y="Δ to Best Known Response", data=distance_frame)
     ax.set_xticklabels(ax.get_xticklabels(),rotation = 90)
     return fig
 
@@ -250,6 +250,8 @@ def plot_from_df(ev_df):
 
         label = f'P{p} BR Regret'
         plot.line('t', f'PositiveRegret', source=best_br_source, legend_label=label, name=label, color=player_color)
+        plot.circle('t', f'PositiveRegret', source=best_br_source, color=player_color, size=10, legend_label=label)
+
         label = f'P{p} Straightforward Regret'
         plot.line('t', f'PositiveRegret', source=straightforward_source, legend_label=label, name=label, color=player_color, line_dash='dashed')
         label = f'P{p} Approx Regret'
@@ -263,6 +265,7 @@ def plot_from_df(ev_df):
     source = ColumnDataSource(ev_df.loc[ev_df.groupby('t')['ApproxNashConv'].idxmax()][['t', 'ApproxNashConv']]) 
     label = f'Approximate Nash Conv'
     plot.line('t', f'ApproxNashConv', source=source, legend_label=label, name=label, color='red', line_width=3)
+    plot.circle('t', f'ApproxNashConv', source=source, legend_label=label, color='darkred', size=10)
     if 'nash_conv' in ev_df.columns:
         label = f'True Nash Conv'
         plot.line('t', f'nash_conv', source=source, legend_label=label, name=label, color='darkred', line_width=3)
@@ -277,6 +280,9 @@ def plot_from_df(ev_df):
         ("(x, y)", "($data_x, $data_y)"),
     ]   
     plot.add_tools(HoverTool(tooltips=TOOLTIPS))
+
+    plot.add_layout(plot.legend[0], 'right')
+
     return plot
 
 def nash_conv_plots(ev_df_ungrouped):
@@ -296,7 +302,7 @@ def nash_conv_plots(ev_df_ungrouped):
         plot.line('t', f'ApproxNashConv', source=source, legend_label=model, name=model, color=color, line_width=3)
         plot.circle('t', f'ApproxNashConv', source=source, color=color, size=10, name=model)
 
-    plot.legend.click_policy = "hide"
+
     plot.xaxis.axis_label = 'Iteration (M)'
     plot.yaxis.axis_label = 'Regret'
     plot.ray(x=[min(ev_df_ungrouped['t']) / 1e6], y=[0], length=0, angle=0, line_width=5, color='black')

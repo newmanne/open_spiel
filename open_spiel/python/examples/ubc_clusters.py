@@ -2,7 +2,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from sklearn.mixture import GaussianMixture
-import umap
+# import umap
 from tqdm import tqdm
 
 def projectPCA(X, components=10):
@@ -21,13 +21,13 @@ def projectPCA(X, components=10):
     X_transformed = pca.fit_transform(X)
     return X_transformed, pca.explained_variance_ratio_
 
-def projectUMAP(X, n_neighbors=15, min_dist=0.1, rescale=False):
-    # TODO: make UMAP settings configurable. unclear how we'd like to set them, or if good constant values exist.
-    umap_reducer = umap.UMAP(n_neighbors=n_neighbors, min_dist=min_dist)
-    if rescale:
-        X = StandardScaler().fit_transform(X)
-    umap_embedding = umap_reducer.fit_transform(X)
-    return umap_embedding
+# def projectUMAP(X, n_neighbors=15, min_dist=0.1, rescale=False):
+#     # TODO: make UMAP settings configurable. unclear how we'd like to set them, or if good constant values exist.
+#     umap_reducer = umap.UMAP(n_neighbors=n_neighbors, min_dist=min_dist)
+#     if rescale:
+#         X = StandardScaler().fit_transform(X)
+#     umap_embedding = umap_reducer.fit_transform(X)
+#     return umap_embedding
 
 
 def projectTSNE(X, perplexity=30, early_exaggeration=12):

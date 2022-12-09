@@ -3,15 +3,15 @@ from open_spiel.python import rl_environment
 from open_spiel.python.examples.env_and_policy import EnvAndPolicy
 from open_spiel.python.examples.ubc_utils import *
 import numpy as np
-import pandas as pd
 from open_spiel.python.pytorch.ppo import PPO
 import time
 import logging
 from open_spiel.python.algorithms.exploitability import nash_conv
 from open_spiel.python.vector_env import SyncVectorEnv
-from open_spiel.python.env_decorator import NormalizingEnvDecorator, AuctionStatTrackingDecorator, RewardShapingEnvDecorator, StateSavingEnvDecorator, PotentialShapingEnvDecorator, FinalDecorator
+from open_spiel.python.env_decorator import NormalizingEnvDecorator, AuctionStatTrackingDecorator, StateSavingEnvDecorator, PotentialShapingEnvDecorator
 from typing import Callable, List
 from dataclasses import asdict
+from open_spiel.python.env_decorator import AuctionStatTrackingDecorator
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,7 @@ PPO_DEFAULTS = {
   'clip_coef': 0.2,
   'clip_vloss': True,
   'agent_fn': 'PPOAgent',
+  'agent_fn_kwargs': {},
   'entropy_coef': 0.01,
   'value_coef': 0.5,
   'max_grad_norm': 0.5,
@@ -44,6 +45,8 @@ def read_ppo_config(config_name):
         config = yaml.load(fh, Loader=yaml.FullLoader)
 
     config = {**PPO_DEFAULTS, **config}  # priority from right to left
+
+    print(config)
 
     return config
 
@@ -105,6 +108,10 @@ class EnvParams:
   potential_function: str =  None
 
   use_wandb: bool = False
+  clear_on_report: bool = False
+  observer_params: dict = None
+
+  scale_coef: float = 1.
 
   def make_env(self, game):
     if not self.sync and self.num_envs > 1:
@@ -113,24 +120,17 @@ class EnvParams:
     def gen_env(seed, env_id=0):
         # Only track env_id == 0 so we don't have multi-valued metrics
 
-        env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(seed=seed), use_observer_api=True, history_prefix=self.history_prefix)
+        env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(seed=seed), use_observer_api=True, history_prefix=self.history_prefix, observer_params=self.observer_params)
         if self.num_states_to_save:
           env = StateSavingEnvDecorator(env, self.num_states_to_save)
         if self.track_stats:
-          env = AuctionStatTrackingDecorator(env, self.use_wandb and env_id == 0)
+          env = AuctionStatTrackingDecorator(env, self.clear_on_report)
         if self.normalize_rewards:
           env = NormalizingEnvDecorator(env, reward_normalizer=torch.tensor(np.maximum(game.upper_bounds, game.lower_bounds)))
         if self.potential_function:
           potential_function = make_potential_function(self.potential_function)
           logger.info("Shaping potential with function: {}".format(self.potential_function))
-          env = PotentialShapingEnvDecorator(env, potential_function, self.use_wandb and env_id == 0)
-        
-        # if self.reward_function is not None or self.schedule_function is not None:
-        #   if self.reward_function is None or self.schedule_function is None:
-        #     raise ValueError("Must specify both reward_function and schedule_function")
-        #   reward_function = make_reward_function(self.reward_function)
-        #   schedule_function = make_schedule_function(self.schedule_function, self.total_timesteps / self.num_envs, self.initial_frac)
-        #   env = RewardShapingEnvDecorator(env, reward_function, schedule_function)
+          env = PotentialShapingEnvDecorator(env, potential_function, game.num_players(), scale_coef=self.scale_coef)        
         return env
     
     if self.sync:
@@ -162,7 +162,7 @@ class EpisodeTimer:
     self.last_known_ep = -1
 
   def should_trigger(self, ep):
-    if ep > self.frequency:
+    if ep > self.frequency: # Move on from early frequency if needed
       self.cur_frequency = self.frequency
     
     while ep > self.last_known_ep:
@@ -183,6 +183,7 @@ class EpisodeTimer:
 def make_ppo_kwargs_from_config(config):
   ppo_kwargs = {**PPO_DEFAULTS, **config}  # priority from right to left
   ppo_kwargs = {k:v for k,v in ppo_kwargs.items() if k in PPO_DEFAULTS.keys()} 
+
   return ppo_kwargs
 
 def make_ppo_agent(player_id, config, game):
@@ -210,7 +211,7 @@ def make_env_and_policy(game, config, env_params=None):
 
 class PPOTrainingLoop:
 
-  def __init__(self, game, env, agents, total_timesteps, players_to_train=None, report_timer=None, eval_timer=None, policy_diff_threshold=1e-3, max_policy_diff_count=5):
+  def __init__(self, game, env, agents, total_timesteps, players_to_train=None, report_timer=None, eval_timer=None, policy_diff_threshold=1e-3, max_policy_diff_count=9999, use_wandb=False):
     self.game = game
     self.env = env
     self.agents = agents
@@ -224,6 +225,7 @@ class PPOTrainingLoop:
     self.policy_diff_threshold = policy_diff_threshold
     self.max_policy_diff_count = max_policy_diff_count
     self.policy_diff_count = 0
+    self.use_wandb = use_wandb
 
   def add_report_hook(self, hook):
     self.report_hooks.append(hook)
@@ -238,15 +240,16 @@ class PPOTrainingLoop:
 
     logging.info(f"Training for {num_updates} updates")
     logging.info(f"Fixed agents are {self.fixed_agents}. Learning agents are {self.players_to_train}")
-    for update in range(1, num_updates + 1):
-      if self.report_timer is not None and self.report_timer.should_trigger(update):
-        for hook in self.report_hooks:
-          hook(update, update * num_steps)
-      if self.eval_timer is not None and self.eval_timer.should_trigger(update):
-        for hook in self.eval_hooks:
-          hook(update, update * num_steps)
+    time_step = self.env.reset()
 
-      time_step = self.env.reset()
+    for update in range(1, num_updates + 1):
+      if self.report_timer is not None and self.report_timer.should_trigger(update * batch_size):
+        for hook in self.report_hooks:
+          hook(update, update * batch_size)
+      if self.eval_timer is not None and self.eval_timer.should_trigger(update * batch_size):
+        for hook in self.eval_hooks:
+          hook(update, update * batch_size)
+
       for _ in range(num_steps):
           for player_id, agent in enumerate(self.agents): 
               agent_output = agent.step(time_step, is_evaluation=player_id in self.fixed_agents)
@@ -262,7 +265,36 @@ class PPOTrainingLoop:
           agent.learn(time_step)
         if agent.get_max_policy_diff() >= self.policy_diff_threshold:
           policy_changed = True
-      
+
+      # Commit wandb
+      if self.use_wandb:
+        # TODO: Make this way less specific to our game/abstract it more
+        import wandb
+        stats_dict = AuctionStatTrackingDecorator.merge_stats(self.env)
+        log_stats_dict = dict()
+        prefix = 'metrics'
+        if 'revenues' in stats_dict:
+            log_stats_dict[f'{prefix}/mean_revenue'] = np.mean(stats_dict['revenues'])
+        if 'auction_lengths' in stats_dict:
+            log_stats_dict[f'{prefix}/mean_auction_length'] = np.mean(stats_dict['auction_lengths'])
+        if 'welfares' in stats_dict:
+            log_stats_dict[f'{prefix}/mean_welfare'] = np.mean(stats_dict['welfares'])
+        
+        for player_id in range(len(self.agents)):
+          if 'raw_rewards' in stats_dict:
+            log_stats_dict[f'{prefix}/player_{player_id}_mean_reward'] = np.mean(stats_dict['raw_rewards'][player_id])
+          if 'payments' in stats_dict:
+            log_stats_dict[f'{prefix}/player_{player_id}_payment'] = np.mean(stats_dict['payments'][player_id])
+            # f'player_{player_id}_allocation': self.allocations[player_id][-1], # TODO? Probably needs to be per product
+
+        # TODO:
+        # for player_id in range(self.n_players):
+        #     metrics[f'metrics/player_{player_id}_unshaped_reward'] = time_step.rewards[player_id]
+        #     metrics[f'metrics/player_{player_id}_shaped_reward'] = new_rewards[player_id] - time_step.rewards[player_id]
+
+        # This should be the ONLY commit=True. Step sizes will now be in terms of updates
+        wandb.log(log_stats_dict, commit=True)
+
       if not policy_changed:
         self.policy_diff_count += 1
         if self.policy_diff_count >= self.max_policy_diff_count:
@@ -272,17 +304,20 @@ class PPOTrainingLoop:
         self.policy_diff_count = 0  
 
 
-    logging.info(f"Terminating PPO training after {update} updates")
+    logging.info(f"Terminating PPO training after {update} updates and {update * batch_size} steps")
 
     # Lastly, call all hooks
     for hook in self.report_hooks:
-      hook(update, update * num_steps)
+      hook(update, update * batch_size)
     for hook in self.eval_hooks:
-      hook(update, update * num_steps)
+      hook(update, update * batch_size)
 
 
-def ppo_checkpoint(env_and_model, step, alg_start_time, compute_nash_conv=False):
-    logger.info(f"EVALUATION AFTER {step} steps")
+def ppo_checkpoint(env_and_model, step, alg_start_time, compute_nash_conv=False, update=None):
+    msg = f"EVALUATION AFTER {step} steps"
+    if update is not None:
+      msg += f" (update {update})"
+    logger.info(msg)
 
     policy = env_and_model.make_policy()
     if compute_nash_conv:
@@ -301,16 +336,16 @@ def ppo_checkpoint(env_and_model, step, alg_start_time, compute_nash_conv=False)
     }
     return checkpoint
 
-def run_ppo(env_and_policy, total_steps, result_saver=None, seed=1234, compute_nash_conv=False, dispatcher=None, report_timer=None, eval_timer=None):
+def run_ppo(env_and_policy, total_steps, result_saver=None, seed=1234, compute_nash_conv=False, dispatcher=None, report_timer=None, eval_timer=None, use_wandb=False):
   # This may have already been done, but do it again. Required to do it outside to ensure that networks get initilized the same way, which usually happens elsewhere
   fix_seeds(seed)
   game, env, agents = env_and_policy.game, env_and_policy.env, env_and_policy.agents
 
   alg_start_time = time.time()
-  trainer = PPOTrainingLoop(game, env, agents, total_steps, report_timer=report_timer, eval_timer=eval_timer)
+  trainer = PPOTrainingLoop(game, env, agents, total_steps, report_timer=report_timer, eval_timer=eval_timer, use_wandb=use_wandb)
 
   def eval_hook(update, total_steps):
-    checkpoint = ppo_checkpoint(env_and_policy, total_steps, alg_start_time, compute_nash_conv=compute_nash_conv)
+    checkpoint = ppo_checkpoint(env_and_policy, total_steps, alg_start_time, compute_nash_conv=compute_nash_conv, update=update)
     if result_saver is not None:
       checkpoint_name = result_saver.save(checkpoint)
       if dispatcher is not None:

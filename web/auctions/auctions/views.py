@@ -20,7 +20,7 @@ from open_spiel.python.examples.ubc_sample_game_tree import sample_game_tree, sa
 from open_spiel.python.examples.ubc_decorators import TakeSingleActionDecorator
 from open_spiel.python.examples.straightforward_agent import StraightforwardAgent
 from open_spiel.python.examples.ubc_plotting_utils import plot_all_models, parse_run, plot_embedding, plots_to_string
-from open_spiel.python.examples.ubc_clusters import projectPCA, projectUMAP
+from open_spiel.python.examples.ubc_clusters import projectPCA
 # from open_spiel.python.examples.ppo_utils import 
 
 logger = logging.getLogger(__name__)
@@ -62,12 +62,15 @@ class EquilibriumSolverRunViewSet(viewsets.ReadOnlyModelViewSet):
         ser = EquilibriumSolverRunCheckpointSerializer(checkpoints, many=True, context={'request': request})
         data = ser.data
         if len(data) > 0:
-            nash_conv_by_t, best_checkpoint, approx_nash_conv = find_best_checkpoint(run)
-            for d in data:
-                d['best'] = d['pk'] == best_checkpoint.pk
-                d['ApproxNashConv'] = nash_conv_by_t.get(d['t'], -9999)
-            
-            data = sorted(data, key=lambda d: (d['best'], d['t']), reverse=True)
+            try:
+                nash_conv_by_t, best_checkpoint, approx_nash_conv = find_best_checkpoint(run)
+                for d in data:
+                    d['best'] = d['pk'] == best_checkpoint.pk
+                    d['ApproxNashConv'] = nash_conv_by_t.get(d['t'], -9999)
+                
+                data = sorted(data, key=lambda d: (d['best'], d['t']), reverse=True)
+            except:
+                pass # When you have no BRs, this sorting won't work
         return Response(data)
 
     @action(detail=True)
@@ -181,7 +184,7 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
                 best_response_pk = int(best_response_pk)
                 br = BestResponse.objects.get(pk=best_response_pk)
                 if br.name == 'straightforward':
-                    env_and_policy.agents[player] = StraightforwardAgent(player, game.config, game.num_actions)
+                    env_and_policy.agents[player] = StraightforwardAgent(player, game.load_as_spiel())
                 else:
                     env_and_policy.agents[player] = load_ppo_agent(br)
             else:
@@ -254,7 +257,7 @@ class GameViewSet(viewsets.ReadOnlyModelViewSet):
                 best_response_pk = int(best_response_pk)
                 br = BestResponse.objects.get(pk=best_response_pk)
                 if br.name == 'straightforward':
-                    env_and_policy.agents[player] = StraightforwardAgent(player, game.config, game.num_actions)
+                    env_and_policy.agents[player] = StraightforwardAgent(player, game.load_as_spiel())
                 else:
                     env_and_policy.agents[player] = load_ppo_agent(br)
             else:
