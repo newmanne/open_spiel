@@ -31,7 +31,7 @@ def write_and_submit(experiment_output_dir, experiment_name, job_file_text, subm
     if submit:
         os.system(f'cd {experiment_output_dir} && sbatch {job_file_path}')
 
-def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', submit=True, cpus=16, overrides='', cfr_also=False, database=True, n_seeds=1, start_seed=100, alg='ppo'):
+def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', submit=True, cpus=16, overrides='', cfr_also=False, database=True, n_seeds=1, start_seed=100, alg='ppo', extra_name=''):
     '''yml_config is either a folder or a single config'''
 
     if base_job_name is None:
@@ -50,7 +50,7 @@ def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', 
             config = str(Path(experiment_config).relative_to(CONFIG_ROOT))
             experiments.append(
                 {
-                    'name': game_name + '-' + safe_config_name(config) + '-' + str(seed),
+                    'name': game_name + '-' + safe_config_name(config) + ('-' + extra_name if extra_name else '') + '-' + str(seed),
                     'config': config.replace('.yml', ''),
                     'game_name': game_name,
                     'seed': seed

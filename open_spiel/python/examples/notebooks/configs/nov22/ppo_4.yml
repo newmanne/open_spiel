@@ -1,0 +1,28 @@
+agent_fn_kwargs:
+  actor_activation: relu
+  actor_hidden_sizes:
+  - 64
+  - 64
+  - 64
+  critic_activation: tanh
+  critic_hidden_sizes:
+  - 256
+  - 256
+anneal_lr: false
+clip_coef: 0.013606521102415857
+clip_vloss: false
+entropy_coef: 0.00795301965607666
+gae: false
+gae_lambda: 0.8982119270182708
+gamma: 0.9216792479208272
+learning_rate: 0.0001
+max_grad_norm: 0.5
+normalize_advantages: true
+num_annealing_updates: null
+num_envs: 4
+num_minibatches: 4
+steps_per_batch: 512
+target_kl: null
+track_stats: true
+update_epochs: 8
+value_coef: 0.23143152336342837

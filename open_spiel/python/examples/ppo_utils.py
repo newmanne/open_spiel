@@ -8,7 +8,7 @@ import time
 import logging
 from open_spiel.python.algorithms.exploitability import nash_conv
 from open_spiel.python.vector_env import SyncVectorEnv
-from open_spiel.python.env_decorator import NormalizingEnvDecorator, AuctionStatTrackingDecorator, StateSavingEnvDecorator, PotentialShapingEnvDecorator
+from open_spiel.python.env_decorator import NormalizingEnvDecorator, AuctionStatTrackingDecorator, StateSavingEnvDecorator, PotentialShapingEnvDecorator, TrapEnvDecorator
 from typing import Callable, List
 from dataclasses import asdict
 from open_spiel.python.env_decorator import AuctionStatTrackingDecorator
@@ -113,6 +113,9 @@ class EnvParams:
 
   scale_coef: float = 1.
 
+  trap_value: float = None
+  trap_delay: int = 0
+
   def make_env(self, game):
     if not self.sync and self.num_envs > 1:
       raise ValueError("Sync must be True if num_envs > 1")
@@ -122,14 +125,20 @@ class EnvParams:
 
         env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(seed=seed), use_observer_api=True, history_prefix=self.history_prefix, observer_params=self.observer_params)
         if self.num_states_to_save:
+          logger.info("State saving decorator")
           env = StateSavingEnvDecorator(env, self.num_states_to_save)
         if self.track_stats:
+          logger.info("Tracking stats decorator")
           env = AuctionStatTrackingDecorator(env, self.clear_on_report)
         if self.normalize_rewards:
+          logger.info("Reward normalizing decorator")
           env = NormalizingEnvDecorator(env, reward_normalizer=torch.tensor(np.maximum(game.upper_bounds, game.lower_bounds)))
+        if self.trap_value is not None: # Needs to happen after normalizing
+          logger.info("Traps with penalty {} and delay {}".format(self.trap_value, self.trap_delay))
+          env = TrapEnvDecorator(env, self.trap_value, self.trap_delay)
         if self.potential_function:
           potential_function = make_potential_function(self.potential_function)
-          logger.info("Shaping potential with function: {}".format(self.potential_function))
+          logger.info("Shaping potential with function: {} and scale strength {}".format(self.potential_function, self.scale_coef))
           env = PotentialShapingEnvDecorator(env, potential_function, game.num_players(), scale_coef=self.scale_coef)        
         return env
     
@@ -188,6 +197,10 @@ def make_ppo_kwargs_from_config(config):
 
 def make_ppo_agent(player_id, config, game):
     num_players, num_actions, num_products = game.num_players(), game.num_distinct_actions(), game.auction_params.num_products
+
+    # Double actions when using traps in the network
+    if config.get('trap_value', None): 
+      num_actions *= 2
 
     state_size = rl_environment.Environment(game).observation_spec()["info_state"]
 
@@ -287,6 +300,9 @@ class PPOTrainingLoop:
             log_stats_dict[f'{prefix}/player_{player_id}_payment'] = np.mean(stats_dict['payments'][player_id])
             # f'player_{player_id}_allocation': self.allocations[player_id][-1], # TODO? Probably needs to be per product
 
+          if 'traps' in stats_dict:
+            log_stats_dict[f'{prefix}/player_{player_id}_traps'] = np.mean(stats_dict['traps'][player_id])
+
         # TODO:
         # for player_id in range(self.n_players):
         #     metrics[f'metrics/player_{player_id}_unshaped_reward'] = time_step.rewards[player_id]
@@ -305,8 +321,7 @@ class PPOTrainingLoop:
 
 
     logging.info(f"Terminating PPO training after {update} updates and {update * batch_size} steps")
-
-    # Lastly, call all hooks
+    update += 1 # Prevent stupid DB mismatch errors
     for hook in self.report_hooks:
       hook(update, update * batch_size)
     for hook in self.eval_hooks:
@@ -314,27 +329,21 @@ class PPOTrainingLoop:
 
 
 def ppo_checkpoint(env_and_model, step, alg_start_time, compute_nash_conv=False, update=None):
-    msg = f"EVALUATION AFTER {step} steps"
-    if update is not None:
-      msg += f" (update {update})"
-    logger.info(msg)
+  if compute_nash_conv:
+    raise ValueError("Nash conv not supported for PPO")
 
-    policy = env_and_model.make_policy()
-    if compute_nash_conv:
-        logging.info('Computing nash conv...')
-        n_conv = nash_conv(env_and_model.game, policy, use_cpp_br=True)
-        logging.info(f"{n_conv}")
-        logging.info("_____________________________________________")
-    else:
-        n_conv = None
+  msg = f"EVALUATION AFTER {step} steps"
+  if update is not None:
+    msg += f" (update {update})"
+  logger.info(msg)
 
-    checkpoint = {
-        'walltime': time.time() - alg_start_time,
-        'policy': policy.save(),
-        'nash_conv_history': [],
-        'episode': step,
-    }
-    return checkpoint
+  policy = env_and_model.make_policy()
+  checkpoint = {
+      'walltime': time.time() - alg_start_time,
+      'policy': policy.save(),
+      'episode': step,
+  }
+  return checkpoint
 
 def run_ppo(env_and_policy, total_steps, result_saver=None, seed=1234, compute_nash_conv=False, dispatcher=None, report_timer=None, eval_timer=None, use_wandb=False):
   # This may have already been done, but do it again. Required to do it outside to ensure that networks get initilized the same way, which usually happens elsewhere

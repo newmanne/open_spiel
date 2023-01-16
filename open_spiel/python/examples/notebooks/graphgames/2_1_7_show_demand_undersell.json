@@ -1,0 +1,1 @@
+{"activity": [10], "increment": 0.1, "information_policy": "show_demand", "licenses": [7], "opening_price": [10], "undersell_rule": "undersell", "players": [{"type": [{"value": [20], "budget": 140, "prob": 1.0}]}, {"type": [{"value": [20], "budget": 140, "prob": 1.0}]}]}

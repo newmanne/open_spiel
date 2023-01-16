@@ -33,6 +33,11 @@ class InformationPolicy(enum.IntEnum):
   SHOW_DEMAND = 0
   HIDE_DEMAND = 1
 
+class InformationPolicyConstants:
+  OVER_DEMAND = 1
+  AT_SUPPLY = 0
+  UNDER_DEMAND = 3
+
 class ValueFormat(enum.IntEnum):
   LINEAR = 0
   FULL = 1
@@ -46,6 +51,7 @@ class AuctionParams:
   activity: List[int] = field(default_factory=lambda : [])
   num_products: int = 0
   increment: float = 0.1
+  reveal_type_round: int = None
 
   max_round: int = DEFAULT_MAX_ROUNDS
   player_types: Dict = None
@@ -165,6 +171,8 @@ def parse_auction_params(file_name):
     if isinstance(undersell_policy, str):
       undersell_policy = UndersellPolicy[undersell_policy.upper()]
 
+    reveal_type_round = int(game_params.get('reveal_type_round', -1))
+
     all_bids = action_to_bundles(licenses)
     all_bids_activity = np.array([activity @ bid for bid in all_bids])
 
@@ -217,6 +225,7 @@ def parse_auction_params(file_name):
       activity_policy=activity_policy,
       undersell_policy=undersell_policy,
       information_policy=information_policy,
+      reveal_type_round=reveal_type_round,
       agent_memory=game_params.get('agent_memory', DEFAULT_AGENT_MEMORY),
     )
 
@@ -236,14 +245,13 @@ class ClockAuctionGame(pyspiel.Game):
     # MAX AND MIN UTILITY
     self.upper_bounds = []
     self.lower_bounds = []
-    open_prices_per_bundles = np.array([self.auction_params.opening_prices @ bid for bid in self.auction_params.all_bids])
     for player_id, types in self.auction_params.player_types.items():
       player_upper_bounds = []
       player_lower_bounds = []
       for t in types:
         bidder = t['bidder']
         # What if you won your favorite package at opening prices?
-        bound = bidder.get_profits(open_prices_per_bundles).max()
+        bound = bidder.get_profits(self.auction_params.opening_prices).max()
         player_upper_bounds.append(bound)
         # What if you spent your entire budget and got nothing? (A tighter not implemented bound: if you got the single worst item for you, since you must be paying for something)
         player_lower_bounds.append(-bidder.budget)
@@ -327,7 +335,7 @@ class ClockAuctionState(pyspiel.State):
     positive_profit_on = False # TODO: Make param
 
     prices = self.auction_params.all_bids @ price
-    profits = bidder.bidder.get_profits(prices)
+    profits = bidder.bidder.get_profits(price)
 
     # Note we assume all drops go through. A more sophisticated bidder might think differently (e.g., try to fulfill budget in expectation)
     # Consider e.g. if you drop a product you might get stuck! So you can wind up over your budget if your drop fails
@@ -496,6 +504,8 @@ class ClockAuctionState(pyspiel.State):
       probs = [t['prob'] for t in player_types]
     else: # Chance node is breaking a tie
       chance_outcomes_required = math.factorial(len(self.processing_queue))
+      if chance_outcomes_required > 1_000:
+        return dict(upper=chance_outcomes_required - 1) # This breaks the openspiel API, but otherwise generating the list gets too big and blows up memory. See UBC Chance Event Sampler that knows how to decode this. Also, it's WAYYYY faster than actually making the lists
       probs = [1 / chance_outcomes_required] * chance_outcomes_required
     return list(enumerate(probs))
 
@@ -803,6 +813,12 @@ class ClockAuctionObserver:
       pieces.append(("clock_prices", num_products, (num_products,)))
       pieces.append(("price_increments", num_products, (num_products,)))
 
+      if self.auction_params.reveal_type_round != -1:
+        for i in range(num_players):
+          player_types = len(self.auction_params.player_types[i])
+          # Could be smaller if I excluded my own types, but this is simpler 
+          pieces.append((f"revealed_types_{i}", player_types, (player_types,)))
+
     # Build the single flat tensor.
     total_size = sum(size for name, size, shape in pieces)
     self.tensor = np.zeros(total_size, np.float32)
@@ -841,22 +857,31 @@ class ClockAuctionObserver:
         self.dict["activity"][0] = activity
       if "sor_profits" in self.dict:
         price = np.array(state.sor_prices[-1])
-        prices = self.auction_params.all_bids @ price
-        profits = state.bidders[player].bidder.get_profits(prices)
+        profits = state.bidders[player].bidder.get_profits(price)
         if self.normalize:
           profits = profits / self.auction_params.max_budget
         self.dict["sor_profits"][:] = profits
       if "clock_profits" in self.dict:
         price = np.array(state.clock_prices[-1])
-        prices = self.auction_params.all_bids @ price
-        profits = state.bidders[player].bidder.get_profits(prices)
+        profits = state.bidders[player].bidder.get_profits(price)
         if self.normalize:
           profits = profits / self.auction_params.max_budget
         self.dict["clock_profits"][:] = profits
 
-    if state.round > 1:
+    if state.round > 1:     
       if "agg_demand_history" in self.dict:
-        agg_demand_history = np.array(state.aggregate_demand)[start_ind:end_ind]
+        if self.auction_params.information_policy == InformationPolicy.SHOW_DEMAND:
+          agg_demand_history = np.array(state.aggregate_demand)[start_ind:end_ind]
+        elif self.auction_params.information_policy == InformationPolicy.HIDE_DEMAND:
+          agg_demand_history = np.array(state.aggregate_demand)[start_ind:end_ind]
+          over_demanded = agg_demand_history > self.auction_params.licenses
+          at_demand = agg_demand_history == self.auction_params.licenses
+          under_demanded = agg_demand_history < self.auction_params.licenses
+          agg_demand_history[over_demanded] = InformationPolicyConstants.OVER_DEMAND
+          agg_demand_history[at_demand] = InformationPolicyConstants.AT_SUPPLY
+          agg_demand_history[under_demanded] = InformationPolicyConstants.UNDER_DEMAND
+        else:
+          raise ValueError("Unknown information policy")
         if self.normalize:
           agg_demand_history = agg_demand_history / self.auction_params.licenses
         self.dict["agg_demand_history"][:min(length, len(agg_demand_history))] = agg_demand_history
@@ -893,6 +918,10 @@ class ClockAuctionObserver:
       if self.normalize:
         price_increments = price_increments / self.auction_params.max_round
       self.dict['price_increments'][:] = price_increments
+
+    for i in range(len(self.auction_params.player_types)):
+      if f"revealed_types_{i}" in self.dict and state.round >= self.auction_params.reveal_type_round:
+        self.dict[f'revealed_types_{i}'][state.bidders[i].type_index] = 1
 
     if np.isnan(self.tensor).any():
       raise ValueError(f"NaN in observation {self.dict}")

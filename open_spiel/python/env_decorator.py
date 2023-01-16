@@ -73,7 +73,7 @@ class PotentialShapingEnvDecorator(EnvDecorator):
         if current_player == self.n_players - 1:
             # Update potentials once
             current_potential = self.potential_function(state)
-            self.last_potential= current_potential
+            self.last_potential = current_potential
         _ = self._env.step(step_outputs)
         return self.get_time_step()
 
@@ -87,12 +87,7 @@ class PotentialShapingEnvDecorator(EnvDecorator):
             current_potential = self.potential_function(state)
             shaped_reward = current_potential - self.last_potential
 
-        new_rewards = torch.tensor(time_step.rewards) + shaped_reward * self.scale_coef
-
-        # Logging chage in rewards as a percentage due to potential function
-        # TODO: zeros...
-        # diff = ((new_rewards - torch.tensor(time_step.rewards)) / torch.tensor(time_step.rewards).abs()) * 100
-        # print(diff)
+        new_rewards = torch.tensor(time_step.rewards) + (shaped_reward * self.scale_coef)
 
         time_step.rewards[:] = new_rewards
         return time_step
@@ -122,6 +117,68 @@ class RewardShapingEnvDecorator(EnvDecorator):
         _ = self._env.step(step_outputs)
         self.t += 1
         return self.get_time_step()
+
+class TrapEnvDecorator(EnvDecorator):
+    '''Sets "trap" actions, which mirror the real actions, but cause you a loss of value after horizon turns (or all explode at the end)'''
+
+    def __init__(self, env: Environment, trap_value: float, trap_delay: int) -> None:
+        super().__init__(env)
+        self.trap_value = trap_value
+        self.trap_delay = trap_delay
+        self.traps = defaultdict(lambda: defaultdict(float)) # Player, round, trap
+        state = self._env._state
+        self.num_actions = env._game.num_distinct_actions()
+        self.num_players = env._game.num_players()
+        self.clear_traps()
+
+    def get_time_step(self):
+        '''Modify time step to add the fake actions'''
+        time_step = self._env.get_time_step()
+
+        for player in range(self.num_players):
+            time_step.observations['legal_actions'][player] = np.concatenate((time_step.observations['legal_actions'][player], np.array(time_step.observations['legal_actions'][player]) + self.num_actions))
+
+        # If state is terminal, punish current traps and then reset
+        penalties = np.zeros(self.num_players)
+        if time_step.last():
+            for player in range(self.num_players):
+                penalties[player] = sum(self.traps[player].values())
+            self.traps = defaultdict(lambda: defaultdict(float)) # Reset traps
+        else:
+            for player in range(self.num_players):
+                penalties[player] = self.traps[player][self._env._state.round]
+        
+        time_step.rewards[:] = torch.tensor(time_step.rewards) - torch.tensor(penalties)
+
+        return time_step
+
+    def step(self, step_outputs):
+        player = self._env._state.current_player()
+        actions = []
+        for action in step_outputs:
+            if action >= self.num_actions:
+                self.traps[player][self._env._state.round + self.trap_delay] += self.trap_value
+                self.traps_triggered[player] += 1
+                actions.append(action - self.num_actions)
+            else:
+                actions.append(action)
+        _ = self._env.step(actions)
+        return self.get_time_step()
+
+    def reset(self):
+        _ = self._env.reset()
+        self.traps = defaultdict(lambda: defaultdict(float)) # Reset traps
+        for player in range(self.num_players):
+            self.traps_triggered_stats[player].append(self.traps_triggered[player])
+            self.traps_triggered[player] = 0
+        return self.get_time_step()
+
+    def traps_dict(self):
+        return {'traps': self.traps_triggered_stats}
+
+    def clear_traps(self):
+        self.traps_triggered_stats = defaultdict(list)
+        self.traps_triggered = defaultdict(int)
 
 class StateSavingEnvDecorator(EnvDecorator):
 
@@ -198,12 +255,18 @@ class AuctionStatTrackingDecorator(EnvDecorator):
     def merge_stats(sync_env):
         d = []
         for e in sync_env.envs:
+            stats = dict()
             if hasattr(e, 'stats_dict'):
-                d.append(e.stats_dict())
+                stats.update(e.stats_dict())
                 if e.clear_on_report:
                     e.clear()
-            else:
-                d.append(dict())
+            
+            if hasattr(e, 'traps_dict'):
+                stats.update(e.traps_dict())
+                if e.clear_on_report:
+                    e.clear_traps()
+            
+            d.append(stats)
 
         stats_dict = d[0]
         for other_dict in d[1:]:

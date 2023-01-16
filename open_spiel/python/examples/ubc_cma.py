@@ -45,7 +45,7 @@ def allocation_scorer(game, normalizer_dict):
         
     return scorer
 
-def efficient_allocation(game):
+def efficient_allocation(game, factor_in_opening_prices=True):
     # Parse all type combos
     types = [game.auction_params.player_types[player] for player in range(game.num_players())]
     for player_type in types:
@@ -57,7 +57,7 @@ def efficient_allocation(game):
     records = []
     for combo in tqdm(type_combos):
         type_prob = np.product([t['prob'] for t in combo])
-        score, allocation = efficient_allocation_from_types(game, combo)
+        score, allocation = efficient_allocation_from_types(game, combo, factor_in_opening_prices=factor_in_opening_prices)
         combo_index = tuple(t['index'] for t in combo)
         record = dict(prob=type_prob, score=score, allocation=tuple(tuple(a) for a in allocation), combo=combo_index)
         records.append(record)
@@ -67,7 +67,39 @@ def efficient_allocation(game):
     scorer = allocation_scorer(game, combo_to_score)
     return df, combo_to_score, scorer
 
-def efficient_allocation_from_types(game,  types):
+def efficient_allocation_from_types(game, types, factor_in_opening_prices=True):
+    '''factor_in_opening_prices says to only consider feasible allocations at the opening prices'''
+    params = game.auction_params
+    p_open = params.opening_prices
+    num_players = game.num_players()
+    
+    profits = []
+    for player in range(num_players):
+        profits.append(
+            np.maximum(0, types[player]['bidder'].get_profits(p_open)).tolist() if factor_in_opening_prices else types[player]['bidder'].get_values().tolist()
+        )
+
+    return efficient_allocation_from_profits(game, profits)
+
+def efficient_allocation_avg_type(game, factor_in_opening_prices=True):
+    '''factor_in_opening_prices says to only consider feasible allocations at the opening prices'''
+    types = [game.auction_params.player_types[player] for player in range(game.num_players())]
+    params = game.auction_params
+    p_open = params.opening_prices
+
+    profit_fn = lambda t: t['bidder'].get_profits(p_open) if factor_in_opening_prices else t['bidder'].get_values()
+    avg_profits = []
+    for player in range(len(types)):
+        type_profits = np.array([profit_fn(t).tolist() for t in types[player]]) # (num_types, num_bundles)
+        avg_profits.append(np.mean(type_profits, axis=0)) # avg over types
+
+    return efficient_allocation_from_profits(game, avg_profits)
+
+def efficient_allocation_from_profits(game, profits):
+    '''factor_in_opening_prices says to only consider feasible allocations at the opening prices
+    
+    profits: (num_players, num_bundles)
+    '''
     params = game.auction_params
     bundles = params.all_bids
     num_players = game.num_players()
@@ -75,10 +107,8 @@ def efficient_allocation_from_types(game,  types):
     n_vars = num_players * num_actions
     var_id_to_player_bundle = dict() # VarId -> (player, bundle)
     
-    values = []
     q = 0
     for player in range(num_players):
-        values += types[player]['bidder'].get_values().tolist()
         for bundle in bundles:
             var_id_to_player_bundle[q] = (player, bundle)
             q += 1
@@ -87,7 +117,7 @@ def efficient_allocation_from_types(game,  types):
     bundle_variables = LpVariable.dicts("X", np.arange(n_vars), cat=LpBinary)
 
     # OBJECTIVE
-    problem += lpDot(values, bundle_variables.values())
+    problem += lpDot(np.reshape(profits, -1).tolist(), bundle_variables.values())
     
     feasible_result = True
 

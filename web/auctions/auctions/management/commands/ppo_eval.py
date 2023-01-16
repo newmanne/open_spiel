@@ -10,8 +10,9 @@ from distutils import util
 
 logger = logging.getLogger(__name__)
 
-def eval_command(t, experiment_name, run_name, br_name, br_player, dry_run, seed, report_freq, num_samples, compute_efficiency, num_envs=EvalDefaults.DEFAULT_NUM_ENVS):
-    fix_seeds(seed)
+def eval_command(t, experiment_name, run_name, br_name, br_player, dry_run=False, seed=EvalDefaults.DEFAULT_SEED, report_freq=EvalDefaults.DEFAULT_REPORT_FREQ, num_samples=EvalDefaults.DEFAULT_NUM_SAMPLES, compute_efficiency=False, num_envs=EvalDefaults.DEFAULT_NUM_ENVS, reseed=True):
+    if reseed: # When you call this inline from somewhere else, you might not want to reseed quite so globally. Would be best if this function had a global RNG_STATE type thing to pass around...
+        fix_seeds(seed)
 
     logging.info("EVALUATION STARTING")
     # Find the equilibrium_solver_run_checkpoint 

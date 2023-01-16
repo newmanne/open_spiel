@@ -1,0 +1,17 @@
+add_explore_transitions: false
+batch_size: 1024
+epsilon_start: 0.5
+epsilon_end: 0.02
+learn_every: 16
+loss_str: mse
+sl_loss_str: cross_entropy
+optimizer_str: adam
+rl_learning_rate: 0.01
+rl_model: 'mlp'
+rl_model_args:
+  hidden_sizes: [256, 256,]
+sl_learning_rate: 0.01
+sl_model: 'mlp'
+sl_model_args:
+  hidden_sizes: [256, 256,]
+update_target_network_every: 1000

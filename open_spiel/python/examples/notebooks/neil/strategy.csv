@@ -1,0 +1,5371 @@
+info_state,Allocation 0 A,Allocation 1 A,Bid (0 A),Bid (1 A),Bid (2 A),Price A,Utility 0,Utility 1,budget,my_bids,player,prob,round,terminal,total_demand,value
+"Player 0
+MarginalValues:101, 51 Budget: 200
+",,,,0.9995,0.0005, 10,,,,,0,1.0,1,False,,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+",,,,0.9995,0.0005, 10,,,,,1,1.0,1,False,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 10
+Round: 2",1 , 1,,,, 10,81.75,14.25,,,0,0.9990002500000001,2,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 10
+Round: 2",1 , 1,,,, 10,81.75,14.25,,,1,0.9990002500000001,2,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1
+Processed:
+1
+Aggregates:
+3
+",,,,1.0,, 11,,,,"MarginalValues:101, 51 Budget: 200",0,0.0004997500000000001,2,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2
+Processed:
+2
+Aggregates:
+3
+",,,,0.5,0.5, 11,,,,"MarginalValues:47, 10.5 Budget: 200",1,0.0004997500000000001,2,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 11
+Round: 3",1 , 1,,,, 11,81.0,13.5,,,0,0.0004998125,3,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 11
+Round: 3",1 , 1,,,, 11,81.0,13.5,,,1,0.0004998125,3,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1 | 1
+Processed:
+1 | 1
+Aggregates:
+3 | 3
+",,,,1.0,, 12.1,,,,"MarginalValues:101, 51 Budget: 200",0,0.00024987500000000004,3,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2
+Processed:
+2 | 2
+Aggregates:
+3 | 3
+",,,,0.5,0.5, 12.1,,,,"MarginalValues:47, 10.5 Budget: 200",1,0.00024987500000000004,3,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 12.1
+Round: 4",1 , 1,,,, 12.1,80.17500000000001,12.674999999999997,,,0,0.000249953125,4,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 12.1
+Round: 4",1 , 1,,,, 12.1,80.17500000000001,12.674999999999997,,,1,0.000249953125,4,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1 | 1 | 1
+Processed:
+1 | 1 | 1
+Aggregates:
+3 | 3 | 3
+",,,,1.0,, 13.31,,,,"MarginalValues:101, 51 Budget: 200",0,0.00012493750000000002,4,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2
+Processed:
+2 | 2 | 2
+Aggregates:
+3 | 3 | 3
+",,,,0.5,0.5, 13.31,,,,"MarginalValues:47, 10.5 Budget: 200",1,0.00012493750000000002,4,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 13.31
+Round: 5",1 , 1,,,, 13.31,79.2675,11.767499999999998,,,0,0.00012498828125000002,5,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 13.31
+Round: 5",1 , 1,,,, 13.31,79.2675,11.767499999999998,,,1,0.00012498828125000002,5,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3
+",,,,1.0,, 14.641,,,,"MarginalValues:101, 51 Budget: 200",0,6.246875000000001e-05,5,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3
+",,,,0.5,0.5, 14.641,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.246875000000001e-05,5,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 14.641
+Round: 6",1 , 1,,,, 14.641,78.26925,10.769249999999996,,,0,6.249707031250001e-05,6,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 14.641
+Round: 6",1 , 1,,,, 14.641,78.26925,10.769249999999996,,,1,6.249707031250001e-05,6,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3
+",,,,1.0,, 16.1051,,,,"MarginalValues:101, 51 Budget: 200",0,3.1234375000000005e-05,6,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 16.1051,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.1234375000000005e-05,6,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 16.1051
+Round: 7",1 , 1,,,, 16.1051,77.17117499999999,9.671174999999998,,,0,3.124926757812501e-05,7,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 16.1051
+Round: 7",1 , 1,,,, 16.1051,77.17117499999999,9.671174999999998,,,1,3.124926757812501e-05,7,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 17.7156,,,,"MarginalValues:101, 51 Budget: 200",0,1.5617187500000003e-05,7,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 17.7156,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.5617187500000003e-05,7,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 17.7156
+Round: 8",1 , 1,,,, 17.7156,75.9632925,8.463292499999994,,,0,1.5624816894531252e-05,8,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 17.7156
+Round: 8",1 , 1,,,, 17.7156,75.9632925,8.463292499999994,,,1,1.5624816894531252e-05,8,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 19.4872,,,,"MarginalValues:101, 51 Budget: 200",0,7.808593750000001e-06,8,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.808593750000001e-06,8,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 19.4872
+Round: 9",1 , 1,,,, 19.4872,74.63462175,7.134621749999994,,,0,7.812454223632813e-06,9,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 19.4872
+Round: 9",1 , 1,,,, 19.4872,74.63462175,7.134621749999994,,,1,7.812454223632813e-06,9,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,3.904296875000001e-06,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.904296875000001e-06,9,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 21.4359
+Round: 10",1 , 1,,,, 21.4359,73.17308392499999,5.673083924999993,,,0,3.906238555908203e-06,10,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 21.4359
+Round: 10",1 , 1,,,, 21.4359,73.17308392499999,5.673083924999993,,,1,3.906238555908203e-06,10,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,1.9521484375000003e-06,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9521484375000003e-06,10,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 23.5795
+Round: 11",1 , 1,,,, 23.5795,71.5653923175,4.065392317499988,,,0,1.953122138977051e-06,11,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 23.5795
+Round: 11",1 , 1,,,, 23.5795,71.5653923175,4.065392317499988,,,1,1.953122138977051e-06,11,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,9.760742187500002e-07,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.760742187500002e-07,11,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 25.9374
+Round: 12",1 , 1,,,, 25.9374,69.79693154924999,2.2969315492499867,,,0,9.765617847442628e-07,12,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 25.9374
+Round: 12",1 , 1,,,, 25.9374,69.79693154924999,2.2969315492499867,,,1,9.765617847442628e-07,12,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,4.880371093750001e-07,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.880371093750001e-07,12,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 28.5312
+Round: 13",1 , 1,,,, 28.5312,67.85162470417498,0.35162470417498426,,,0,4.882810711860657e-07,13,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 28.5312
+Round: 13",1 , 1,,,, 28.5312,67.85162470417498,0.35162470417498426,,,1,4.882810711860657e-07,13,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,2.4401855468750004e-07,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.4401855468750004e-07,13,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 31.3843
+Round: 14",1 , 1,,,, 31.3843,65.71178717459249,-1.7882128254075198,,,0,2.4414058029651643e-07,14,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 31.3843
+Round: 14",1 , 1,,,, 31.3843,65.71178717459249,-1.7882128254075198,,,1,2.4414058029651643e-07,14,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,1.2200927734375002e-07,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.2200927734375002e-07,14,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 34.5227
+Round: 15",1 , 1,,,, 34.5227,63.35796589205172,-4.142034107948273,,,0,1.220703013241291e-07,15,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 34.5227
+Round: 15",1 , 1,,,, 34.5227,63.35796589205172,-4.142034107948273,,,1,1.220703013241291e-07,15,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,6.100463867187501e-08,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.100463867187501e-08,15,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 37.975
+Round: 16",1 , 1,,,, 37.975,60.7687624812569,-6.731237518743104,,,0,6.103515345603227e-08,16,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 37.975
+Round: 16",1 , 1,,,, 37.975,60.7687624812569,-6.731237518743104,,,1,6.103515345603227e-08,16,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,3.0502319335937505e-08,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.0502319335937505e-08,16,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 41.7725
+Round: 17",1 , 1,,,, 41.7725,57.92063872938259,-9.579361270617415,,,0,3.0517577426508065e-08,17,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 41.7725
+Round: 17",1 , 1,,,, 41.7725,57.92063872938259,-9.579361270617415,,,1,3.0517577426508065e-08,17,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,1.5251159667968753e-08,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.5251159667968753e-08,17,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 45.9497
+Round: 18",1 , 1,,,, 45.9497,54.787702602320834,-12.712297397679162,,,0,1.9073486095294357e-08,18,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 1 | 1
+Price: 45.9497
+Round: 18",1 , 1,,,, 45.9497,54.787702602320834,-12.712297397679162,,,1,1.9073486095294357e-08,18,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2
+Processed:
+2
+Aggregates:
+3
+",,,,0.5,0.5, 11,,,,"MarginalValues:101, 51 Budget: 200",0,0.0004997500000000001,2,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1
+Processed:
+1
+Aggregates:
+3
+",,,,1.0,, 11,,,,"MarginalValues:47, 10.5 Budget: 200",1,0.0004997500000000001,2,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2
+Processed:
+2 | 2
+Aggregates:
+3 | 3
+",,,,0.5,0.5, 12.1,,,,"MarginalValues:101, 51 Budget: 200",0,0.00024987500000000004,3,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1 | 1
+Processed:
+1 | 1
+Aggregates:
+3 | 3
+",,,,1.0,, 12.1,,,,"MarginalValues:47, 10.5 Budget: 200",1,0.00024987500000000004,3,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2
+Processed:
+2 | 2 | 2
+Aggregates:
+3 | 3 | 3
+",,,,0.5,0.5, 13.31,,,,"MarginalValues:101, 51 Budget: 200",0,0.00012493750000000002,4,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1 | 1 | 1
+Processed:
+1 | 1 | 1
+Aggregates:
+3 | 3 | 3
+",,,,1.0,, 13.31,,,,"MarginalValues:47, 10.5 Budget: 200",1,0.00012493750000000002,4,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3
+",,,,0.5,0.5, 14.641,,,,"MarginalValues:101, 51 Budget: 200",0,6.246875000000001e-05,5,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3
+",,,,1.0,, 14.641,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.246875000000001e-05,5,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 16.1051,,,,"MarginalValues:101, 51 Budget: 200",0,3.1234375000000005e-05,6,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3
+",,,,1.0,, 16.1051,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.1234375000000005e-05,6,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 17.7156,,,,"MarginalValues:101, 51 Budget: 200",0,1.5617187500000003e-05,7,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 17.7156,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.5617187500000003e-05,7,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:101, 51 Budget: 200",0,7.808593750000001e-06,8,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 19.4872,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.808593750000001e-06,8,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,3.904296875000001e-06,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.904296875000001e-06,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,1.9521484375000003e-06,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9521484375000003e-06,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,9.760742187500002e-07,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.760742187500002e-07,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,4.880371093750001e-07,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.880371093750001e-07,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,2.4401855468750004e-07,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.4401855468750004e-07,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,1.2200927734375002e-07,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.2200927734375002e-07,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,6.100463867187501e-08,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.100463867187501e-08,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,3.0502319335937505e-08,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.0502319335937505e-08,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,1.5251159667968753e-08,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.5251159667968753e-08,17,False,Submitted:,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 2 | 0
+Price: 45.9497
+Round: 18",2 , 0,,,, 45.9497,60.10054027285557,-15.025135068213892,,,0,1.1444091796874999e-08,18,True,,
+"MarginalValues:101, 51 Budget: 200
+MarginalValues:47, 10.5 Budget: 200
+Final bids: 2 | 0
+Price: 45.9497
+Round: 18",2 , 0,,,, 45.9497,60.10054027285557,-15.025135068213892,,,1,1.1444091796874999e-08,18,True,,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2
+Processed:
+2
+Aggregates:
+4
+",,,,0.5,0.5, 11,,,,"MarginalValues:101, 51 Budget: 200",0,2.5e-07,2,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2
+Processed:
+2
+Aggregates:
+4
+",,,,0.5,0.5, 11,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.5e-07,2,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 1
+Processed:
+2 | 1
+Aggregates:
+4 | 3
+",,,,1.0,, 12.1,,,,"MarginalValues:101, 51 Budget: 200",0,6.25e-08,3,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2
+Processed:
+2 | 2
+Aggregates:
+4 | 3
+",,,,0.5,0.5, 12.1,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.25e-08,3,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 1 | 1
+Processed:
+2 | 1 | 1
+Aggregates:
+4 | 3 | 3
+",,,,1.0,, 13.31,,,,"MarginalValues:101, 51 Budget: 200",0,3.125e-08,4,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2
+Processed:
+2 | 2 | 2
+Aggregates:
+4 | 3 | 3
+",,,,0.5,0.5, 13.31,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.125e-08,4,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3
+",,,,1.0,, 14.641,,,,"MarginalValues:101, 51 Budget: 200",0,1.5625e-08,5,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3
+",,,,0.5,0.5, 14.641,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.5625e-08,5,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3
+",,,,1.0,, 16.1051,,,,"MarginalValues:101, 51 Budget: 200",0,7.8125e-09,6,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 16.1051,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.8125e-09,6,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 17.7156,,,,"MarginalValues:101, 51 Budget: 200",0,3.90625e-09,7,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 17.7156,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.90625e-09,7,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 19.4872,,,,"MarginalValues:101, 51 Budget: 200",0,1.953125e-09,8,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.953125e-09,8,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,9.765625e-10,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.765625e-10,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,4.8828125e-10,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.8828125e-10,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,2.44140625e-10,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.44140625e-10,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,1.220703125e-10,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.220703125e-10,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,6.103515625e-11,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.103515625e-11,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,3.0517578125e-11,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.0517578125e-11,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,1.52587890625e-11,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.52587890625e-11,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,7.62939453125e-12,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.62939453125e-12,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2
+Processed:
+2 | 2
+Aggregates:
+4 | 3
+",,,,0.5,0.5, 12.1,,,,"MarginalValues:101, 51 Budget: 200",0,6.25e-08,3,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 1
+Processed:
+2 | 1
+Aggregates:
+4 | 3
+",,,,1.0,, 12.1,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.25e-08,3,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2
+Processed:
+2 | 2 | 2
+Aggregates:
+4 | 3 | 3
+",,,,0.5,0.5, 13.31,,,,"MarginalValues:101, 51 Budget: 200",0,3.125e-08,4,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 1 | 1
+Processed:
+2 | 1 | 1
+Aggregates:
+4 | 3 | 3
+",,,,1.0,, 13.31,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.125e-08,4,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3
+",,,,0.5,0.5, 14.641,,,,"MarginalValues:101, 51 Budget: 200",0,1.5625e-08,5,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3
+",,,,1.0,, 14.641,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.5625e-08,5,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 16.1051,,,,"MarginalValues:101, 51 Budget: 200",0,7.8125e-09,6,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3
+",,,,1.0,, 16.1051,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.8125e-09,6,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 17.7156,,,,"MarginalValues:101, 51 Budget: 200",0,3.90625e-09,7,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 17.7156,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.90625e-09,7,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:101, 51 Budget: 200",0,1.953125e-09,8,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 19.4872,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.953125e-09,8,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,9.765625e-10,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.765625e-10,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,4.8828125e-10,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.8828125e-10,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,2.44140625e-10,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.44140625e-10,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,1.220703125e-10,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.220703125e-10,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,6.103515625e-11,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.103515625e-11,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,3.0517578125e-11,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.0517578125e-11,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,1.52587890625e-11,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.52587890625e-11,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,7.62939453125e-12,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.62939453125e-12,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2
+Processed:
+2 | 2
+Aggregates:
+4 | 4
+",,,,0.5,0.5, 12.1,,,,"MarginalValues:101, 51 Budget: 200",0,6.25e-08,3,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2
+Processed:
+2 | 2
+Aggregates:
+4 | 4
+",,,,0.5,0.5, 12.1,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.25e-08,3,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 1
+Processed:
+2 | 2 | 1
+Aggregates:
+4 | 4 | 3
+",,,,1.0,, 13.31,,,,"MarginalValues:101, 51 Budget: 200",0,1.5625e-08,4,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2
+Processed:
+2 | 2 | 2
+Aggregates:
+4 | 4 | 3
+",,,,0.5,0.5, 13.31,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.5625e-08,4,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 1 | 1
+Processed:
+2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3
+",,,,1.0,, 14.641,,,,"MarginalValues:101, 51 Budget: 200",0,7.8125e-09,5,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3
+",,,,0.5,0.5, 14.641,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.8125e-09,5,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3
+",,,,1.0,, 16.1051,,,,"MarginalValues:101, 51 Budget: 200",0,3.90625e-09,6,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 16.1051,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.90625e-09,6,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 17.7156,,,,"MarginalValues:101, 51 Budget: 200",0,1.953125e-09,7,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 17.7156,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.953125e-09,7,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 19.4872,,,,"MarginalValues:101, 51 Budget: 200",0,9.765625e-10,8,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.765625e-10,8,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,4.8828125e-10,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.8828125e-10,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,2.44140625e-10,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.44140625e-10,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,1.220703125e-10,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.220703125e-10,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,6.103515625e-11,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.103515625e-11,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,3.0517578125e-11,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.0517578125e-11,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,1.52587890625e-11,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.52587890625e-11,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,7.62939453125e-12,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.62939453125e-12,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,1.9073486328125e-12,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9073486328125e-12,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2
+Processed:
+2 | 2 | 2
+Aggregates:
+4 | 4 | 3
+",,,,0.5,0.5, 13.31,,,,"MarginalValues:101, 51 Budget: 200",0,1.5625e-08,4,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 1
+Processed:
+2 | 2 | 1
+Aggregates:
+4 | 4 | 3
+",,,,1.0,, 13.31,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.5625e-08,4,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3
+",,,,0.5,0.5, 14.641,,,,"MarginalValues:101, 51 Budget: 200",0,7.8125e-09,5,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 1 | 1
+Processed:
+2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3
+",,,,1.0,, 14.641,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.8125e-09,5,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 16.1051,,,,"MarginalValues:101, 51 Budget: 200",0,3.90625e-09,6,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3
+",,,,1.0,, 16.1051,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.90625e-09,6,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 17.7156,,,,"MarginalValues:101, 51 Budget: 200",0,1.953125e-09,7,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 17.7156,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.953125e-09,7,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:101, 51 Budget: 200",0,9.765625e-10,8,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 19.4872,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.765625e-10,8,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,4.8828125e-10,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.8828125e-10,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,2.44140625e-10,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.44140625e-10,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,1.220703125e-10,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.220703125e-10,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,6.103515625e-11,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.103515625e-11,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,3.0517578125e-11,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.0517578125e-11,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,1.52587890625e-11,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.52587890625e-11,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,7.62939453125e-12,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.62939453125e-12,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,1.9073486328125e-12,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9073486328125e-12,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2
+Processed:
+2 | 2 | 2
+Aggregates:
+4 | 4 | 4
+",,,,0.5,0.5, 13.31,,,,"MarginalValues:101, 51 Budget: 200",0,1.5625e-08,4,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2
+Processed:
+2 | 2 | 2
+Aggregates:
+4 | 4 | 4
+",,,,0.5,0.5, 13.31,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.5625e-08,4,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 3
+",,,,1.0,, 14.641,,,,"MarginalValues:101, 51 Budget: 200",0,3.90625e-09,5,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3
+",,,,0.5,0.5, 14.641,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.90625e-09,5,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3
+",,,,1.0,, 16.1051,,,,"MarginalValues:101, 51 Budget: 200",0,1.953125e-09,6,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 16.1051,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.953125e-09,6,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 17.7156,,,,"MarginalValues:101, 51 Budget: 200",0,9.765625e-10,7,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 17.7156,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.765625e-10,7,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 19.4872,,,,"MarginalValues:101, 51 Budget: 200",0,4.8828125e-10,8,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.8828125e-10,8,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,2.44140625e-10,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.44140625e-10,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,1.220703125e-10,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.220703125e-10,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,6.103515625e-11,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.103515625e-11,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,3.0517578125e-11,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.0517578125e-11,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,1.52587890625e-11,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.52587890625e-11,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,7.62939453125e-12,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.62939453125e-12,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,1.9073486328125e-12,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9073486328125e-12,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,9.5367431640625e-13,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.5367431640625e-13,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3
+",,,,0.5,0.5, 14.641,,,,"MarginalValues:101, 51 Budget: 200",0,3.90625e-09,5,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 3
+",,,,1.0,, 14.641,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.90625e-09,5,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 16.1051,,,,"MarginalValues:101, 51 Budget: 200",0,1.953125e-09,6,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3
+",,,,1.0,, 16.1051,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.953125e-09,6,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 17.7156,,,,"MarginalValues:101, 51 Budget: 200",0,9.765625e-10,7,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 17.7156,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.765625e-10,7,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:101, 51 Budget: 200",0,4.8828125e-10,8,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 19.4872,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.8828125e-10,8,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,2.44140625e-10,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.44140625e-10,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,1.220703125e-10,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.220703125e-10,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,6.103515625e-11,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.103515625e-11,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,3.0517578125e-11,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.0517578125e-11,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,1.52587890625e-11,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.52587890625e-11,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,7.62939453125e-12,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.62939453125e-12,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,1.9073486328125e-12,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9073486328125e-12,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,9.5367431640625e-13,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.5367431640625e-13,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4
+",,,,0.5,0.5, 14.641,,,,"MarginalValues:101, 51 Budget: 200",0,3.90625e-09,5,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4
+",,,,0.5,0.5, 14.641,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.90625e-09,5,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3
+",,,,1.0,, 16.1051,,,,"MarginalValues:101, 51 Budget: 200",0,9.765625e-10,6,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 16.1051,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.765625e-10,6,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 17.7156,,,,"MarginalValues:101, 51 Budget: 200",0,4.8828125e-10,7,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 17.7156,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.8828125e-10,7,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 19.4872,,,,"MarginalValues:101, 51 Budget: 200",0,2.44140625e-10,8,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.44140625e-10,8,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,1.220703125e-10,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.220703125e-10,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,6.103515625e-11,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.103515625e-11,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,3.0517578125e-11,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.0517578125e-11,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,1.52587890625e-11,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.52587890625e-11,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,7.62939453125e-12,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.62939453125e-12,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,1.9073486328125e-12,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9073486328125e-12,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,9.5367431640625e-13,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.5367431640625e-13,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,4.76837158203125e-13,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.76837158203125e-13,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 16.1051,,,,"MarginalValues:101, 51 Budget: 200",0,9.765625e-10,6,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3
+",,,,1.0,, 16.1051,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.765625e-10,6,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 17.7156,,,,"MarginalValues:101, 51 Budget: 200",0,4.8828125e-10,7,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 17.7156,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.8828125e-10,7,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:101, 51 Budget: 200",0,2.44140625e-10,8,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 19.4872,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.44140625e-10,8,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,1.220703125e-10,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.220703125e-10,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,6.103515625e-11,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.103515625e-11,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,3.0517578125e-11,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.0517578125e-11,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,1.52587890625e-11,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.52587890625e-11,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,7.62939453125e-12,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.62939453125e-12,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,1.9073486328125e-12,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9073486328125e-12,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,9.5367431640625e-13,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.5367431640625e-13,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,4.76837158203125e-13,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.76837158203125e-13,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 16.1051,,,,"MarginalValues:101, 51 Budget: 200",0,9.765625e-10,6,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 16.1051,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.765625e-10,6,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 17.7156,,,,"MarginalValues:101, 51 Budget: 200",0,2.44140625e-10,7,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 17.7156,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.44140625e-10,7,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 19.4872,,,,"MarginalValues:101, 51 Budget: 200",0,1.220703125e-10,8,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.220703125e-10,8,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,6.103515625e-11,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.103515625e-11,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,3.0517578125e-11,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.0517578125e-11,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,1.52587890625e-11,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.52587890625e-11,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,7.62939453125e-12,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.62939453125e-12,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,1.9073486328125e-12,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9073486328125e-12,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,9.5367431640625e-13,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.5367431640625e-13,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,4.76837158203125e-13,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.76837158203125e-13,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,2.384185791015625e-13,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.384185791015625e-13,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 17.7156,,,,"MarginalValues:101, 51 Budget: 200",0,2.44140625e-10,7,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 17.7156,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.44140625e-10,7,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:101, 51 Budget: 200",0,1.220703125e-10,8,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 19.4872,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.220703125e-10,8,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,6.103515625e-11,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.103515625e-11,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,3.0517578125e-11,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.0517578125e-11,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,1.52587890625e-11,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.52587890625e-11,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,7.62939453125e-12,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.62939453125e-12,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,1.9073486328125e-12,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9073486328125e-12,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,9.5367431640625e-13,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.5367431640625e-13,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,4.76837158203125e-13,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.76837158203125e-13,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,2.384185791015625e-13,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.384185791015625e-13,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 17.7156,,,,"MarginalValues:101, 51 Budget: 200",0,2.44140625e-10,7,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 17.7156,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.44140625e-10,7,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 19.4872,,,,"MarginalValues:101, 51 Budget: 200",0,6.103515625e-11,8,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.103515625e-11,8,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,3.0517578125e-11,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.0517578125e-11,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,1.52587890625e-11,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.52587890625e-11,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,7.62939453125e-12,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.62939453125e-12,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,1.9073486328125e-12,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9073486328125e-12,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,9.5367431640625e-13,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.5367431640625e-13,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,4.76837158203125e-13,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.76837158203125e-13,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,2.384185791015625e-13,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.384185791015625e-13,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,1.1920928955078124e-13,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.1920928955078124e-13,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:101, 51 Budget: 200",0,6.103515625e-11,8,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 19.4872,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.103515625e-11,8,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,3.0517578125e-11,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.0517578125e-11,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,1.52587890625e-11,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.52587890625e-11,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,7.62939453125e-12,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.62939453125e-12,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,1.9073486328125e-12,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9073486328125e-12,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,9.5367431640625e-13,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.5367431640625e-13,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,4.76837158203125e-13,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.76837158203125e-13,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,2.384185791015625e-13,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.384185791015625e-13,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,1.1920928955078124e-13,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.1920928955078124e-13,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:101, 51 Budget: 200",0,6.103515625e-11,8,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 19.4872,,,,"MarginalValues:47, 10.5 Budget: 200",1,6.103515625e-11,8,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,1.52587890625e-11,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.52587890625e-11,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,7.62939453125e-12,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.62939453125e-12,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,1.9073486328125e-12,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9073486328125e-12,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,9.5367431640625e-13,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.5367431640625e-13,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,4.76837158203125e-13,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.76837158203125e-13,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,2.384185791015625e-13,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.384185791015625e-13,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,1.1920928955078124e-13,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.1920928955078124e-13,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,5.960464477539062e-14,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,5.960464477539062e-14,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,1.52587890625e-11,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.52587890625e-11,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,7.62939453125e-12,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.62939453125e-12,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,1.9073486328125e-12,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9073486328125e-12,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,9.5367431640625e-13,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.5367431640625e-13,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,4.76837158203125e-13,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.76837158203125e-13,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,2.384185791015625e-13,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.384185791015625e-13,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,1.1920928955078124e-13,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.1920928955078124e-13,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,5.960464477539062e-14,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,5.960464477539062e-14,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:101, 51 Budget: 200",0,1.52587890625e-11,9,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 21.4359,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.52587890625e-11,9,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,1.9073486328125e-12,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9073486328125e-12,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,9.5367431640625e-13,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.5367431640625e-13,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,4.76837158203125e-13,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.76837158203125e-13,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,2.384185791015625e-13,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.384185791015625e-13,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,1.1920928955078124e-13,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.1920928955078124e-13,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,5.960464477539062e-14,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,5.960464477539062e-14,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,2.980232238769531e-14,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.980232238769531e-14,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,1.9073486328125e-12,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.9073486328125e-12,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,9.5367431640625e-13,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.5367431640625e-13,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,4.76837158203125e-13,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.76837158203125e-13,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,2.384185791015625e-13,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.384185791015625e-13,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,1.1920928955078124e-13,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.1920928955078124e-13,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,5.960464477539062e-14,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,5.960464477539062e-14,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,2.980232238769531e-14,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.980232238769531e-14,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:101, 51 Budget: 200",0,3.814697265625e-12,10,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 23.5795,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.814697265625e-12,10,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,9.5367431640625e-13,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.5367431640625e-13,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,4.76837158203125e-13,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.76837158203125e-13,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,2.384185791015625e-13,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.384185791015625e-13,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,1.1920928955078124e-13,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.1920928955078124e-13,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,5.960464477539062e-14,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,5.960464477539062e-14,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,2.980232238769531e-14,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.980232238769531e-14,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,1.4901161193847656e-14,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.4901161193847656e-14,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,9.5367431640625e-13,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.5367431640625e-13,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,4.76837158203125e-13,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.76837158203125e-13,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,2.384185791015625e-13,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.384185791015625e-13,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,1.1920928955078124e-13,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.1920928955078124e-13,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,5.960464477539062e-14,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,5.960464477539062e-14,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,2.980232238769531e-14,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.980232238769531e-14,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,1.4901161193847656e-14,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.4901161193847656e-14,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:101, 51 Budget: 200",0,9.5367431640625e-13,11,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 25.9374,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.5367431640625e-13,11,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,2.384185791015625e-13,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.384185791015625e-13,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,1.1920928955078124e-13,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.1920928955078124e-13,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,5.960464477539062e-14,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,5.960464477539062e-14,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,2.980232238769531e-14,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.980232238769531e-14,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,1.4901161193847656e-14,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.4901161193847656e-14,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,7.450580596923828e-15,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.450580596923828e-15,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,2.384185791015625e-13,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.384185791015625e-13,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,1.1920928955078124e-13,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.1920928955078124e-13,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,5.960464477539062e-14,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,5.960464477539062e-14,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,2.980232238769531e-14,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.980232238769531e-14,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,1.4901161193847656e-14,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.4901161193847656e-14,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,7.450580596923828e-15,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.450580596923828e-15,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:101, 51 Budget: 200",0,2.384185791015625e-13,12,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 28.5312,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.384185791015625e-13,12,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,5.960464477539062e-14,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,5.960464477539062e-14,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,2.980232238769531e-14,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.980232238769531e-14,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,1.4901161193847656e-14,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.4901161193847656e-14,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,7.450580596923828e-15,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.450580596923828e-15,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,3.725290298461914e-15,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.725290298461914e-15,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,5.960464477539062e-14,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,5.960464477539062e-14,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,2.980232238769531e-14,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.980232238769531e-14,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,1.4901161193847656e-14,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.4901161193847656e-14,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,7.450580596923828e-15,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.450580596923828e-15,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,3.725290298461914e-15,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.725290298461914e-15,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:101, 51 Budget: 200",0,5.960464477539062e-14,13,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 31.3843,,,,"MarginalValues:47, 10.5 Budget: 200",1,5.960464477539062e-14,13,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,1.4901161193847656e-14,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.4901161193847656e-14,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,7.450580596923828e-15,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.450580596923828e-15,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,3.725290298461914e-15,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.725290298461914e-15,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,1.862645149230957e-15,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.862645149230957e-15,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,1.4901161193847656e-14,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.4901161193847656e-14,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,7.450580596923828e-15,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,7.450580596923828e-15,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,3.725290298461914e-15,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.725290298461914e-15,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,1.862645149230957e-15,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.862645149230957e-15,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:101, 51 Budget: 200",0,1.4901161193847656e-14,14,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 34.5227,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.4901161193847656e-14,14,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,3.725290298461914e-15,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.725290298461914e-15,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,1.862645149230957e-15,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.862645149230957e-15,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,9.313225746154785e-16,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.313225746154785e-16,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,3.725290298461914e-15,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.725290298461914e-15,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,1.862645149230957e-15,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,1.862645149230957e-15,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,9.313225746154785e-16,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.313225746154785e-16,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:101, 51 Budget: 200",0,3.725290298461914e-15,15,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 37.975,,,,"MarginalValues:47, 10.5 Budget: 200",1,3.725290298461914e-15,15,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,9.313225746154785e-16,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.313225746154785e-16,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,4.656612873077392e-16,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.656612873077392e-16,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,9.313225746154785e-16,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.313225746154785e-16,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,4.656612873077392e-16,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,4.656612873077392e-16,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:101, 51 Budget: 200",0,9.313225746154785e-16,16,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 41.7725,,,,"MarginalValues:47, 10.5 Budget: 200",1,9.313225746154785e-16,16,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,1.0,, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,2.328306436538696e-16,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.328306436538696e-16,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,2.328306436538696e-16,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 1
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 3
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.328306436538696e-16,17,False,Submitted:,
+"Player 0
+MarginalValues:101, 51 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,,0.5,0.5, 45.9497,,,,"MarginalValues:101, 51 Budget: 200",0,2.328306436538696e-16,17,False,Submitted:,
+"Player 1
+MarginalValues:47, 10.5 Budget: 200
+Submitted:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Processed:
+2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2
+Aggregates:
+4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4
+",,,1.0,,, 45.9497,,,,"MarginalValues:47, 10.5 Budget: 200",1,2.328306436538696e-16,17,False,Submitted:,

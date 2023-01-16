@@ -23,7 +23,7 @@ class Bidder:
     return self.bundle_values
   
   def get_profits(self, prices):
-    return self.get_values() - prices
+    return self.get_values() - (self.all_bids @ np.asarray(prices))
 
 class LinearBidder(Bidder):
 

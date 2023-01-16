@@ -10,11 +10,9 @@ from torch.distributions.categorical import Categorical
 
 from open_spiel.python.rl_agent import StepOutput
 
+from open_spiel.python.pytorch.auction_convnet import layer_init
+
 INVALID_ACTION_PENALTY = -1e6
-def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
-    torch.nn.init.orthogonal_(layer.weight, std)
-    torch.nn.init.constant_(layer.bias, bias_const)
-    return layer
 
 class CategoricalMasked(Categorical):
     def __init__(self, probs=None, logits=None, validate_args=None, masks=[], mask_value=None):
@@ -56,8 +54,14 @@ class PPOAgent(nn.Module):
             critic_activation = string_to_activation(critic_activation)
 
         # Construct networks
+        # if convnet:
+        # self.actor_and_critic = # convnet...
+        # self.actor = lambda x: self.actor_and_critic()[0]
+        # self.critic = lambda x: self.actor_and_critic()[1]
+        # elif feedforward:
         self.critic = build_sequential_network(observation_shape, 1, critic_hidden_sizes, critic_activation, final_std=1.0)
         self.actor = build_sequential_network(observation_shape, num_actions, actor_hidden_sizes, actor_activation, final_std=0.01)
+        self.actor_and_critic = lambda x: (self.actor(x), self.critic(x))
 
         self.device = device
         self.num_actions = num_actions
@@ -70,14 +74,14 @@ class PPOAgent(nn.Module):
         if legal_actions_mask is None:
             legal_actions_mask = torch.ones((len(x), self.num_actions)).bool()
 
-        logits = self.actor(x)
+        logits, critic_value = self.actor_and_critic(x)
         if torch.isnan(logits).any():
             raise ValueError("Training is messed up - logits are NaN")
 
         probs = CategoricalMasked(logits=logits, masks=legal_actions_mask, mask_value=self.mask_value)
         if action is None:
             action = probs.sample()
-        return action, probs.log_prob(action), probs.entropy(), self.critic(x), probs.probs
+        return action, probs.log_prob(action), probs.entropy(), critic_value, probs.probs
 
 
 class PPOAtariAgent(nn.Module):

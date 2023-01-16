@@ -1,0 +1,1682 @@
+2022-04-19 19:10:19,149 - __main__ - INFO - Using C++ implementations
+2022-04-19 19:10:19,150 - __main__ - INFO - Using CFR solver
+2022-04-19 19:10:19,182 - __main__ - INFO - Starting iteration 0
+2022-04-19 19:10:19,566 - __main__ - INFO - Updated best policy on iteration 0
+2022-04-19 19:10:19,567 - __main__ - INFO - Iteration 0
+2022-04-19 19:10:19,567 - __main__ - INFO - walltime=0.098378
+2022-04-19 19:10:19,567 - __main__ - INFO - max_on_path_regret=106.644938
+2022-04-19 19:10:19,567 - __main__ - INFO - nash_conv=121.569731
+2022-04-19 19:10:22,122 - __main__ - INFO - Starting iteration 100
+2022-04-19 19:10:22,444 - __main__ - INFO - Updated best policy on iteration 100
+2022-04-19 19:10:22,444 - __main__ - INFO - Iteration 100
+2022-04-19 19:10:22,444 - __main__ - INFO - walltime=2.999417
+2022-04-19 19:10:22,444 - __main__ - INFO - max_on_path_regret=0.798938
+2022-04-19 19:10:22,444 - __main__ - INFO - nash_conv=0.881061
+2022-04-19 19:10:24,931 - __main__ - INFO - Starting iteration 200
+2022-04-19 19:10:25,255 - __main__ - INFO - Updated best policy on iteration 200
+2022-04-19 19:10:25,255 - __main__ - INFO - Iteration 200
+2022-04-19 19:10:25,255 - __main__ - INFO - walltime=5.808011
+2022-04-19 19:10:25,255 - __main__ - INFO - max_on_path_regret=0.400187
+2022-04-19 19:10:25,255 - __main__ - INFO - nash_conv=0.440869
+2022-04-19 19:10:27,769 - __main__ - INFO - Starting iteration 300
+2022-04-19 19:10:28,090 - __main__ - INFO - Updated best policy on iteration 300
+2022-04-19 19:10:28,091 - __main__ - INFO - Iteration 300
+2022-04-19 19:10:28,091 - __main__ - INFO - walltime=8.646056
+2022-04-19 19:10:28,091 - __main__ - INFO - max_on_path_regret=0.266950
+2022-04-19 19:10:28,091 - __main__ - INFO - nash_conv=0.293986
+2022-04-19 19:10:30,586 - __main__ - INFO - Starting iteration 400
+2022-04-19 19:10:30,908 - __main__ - INFO - Updated best policy on iteration 400
+2022-04-19 19:10:30,908 - __main__ - INFO - Iteration 400
+2022-04-19 19:10:30,908 - __main__ - INFO - walltime=11.463147
+2022-04-19 19:10:30,908 - __main__ - INFO - max_on_path_regret=0.200272
+2022-04-19 19:10:30,909 - __main__ - INFO - nash_conv=0.220517
+2022-04-19 19:10:33,417 - __main__ - INFO - Starting iteration 500
+2022-04-19 19:10:33,742 - __main__ - INFO - Updated best policy on iteration 500
+2022-04-19 19:10:33,742 - __main__ - INFO - Iteration 500
+2022-04-19 19:10:33,742 - __main__ - INFO - walltime=14.294820
+2022-04-19 19:10:33,742 - __main__ - INFO - max_on_path_regret=0.160246
+2022-04-19 19:10:33,742 - __main__ - INFO - nash_conv=0.176426
+2022-04-19 19:10:36,225 - __main__ - INFO - Starting iteration 600
+2022-04-19 19:10:36,553 - __main__ - INFO - Updated best policy on iteration 600
+2022-04-19 19:10:36,553 - __main__ - INFO - Iteration 600
+2022-04-19 19:10:36,554 - __main__ - INFO - walltime=17.102130
+2022-04-19 19:10:36,554 - __main__ - INFO - max_on_path_regret=0.133554
+2022-04-19 19:10:36,554 - __main__ - INFO - nash_conv=0.147029
+2022-04-19 19:10:39,048 - __main__ - INFO - Starting iteration 700
+2022-04-19 19:10:39,373 - __main__ - INFO - Updated best policy on iteration 700
+2022-04-19 19:10:39,373 - __main__ - INFO - Iteration 700
+2022-04-19 19:10:39,373 - __main__ - INFO - walltime=19.925247
+2022-04-19 19:10:39,373 - __main__ - INFO - max_on_path_regret=0.114485
+2022-04-19 19:10:39,373 - __main__ - INFO - nash_conv=0.126029
+2022-04-19 19:10:41,878 - __main__ - INFO - Starting iteration 800
+2022-04-19 19:10:42,210 - __main__ - INFO - Updated best policy on iteration 800
+2022-04-19 19:10:42,211 - __main__ - INFO - Iteration 800
+2022-04-19 19:10:42,211 - __main__ - INFO - walltime=22.755606
+2022-04-19 19:10:42,211 - __main__ - INFO - max_on_path_regret=0.100181
+2022-04-19 19:10:42,211 - __main__ - INFO - nash_conv=0.110278
+2022-04-19 19:10:44,700 - __main__ - INFO - Starting iteration 900
+2022-04-19 19:10:45,020 - __main__ - INFO - Updated best policy on iteration 900
+2022-04-19 19:10:45,020 - __main__ - INFO - Iteration 900
+2022-04-19 19:10:45,020 - __main__ - INFO - walltime=25.577708
+2022-04-19 19:10:45,020 - __main__ - INFO - max_on_path_regret=0.089054
+2022-04-19 19:10:45,020 - __main__ - INFO - nash_conv=0.098027
+2022-04-19 19:10:47,821 - __main__ - INFO - Updated best policy on iteration 999
+2022-04-19 19:10:47,821 - __main__ - INFO - Iteration 999
+2022-04-19 19:10:47,821 - __main__ - INFO - walltime=28.377002
+2022-04-19 19:10:47,821 - __main__ - INFO - max_on_path_regret=0.080232
+2022-04-19 19:10:47,821 - __main__ - INFO - nash_conv=0.088314
+2022-04-19 19:10:47,823 - __main__ - INFO - Persisting the model...
+2022-04-19 19:10:48,143 - __main__ - INFO - Saving strategy to ./neil/strategy.csv
+2022-04-19 19:10:48,154 - __main__ - INFO - Running processing script
+2022-04-19 19:11:59,123 - __main__ - INFO - Using C++ implementations
+2022-04-19 19:11:59,123 - __main__ - INFO - Using CFR solver
+2022-04-19 19:11:59,155 - __main__ - INFO - Starting iteration 0
+2022-04-19 19:11:59,538 - __main__ - INFO - Updated best policy on iteration 0
+2022-04-19 19:11:59,538 - __main__ - INFO - Iteration 0
+2022-04-19 19:11:59,539 - __main__ - INFO - walltime=0.098295
+2022-04-19 19:11:59,539 - __main__ - INFO - max_on_path_regret=106.644938
+2022-04-19 19:11:59,539 - __main__ - INFO - nash_conv=121.661655
+2022-04-19 19:12:01,672 - __main__ - INFO - Starting iteration 100
+2022-04-19 19:12:01,995 - __main__ - INFO - Updated best policy on iteration 100
+2022-04-19 19:12:01,995 - __main__ - INFO - Iteration 100
+2022-04-19 19:12:01,995 - __main__ - INFO - walltime=2.572575
+2022-04-19 19:12:01,995 - __main__ - INFO - max_on_path_regret=0.882938
+2022-04-19 19:12:01,995 - __main__ - INFO - nash_conv=0.898492
+2022-04-19 19:12:04,121 - __main__ - INFO - Starting iteration 200
+2022-04-19 19:12:04,438 - __main__ - INFO - Updated best policy on iteration 200
+2022-04-19 19:12:04,439 - __main__ - INFO - Iteration 200
+2022-04-19 19:12:04,439 - __main__ - INFO - walltime=5.021514
+2022-04-19 19:12:04,439 - __main__ - INFO - max_on_path_regret=0.442333
+2022-04-19 19:12:04,439 - __main__ - INFO - nash_conv=0.448749
+2022-04-19 19:12:06,576 - __main__ - INFO - Starting iteration 300
+2022-04-19 19:12:06,892 - __main__ - INFO - Updated best policy on iteration 300
+2022-04-19 19:12:06,892 - __main__ - INFO - Iteration 300
+2022-04-19 19:12:06,892 - __main__ - INFO - walltime=7.475998
+2022-04-19 19:12:06,892 - __main__ - INFO - max_on_path_regret=0.295080
+2022-04-19 19:12:06,892 - __main__ - INFO - nash_conv=0.299050
+2022-04-19 19:12:09,019 - __main__ - INFO - Starting iteration 400
+2022-04-19 19:12:09,335 - __main__ - INFO - Updated best policy on iteration 400
+2022-04-19 19:12:09,336 - __main__ - INFO - Iteration 400
+2022-04-19 19:12:09,336 - __main__ - INFO - walltime=9.919251
+2022-04-19 19:12:09,336 - __main__ - INFO - max_on_path_regret=0.221382
+2022-04-19 19:12:09,336 - __main__ - INFO - nash_conv=0.224244
+2022-04-19 19:12:11,461 - __main__ - INFO - Starting iteration 500
+2022-04-19 19:12:11,792 - __main__ - INFO - Updated best policy on iteration 500
+2022-04-19 19:12:11,793 - __main__ - INFO - Iteration 500
+2022-04-19 19:12:11,793 - __main__ - INFO - walltime=12.364228
+2022-04-19 19:12:11,793 - __main__ - INFO - max_on_path_regret=0.177140
+2022-04-19 19:12:11,793 - __main__ - INFO - nash_conv=0.179374
+2022-04-19 19:12:13,917 - __main__ - INFO - Starting iteration 600
+2022-04-19 19:12:14,235 - __main__ - INFO - Updated best policy on iteration 600
+2022-04-19 19:12:14,236 - __main__ - INFO - Iteration 600
+2022-04-19 19:12:14,236 - __main__ - INFO - walltime=14.817735
+2022-04-19 19:12:14,236 - __main__ - INFO - max_on_path_regret=0.147636
+2022-04-19 19:12:14,236 - __main__ - INFO - nash_conv=0.149466
+2022-04-19 19:12:16,359 - __main__ - INFO - Starting iteration 700
+2022-04-19 19:12:16,698 - __main__ - INFO - Updated best policy on iteration 700
+2022-04-19 19:12:16,698 - __main__ - INFO - Iteration 700
+2022-04-19 19:12:16,698 - __main__ - INFO - walltime=17.258892
+2022-04-19 19:12:16,698 - __main__ - INFO - max_on_path_regret=0.126556
+2022-04-19 19:12:16,698 - __main__ - INFO - nash_conv=0.128107
+2022-04-19 19:12:18,821 - __main__ - INFO - Starting iteration 800
+2022-04-19 19:12:19,141 - __main__ - INFO - Updated best policy on iteration 800
+2022-04-19 19:12:19,141 - __main__ - INFO - Iteration 800
+2022-04-19 19:12:19,141 - __main__ - INFO - walltime=19.721646
+2022-04-19 19:12:19,141 - __main__ - INFO - max_on_path_regret=0.110745
+2022-04-19 19:12:19,141 - __main__ - INFO - nash_conv=0.112089
+2022-04-19 19:12:21,263 - __main__ - INFO - Starting iteration 900
+2022-04-19 19:12:21,601 - __main__ - INFO - Updated best policy on iteration 900
+2022-04-19 19:12:21,601 - __main__ - INFO - Iteration 900
+2022-04-19 19:12:21,602 - __main__ - INFO - walltime=22.162956
+2022-04-19 19:12:21,602 - __main__ - INFO - max_on_path_regret=0.098445
+2022-04-19 19:12:21,602 - __main__ - INFO - nash_conv=0.099631
+2022-04-19 19:12:24,028 - __main__ - INFO - Updated best policy on iteration 999
+2022-04-19 19:12:24,029 - __main__ - INFO - Iteration 999
+2022-04-19 19:12:24,029 - __main__ - INFO - walltime=24.613542
+2022-04-19 19:12:24,029 - __main__ - INFO - max_on_path_regret=0.088693
+2022-04-19 19:12:24,029 - __main__ - INFO - nash_conv=0.089755
+2022-04-19 19:12:24,031 - __main__ - INFO - Persisting the model...
+2022-04-19 19:12:24,349 - __main__ - INFO - Saving strategy to ./neil/strategy.csv
+2022-04-19 19:12:24,360 - __main__ - INFO - Running processing script
+2022-04-21 19:12:17,916 - __main__ - INFO - Using C++ implementations
+2022-04-21 19:12:17,916 - __main__ - INFO - Using CFR solver
+2022-04-25 22:40:50,086 - __main__ - INFO - Using C++ implementations
+2022-04-25 22:40:50,086 - __main__ - INFO - Using CFR solver
+2022-04-25 22:40:50,118 - __main__ - INFO - Starting iteration 0
+2022-04-25 22:40:50,490 - __main__ - INFO - Updated best policy on iteration 0
+2022-04-25 22:40:50,491 - __main__ - INFO - Iteration 0
+2022-04-25 22:40:50,491 - __main__ - INFO - walltime=0.096408
+2022-04-25 22:40:50,491 - __main__ - INFO - max_on_path_regret=67.711629
+2022-04-25 22:40:50,491 - __main__ - INFO - nash_conv=82.738560
+2022-04-25 22:40:50,823 - __main__ - INFO - Updated best policy on iteration 1
+2022-04-25 22:40:50,823 - __main__ - INFO - Iteration 1
+2022-04-25 22:40:50,823 - __main__ - INFO - walltime=0.437513
+2022-04-25 22:40:50,823 - __main__ - INFO - max_on_path_regret=32.495117
+2022-04-25 22:40:50,823 - __main__ - INFO - nash_conv=42.540850
+2022-04-25 22:40:51,141 - __main__ - INFO - Updated best policy on iteration 2
+2022-04-25 22:40:51,141 - __main__ - INFO - Iteration 2
+2022-04-25 22:40:51,141 - __main__ - INFO - walltime=0.762049
+2022-04-25 22:40:51,141 - __main__ - INFO - max_on_path_regret=21.795634
+2022-04-25 22:40:51,141 - __main__ - INFO - nash_conv=28.692089
+2022-04-25 22:40:51,447 - __main__ - INFO - Updated best policy on iteration 3
+2022-04-25 22:40:51,447 - __main__ - INFO - Iteration 3
+2022-04-25 22:40:51,447 - __main__ - INFO - walltime=1.079756
+2022-04-25 22:40:51,447 - __main__ - INFO - max_on_path_regret=16.307010
+2022-04-25 22:40:51,447 - __main__ - INFO - nash_conv=21.572849
+2022-04-25 22:40:51,756 - __main__ - INFO - Updated best policy on iteration 4
+2022-04-25 22:40:51,757 - __main__ - INFO - Iteration 4
+2022-04-25 22:40:51,757 - __main__ - INFO - walltime=1.385054
+2022-04-25 22:40:51,757 - __main__ - INFO - max_on_path_regret=12.903888
+2022-04-25 22:40:51,757 - __main__ - INFO - nash_conv=17.158200
+2022-04-25 22:40:52,061 - __main__ - INFO - Updated best policy on iteration 5
+2022-04-25 22:40:52,062 - __main__ - INFO - Iteration 5
+2022-04-25 22:40:52,062 - __main__ - INFO - walltime=1.693486
+2022-04-25 22:40:52,062 - __main__ - INFO - max_on_path_regret=10.591880
+2022-04-25 22:40:52,062 - __main__ - INFO - nash_conv=14.151095
+2022-04-25 22:40:52,367 - __main__ - INFO - Updated best policy on iteration 6
+2022-04-25 22:40:52,368 - __main__ - INFO - Iteration 6
+2022-04-25 22:40:52,368 - __main__ - INFO - walltime=1.998127
+2022-04-25 22:40:52,368 - __main__ - INFO - max_on_path_regret=8.902865
+2022-04-25 22:40:52,368 - __main__ - INFO - nash_conv=11.950798
+2022-04-25 22:40:52,675 - __main__ - INFO - Updated best policy on iteration 7
+2022-04-25 22:40:52,675 - __main__ - INFO - Iteration 7
+2022-04-25 22:40:52,675 - __main__ - INFO - walltime=2.304356
+2022-04-25 22:40:52,675 - __main__ - INFO - max_on_path_regret=7.681551
+2022-04-25 22:40:52,675 - __main__ - INFO - nash_conv=10.334929
+2022-04-25 22:40:52,981 - __main__ - INFO - Updated best policy on iteration 8
+2022-04-25 22:40:52,982 - __main__ - INFO - Iteration 8
+2022-04-25 22:40:52,982 - __main__ - INFO - walltime=2.611598
+2022-04-25 22:40:52,982 - __main__ - INFO - max_on_path_regret=6.718048
+2022-04-25 22:40:52,982 - __main__ - INFO - nash_conv=9.056060
+2022-04-25 22:40:53,287 - __main__ - INFO - Updated best policy on iteration 9
+2022-04-25 22:40:53,287 - __main__ - INFO - Iteration 9
+2022-04-25 22:40:53,287 - __main__ - INFO - walltime=2.918187
+2022-04-25 22:40:53,287 - __main__ - INFO - max_on_path_regret=5.937576
+2022-04-25 22:40:53,287 - __main__ - INFO - nash_conv=8.016042
+2022-04-25 22:40:53,594 - __main__ - INFO - Updated best policy on iteration 10
+2022-04-25 22:40:53,594 - __main__ - INFO - Iteration 10
+2022-04-25 22:40:53,594 - __main__ - INFO - walltime=3.224105
+2022-04-25 22:40:53,594 - __main__ - INFO - max_on_path_regret=5.294597
+2022-04-25 22:40:53,594 - __main__ - INFO - nash_conv=7.154177
+2022-04-25 22:40:53,900 - __main__ - INFO - Updated best policy on iteration 11
+2022-04-25 22:40:53,901 - __main__ - INFO - Iteration 11
+2022-04-25 22:40:53,901 - __main__ - INFO - walltime=3.530447
+2022-04-25 22:40:53,901 - __main__ - INFO - max_on_path_regret=4.842030
+2022-04-25 22:40:53,901 - __main__ - INFO - nash_conv=6.512923
+2022-04-25 22:40:54,206 - __main__ - INFO - Updated best policy on iteration 12
+2022-04-25 22:40:54,206 - __main__ - INFO - Iteration 12
+2022-04-25 22:40:54,206 - __main__ - INFO - walltime=3.837268
+2022-04-25 22:40:54,206 - __main__ - INFO - max_on_path_regret=4.455145
+2022-04-25 22:40:54,206 - __main__ - INFO - nash_conv=5.962862
+2022-04-25 22:40:54,512 - __main__ - INFO - Updated best policy on iteration 13
+2022-04-25 22:40:54,513 - __main__ - INFO - Iteration 13
+2022-04-25 22:40:54,513 - __main__ - INFO - walltime=4.142809
+2022-04-25 22:40:54,513 - __main__ - INFO - max_on_path_regret=4.118668
+2022-04-25 22:40:54,513 - __main__ - INFO - nash_conv=5.483298
+2022-04-25 22:40:54,806 - __main__ - INFO - Updated best policy on iteration 14
+2022-04-25 22:40:54,807 - __main__ - INFO - Iteration 14
+2022-04-25 22:40:54,807 - __main__ - INFO - walltime=4.436772
+2022-04-25 22:40:54,807 - __main__ - INFO - max_on_path_regret=3.822898
+2022-04-25 22:40:54,807 - __main__ - INFO - nash_conv=5.059956
+2022-04-25 22:40:55,098 - __main__ - INFO - Updated best policy on iteration 15
+2022-04-25 22:40:55,099 - __main__ - INFO - Iteration 15
+2022-04-25 22:40:55,099 - __main__ - INFO - walltime=4.730531
+2022-04-25 22:40:55,099 - __main__ - INFO - max_on_path_regret=3.562713
+2022-04-25 22:40:55,099 - __main__ - INFO - nash_conv=4.682805
+2022-04-25 22:40:55,391 - __main__ - INFO - Updated best policy on iteration 16
+2022-04-25 22:40:55,391 - __main__ - INFO - Iteration 16
+2022-04-25 22:40:55,391 - __main__ - INFO - walltime=5.022851
+2022-04-25 22:40:55,391 - __main__ - INFO - max_on_path_regret=3.331987
+2022-04-25 22:40:55,391 - __main__ - INFO - nash_conv=4.344769
+2022-04-25 22:40:55,682 - __main__ - INFO - Updated best policy on iteration 17
+2022-04-25 22:40:55,683 - __main__ - INFO - Iteration 17
+2022-04-25 22:40:55,683 - __main__ - INFO - walltime=5.315238
+2022-04-25 22:40:55,683 - __main__ - INFO - max_on_path_regret=3.125920
+2022-04-25 22:40:55,683 - __main__ - INFO - nash_conv=4.040119
+2022-04-25 22:40:55,976 - __main__ - INFO - Updated best policy on iteration 18
+2022-04-25 22:40:55,977 - __main__ - INFO - Iteration 18
+2022-04-25 22:40:55,977 - __main__ - INFO - walltime=5.606469
+2022-04-25 22:40:55,977 - __main__ - INFO - max_on_path_regret=2.940704
+2022-04-25 22:40:55,977 - __main__ - INFO - nash_conv=3.787459
+2022-04-25 22:40:56,269 - __main__ - INFO - Updated best policy on iteration 19
+2022-04-25 22:40:56,269 - __main__ - INFO - Iteration 19
+2022-04-25 22:40:56,269 - __main__ - INFO - walltime=5.900789
+2022-04-25 22:40:56,270 - __main__ - INFO - max_on_path_regret=2.809989
+2022-04-25 22:40:56,270 - __main__ - INFO - nash_conv=3.632337
+2022-04-25 22:40:56,561 - __main__ - INFO - Updated best policy on iteration 20
+2022-04-25 22:40:56,561 - __main__ - INFO - Iteration 20
+2022-04-25 22:40:56,561 - __main__ - INFO - walltime=6.193473
+2022-04-25 22:40:56,561 - __main__ - INFO - max_on_path_regret=2.703724
+2022-04-25 22:40:56,561 - __main__ - INFO - nash_conv=3.502207
+2022-04-25 22:40:56,850 - __main__ - INFO - Updated best policy on iteration 21
+2022-04-25 22:40:56,851 - __main__ - INFO - Iteration 21
+2022-04-25 22:40:56,851 - __main__ - INFO - walltime=6.485138
+2022-04-25 22:40:56,851 - __main__ - INFO - max_on_path_regret=2.606536
+2022-04-25 22:40:56,851 - __main__ - INFO - nash_conv=3.381853
+2022-04-25 22:40:57,143 - __main__ - INFO - Updated best policy on iteration 22
+2022-04-25 22:40:57,144 - __main__ - INFO - Iteration 22
+2022-04-25 22:40:57,144 - __main__ - INFO - walltime=6.774732
+2022-04-25 22:40:57,144 - __main__ - INFO - max_on_path_regret=2.517270
+2022-04-25 22:40:57,144 - __main__ - INFO - nash_conv=3.270211
+2022-04-25 22:40:57,437 - __main__ - INFO - Updated best policy on iteration 23
+2022-04-25 22:40:57,437 - __main__ - INFO - Iteration 23
+2022-04-25 22:40:57,437 - __main__ - INFO - walltime=7.067687
+2022-04-25 22:40:57,437 - __main__ - INFO - max_on_path_regret=2.434959
+2022-04-25 22:40:57,437 - __main__ - INFO - nash_conv=3.166362
+2022-04-25 22:40:57,730 - __main__ - INFO - Updated best policy on iteration 24
+2022-04-25 22:40:57,730 - __main__ - INFO - Iteration 24
+2022-04-25 22:40:57,730 - __main__ - INFO - walltime=7.361004
+2022-04-25 22:40:57,730 - __main__ - INFO - max_on_path_regret=2.358786
+2022-04-25 22:40:57,730 - __main__ - INFO - nash_conv=3.069506
+2022-04-25 22:40:58,024 - __main__ - INFO - Updated best policy on iteration 25
+2022-04-25 22:40:58,024 - __main__ - INFO - Iteration 25
+2022-04-25 22:40:58,024 - __main__ - INFO - walltime=7.654237
+2022-04-25 22:40:58,024 - __main__ - INFO - max_on_path_regret=2.288059
+2022-04-25 22:40:58,024 - __main__ - INFO - nash_conv=2.978947
+2022-04-25 22:40:58,317 - __main__ - INFO - Updated best policy on iteration 26
+2022-04-25 22:40:58,317 - __main__ - INFO - Iteration 26
+2022-04-25 22:40:58,317 - __main__ - INFO - walltime=7.948490
+2022-04-25 22:40:58,317 - __main__ - INFO - max_on_path_regret=2.222183
+2022-04-25 22:40:58,317 - __main__ - INFO - nash_conv=2.894076
+2022-04-25 22:40:58,610 - __main__ - INFO - Updated best policy on iteration 27
+2022-04-25 22:40:58,610 - __main__ - INFO - Iteration 27
+2022-04-25 22:40:58,610 - __main__ - INFO - walltime=8.241151
+2022-04-25 22:40:58,610 - __main__ - INFO - max_on_path_regret=2.160649
+2022-04-25 22:40:58,610 - __main__ - INFO - nash_conv=2.814356
+2022-04-25 22:40:58,903 - __main__ - INFO - Updated best policy on iteration 28
+2022-04-25 22:40:58,903 - __main__ - INFO - Iteration 28
+2022-04-25 22:40:58,903 - __main__ - INFO - walltime=8.534049
+2022-04-25 22:40:58,903 - __main__ - INFO - max_on_path_regret=2.103014
+2022-04-25 22:40:58,903 - __main__ - INFO - nash_conv=2.739316
+2022-04-25 22:40:59,197 - __main__ - INFO - Updated best policy on iteration 29
+2022-04-25 22:40:59,197 - __main__ - INFO - Iteration 29
+2022-04-25 22:40:59,197 - __main__ - INFO - walltime=8.827196
+2022-04-25 22:40:59,197 - __main__ - INFO - max_on_path_regret=2.048895
+2022-04-25 22:40:59,197 - __main__ - INFO - nash_conv=2.668538
+2022-04-25 22:40:59,487 - __main__ - INFO - Updated best policy on iteration 30
+2022-04-25 22:40:59,488 - __main__ - INFO - Iteration 30
+2022-04-25 22:40:59,488 - __main__ - INFO - walltime=9.120929
+2022-04-25 22:40:59,488 - __main__ - INFO - max_on_path_regret=1.997954
+2022-04-25 22:40:59,488 - __main__ - INFO - nash_conv=2.601653
+2022-04-25 22:40:59,781 - __main__ - INFO - Updated best policy on iteration 31
+2022-04-25 22:40:59,781 - __main__ - INFO - Iteration 31
+2022-04-25 22:40:59,781 - __main__ - INFO - walltime=9.411735
+2022-04-25 22:40:59,781 - __main__ - INFO - max_on_path_regret=1.949898
+2022-04-25 22:40:59,781 - __main__ - INFO - nash_conv=2.538330
+2022-04-25 22:41:00,076 - __main__ - INFO - Updated best policy on iteration 32
+2022-04-25 22:41:00,076 - __main__ - INFO - Iteration 32
+2022-04-25 22:41:00,076 - __main__ - INFO - walltime=9.705361
+2022-04-25 22:41:00,076 - __main__ - INFO - max_on_path_regret=1.904467
+2022-04-25 22:41:00,076 - __main__ - INFO - nash_conv=2.478275
+2022-04-25 22:41:00,369 - __main__ - INFO - Updated best policy on iteration 33
+2022-04-25 22:41:00,369 - __main__ - INFO - Iteration 33
+2022-04-25 22:41:00,369 - __main__ - INFO - walltime=10.000226
+2022-04-25 22:41:00,369 - __main__ - INFO - max_on_path_regret=1.861430
+2022-04-25 22:41:00,369 - __main__ - INFO - nash_conv=2.421225
+2022-04-25 22:41:00,661 - __main__ - INFO - Updated best policy on iteration 34
+2022-04-25 22:41:00,662 - __main__ - INFO - Iteration 34
+2022-04-25 22:41:00,662 - __main__ - INFO - walltime=10.293012
+2022-04-25 22:41:00,662 - __main__ - INFO - max_on_path_regret=1.820583
+2022-04-25 22:41:00,662 - __main__ - INFO - nash_conv=2.366943
+2022-04-25 22:41:00,956 - __main__ - INFO - Updated best policy on iteration 35
+2022-04-25 22:41:00,956 - __main__ - INFO - Iteration 35
+2022-04-25 22:41:00,956 - __main__ - INFO - walltime=10.585914
+2022-04-25 22:41:00,956 - __main__ - INFO - max_on_path_regret=1.781745
+2022-04-25 22:41:00,956 - __main__ - INFO - nash_conv=2.315215
+2022-04-25 22:41:01,250 - __main__ - INFO - Updated best policy on iteration 36
+2022-04-25 22:41:01,251 - __main__ - INFO - Iteration 36
+2022-04-25 22:41:01,251 - __main__ - INFO - walltime=10.880531
+2022-04-25 22:41:01,251 - __main__ - INFO - max_on_path_regret=1.744751
+2022-04-25 22:41:01,251 - __main__ - INFO - nash_conv=2.265850
+2022-04-25 22:41:01,548 - __main__ - INFO - Updated best policy on iteration 37
+2022-04-25 22:41:01,549 - __main__ - INFO - Iteration 37
+2022-04-25 22:41:01,549 - __main__ - INFO - walltime=11.174959
+2022-04-25 22:41:01,549 - __main__ - INFO - max_on_path_regret=1.709455
+2022-04-25 22:41:01,549 - __main__ - INFO - nash_conv=2.218671
+2022-04-25 22:41:01,842 - __main__ - INFO - Updated best policy on iteration 38
+2022-04-25 22:41:01,842 - __main__ - INFO - Iteration 38
+2022-04-25 22:41:01,842 - __main__ - INFO - walltime=11.472916
+2022-04-25 22:41:01,842 - __main__ - INFO - max_on_path_regret=1.675725
+2022-04-25 22:41:01,842 - __main__ - INFO - nash_conv=2.173522
+2022-04-25 22:41:02,136 - __main__ - INFO - Updated best policy on iteration 39
+2022-04-25 22:41:02,136 - __main__ - INFO - Iteration 39
+2022-04-25 22:41:02,137 - __main__ - INFO - walltime=11.766319
+2022-04-25 22:41:02,137 - __main__ - INFO - max_on_path_regret=1.643443
+2022-04-25 22:41:02,137 - __main__ - INFO - nash_conv=2.130258
+2022-04-25 22:41:02,429 - __main__ - INFO - Updated best policy on iteration 40
+2022-04-25 22:41:02,430 - __main__ - INFO - Iteration 40
+2022-04-25 22:41:02,430 - __main__ - INFO - walltime=12.060655
+2022-04-25 22:41:02,430 - __main__ - INFO - max_on_path_regret=1.612500
+2022-04-25 22:41:02,430 - __main__ - INFO - nash_conv=2.088747
+2022-04-25 22:41:02,723 - __main__ - INFO - Updated best policy on iteration 41
+2022-04-25 22:41:02,724 - __main__ - INFO - Iteration 41
+2022-04-25 22:41:02,724 - __main__ - INFO - walltime=12.353939
+2022-04-25 22:41:02,724 - __main__ - INFO - max_on_path_regret=1.582798
+2022-04-25 22:41:02,724 - __main__ - INFO - nash_conv=2.048869
+2022-04-25 22:41:03,017 - __main__ - INFO - Updated best policy on iteration 42
+2022-04-25 22:41:03,017 - __main__ - INFO - Iteration 42
+2022-04-25 22:41:03,018 - __main__ - INFO - walltime=12.647988
+2022-04-25 22:41:03,018 - __main__ - INFO - max_on_path_regret=1.554249
+2022-04-25 22:41:03,018 - __main__ - INFO - nash_conv=2.010515
+2022-04-25 22:41:03,309 - __main__ - INFO - Updated best policy on iteration 43
+2022-04-25 22:41:03,310 - __main__ - INFO - Iteration 43
+2022-04-25 22:41:03,310 - __main__ - INFO - walltime=12.941710
+2022-04-25 22:41:03,310 - __main__ - INFO - max_on_path_regret=1.526769
+2022-04-25 22:41:03,310 - __main__ - INFO - nash_conv=1.973582
+2022-04-25 22:41:03,604 - __main__ - INFO - Updated best policy on iteration 44
+2022-04-25 22:41:03,604 - __main__ - INFO - Iteration 44
+2022-04-25 22:41:03,605 - __main__ - INFO - walltime=13.233867
+2022-04-25 22:41:03,606 - __main__ - INFO - max_on_path_regret=1.500285
+2022-04-25 22:41:03,606 - __main__ - INFO - nash_conv=1.937978
+2022-04-25 22:41:03,899 - __main__ - INFO - Updated best policy on iteration 45
+2022-04-25 22:41:03,900 - __main__ - INFO - Iteration 45
+2022-04-25 22:41:03,900 - __main__ - INFO - walltime=13.530029
+2022-04-25 22:41:03,900 - __main__ - INFO - max_on_path_regret=1.474727
+2022-04-25 22:41:03,900 - __main__ - INFO - nash_conv=1.903617
+2022-04-25 22:41:04,194 - __main__ - INFO - Updated best policy on iteration 46
+2022-04-25 22:41:04,195 - __main__ - INFO - Iteration 46
+2022-04-25 22:41:04,195 - __main__ - INFO - walltime=13.823981
+2022-04-25 22:41:04,195 - __main__ - INFO - max_on_path_regret=1.450033
+2022-04-25 22:41:04,195 - __main__ - INFO - nash_conv=1.870418
+2022-04-25 22:41:04,488 - __main__ - INFO - Updated best policy on iteration 47
+2022-04-25 22:41:04,488 - __main__ - INFO - Iteration 47
+2022-04-25 22:41:04,488 - __main__ - INFO - walltime=14.118829
+2022-04-25 22:41:04,488 - __main__ - INFO - max_on_path_regret=1.426143
+2022-04-25 22:41:04,488 - __main__ - INFO - nash_conv=1.838308
+2022-04-25 22:41:04,782 - __main__ - INFO - Updated best policy on iteration 48
+2022-04-25 22:41:04,782 - __main__ - INFO - Iteration 48
+2022-04-25 22:41:04,782 - __main__ - INFO - walltime=14.412223
+2022-04-25 22:41:04,783 - __main__ - INFO - max_on_path_regret=1.403005
+2022-04-25 22:41:04,783 - __main__ - INFO - nash_conv=1.807219
+2022-04-25 22:41:05,076 - __main__ - INFO - Updated best policy on iteration 49
+2022-04-25 22:41:05,076 - __main__ - INFO - Iteration 49
+2022-04-25 22:41:05,076 - __main__ - INFO - walltime=14.706711
+2022-04-25 22:41:05,076 - __main__ - INFO - max_on_path_regret=1.380566
+2022-04-25 22:41:05,076 - __main__ - INFO - nash_conv=1.777085
+2022-04-25 22:41:05,368 - __main__ - INFO - Updated best policy on iteration 50
+2022-04-25 22:41:05,369 - __main__ - INFO - Iteration 50
+2022-04-25 22:41:05,369 - __main__ - INFO - walltime=15.000932
+2022-04-25 22:41:05,369 - __main__ - INFO - max_on_path_regret=1.358781
+2022-04-25 22:41:05,369 - __main__ - INFO - nash_conv=1.747848
+2022-04-25 22:41:05,664 - __main__ - INFO - Updated best policy on iteration 51
+2022-04-25 22:41:05,664 - __main__ - INFO - Iteration 51
+2022-04-25 22:41:05,664 - __main__ - INFO - walltime=15.292999
+2022-04-25 22:41:05,664 - __main__ - INFO - max_on_path_regret=1.337605
+2022-04-25 22:41:05,664 - __main__ - INFO - nash_conv=1.719452
+2022-04-25 22:41:05,958 - __main__ - INFO - Updated best policy on iteration 52
+2022-04-25 22:41:05,958 - __main__ - INFO - Iteration 52
+2022-04-25 22:41:05,959 - __main__ - INFO - walltime=15.588242
+2022-04-25 22:41:05,959 - __main__ - INFO - max_on_path_regret=1.316997
+2022-04-25 22:41:05,959 - __main__ - INFO - nash_conv=1.691843
+2022-04-25 22:41:06,254 - __main__ - INFO - Updated best policy on iteration 53
+2022-04-25 22:41:06,254 - __main__ - INFO - Iteration 53
+2022-04-25 22:41:06,254 - __main__ - INFO - walltime=15.882809
+2022-04-25 22:41:06,255 - __main__ - INFO - max_on_path_regret=1.296919
+2022-04-25 22:41:06,255 - __main__ - INFO - nash_conv=1.664972
+2022-04-25 22:41:06,549 - __main__ - INFO - Updated best policy on iteration 54
+2022-04-25 22:41:06,549 - __main__ - INFO - Iteration 54
+2022-04-25 22:41:06,549 - __main__ - INFO - walltime=16.178714
+2022-04-25 22:41:06,549 - __main__ - INFO - max_on_path_regret=1.277333
+2022-04-25 22:41:06,549 - __main__ - INFO - nash_conv=1.638791
+2022-04-25 22:41:06,848 - __main__ - INFO - Updated best policy on iteration 55
+2022-04-25 22:41:06,849 - __main__ - INFO - Iteration 55
+2022-04-25 22:41:06,849 - __main__ - INFO - walltime=16.473292
+2022-04-25 22:41:06,849 - __main__ - INFO - max_on_path_regret=1.258205
+2022-04-25 22:41:06,849 - __main__ - INFO - nash_conv=1.613257
+2022-04-25 22:41:07,143 - __main__ - INFO - Updated best policy on iteration 56
+2022-04-25 22:41:07,143 - __main__ - INFO - Iteration 56
+2022-04-25 22:41:07,144 - __main__ - INFO - walltime=16.772970
+2022-04-25 22:41:07,144 - __main__ - INFO - max_on_path_regret=1.239501
+2022-04-25 22:41:07,144 - __main__ - INFO - nash_conv=1.588325
+2022-04-25 22:41:07,436 - __main__ - INFO - Updated best policy on iteration 57
+2022-04-25 22:41:07,437 - __main__ - INFO - Iteration 57
+2022-04-25 22:41:07,437 - __main__ - INFO - walltime=17.068021
+2022-04-25 22:41:07,437 - __main__ - INFO - max_on_path_regret=1.221189
+2022-04-25 22:41:07,437 - __main__ - INFO - nash_conv=1.563956
+2022-04-25 22:41:07,732 - __main__ - INFO - Updated best policy on iteration 58
+2022-04-25 22:41:07,733 - __main__ - INFO - Iteration 58
+2022-04-25 22:41:07,733 - __main__ - INFO - walltime=17.361067
+2022-04-25 22:41:07,733 - __main__ - INFO - max_on_path_regret=1.203238
+2022-04-25 22:41:07,733 - __main__ - INFO - nash_conv=1.540109
+2022-04-25 22:41:08,027 - __main__ - INFO - Updated best policy on iteration 59
+2022-04-25 22:41:08,027 - __main__ - INFO - Iteration 59
+2022-04-25 22:41:08,028 - __main__ - INFO - walltime=17.657174
+2022-04-25 22:41:08,028 - __main__ - INFO - max_on_path_regret=1.185618
+2022-04-25 22:41:08,028 - __main__ - INFO - nash_conv=1.516746
+2022-04-25 22:41:08,322 - __main__ - INFO - Updated best policy on iteration 60
+2022-04-25 22:41:08,323 - __main__ - INFO - Iteration 60
+2022-04-25 22:41:08,323 - __main__ - INFO - walltime=17.950166
+2022-04-25 22:41:08,323 - __main__ - INFO - max_on_path_regret=1.168300
+2022-04-25 22:41:08,323 - __main__ - INFO - nash_conv=1.493830
+2022-04-25 22:41:08,615 - __main__ - INFO - Updated best policy on iteration 61
+2022-04-25 22:41:08,616 - __main__ - INFO - Iteration 61
+2022-04-25 22:41:08,616 - __main__ - INFO - walltime=18.243636
+2022-04-25 22:41:08,616 - __main__ - INFO - max_on_path_regret=1.151303
+2022-04-25 22:41:08,616 - __main__ - INFO - nash_conv=1.471384
+2022-04-25 22:41:08,908 - __main__ - INFO - Updated best policy on iteration 62
+2022-04-25 22:41:08,908 - __main__ - INFO - Iteration 62
+2022-04-25 22:41:08,908 - __main__ - INFO - walltime=18.536531
+2022-04-25 22:41:08,908 - __main__ - INFO - max_on_path_regret=1.134789
+2022-04-25 22:41:08,908 - __main__ - INFO - nash_conv=1.449598
+2022-04-25 22:41:09,199 - __main__ - INFO - Updated best policy on iteration 63
+2022-04-25 22:41:09,199 - __main__ - INFO - Iteration 63
+2022-04-25 22:41:09,199 - __main__ - INFO - walltime=18.828879
+2022-04-25 22:41:09,199 - __main__ - INFO - max_on_path_regret=1.118736
+2022-04-25 22:41:09,199 - __main__ - INFO - nash_conv=1.428446
+2022-04-25 22:41:09,491 - __main__ - INFO - Updated best policy on iteration 64
+2022-04-25 22:41:09,491 - __main__ - INFO - Iteration 64
+2022-04-25 22:41:09,491 - __main__ - INFO - walltime=19.120002
+2022-04-25 22:41:09,492 - __main__ - INFO - max_on_path_regret=1.103126
+2022-04-25 22:41:09,492 - __main__ - INFO - nash_conv=1.407898
+2022-04-25 22:41:09,783 - __main__ - INFO - Updated best policy on iteration 65
+2022-04-25 22:41:09,783 - __main__ - INFO - Iteration 65
+2022-04-25 22:41:09,783 - __main__ - INFO - walltime=19.412480
+2022-04-25 22:41:09,783 - __main__ - INFO - max_on_path_regret=1.087942
+2022-04-25 22:41:09,783 - __main__ - INFO - nash_conv=1.387931
+2022-04-25 22:41:10,074 - __main__ - INFO - Updated best policy on iteration 66
+2022-04-25 22:41:10,074 - __main__ - INFO - Iteration 66
+2022-04-25 22:41:10,074 - __main__ - INFO - walltime=19.703892
+2022-04-25 22:41:10,074 - __main__ - INFO - max_on_path_regret=1.073166
+2022-04-25 22:41:10,074 - __main__ - INFO - nash_conv=1.368520
+2022-04-25 22:41:10,367 - __main__ - INFO - Updated best policy on iteration 67
+2022-04-25 22:41:10,367 - __main__ - INFO - Iteration 67
+2022-04-25 22:41:10,368 - __main__ - INFO - walltime=19.995068
+2022-04-25 22:41:10,368 - __main__ - INFO - max_on_path_regret=1.058782
+2022-04-25 22:41:10,368 - __main__ - INFO - nash_conv=1.349642
+2022-04-25 22:41:10,662 - __main__ - INFO - Updated best policy on iteration 68
+2022-04-25 22:41:10,662 - __main__ - INFO - Iteration 68
+2022-04-25 22:41:10,662 - __main__ - INFO - walltime=20.288432
+2022-04-25 22:41:10,662 - __main__ - INFO - max_on_path_regret=1.044775
+2022-04-25 22:41:10,662 - __main__ - INFO - nash_conv=1.331275
+2022-04-25 22:41:10,953 - __main__ - INFO - Updated best policy on iteration 69
+2022-04-25 22:41:10,953 - __main__ - INFO - Iteration 69
+2022-04-25 22:41:10,953 - __main__ - INFO - walltime=20.582659
+2022-04-25 22:41:10,953 - __main__ - INFO - max_on_path_regret=1.031130
+2022-04-25 22:41:10,953 - __main__ - INFO - nash_conv=1.313400
+2022-04-25 22:41:11,242 - __main__ - INFO - Updated best policy on iteration 70
+2022-04-25 22:41:11,243 - __main__ - INFO - Iteration 70
+2022-04-25 22:41:11,243 - __main__ - INFO - walltime=20.874128
+2022-04-25 22:41:11,243 - __main__ - INFO - max_on_path_regret=1.017835
+2022-04-25 22:41:11,243 - __main__ - INFO - nash_conv=1.295996
+2022-04-25 22:41:11,537 - __main__ - INFO - Updated best policy on iteration 71
+2022-04-25 22:41:11,537 - __main__ - INFO - Iteration 71
+2022-04-25 22:41:11,537 - __main__ - INFO - walltime=21.163664
+2022-04-25 22:41:11,537 - __main__ - INFO - max_on_path_regret=1.004875
+2022-04-25 22:41:11,537 - __main__ - INFO - nash_conv=1.279046
+2022-04-25 22:41:11,830 - __main__ - INFO - Updated best policy on iteration 72
+2022-04-25 22:41:11,830 - __main__ - INFO - Iteration 72
+2022-04-25 22:41:11,830 - __main__ - INFO - walltime=21.457978
+2022-04-25 22:41:11,830 - __main__ - INFO - max_on_path_regret=0.992238
+2022-04-25 22:41:11,830 - __main__ - INFO - nash_conv=1.262532
+2022-04-25 22:41:12,118 - __main__ - INFO - Updated best policy on iteration 73
+2022-04-25 22:41:12,118 - __main__ - INFO - Iteration 73
+2022-04-25 22:41:12,119 - __main__ - INFO - walltime=21.750741
+2022-04-25 22:41:12,119 - __main__ - INFO - max_on_path_regret=0.979913
+2022-04-25 22:41:12,119 - __main__ - INFO - nash_conv=1.246437
+2022-04-25 22:41:12,412 - __main__ - INFO - Updated best policy on iteration 74
+2022-04-25 22:41:12,412 - __main__ - INFO - Iteration 74
+2022-04-25 22:41:12,412 - __main__ - INFO - walltime=22.039518
+2022-04-25 22:41:12,412 - __main__ - INFO - max_on_path_regret=0.967888
+2022-04-25 22:41:12,412 - __main__ - INFO - nash_conv=1.230746
+2022-04-25 22:41:12,705 - __main__ - INFO - Updated best policy on iteration 75
+2022-04-25 22:41:12,705 - __main__ - INFO - Iteration 75
+2022-04-25 22:41:12,705 - __main__ - INFO - walltime=22.333096
+2022-04-25 22:41:12,705 - __main__ - INFO - max_on_path_regret=0.956152
+2022-04-25 22:41:12,705 - __main__ - INFO - nash_conv=1.215444
+2022-04-25 22:41:18,070 - __main__ - INFO - Using C++ implementations
+2022-04-25 22:41:18,070 - __main__ - INFO - Using CFR solver
+2022-04-25 22:41:18,102 - __main__ - INFO - Starting iteration 0
+2022-04-25 22:41:18,477 - __main__ - INFO - Updated best policy on iteration 0
+2022-04-25 22:41:18,477 - __main__ - INFO - Iteration 0
+2022-04-25 22:41:18,477 - __main__ - INFO - walltime=0.097485
+2022-04-25 22:41:18,477 - __main__ - INFO - max_on_path_regret=67.711629
+2022-04-25 22:41:18,478 - __main__ - INFO - nash_conv=82.738560
+2022-04-25 22:41:19,292 - __main__ - INFO - Starting iteration 100
+2022-04-25 22:41:19,588 - __main__ - INFO - Updated best policy on iteration 100
+2022-04-25 22:41:19,588 - __main__ - INFO - Iteration 100
+2022-04-25 22:41:19,588 - __main__ - INFO - walltime=1.227451
+2022-04-25 22:41:19,588 - __main__ - INFO - max_on_path_regret=0.733447
+2022-04-25 22:41:19,588 - __main__ - INFO - nash_conv=0.927051
+2022-04-25 22:41:20,014 - __main__ - INFO - Starting iteration 200
+2022-04-25 22:41:20,307 - __main__ - INFO - Updated best policy on iteration 200
+2022-04-25 22:41:20,308 - __main__ - INFO - Iteration 200
+2022-04-25 22:41:20,308 - __main__ - INFO - walltime=1.949027
+2022-04-25 22:41:20,308 - __main__ - INFO - max_on_path_regret=0.379161
+2022-04-25 22:41:20,308 - __main__ - INFO - nash_conv=0.475300
+2022-04-25 22:41:20,732 - __main__ - INFO - Starting iteration 300
+2022-04-25 22:41:21,025 - __main__ - INFO - Updated best policy on iteration 300
+2022-04-25 22:41:21,025 - __main__ - INFO - Iteration 300
+2022-04-25 22:41:21,025 - __main__ - INFO - walltime=2.667637
+2022-04-25 22:41:21,026 - __main__ - INFO - max_on_path_regret=0.255572
+2022-04-25 22:41:21,026 - __main__ - INFO - nash_conv=0.319515
+2022-04-25 22:41:21,468 - __main__ - INFO - Starting iteration 400
+2022-04-25 22:41:21,764 - __main__ - INFO - Updated best policy on iteration 400
+2022-04-25 22:41:21,764 - __main__ - INFO - Iteration 400
+2022-04-25 22:41:21,764 - __main__ - INFO - walltime=3.403491
+2022-04-25 22:41:21,765 - __main__ - INFO - max_on_path_regret=0.192733
+2022-04-25 22:41:21,765 - __main__ - INFO - nash_conv=0.240634
+2022-04-25 22:41:22,191 - __main__ - INFO - Starting iteration 500
+2022-04-25 22:41:22,482 - __main__ - INFO - Updated best policy on iteration 500
+2022-04-25 22:41:22,482 - __main__ - INFO - Iteration 500
+2022-04-25 22:41:22,482 - __main__ - INFO - walltime=4.125685
+2022-04-25 22:41:22,482 - __main__ - INFO - max_on_path_regret=0.154694
+2022-04-25 22:41:22,482 - __main__ - INFO - nash_conv=0.192987
+2022-04-25 22:41:22,907 - __main__ - INFO - Starting iteration 600
+2022-04-25 22:41:23,200 - __main__ - INFO - Updated best policy on iteration 600
+2022-04-25 22:41:23,201 - __main__ - INFO - Iteration 600
+2022-04-25 22:41:23,201 - __main__ - INFO - walltime=4.842471
+2022-04-25 22:41:23,201 - __main__ - INFO - max_on_path_regret=0.129194
+2022-04-25 22:41:23,201 - __main__ - INFO - nash_conv=0.161089
+2022-04-25 22:41:23,627 - __main__ - INFO - Starting iteration 700
+2022-04-25 22:41:23,921 - __main__ - INFO - Updated best policy on iteration 700
+2022-04-25 22:41:23,921 - __main__ - INFO - Iteration 700
+2022-04-25 22:41:23,921 - __main__ - INFO - walltime=5.562621
+2022-04-25 22:41:23,921 - __main__ - INFO - max_on_path_regret=0.110911
+2022-04-25 22:41:23,921 - __main__ - INFO - nash_conv=0.138240
+2022-04-25 22:41:24,347 - __main__ - INFO - Starting iteration 800
+2022-04-25 22:41:24,642 - __main__ - INFO - Updated best policy on iteration 800
+2022-04-25 22:41:24,642 - __main__ - INFO - Iteration 800
+2022-04-25 22:41:24,642 - __main__ - INFO - walltime=6.282577
+2022-04-25 22:41:24,642 - __main__ - INFO - max_on_path_regret=0.097160
+2022-04-25 22:41:24,643 - __main__ - INFO - nash_conv=0.121068
+2022-04-25 22:41:25,069 - __main__ - INFO - Starting iteration 900
+2022-04-25 22:41:25,363 - __main__ - INFO - Updated best policy on iteration 900
+2022-04-25 22:41:25,363 - __main__ - INFO - Iteration 900
+2022-04-25 22:41:25,363 - __main__ - INFO - walltime=7.003870
+2022-04-25 22:41:25,363 - __main__ - INFO - max_on_path_regret=0.086443
+2022-04-25 22:41:25,363 - __main__ - INFO - nash_conv=0.107690
+2022-04-25 22:41:26,076 - __main__ - INFO - Updated best policy on iteration 999
+2022-04-25 22:41:26,076 - __main__ - INFO - Iteration 999
+2022-04-25 22:41:26,076 - __main__ - INFO - walltime=7.718485
+2022-04-25 22:41:26,076 - __main__ - INFO - max_on_path_regret=0.077933
+2022-04-25 22:41:26,076 - __main__ - INFO - nash_conv=0.097071
+2022-04-25 22:41:26,077 - __main__ - INFO - Persisting the model...
+2022-04-25 22:41:26,394 - __main__ - INFO - Saving strategy to ./neil/strategy.csv
+2022-04-25 22:41:26,404 - __main__ - INFO - Running processing script
+2022-05-13 07:34:35,104 - __main__ - INFO - Using C++ implementations
+2022-05-13 07:34:35,105 - __main__ - INFO - Using CFR solver
+2022-05-13 07:46:38,144 - __main__ - INFO - Using C++ implementations
+2022-05-13 07:46:38,144 - __main__ - INFO - Using CFR solver
+2022-05-17 22:53:56,862 - __main__ - INFO - Using C++ implementations
+2022-05-17 22:53:56,862 - __main__ - INFO - Using CFR solver
+2022-05-17 22:53:56,873 - __main__ - INFO - Starting iteration 0
+2022-05-17 22:53:56,873 - __main__ - INFO - Starting iteration 0
+2022-05-17 22:53:56,893 - __main__ - INFO - Starting iteration 1
+2022-05-17 22:53:56,895 - __main__ - INFO - Starting iteration 2
+2022-05-17 22:53:56,898 - __main__ - INFO - Starting iteration 3
+2022-05-17 22:53:56,900 - __main__ - INFO - Starting iteration 4
+2022-05-17 22:53:56,902 - __main__ - INFO - Starting iteration 5
+2022-05-17 22:53:56,905 - __main__ - INFO - Starting iteration 6
+2022-05-17 22:53:56,907 - __main__ - INFO - Starting iteration 7
+2022-05-17 22:53:56,909 - __main__ - INFO - Starting iteration 8
+2022-05-17 22:53:56,911 - __main__ - INFO - Starting iteration 9
+2022-05-17 22:53:56,914 - __main__ - INFO - Starting iteration 10
+2022-05-17 22:53:56,916 - __main__ - INFO - Starting iteration 11
+2022-05-17 22:53:56,918 - __main__ - INFO - Starting iteration 12
+2022-05-17 22:53:56,920 - __main__ - INFO - Starting iteration 13
+2022-05-17 22:53:56,922 - __main__ - INFO - Starting iteration 14
+2022-05-17 22:53:56,924 - __main__ - INFO - Starting iteration 15
+2022-05-17 22:53:56,927 - __main__ - INFO - Starting iteration 16
+2022-05-17 22:53:56,929 - __main__ - INFO - Starting iteration 17
+2022-05-17 22:53:56,931 - __main__ - INFO - Starting iteration 18
+2022-05-17 22:53:56,933 - __main__ - INFO - Starting iteration 19
+2022-05-17 22:53:56,936 - __main__ - INFO - Starting iteration 20
+2022-05-17 22:53:56,938 - __main__ - INFO - Starting iteration 21
+2022-05-17 22:53:56,940 - __main__ - INFO - Starting iteration 22
+2022-05-17 22:53:56,942 - __main__ - INFO - Starting iteration 23
+2022-05-17 22:53:56,945 - __main__ - INFO - Starting iteration 24
+2022-05-17 22:53:56,947 - __main__ - INFO - Starting iteration 25
+2022-05-17 22:53:56,949 - __main__ - INFO - Starting iteration 26
+2022-05-17 22:53:56,951 - __main__ - INFO - Starting iteration 27
+2022-05-17 22:53:56,953 - __main__ - INFO - Starting iteration 28
+2022-05-17 22:53:56,955 - __main__ - INFO - Starting iteration 29
+2022-05-17 22:53:56,958 - __main__ - INFO - Starting iteration 30
+2022-05-17 22:53:56,960 - __main__ - INFO - Starting iteration 31
+2022-05-17 22:53:56,962 - __main__ - INFO - Starting iteration 32
+2022-05-17 22:53:56,964 - __main__ - INFO - Starting iteration 33
+2022-05-17 22:53:56,966 - __main__ - INFO - Starting iteration 34
+2022-05-17 22:53:56,969 - __main__ - INFO - Starting iteration 35
+2022-05-17 22:53:56,971 - __main__ - INFO - Starting iteration 36
+2022-05-17 22:53:56,973 - __main__ - INFO - Starting iteration 37
+2022-05-17 22:53:56,976 - __main__ - INFO - Starting iteration 38
+2022-05-17 22:53:56,978 - __main__ - INFO - Starting iteration 39
+2022-05-17 22:53:56,980 - __main__ - INFO - Starting iteration 40
+2022-05-17 22:53:56,982 - __main__ - INFO - Starting iteration 41
+2022-05-17 22:53:56,984 - __main__ - INFO - Starting iteration 42
+2022-05-17 22:53:56,986 - __main__ - INFO - Starting iteration 43
+2022-05-17 22:53:56,988 - __main__ - INFO - Starting iteration 44
+2022-05-17 22:53:56,991 - __main__ - INFO - Starting iteration 45
+2022-05-17 22:53:56,993 - __main__ - INFO - Starting iteration 46
+2022-05-17 22:53:56,995 - __main__ - INFO - Starting iteration 47
+2022-05-17 22:53:56,997 - __main__ - INFO - Starting iteration 48
+2022-05-17 22:53:56,999 - __main__ - INFO - Starting iteration 49
+2022-05-17 22:53:57,002 - __main__ - INFO - Starting iteration 50
+2022-05-17 22:53:57,005 - __main__ - INFO - Starting iteration 51
+2022-05-17 22:53:57,007 - __main__ - INFO - Starting iteration 52
+2022-05-17 22:53:57,009 - __main__ - INFO - Starting iteration 53
+2022-05-17 22:53:57,011 - __main__ - INFO - Starting iteration 54
+2022-05-17 22:53:57,013 - __main__ - INFO - Starting iteration 55
+2022-05-17 22:53:57,015 - __main__ - INFO - Starting iteration 56
+2022-05-17 22:53:57,017 - __main__ - INFO - Starting iteration 57
+2022-05-17 22:53:57,020 - __main__ - INFO - Starting iteration 58
+2022-05-17 22:53:57,022 - __main__ - INFO - Starting iteration 59
+2022-05-17 22:53:57,024 - __main__ - INFO - Starting iteration 60
+2022-05-17 22:53:57,026 - __main__ - INFO - Starting iteration 61
+2022-05-17 22:53:57,028 - __main__ - INFO - Starting iteration 62
+2022-05-17 22:53:57,030 - __main__ - INFO - Starting iteration 63
+2022-05-17 22:53:57,033 - __main__ - INFO - Starting iteration 64
+2022-05-17 22:53:57,035 - __main__ - INFO - Starting iteration 65
+2022-05-17 22:53:57,038 - __main__ - INFO - Starting iteration 66
+2022-05-17 22:53:57,040 - __main__ - INFO - Starting iteration 67
+2022-05-17 22:53:57,042 - __main__ - INFO - Starting iteration 68
+2022-05-17 22:53:57,044 - __main__ - INFO - Starting iteration 69
+2022-05-17 22:53:57,046 - __main__ - INFO - Starting iteration 70
+2022-05-17 22:53:57,048 - __main__ - INFO - Starting iteration 71
+2022-05-17 22:53:57,051 - __main__ - INFO - Starting iteration 72
+2022-05-17 22:53:57,053 - __main__ - INFO - Starting iteration 73
+2022-05-17 22:53:57,055 - __main__ - INFO - Starting iteration 74
+2022-05-17 22:53:57,057 - __main__ - INFO - Starting iteration 75
+2022-05-17 22:53:57,059 - __main__ - INFO - Starting iteration 76
+2022-05-17 22:53:57,061 - __main__ - INFO - Starting iteration 77
+2022-05-17 22:53:57,063 - __main__ - INFO - Starting iteration 78
+2022-05-17 22:53:57,065 - __main__ - INFO - Starting iteration 79
+2022-05-17 22:53:57,068 - __main__ - INFO - Starting iteration 80
+2022-05-17 22:53:57,071 - __main__ - INFO - Starting iteration 81
+2022-05-17 22:53:57,073 - __main__ - INFO - Starting iteration 82
+2022-05-17 22:53:57,075 - __main__ - INFO - Starting iteration 83
+2022-05-17 22:53:57,077 - __main__ - INFO - Starting iteration 84
+2022-05-17 22:53:57,079 - __main__ - INFO - Starting iteration 85
+2022-05-17 22:53:57,082 - __main__ - INFO - Starting iteration 86
+2022-05-17 22:53:57,084 - __main__ - INFO - Starting iteration 87
+2022-05-17 22:53:57,086 - __main__ - INFO - Starting iteration 88
+2022-05-17 22:53:57,088 - __main__ - INFO - Starting iteration 89
+2022-05-17 22:53:57,090 - __main__ - INFO - Starting iteration 90
+2022-05-17 22:53:57,092 - __main__ - INFO - Starting iteration 91
+2022-05-17 22:53:57,094 - __main__ - INFO - Starting iteration 92
+2022-05-17 22:53:57,097 - __main__ - INFO - Starting iteration 93
+2022-05-17 22:53:57,099 - __main__ - INFO - Starting iteration 94
+2022-05-17 22:53:57,101 - __main__ - INFO - Starting iteration 95
+2022-05-17 22:53:57,104 - __main__ - INFO - Starting iteration 96
+2022-05-17 22:53:57,106 - __main__ - INFO - Starting iteration 97
+2022-05-17 22:53:57,108 - __main__ - INFO - Starting iteration 98
+2022-05-17 22:53:57,111 - __main__ - INFO - Starting iteration 99
+2022-05-17 22:53:57,113 - __main__ - INFO - Starting iteration 100
+2022-05-17 22:53:57,113 - __main__ - INFO - Starting iteration 100
+2022-05-17 22:53:57,115 - __main__ - INFO - Starting iteration 101
+2022-05-17 22:53:57,117 - __main__ - INFO - Starting iteration 102
+2022-05-17 22:53:57,119 - __main__ - INFO - Starting iteration 103
+2022-05-17 22:53:57,121 - __main__ - INFO - Starting iteration 104
+2022-05-17 22:53:57,124 - __main__ - INFO - Starting iteration 105
+2022-05-17 22:53:57,126 - __main__ - INFO - Starting iteration 106
+2022-05-17 22:53:57,128 - __main__ - INFO - Starting iteration 107
+2022-05-17 22:53:57,130 - __main__ - INFO - Starting iteration 108
+2022-05-17 22:53:57,132 - __main__ - INFO - Starting iteration 109
+2022-05-17 22:53:57,135 - __main__ - INFO - Starting iteration 110
+2022-05-17 22:53:57,137 - __main__ - INFO - Starting iteration 111
+2022-05-17 22:53:57,139 - __main__ - INFO - Starting iteration 112
+2022-05-17 22:53:57,141 - __main__ - INFO - Starting iteration 113
+2022-05-17 22:53:57,143 - __main__ - INFO - Starting iteration 114
+2022-05-17 22:53:57,146 - __main__ - INFO - Starting iteration 115
+2022-05-17 22:53:57,148 - __main__ - INFO - Starting iteration 116
+2022-05-17 22:53:57,150 - __main__ - INFO - Starting iteration 117
+2022-05-17 22:53:57,152 - __main__ - INFO - Starting iteration 118
+2022-05-17 22:53:57,154 - __main__ - INFO - Starting iteration 119
+2022-05-17 22:53:57,156 - __main__ - INFO - Starting iteration 120
+2022-05-17 22:53:57,159 - __main__ - INFO - Starting iteration 121
+2022-05-17 22:53:57,161 - __main__ - INFO - Starting iteration 122
+2022-05-17 22:53:57,163 - __main__ - INFO - Starting iteration 123
+2022-05-17 22:53:57,165 - __main__ - INFO - Starting iteration 124
+2022-05-17 22:53:57,167 - __main__ - INFO - Starting iteration 125
+2022-05-17 22:53:57,170 - __main__ - INFO - Starting iteration 126
+2022-05-17 22:53:57,173 - __main__ - INFO - Starting iteration 127
+2022-05-17 22:53:57,175 - __main__ - INFO - Starting iteration 128
+2022-05-17 22:53:57,177 - __main__ - INFO - Starting iteration 129
+2022-05-17 22:53:57,179 - __main__ - INFO - Starting iteration 130
+2022-05-17 22:53:57,181 - __main__ - INFO - Starting iteration 131
+2022-05-17 22:53:57,183 - __main__ - INFO - Starting iteration 132
+2022-05-17 22:53:57,186 - __main__ - INFO - Starting iteration 133
+2022-05-17 22:53:57,188 - __main__ - INFO - Starting iteration 134
+2022-05-17 22:53:57,190 - __main__ - INFO - Starting iteration 135
+2022-05-17 22:53:57,192 - __main__ - INFO - Starting iteration 136
+2022-05-17 22:53:57,194 - __main__ - INFO - Starting iteration 137
+2022-05-17 22:53:57,197 - __main__ - INFO - Starting iteration 138
+2022-05-17 22:53:57,199 - __main__ - INFO - Starting iteration 139
+2022-05-17 22:53:57,201 - __main__ - INFO - Starting iteration 140
+2022-05-17 22:53:57,204 - __main__ - INFO - Starting iteration 141
+2022-05-17 22:53:57,206 - __main__ - INFO - Starting iteration 142
+2022-05-17 22:53:57,209 - __main__ - INFO - Starting iteration 143
+2022-05-17 22:53:57,211 - __main__ - INFO - Starting iteration 144
+2022-05-17 22:53:57,213 - __main__ - INFO - Starting iteration 145
+2022-05-17 22:53:57,215 - __main__ - INFO - Starting iteration 146
+2022-05-17 22:53:57,217 - __main__ - INFO - Starting iteration 147
+2022-05-17 22:53:57,219 - __main__ - INFO - Starting iteration 148
+2022-05-17 22:53:57,221 - __main__ - INFO - Starting iteration 149
+2022-05-17 22:53:57,224 - __main__ - INFO - Starting iteration 150
+2022-05-17 22:53:57,226 - __main__ - INFO - Starting iteration 151
+2022-05-17 22:53:57,228 - __main__ - INFO - Starting iteration 152
+2022-05-17 22:53:57,230 - __main__ - INFO - Starting iteration 153
+2022-05-17 22:53:57,232 - __main__ - INFO - Starting iteration 154
+2022-05-17 22:53:57,234 - __main__ - INFO - Starting iteration 155
+2022-05-17 22:53:57,237 - __main__ - INFO - Starting iteration 156
+2022-05-17 22:53:57,239 - __main__ - INFO - Starting iteration 157
+2022-05-17 22:53:57,241 - __main__ - INFO - Starting iteration 158
+2022-05-17 22:53:57,243 - __main__ - INFO - Starting iteration 159
+2022-05-17 22:53:57,246 - __main__ - INFO - Starting iteration 160
+2022-05-17 22:53:57,248 - __main__ - INFO - Starting iteration 161
+2022-05-17 22:53:57,250 - __main__ - INFO - Starting iteration 162
+2022-05-17 22:53:57,252 - __main__ - INFO - Starting iteration 163
+2022-05-17 22:53:57,254 - __main__ - INFO - Starting iteration 164
+2022-05-17 22:53:57,256 - __main__ - INFO - Starting iteration 165
+2022-05-17 22:53:57,259 - __main__ - INFO - Starting iteration 166
+2022-05-17 22:53:57,261 - __main__ - INFO - Starting iteration 167
+2022-05-17 22:53:57,263 - __main__ - INFO - Starting iteration 168
+2022-05-17 22:53:57,265 - __main__ - INFO - Starting iteration 169
+2022-05-17 22:53:57,267 - __main__ - INFO - Starting iteration 170
+2022-05-17 22:53:57,270 - __main__ - INFO - Starting iteration 171
+2022-05-17 22:53:57,272 - __main__ - INFO - Starting iteration 172
+2022-05-17 22:53:57,275 - __main__ - INFO - Starting iteration 173
+2022-05-17 22:53:57,277 - __main__ - INFO - Starting iteration 174
+2022-05-17 22:53:57,279 - __main__ - INFO - Starting iteration 175
+2022-05-17 22:53:57,281 - __main__ - INFO - Starting iteration 176
+2022-05-17 22:53:57,283 - __main__ - INFO - Starting iteration 177
+2022-05-17 22:53:57,285 - __main__ - INFO - Starting iteration 178
+2022-05-17 22:53:57,288 - __main__ - INFO - Starting iteration 179
+2022-05-17 22:53:57,290 - __main__ - INFO - Starting iteration 180
+2022-05-17 22:53:57,292 - __main__ - INFO - Starting iteration 181
+2022-05-17 22:53:57,294 - __main__ - INFO - Starting iteration 182
+2022-05-17 22:53:57,296 - __main__ - INFO - Starting iteration 183
+2022-05-17 22:53:57,298 - __main__ - INFO - Starting iteration 184
+2022-05-17 22:53:57,301 - __main__ - INFO - Starting iteration 185
+2022-05-17 22:53:57,303 - __main__ - INFO - Starting iteration 186
+2022-05-17 22:53:57,305 - __main__ - INFO - Starting iteration 187
+2022-05-17 22:53:57,308 - __main__ - INFO - Starting iteration 188
+2022-05-17 22:53:57,310 - __main__ - INFO - Starting iteration 189
+2022-05-17 22:53:57,312 - __main__ - INFO - Starting iteration 190
+2022-05-17 22:53:57,314 - __main__ - INFO - Starting iteration 191
+2022-05-17 22:53:57,316 - __main__ - INFO - Starting iteration 192
+2022-05-17 22:53:57,318 - __main__ - INFO - Starting iteration 193
+2022-05-17 22:53:57,320 - __main__ - INFO - Starting iteration 194
+2022-05-17 22:53:57,322 - __main__ - INFO - Starting iteration 195
+2022-05-17 22:53:57,325 - __main__ - INFO - Starting iteration 196
+2022-05-17 22:53:57,327 - __main__ - INFO - Starting iteration 197
+2022-05-17 22:53:57,329 - __main__ - INFO - Starting iteration 198
+2022-05-17 22:53:57,331 - __main__ - INFO - Starting iteration 199
+2022-05-17 22:53:57,333 - __main__ - INFO - Starting iteration 200
+2022-05-17 22:53:57,333 - __main__ - INFO - Starting iteration 200
+2022-05-17 22:53:57,336 - __main__ - INFO - Starting iteration 201
+2022-05-17 22:53:57,338 - __main__ - INFO - Starting iteration 202
+2022-05-17 22:53:57,340 - __main__ - INFO - Starting iteration 203
+2022-05-17 22:53:57,342 - __main__ - INFO - Starting iteration 204
+2022-05-17 22:53:57,345 - __main__ - INFO - Starting iteration 205
+2022-05-17 22:53:57,347 - __main__ - INFO - Starting iteration 206
+2022-05-17 22:53:57,349 - __main__ - INFO - Starting iteration 207
+2022-05-17 22:53:57,351 - __main__ - INFO - Starting iteration 208
+2022-05-17 22:53:57,353 - __main__ - INFO - Starting iteration 209
+2022-05-17 22:53:57,355 - __main__ - INFO - Starting iteration 210
+2022-05-17 22:53:57,358 - __main__ - INFO - Starting iteration 211
+2022-05-17 22:53:57,360 - __main__ - INFO - Starting iteration 212
+2022-05-17 22:53:57,362 - __main__ - INFO - Starting iteration 213
+2022-05-17 22:53:57,364 - __main__ - INFO - Starting iteration 214
+2022-05-17 22:53:57,366 - __main__ - INFO - Starting iteration 215
+2022-05-17 22:53:57,368 - __main__ - INFO - Starting iteration 216
+2022-05-17 22:53:57,371 - __main__ - INFO - Starting iteration 217
+2022-05-17 22:53:57,373 - __main__ - INFO - Starting iteration 218
+2022-05-17 22:53:57,375 - __main__ - INFO - Starting iteration 219
+2022-05-17 22:53:57,377 - __main__ - INFO - Starting iteration 220
+2022-05-17 22:53:57,380 - __main__ - INFO - Starting iteration 221
+2022-05-17 22:53:57,382 - __main__ - INFO - Starting iteration 222
+2022-05-17 22:53:57,384 - __main__ - INFO - Starting iteration 223
+2022-05-17 22:53:57,386 - __main__ - INFO - Starting iteration 224
+2022-05-17 22:53:57,388 - __main__ - INFO - Starting iteration 225
+2022-05-17 22:53:57,391 - __main__ - INFO - Starting iteration 226
+2022-05-17 22:53:57,393 - __main__ - INFO - Starting iteration 227
+2022-05-17 22:53:57,395 - __main__ - INFO - Starting iteration 228
+2022-05-17 22:53:57,397 - __main__ - INFO - Starting iteration 229
+2022-05-17 22:53:57,399 - __main__ - INFO - Starting iteration 230
+2022-05-17 22:53:57,402 - __main__ - INFO - Starting iteration 231
+2022-05-17 22:53:57,404 - __main__ - INFO - Starting iteration 232
+2022-05-17 22:53:57,406 - __main__ - INFO - Starting iteration 233
+2022-05-17 22:53:57,409 - __main__ - INFO - Starting iteration 234
+2022-05-17 22:53:57,411 - __main__ - INFO - Starting iteration 235
+2022-05-17 22:53:57,413 - __main__ - INFO - Starting iteration 236
+2022-05-17 22:53:57,415 - __main__ - INFO - Starting iteration 237
+2022-05-17 22:53:57,417 - __main__ - INFO - Starting iteration 238
+2022-05-17 22:53:57,419 - __main__ - INFO - Starting iteration 239
+2022-05-17 22:53:57,421 - __main__ - INFO - Starting iteration 240
+2022-05-17 22:53:57,424 - __main__ - INFO - Starting iteration 241
+2022-05-17 22:53:57,426 - __main__ - INFO - Starting iteration 242
+2022-05-17 22:53:57,428 - __main__ - INFO - Starting iteration 243
+2022-05-17 22:53:57,430 - __main__ - INFO - Starting iteration 244
+2022-05-17 22:53:57,432 - __main__ - INFO - Starting iteration 245
+2022-05-17 22:53:57,434 - __main__ - INFO - Starting iteration 246
+2022-05-17 22:53:57,437 - __main__ - INFO - Starting iteration 247
+2022-05-17 22:53:57,439 - __main__ - INFO - Starting iteration 248
+2022-05-17 22:53:57,441 - __main__ - INFO - Starting iteration 249
+2022-05-17 22:53:57,443 - __main__ - INFO - Starting iteration 250
+2022-05-17 22:53:57,446 - __main__ - INFO - Starting iteration 251
+2022-05-17 22:53:57,448 - __main__ - INFO - Starting iteration 252
+2022-05-17 22:53:57,450 - __main__ - INFO - Starting iteration 253
+2022-05-17 22:53:57,452 - __main__ - INFO - Starting iteration 254
+2022-05-17 22:53:57,454 - __main__ - INFO - Starting iteration 255
+2022-05-17 22:53:57,457 - __main__ - INFO - Starting iteration 256
+2022-05-17 22:53:57,459 - __main__ - INFO - Starting iteration 257
+2022-05-17 22:53:57,461 - __main__ - INFO - Starting iteration 258
+2022-05-17 22:53:57,463 - __main__ - INFO - Starting iteration 259
+2022-05-17 22:53:57,465 - __main__ - INFO - Starting iteration 260
+2022-05-17 22:53:57,467 - __main__ - INFO - Starting iteration 261
+2022-05-17 22:53:57,470 - __main__ - INFO - Starting iteration 262
+2022-05-17 22:53:57,472 - __main__ - INFO - Starting iteration 263
+2022-05-17 22:53:57,475 - __main__ - INFO - Starting iteration 264
+2022-05-17 22:53:57,477 - __main__ - INFO - Starting iteration 265
+2022-05-17 22:53:57,479 - __main__ - INFO - Starting iteration 266
+2022-05-17 22:53:57,481 - __main__ - INFO - Starting iteration 267
+2022-05-17 22:53:57,483 - __main__ - INFO - Starting iteration 268
+2022-05-17 22:53:57,485 - __main__ - INFO - Starting iteration 269
+2022-05-17 22:53:57,487 - __main__ - INFO - Starting iteration 270
+2022-05-17 22:53:57,490 - __main__ - INFO - Starting iteration 271
+2022-05-17 22:53:57,492 - __main__ - INFO - Starting iteration 272
+2022-05-17 22:53:57,494 - __main__ - INFO - Starting iteration 273
+2022-05-17 22:53:57,496 - __main__ - INFO - Starting iteration 274
+2022-05-17 22:53:57,498 - __main__ - INFO - Starting iteration 275
+2022-05-17 22:53:57,500 - __main__ - INFO - Starting iteration 276
+2022-05-17 22:53:57,503 - __main__ - INFO - Starting iteration 277
+2022-05-17 22:53:57,506 - __main__ - INFO - Starting iteration 278
+2022-05-17 22:53:57,508 - __main__ - INFO - Starting iteration 279
+2022-05-17 22:53:57,510 - __main__ - INFO - Starting iteration 280
+2022-05-17 22:53:57,512 - __main__ - INFO - Starting iteration 281
+2022-05-17 22:53:57,515 - __main__ - INFO - Starting iteration 282
+2022-05-17 22:53:57,517 - __main__ - INFO - Starting iteration 283
+2022-05-17 22:53:57,519 - __main__ - INFO - Starting iteration 284
+2022-05-17 22:53:57,521 - __main__ - INFO - Starting iteration 285
+2022-05-17 22:53:57,523 - __main__ - INFO - Starting iteration 286
+2022-05-17 22:53:57,525 - __main__ - INFO - Starting iteration 287
+2022-05-17 22:53:57,528 - __main__ - INFO - Starting iteration 288
+2022-05-17 22:53:57,530 - __main__ - INFO - Starting iteration 289
+2022-05-17 22:53:57,532 - __main__ - INFO - Starting iteration 290
+2022-05-17 22:53:57,534 - __main__ - INFO - Starting iteration 291
+2022-05-17 22:53:57,537 - __main__ - INFO - Starting iteration 292
+2022-05-17 22:53:57,539 - __main__ - INFO - Starting iteration 293
+2022-05-17 22:53:57,541 - __main__ - INFO - Starting iteration 294
+2022-05-17 22:53:57,543 - __main__ - INFO - Starting iteration 295
+2022-05-17 22:53:57,546 - __main__ - INFO - Starting iteration 296
+2022-05-17 22:53:57,548 - __main__ - INFO - Starting iteration 297
+2022-05-17 22:53:57,550 - __main__ - INFO - Starting iteration 298
+2022-05-17 22:53:57,552 - __main__ - INFO - Starting iteration 299
+2022-05-17 22:53:57,554 - __main__ - INFO - Starting iteration 300
+2022-05-17 22:53:57,555 - __main__ - INFO - Starting iteration 300
+2022-05-17 22:53:57,557 - __main__ - INFO - Starting iteration 301
+2022-05-17 22:53:57,559 - __main__ - INFO - Starting iteration 302
+2022-05-17 22:53:57,561 - __main__ - INFO - Starting iteration 303
+2022-05-17 22:53:57,563 - __main__ - INFO - Starting iteration 304
+2022-05-17 22:53:57,565 - __main__ - INFO - Starting iteration 305
+2022-05-17 22:53:57,567 - __main__ - INFO - Starting iteration 306
+2022-05-17 22:53:57,570 - __main__ - INFO - Starting iteration 307
+2022-05-17 22:53:57,572 - __main__ - INFO - Starting iteration 308
+2022-05-17 22:53:57,575 - __main__ - INFO - Starting iteration 309
+2022-05-17 22:53:57,577 - __main__ - INFO - Starting iteration 310
+2022-05-17 22:53:57,579 - __main__ - INFO - Starting iteration 311
+2022-05-17 22:53:57,581 - __main__ - INFO - Starting iteration 312
+2022-05-17 22:53:57,583 - __main__ - INFO - Starting iteration 313
+2022-05-17 22:53:57,585 - __main__ - INFO - Starting iteration 314
+2022-05-17 22:53:57,587 - __main__ - INFO - Starting iteration 315
+2022-05-17 22:53:57,590 - __main__ - INFO - Starting iteration 316
+2022-05-17 22:53:57,592 - __main__ - INFO - Starting iteration 317
+2022-05-17 22:53:57,594 - __main__ - INFO - Starting iteration 318
+2022-05-17 22:53:57,596 - __main__ - INFO - Starting iteration 319
+2022-05-17 22:53:57,598 - __main__ - INFO - Starting iteration 320
+2022-05-17 22:53:57,600 - __main__ - INFO - Starting iteration 321
+2022-05-17 22:53:57,603 - __main__ - INFO - Starting iteration 322
+2022-05-17 22:53:57,606 - __main__ - INFO - Starting iteration 323
+2022-05-17 22:53:57,608 - __main__ - INFO - Starting iteration 324
+2022-05-17 22:53:57,610 - __main__ - INFO - Starting iteration 325
+2022-05-17 22:53:57,612 - __main__ - INFO - Starting iteration 326
+2022-05-17 22:53:57,614 - __main__ - INFO - Starting iteration 327
+2022-05-17 22:53:57,617 - __main__ - INFO - Starting iteration 328
+2022-05-17 22:53:57,619 - __main__ - INFO - Starting iteration 329
+2022-05-17 22:53:57,621 - __main__ - INFO - Starting iteration 330
+2022-05-17 22:53:57,623 - __main__ - INFO - Starting iteration 331
+2022-05-17 22:53:57,625 - __main__ - INFO - Starting iteration 332
+2022-05-17 22:53:57,628 - __main__ - INFO - Starting iteration 333
+2022-05-17 22:53:57,630 - __main__ - INFO - Starting iteration 334
+2022-05-17 22:53:57,632 - __main__ - INFO - Starting iteration 335
+2022-05-17 22:53:57,634 - __main__ - INFO - Starting iteration 336
+2022-05-17 22:53:57,637 - __main__ - INFO - Starting iteration 337
+2022-05-17 22:53:57,639 - __main__ - INFO - Starting iteration 338
+2022-05-17 22:53:57,641 - __main__ - INFO - Starting iteration 339
+2022-05-17 22:53:57,644 - __main__ - INFO - Starting iteration 340
+2022-05-17 22:53:57,646 - __main__ - INFO - Starting iteration 341
+2022-05-17 22:53:57,648 - __main__ - INFO - Starting iteration 342
+2022-05-17 22:53:57,650 - __main__ - INFO - Starting iteration 343
+2022-05-17 22:53:57,652 - __main__ - INFO - Starting iteration 344
+2022-05-17 22:53:57,654 - __main__ - INFO - Starting iteration 345
+2022-05-17 22:53:57,657 - __main__ - INFO - Starting iteration 346
+2022-05-17 22:53:57,659 - __main__ - INFO - Starting iteration 347
+2022-05-17 22:53:57,661 - __main__ - INFO - Starting iteration 348
+2022-05-17 22:53:57,663 - __main__ - INFO - Starting iteration 349
+2022-05-17 22:53:57,665 - __main__ - INFO - Starting iteration 350
+2022-05-17 22:53:57,667 - __main__ - INFO - Starting iteration 351
+2022-05-17 22:53:57,670 - __main__ - INFO - Starting iteration 352
+2022-05-17 22:53:57,673 - __main__ - INFO - Starting iteration 353
+2022-05-17 22:53:57,675 - __main__ - INFO - Starting iteration 354
+2022-05-17 22:53:57,677 - __main__ - INFO - Starting iteration 355
+2022-05-17 22:53:57,679 - __main__ - INFO - Starting iteration 356
+2022-05-17 22:53:57,681 - __main__ - INFO - Starting iteration 357
+2022-05-17 22:53:57,683 - __main__ - INFO - Starting iteration 358
+2022-05-17 22:53:57,685 - __main__ - INFO - Starting iteration 359
+2022-05-17 22:53:57,688 - __main__ - INFO - Starting iteration 360
+2022-05-17 22:53:57,690 - __main__ - INFO - Starting iteration 361
+2022-05-17 22:53:57,692 - __main__ - INFO - Starting iteration 362
+2022-05-17 22:53:57,694 - __main__ - INFO - Starting iteration 363
+2022-05-17 22:53:57,696 - __main__ - INFO - Starting iteration 364
+2022-05-17 22:53:57,699 - __main__ - INFO - Starting iteration 365
+2022-05-17 22:53:57,701 - __main__ - INFO - Starting iteration 366
+2022-05-17 22:53:57,703 - __main__ - INFO - Starting iteration 367
+2022-05-17 22:53:57,706 - __main__ - INFO - Starting iteration 368
+2022-05-17 22:53:57,708 - __main__ - INFO - Starting iteration 369
+2022-05-17 22:53:57,710 - __main__ - INFO - Starting iteration 370
+2022-05-17 22:53:57,712 - __main__ - INFO - Starting iteration 371
+2022-05-17 22:53:57,715 - __main__ - INFO - Starting iteration 372
+2022-05-17 22:53:57,717 - __main__ - INFO - Starting iteration 373
+2022-05-17 22:53:57,719 - __main__ - INFO - Starting iteration 374
+2022-05-17 22:53:57,721 - __main__ - INFO - Starting iteration 375
+2022-05-17 22:53:57,723 - __main__ - INFO - Starting iteration 376
+2022-05-17 22:53:57,725 - __main__ - INFO - Starting iteration 377
+2022-05-17 22:53:57,728 - __main__ - INFO - Starting iteration 378
+2022-05-17 22:53:57,730 - __main__ - INFO - Starting iteration 379
+2022-05-17 22:53:57,732 - __main__ - INFO - Starting iteration 380
+2022-05-17 22:53:57,734 - __main__ - INFO - Starting iteration 381
+2022-05-17 22:53:57,737 - __main__ - INFO - Starting iteration 382
+2022-05-17 22:53:57,739 - __main__ - INFO - Starting iteration 383
+2022-05-17 22:53:57,741 - __main__ - INFO - Starting iteration 384
+2022-05-17 22:53:57,744 - __main__ - INFO - Starting iteration 385
+2022-05-17 22:53:57,746 - __main__ - INFO - Starting iteration 386
+2022-05-17 22:53:57,748 - __main__ - INFO - Starting iteration 387
+2022-05-17 22:53:57,750 - __main__ - INFO - Starting iteration 388
+2022-05-17 22:53:57,752 - __main__ - INFO - Starting iteration 389
+2022-05-17 22:53:57,754 - __main__ - INFO - Starting iteration 390
+2022-05-17 22:53:57,757 - __main__ - INFO - Starting iteration 391
+2022-05-17 22:53:57,759 - __main__ - INFO - Starting iteration 392
+2022-05-17 22:53:57,761 - __main__ - INFO - Starting iteration 393
+2022-05-17 22:53:57,763 - __main__ - INFO - Starting iteration 394
+2022-05-17 22:53:57,765 - __main__ - INFO - Starting iteration 395
+2022-05-17 22:53:57,767 - __main__ - INFO - Starting iteration 396
+2022-05-17 22:53:57,770 - __main__ - INFO - Starting iteration 397
+2022-05-17 22:53:57,773 - __main__ - INFO - Starting iteration 398
+2022-05-17 22:53:57,775 - __main__ - INFO - Starting iteration 399
+2022-05-17 22:53:57,777 - __main__ - INFO - Starting iteration 400
+2022-05-17 22:53:57,777 - __main__ - INFO - Starting iteration 400
+2022-05-17 22:53:57,779 - __main__ - INFO - Starting iteration 401
+2022-05-17 22:53:57,781 - __main__ - INFO - Starting iteration 402
+2022-05-17 22:53:57,784 - __main__ - INFO - Starting iteration 403
+2022-05-17 22:53:57,786 - __main__ - INFO - Starting iteration 404
+2022-05-17 22:53:57,788 - __main__ - INFO - Starting iteration 405
+2022-05-17 22:53:57,790 - __main__ - INFO - Starting iteration 406
+2022-05-17 22:53:57,792 - __main__ - INFO - Starting iteration 407
+2022-05-17 22:53:57,794 - __main__ - INFO - Starting iteration 408
+2022-05-17 22:53:57,797 - __main__ - INFO - Starting iteration 409
+2022-05-17 22:53:57,799 - __main__ - INFO - Starting iteration 410
+2022-05-17 22:53:57,801 - __main__ - INFO - Starting iteration 411
+2022-05-17 22:53:57,803 - __main__ - INFO - Starting iteration 412
+2022-05-17 22:53:57,806 - __main__ - INFO - Starting iteration 413
+2022-05-17 22:53:57,808 - __main__ - INFO - Starting iteration 414
+2022-05-17 22:53:57,810 - __main__ - INFO - Starting iteration 415
+2022-05-17 22:53:57,812 - __main__ - INFO - Starting iteration 416
+2022-05-17 22:53:57,815 - __main__ - INFO - Starting iteration 417
+2022-05-17 22:53:57,817 - __main__ - INFO - Starting iteration 418
+2022-05-17 22:53:57,819 - __main__ - INFO - Starting iteration 419
+2022-05-17 22:53:57,821 - __main__ - INFO - Starting iteration 420
+2022-05-17 22:53:57,823 - __main__ - INFO - Starting iteration 421
+2022-05-17 22:53:57,825 - __main__ - INFO - Starting iteration 422
+2022-05-17 22:53:57,828 - __main__ - INFO - Starting iteration 423
+2022-05-17 22:53:57,830 - __main__ - INFO - Starting iteration 424
+2022-05-17 22:53:57,832 - __main__ - INFO - Starting iteration 425
+2022-05-17 22:53:57,834 - __main__ - INFO - Starting iteration 426
+2022-05-17 22:53:57,837 - __main__ - INFO - Starting iteration 427
+2022-05-17 22:53:57,839 - __main__ - INFO - Starting iteration 428
+2022-05-17 22:53:57,842 - __main__ - INFO - Starting iteration 429
+2022-05-17 22:53:57,844 - __main__ - INFO - Starting iteration 430
+2022-05-17 22:53:57,846 - __main__ - INFO - Starting iteration 431
+2022-05-17 22:53:57,848 - __main__ - INFO - Starting iteration 432
+2022-05-17 22:53:57,850 - __main__ - INFO - Starting iteration 433
+2022-05-17 22:53:57,852 - __main__ - INFO - Starting iteration 434
+2022-05-17 22:53:57,855 - __main__ - INFO - Starting iteration 435
+2022-05-17 22:53:57,857 - __main__ - INFO - Starting iteration 436
+2022-05-17 22:53:57,859 - __main__ - INFO - Starting iteration 437
+2022-05-17 22:53:57,861 - __main__ - INFO - Starting iteration 438
+2022-05-17 22:53:57,863 - __main__ - INFO - Starting iteration 439
+2022-05-17 22:53:57,866 - __main__ - INFO - Starting iteration 440
+2022-05-17 22:53:57,868 - __main__ - INFO - Starting iteration 441
+2022-05-17 22:53:57,871 - __main__ - INFO - Starting iteration 442
+2022-05-17 22:53:57,873 - __main__ - INFO - Starting iteration 443
+2022-05-17 22:53:57,875 - __main__ - INFO - Starting iteration 444
+2022-05-17 22:53:57,878 - __main__ - INFO - Starting iteration 445
+2022-05-17 22:53:57,880 - __main__ - INFO - Starting iteration 446
+2022-05-17 22:53:57,882 - __main__ - INFO - Starting iteration 447
+2022-05-17 22:53:57,884 - __main__ - INFO - Starting iteration 448
+2022-05-17 22:53:57,886 - __main__ - INFO - Starting iteration 449
+2022-05-17 22:53:57,888 - __main__ - INFO - Starting iteration 450
+2022-05-17 22:53:57,891 - __main__ - INFO - Starting iteration 451
+2022-05-17 22:53:57,893 - __main__ - INFO - Starting iteration 452
+2022-05-17 22:53:57,895 - __main__ - INFO - Starting iteration 453
+2022-05-17 22:53:57,897 - __main__ - INFO - Starting iteration 454
+2022-05-17 22:53:57,899 - __main__ - INFO - Starting iteration 455
+2022-05-17 22:53:57,901 - __main__ - INFO - Starting iteration 456
+2022-05-17 22:53:57,904 - __main__ - INFO - Starting iteration 457
+2022-05-17 22:53:57,906 - __main__ - INFO - Starting iteration 458
+2022-05-17 22:53:57,908 - __main__ - INFO - Starting iteration 459
+2022-05-17 22:53:57,911 - __main__ - INFO - Starting iteration 460
+2022-05-17 22:53:57,913 - __main__ - INFO - Starting iteration 461
+2022-05-17 22:53:57,915 - __main__ - INFO - Starting iteration 462
+2022-05-17 22:53:57,917 - __main__ - INFO - Starting iteration 463
+2022-05-17 22:53:57,919 - __main__ - INFO - Starting iteration 464
+2022-05-17 22:53:57,921 - __main__ - INFO - Starting iteration 465
+2022-05-17 22:53:57,923 - __main__ - INFO - Starting iteration 466
+2022-05-17 22:53:57,926 - __main__ - INFO - Starting iteration 467
+2022-05-17 22:53:57,928 - __main__ - INFO - Starting iteration 468
+2022-05-17 22:53:57,930 - __main__ - INFO - Starting iteration 469
+2022-05-17 22:53:57,932 - __main__ - INFO - Starting iteration 470
+2022-05-17 22:53:57,934 - __main__ - INFO - Starting iteration 471
+2022-05-17 22:53:57,937 - __main__ - INFO - Starting iteration 472
+2022-05-17 22:53:57,939 - __main__ - INFO - Starting iteration 473
+2022-05-17 22:53:57,941 - __main__ - INFO - Starting iteration 474
+2022-05-17 22:53:57,943 - __main__ - INFO - Starting iteration 475
+2022-05-17 22:53:57,946 - __main__ - INFO - Starting iteration 476
+2022-05-17 22:53:57,948 - __main__ - INFO - Starting iteration 477
+2022-05-17 22:53:57,950 - __main__ - INFO - Starting iteration 478
+2022-05-17 22:53:57,952 - __main__ - INFO - Starting iteration 479
+2022-05-17 22:53:57,955 - __main__ - INFO - Starting iteration 480
+2022-05-17 22:53:57,957 - __main__ - INFO - Starting iteration 481
+2022-05-17 22:53:57,959 - __main__ - INFO - Starting iteration 482
+2022-05-17 22:53:57,961 - __main__ - INFO - Starting iteration 483
+2022-05-17 22:53:57,964 - __main__ - INFO - Starting iteration 484
+2022-05-17 22:53:57,966 - __main__ - INFO - Starting iteration 485
+2022-05-17 22:53:57,968 - __main__ - INFO - Starting iteration 486
+2022-05-17 22:53:57,970 - __main__ - INFO - Starting iteration 487
+2022-05-17 22:53:57,973 - __main__ - INFO - Starting iteration 488
+2022-05-17 22:53:57,975 - __main__ - INFO - Starting iteration 489
+2022-05-17 22:53:57,977 - __main__ - INFO - Starting iteration 490
+2022-05-17 22:53:57,979 - __main__ - INFO - Starting iteration 491
+2022-05-17 22:53:57,982 - __main__ - INFO - Starting iteration 492
+2022-05-17 22:53:57,984 - __main__ - INFO - Starting iteration 493
+2022-05-17 22:53:57,986 - __main__ - INFO - Starting iteration 494
+2022-05-17 22:53:57,988 - __main__ - INFO - Starting iteration 495
+2022-05-17 22:53:57,990 - __main__ - INFO - Starting iteration 496
+2022-05-17 22:53:57,993 - __main__ - INFO - Starting iteration 497
+2022-05-17 22:53:57,995 - __main__ - INFO - Starting iteration 498
+2022-05-17 22:53:57,997 - __main__ - INFO - Starting iteration 499
+2022-05-17 22:53:57,999 - __main__ - INFO - Starting iteration 500
+2022-05-17 22:53:57,999 - __main__ - INFO - Starting iteration 500
+2022-05-17 22:53:58,001 - __main__ - INFO - Starting iteration 501
+2022-05-17 22:53:58,004 - __main__ - INFO - Starting iteration 502
+2022-05-17 22:53:58,006 - __main__ - INFO - Starting iteration 503
+2022-05-17 22:53:58,009 - __main__ - INFO - Starting iteration 504
+2022-05-17 22:53:58,011 - __main__ - INFO - Starting iteration 505
+2022-05-17 22:53:58,013 - __main__ - INFO - Starting iteration 506
+2022-05-17 22:53:58,015 - __main__ - INFO - Starting iteration 507
+2022-05-17 22:53:58,017 - __main__ - INFO - Starting iteration 508
+2022-05-17 22:53:58,019 - __main__ - INFO - Starting iteration 509
+2022-05-17 22:53:58,021 - __main__ - INFO - Starting iteration 510
+2022-05-17 22:53:58,024 - __main__ - INFO - Starting iteration 511
+2022-05-17 22:53:58,026 - __main__ - INFO - Starting iteration 512
+2022-05-17 22:53:58,028 - __main__ - INFO - Starting iteration 513
+2022-05-17 22:53:58,030 - __main__ - INFO - Starting iteration 514
+2022-05-17 22:53:58,032 - __main__ - INFO - Starting iteration 515
+2022-05-17 22:53:58,034 - __main__ - INFO - Starting iteration 516
+2022-05-17 22:53:58,037 - __main__ - INFO - Starting iteration 517
+2022-05-17 22:53:58,039 - __main__ - INFO - Starting iteration 518
+2022-05-17 22:53:58,042 - __main__ - INFO - Starting iteration 519
+2022-05-17 22:53:58,044 - __main__ - INFO - Starting iteration 520
+2022-05-17 22:53:58,046 - __main__ - INFO - Starting iteration 521
+2022-05-17 22:53:58,048 - __main__ - INFO - Starting iteration 522
+2022-05-17 22:53:58,050 - __main__ - INFO - Starting iteration 523
+2022-05-17 22:53:58,053 - __main__ - INFO - Starting iteration 524
+2022-05-17 22:53:58,055 - __main__ - INFO - Starting iteration 525
+2022-05-17 22:53:58,057 - __main__ - INFO - Starting iteration 526
+2022-05-17 22:53:58,059 - __main__ - INFO - Starting iteration 527
+2022-05-17 22:53:58,061 - __main__ - INFO - Starting iteration 528
+2022-05-17 22:53:58,064 - __main__ - INFO - Starting iteration 529
+2022-05-17 22:53:58,066 - __main__ - INFO - Starting iteration 530
+2022-05-17 22:53:58,068 - __main__ - INFO - Starting iteration 531
+2022-05-17 22:53:58,071 - __main__ - INFO - Starting iteration 532
+2022-05-17 22:53:58,073 - __main__ - INFO - Starting iteration 533
+2022-05-17 22:53:58,076 - __main__ - INFO - Starting iteration 534
+2022-05-17 22:53:58,078 - __main__ - INFO - Starting iteration 535
+2022-05-17 22:53:58,080 - __main__ - INFO - Starting iteration 536
+2022-05-17 22:53:58,082 - __main__ - INFO - Starting iteration 537
+2022-05-17 22:53:58,084 - __main__ - INFO - Starting iteration 538
+2022-05-17 22:53:58,086 - __main__ - INFO - Starting iteration 539
+2022-05-17 22:53:58,089 - __main__ - INFO - Starting iteration 540
+2022-05-17 22:53:58,091 - __main__ - INFO - Starting iteration 541
+2022-05-17 22:53:58,093 - __main__ - INFO - Starting iteration 542
+2022-05-17 22:53:58,095 - __main__ - INFO - Starting iteration 543
+2022-05-17 22:53:58,097 - __main__ - INFO - Starting iteration 544
+2022-05-17 22:53:58,099 - __main__ - INFO - Starting iteration 545
+2022-05-17 22:53:58,102 - __main__ - INFO - Starting iteration 546
+2022-05-17 22:53:58,105 - __main__ - INFO - Starting iteration 547
+2022-05-17 22:53:58,107 - __main__ - INFO - Starting iteration 548
+2022-05-17 22:53:58,109 - __main__ - INFO - Starting iteration 549
+2022-05-17 22:53:58,111 - __main__ - INFO - Starting iteration 550
+2022-05-17 22:53:58,114 - __main__ - INFO - Starting iteration 551
+2022-05-17 22:53:58,116 - __main__ - INFO - Starting iteration 552
+2022-05-17 22:53:58,118 - __main__ - INFO - Starting iteration 553
+2022-05-17 22:53:58,120 - __main__ - INFO - Starting iteration 554
+2022-05-17 22:53:58,122 - __main__ - INFO - Starting iteration 555
+2022-05-17 22:53:58,124 - __main__ - INFO - Starting iteration 556
+2022-05-17 22:53:58,127 - __main__ - INFO - Starting iteration 557
+2022-05-17 22:53:58,129 - __main__ - INFO - Starting iteration 558
+2022-05-17 22:53:58,131 - __main__ - INFO - Starting iteration 559
+2022-05-17 22:53:58,133 - __main__ - INFO - Starting iteration 560
+2022-05-17 22:53:58,135 - __main__ - INFO - Starting iteration 561
+2022-05-17 22:53:58,138 - __main__ - INFO - Starting iteration 562
+2022-05-17 22:53:58,140 - __main__ - INFO - Starting iteration 563
+2022-05-17 22:53:58,143 - __main__ - INFO - Starting iteration 564
+2022-05-17 22:53:58,145 - __main__ - INFO - Starting iteration 565
+2022-05-17 22:53:58,147 - __main__ - INFO - Starting iteration 566
+2022-05-17 22:53:58,149 - __main__ - INFO - Starting iteration 567
+2022-05-17 22:53:58,151 - __main__ - INFO - Starting iteration 568
+2022-05-17 22:53:58,154 - __main__ - INFO - Starting iteration 569
+2022-05-17 22:53:58,156 - __main__ - INFO - Starting iteration 570
+2022-05-17 22:53:58,158 - __main__ - INFO - Starting iteration 571
+2022-05-17 22:53:58,160 - __main__ - INFO - Starting iteration 572
+2022-05-17 22:53:58,162 - __main__ - INFO - Starting iteration 573
+2022-05-17 22:53:58,164 - __main__ - INFO - Starting iteration 574
+2022-05-17 22:53:58,167 - __main__ - INFO - Starting iteration 575
+2022-05-17 22:53:58,169 - __main__ - INFO - Starting iteration 576
+2022-05-17 22:53:58,172 - __main__ - INFO - Starting iteration 577
+2022-05-17 22:53:58,174 - __main__ - INFO - Starting iteration 578
+2022-05-17 22:53:58,176 - __main__ - INFO - Starting iteration 579
+2022-05-17 22:53:58,179 - __main__ - INFO - Starting iteration 580
+2022-05-17 22:53:58,181 - __main__ - INFO - Starting iteration 581
+2022-05-17 22:53:58,183 - __main__ - INFO - Starting iteration 582
+2022-05-17 22:53:58,185 - __main__ - INFO - Starting iteration 583
+2022-05-17 22:53:58,187 - __main__ - INFO - Starting iteration 584
+2022-05-17 22:53:58,189 - __main__ - INFO - Starting iteration 585
+2022-05-17 22:53:58,192 - __main__ - INFO - Starting iteration 586
+2022-05-17 22:53:58,194 - __main__ - INFO - Starting iteration 587
+2022-05-17 22:53:58,196 - __main__ - INFO - Starting iteration 588
+2022-05-17 22:53:58,198 - __main__ - INFO - Starting iteration 589
+2022-05-17 22:53:58,200 - __main__ - INFO - Starting iteration 590
+2022-05-17 22:53:58,203 - __main__ - INFO - Starting iteration 591
+2022-05-17 22:53:58,206 - __main__ - INFO - Starting iteration 592
+2022-05-17 22:53:58,208 - __main__ - INFO - Starting iteration 593
+2022-05-17 22:53:58,210 - __main__ - INFO - Starting iteration 594
+2022-05-17 22:53:58,212 - __main__ - INFO - Starting iteration 595
+2022-05-17 22:53:58,214 - __main__ - INFO - Starting iteration 596
+2022-05-17 22:53:58,217 - __main__ - INFO - Starting iteration 597
+2022-05-17 22:53:58,219 - __main__ - INFO - Starting iteration 598
+2022-05-17 22:53:58,221 - __main__ - INFO - Starting iteration 599
+2022-05-17 22:53:58,223 - __main__ - INFO - Starting iteration 600
+2022-05-17 22:53:58,223 - __main__ - INFO - Starting iteration 600
+2022-05-17 22:53:58,225 - __main__ - INFO - Starting iteration 601
+2022-05-17 22:53:58,227 - __main__ - INFO - Starting iteration 602
+2022-05-17 22:53:58,230 - __main__ - INFO - Starting iteration 603
+2022-05-17 22:53:58,232 - __main__ - INFO - Starting iteration 604
+2022-05-17 22:53:58,234 - __main__ - INFO - Starting iteration 605
+2022-05-17 22:53:58,236 - __main__ - INFO - Starting iteration 606
+2022-05-17 22:53:58,239 - __main__ - INFO - Starting iteration 607
+2022-05-17 22:53:58,241 - __main__ - INFO - Starting iteration 608
+2022-05-17 22:53:58,243 - __main__ - INFO - Starting iteration 609
+2022-05-17 22:53:58,245 - __main__ - INFO - Starting iteration 610
+2022-05-17 22:53:58,247 - __main__ - INFO - Starting iteration 611
+2022-05-17 22:53:58,250 - __main__ - INFO - Starting iteration 612
+2022-05-17 22:53:58,252 - __main__ - INFO - Starting iteration 613
+2022-05-17 22:53:58,254 - __main__ - INFO - Starting iteration 614
+2022-05-17 22:53:58,256 - __main__ - INFO - Starting iteration 615
+2022-05-17 22:53:58,258 - __main__ - INFO - Starting iteration 616
+2022-05-17 22:53:58,260 - __main__ - INFO - Starting iteration 617
+2022-05-17 22:53:58,263 - __main__ - INFO - Starting iteration 618
+2022-05-17 22:53:58,265 - __main__ - INFO - Starting iteration 619
+2022-05-17 22:53:58,267 - __main__ - INFO - Starting iteration 620
+2022-05-17 22:53:58,269 - __main__ - INFO - Starting iteration 621
+2022-05-17 22:53:58,272 - __main__ - INFO - Starting iteration 622
+2022-05-17 22:53:58,274 - __main__ - INFO - Starting iteration 623
+2022-05-17 22:53:58,276 - __main__ - INFO - Starting iteration 624
+2022-05-17 22:53:58,278 - __main__ - INFO - Starting iteration 625
+2022-05-17 22:53:58,281 - __main__ - INFO - Starting iteration 626
+2022-05-17 22:53:58,283 - __main__ - INFO - Starting iteration 627
+2022-05-17 22:53:58,285 - __main__ - INFO - Starting iteration 628
+2022-05-17 22:53:58,287 - __main__ - INFO - Starting iteration 629
+2022-05-17 22:53:58,289 - __main__ - INFO - Starting iteration 630
+2022-05-17 22:53:58,292 - __main__ - INFO - Starting iteration 631
+2022-05-17 22:53:58,294 - __main__ - INFO - Starting iteration 632
+2022-05-17 22:53:58,296 - __main__ - INFO - Starting iteration 633
+2022-05-17 22:53:58,298 - __main__ - INFO - Starting iteration 634
+2022-05-17 22:53:58,300 - __main__ - INFO - Starting iteration 635
+2022-05-17 22:53:58,302 - __main__ - INFO - Starting iteration 636
+2022-05-17 22:53:58,305 - __main__ - INFO - Starting iteration 637
+2022-05-17 22:53:58,307 - __main__ - INFO - Starting iteration 638
+2022-05-17 22:53:58,310 - __main__ - INFO - Starting iteration 639
+2022-05-17 22:53:58,312 - __main__ - INFO - Starting iteration 640
+2022-05-17 22:53:58,314 - __main__ - INFO - Starting iteration 641
+2022-05-17 22:53:58,316 - __main__ - INFO - Starting iteration 642
+2022-05-17 22:53:58,319 - __main__ - INFO - Starting iteration 643
+2022-05-17 22:53:58,321 - __main__ - INFO - Starting iteration 644
+2022-05-17 22:53:58,323 - __main__ - INFO - Starting iteration 645
+2022-05-17 22:53:58,325 - __main__ - INFO - Starting iteration 646
+2022-05-17 22:53:58,327 - __main__ - INFO - Starting iteration 647
+2022-05-17 22:53:58,329 - __main__ - INFO - Starting iteration 648
+2022-05-17 22:53:58,332 - __main__ - INFO - Starting iteration 649
+2022-05-17 22:53:58,334 - __main__ - INFO - Starting iteration 650
+2022-05-17 22:53:58,336 - __main__ - INFO - Starting iteration 651
+2022-05-17 22:53:58,339 - __main__ - INFO - Starting iteration 652
+2022-05-17 22:53:58,341 - __main__ - INFO - Starting iteration 653
+2022-05-17 22:53:58,343 - __main__ - INFO - Starting iteration 654
+2022-05-17 22:53:58,345 - __main__ - INFO - Starting iteration 655
+2022-05-17 22:53:58,348 - __main__ - INFO - Starting iteration 656
+2022-05-17 22:53:58,350 - __main__ - INFO - Starting iteration 657
+2022-05-17 22:53:58,352 - __main__ - INFO - Starting iteration 658
+2022-05-17 22:53:58,354 - __main__ - INFO - Starting iteration 659
+2022-05-17 22:53:58,356 - __main__ - INFO - Starting iteration 660
+2022-05-17 22:53:58,358 - __main__ - INFO - Starting iteration 661
+2022-05-17 22:53:58,361 - __main__ - INFO - Starting iteration 662
+2022-05-17 22:53:58,363 - __main__ - INFO - Starting iteration 663
+2022-05-17 22:53:58,365 - __main__ - INFO - Starting iteration 664
+2022-05-17 22:53:58,367 - __main__ - INFO - Starting iteration 665
+2022-05-17 22:53:58,369 - __main__ - INFO - Starting iteration 666
+2022-05-17 22:53:58,372 - __main__ - INFO - Starting iteration 667
+2022-05-17 22:53:58,375 - __main__ - INFO - Starting iteration 668
+2022-05-17 22:53:58,377 - __main__ - INFO - Starting iteration 669
+2022-05-17 22:53:58,379 - __main__ - INFO - Starting iteration 670
+2022-05-17 22:53:58,381 - __main__ - INFO - Starting iteration 671
+2022-05-17 22:53:58,383 - __main__ - INFO - Starting iteration 672
+2022-05-17 22:53:58,385 - __main__ - INFO - Starting iteration 673
+2022-05-17 22:53:58,388 - __main__ - INFO - Starting iteration 674
+2022-05-17 22:53:58,390 - __main__ - INFO - Starting iteration 675
+2022-05-17 22:53:58,392 - __main__ - INFO - Starting iteration 676
+2022-05-17 22:53:58,394 - __main__ - INFO - Starting iteration 677
+2022-05-17 22:53:58,396 - __main__ - INFO - Starting iteration 678
+2022-05-17 22:53:58,398 - __main__ - INFO - Starting iteration 679
+2022-05-17 22:53:58,401 - __main__ - INFO - Starting iteration 680
+2022-05-17 22:53:58,403 - __main__ - INFO - Starting iteration 681
+2022-05-17 22:53:58,406 - __main__ - INFO - Starting iteration 682
+2022-05-17 22:53:58,408 - __main__ - INFO - Starting iteration 683
+2022-05-17 22:53:58,410 - __main__ - INFO - Starting iteration 684
+2022-05-17 22:53:58,412 - __main__ - INFO - Starting iteration 685
+2022-05-17 22:53:58,414 - __main__ - INFO - Starting iteration 686
+2022-05-17 22:53:58,417 - __main__ - INFO - Starting iteration 687
+2022-05-17 22:53:58,419 - __main__ - INFO - Starting iteration 688
+2022-05-17 22:53:58,421 - __main__ - INFO - Starting iteration 689
+2022-05-17 22:53:58,423 - __main__ - INFO - Starting iteration 690
+2022-05-17 22:53:58,425 - __main__ - INFO - Starting iteration 691
+2022-05-17 22:53:58,427 - __main__ - INFO - Starting iteration 692
+2022-05-17 22:53:58,430 - __main__ - INFO - Starting iteration 693
+2022-05-17 22:53:58,432 - __main__ - INFO - Starting iteration 694
+2022-05-17 22:53:58,434 - __main__ - INFO - Starting iteration 695
+2022-05-17 22:53:58,436 - __main__ - INFO - Starting iteration 696
+2022-05-17 22:53:58,439 - __main__ - INFO - Starting iteration 697
+2022-05-17 22:53:58,441 - __main__ - INFO - Starting iteration 698
+2022-05-17 22:53:58,443 - __main__ - INFO - Starting iteration 699
+2022-05-17 22:53:58,446 - __main__ - INFO - Starting iteration 700
+2022-05-17 22:53:58,446 - __main__ - INFO - Starting iteration 700
+2022-05-17 22:53:58,448 - __main__ - INFO - Starting iteration 701
+2022-05-17 22:53:58,450 - __main__ - INFO - Starting iteration 702
+2022-05-17 22:53:58,452 - __main__ - INFO - Starting iteration 703
+2022-05-17 22:53:58,454 - __main__ - INFO - Starting iteration 704
+2022-05-17 22:53:58,456 - __main__ - INFO - Starting iteration 705
+2022-05-17 22:53:58,458 - __main__ - INFO - Starting iteration 706
+2022-05-17 22:53:58,461 - __main__ - INFO - Starting iteration 707
+2022-05-17 22:53:58,463 - __main__ - INFO - Starting iteration 708
+2022-05-17 22:53:58,465 - __main__ - INFO - Starting iteration 709
+2022-05-17 22:53:58,467 - __main__ - INFO - Starting iteration 710
+2022-05-17 22:53:58,469 - __main__ - INFO - Starting iteration 711
+2022-05-17 22:53:58,472 - __main__ - INFO - Starting iteration 712
+2022-05-17 22:53:58,474 - __main__ - INFO - Starting iteration 713
+2022-05-17 22:53:58,476 - __main__ - INFO - Starting iteration 714
+2022-05-17 22:53:58,479 - __main__ - INFO - Starting iteration 715
+2022-05-17 22:53:58,481 - __main__ - INFO - Starting iteration 716
+2022-05-17 22:53:58,483 - __main__ - INFO - Starting iteration 717
+2022-05-17 22:53:58,485 - __main__ - INFO - Starting iteration 718
+2022-05-17 22:53:58,487 - __main__ - INFO - Starting iteration 719
+2022-05-17 22:53:58,489 - __main__ - INFO - Starting iteration 720
+2022-05-17 22:53:58,491 - __main__ - INFO - Starting iteration 721
+2022-05-17 22:53:58,494 - __main__ - INFO - Starting iteration 722
+2022-05-17 22:53:58,496 - __main__ - INFO - Starting iteration 723
+2022-05-17 22:53:58,498 - __main__ - INFO - Starting iteration 724
+2022-05-17 22:53:58,500 - __main__ - INFO - Starting iteration 725
+2022-05-17 22:53:58,502 - __main__ - INFO - Starting iteration 726
+2022-05-17 22:53:58,505 - __main__ - INFO - Starting iteration 727
+2022-05-17 22:53:58,507 - __main__ - INFO - Starting iteration 728
+2022-05-17 22:53:58,509 - __main__ - INFO - Starting iteration 729
+2022-05-17 22:53:58,512 - __main__ - INFO - Starting iteration 730
+2022-05-17 22:53:58,514 - __main__ - INFO - Starting iteration 731
+2022-05-17 22:53:58,516 - __main__ - INFO - Starting iteration 732
+2022-05-17 22:53:58,518 - __main__ - INFO - Starting iteration 733
+2022-05-17 22:53:58,520 - __main__ - INFO - Starting iteration 734
+2022-05-17 22:53:58,522 - __main__ - INFO - Starting iteration 735
+2022-05-17 22:53:58,525 - __main__ - INFO - Starting iteration 736
+2022-05-17 22:53:58,527 - __main__ - INFO - Starting iteration 737
+2022-05-17 22:53:58,529 - __main__ - INFO - Starting iteration 738
+2022-05-17 22:53:58,531 - __main__ - INFO - Starting iteration 739
+2022-05-17 22:53:58,533 - __main__ - INFO - Starting iteration 740
+2022-05-17 22:53:58,535 - __main__ - INFO - Starting iteration 741
+2022-05-17 22:53:58,538 - __main__ - INFO - Starting iteration 742
+2022-05-17 22:53:58,540 - __main__ - INFO - Starting iteration 743
+2022-05-17 22:53:58,543 - __main__ - INFO - Starting iteration 744
+2022-05-17 22:53:58,545 - __main__ - INFO - Starting iteration 745
+2022-05-17 22:53:58,547 - __main__ - INFO - Starting iteration 746
+2022-05-17 22:53:58,549 - __main__ - INFO - Starting iteration 747
+2022-05-17 22:53:58,551 - __main__ - INFO - Starting iteration 748
+2022-05-17 22:53:58,553 - __main__ - INFO - Starting iteration 749
+2022-05-17 22:53:58,555 - __main__ - INFO - Starting iteration 750
+2022-05-17 22:53:58,558 - __main__ - INFO - Starting iteration 751
+2022-05-17 22:53:58,560 - __main__ - INFO - Starting iteration 752
+2022-05-17 22:53:58,562 - __main__ - INFO - Starting iteration 753
+2022-05-17 22:53:58,564 - __main__ - INFO - Starting iteration 754
+2022-05-17 22:53:58,566 - __main__ - INFO - Starting iteration 755
+2022-05-17 22:53:58,569 - __main__ - INFO - Starting iteration 756
+2022-05-17 22:53:58,572 - __main__ - INFO - Starting iteration 757
+2022-05-17 22:53:58,574 - __main__ - INFO - Starting iteration 758
+2022-05-17 22:53:58,576 - __main__ - INFO - Starting iteration 759
+2022-05-17 22:53:58,578 - __main__ - INFO - Starting iteration 760
+2022-05-17 22:53:58,580 - __main__ - INFO - Starting iteration 761
+2022-05-17 22:53:58,582 - __main__ - INFO - Starting iteration 762
+2022-05-17 22:53:58,585 - __main__ - INFO - Starting iteration 763
+2022-05-17 22:53:58,587 - __main__ - INFO - Starting iteration 764
+2022-05-17 22:53:58,589 - __main__ - INFO - Starting iteration 765
+2022-05-17 22:53:58,591 - __main__ - INFO - Starting iteration 766
+2022-05-17 22:53:58,593 - __main__ - INFO - Starting iteration 767
+2022-05-17 22:53:58,595 - __main__ - INFO - Starting iteration 768
+2022-05-17 22:53:58,597 - __main__ - INFO - Starting iteration 769
+2022-05-17 22:53:58,600 - __main__ - INFO - Starting iteration 770
+2022-05-17 22:53:58,602 - __main__ - INFO - Starting iteration 771
+2022-05-17 22:53:58,604 - __main__ - INFO - Starting iteration 772
+2022-05-17 22:53:58,607 - __main__ - INFO - Starting iteration 773
+2022-05-17 22:53:58,609 - __main__ - INFO - Starting iteration 774
+2022-05-17 22:53:58,611 - __main__ - INFO - Starting iteration 775
+2022-05-17 22:53:58,613 - __main__ - INFO - Starting iteration 776
+2022-05-17 22:53:58,616 - __main__ - INFO - Starting iteration 777
+2022-05-17 22:53:58,618 - __main__ - INFO - Starting iteration 778
+2022-05-17 22:53:58,620 - __main__ - INFO - Starting iteration 779
+2022-05-17 22:53:58,622 - __main__ - INFO - Starting iteration 780
+2022-05-17 22:53:58,624 - __main__ - INFO - Starting iteration 781
+2022-05-17 22:53:58,626 - __main__ - INFO - Starting iteration 782
+2022-05-17 22:53:58,629 - __main__ - INFO - Starting iteration 783
+2022-05-17 22:53:58,631 - __main__ - INFO - Starting iteration 784
+2022-05-17 22:53:58,633 - __main__ - INFO - Starting iteration 785
+2022-05-17 22:53:58,635 - __main__ - INFO - Starting iteration 786
+2022-05-17 22:53:58,638 - __main__ - INFO - Starting iteration 787
+2022-05-17 22:53:58,640 - __main__ - INFO - Starting iteration 788
+2022-05-17 22:53:58,642 - __main__ - INFO - Starting iteration 789
+2022-05-17 22:53:58,644 - __main__ - INFO - Starting iteration 790
+2022-05-17 22:53:58,647 - __main__ - INFO - Starting iteration 791
+2022-05-17 22:53:58,649 - __main__ - INFO - Starting iteration 792
+2022-05-17 22:53:58,651 - __main__ - INFO - Starting iteration 793
+2022-05-17 22:53:58,653 - __main__ - INFO - Starting iteration 794
+2022-05-17 22:53:58,655 - __main__ - INFO - Starting iteration 795
+2022-05-17 22:53:58,657 - __main__ - INFO - Starting iteration 796
+2022-05-17 22:53:58,659 - __main__ - INFO - Starting iteration 797
+2022-05-17 22:53:58,662 - __main__ - INFO - Starting iteration 798
+2022-05-17 22:53:58,664 - __main__ - INFO - Starting iteration 799
+2022-05-17 22:53:58,666 - __main__ - INFO - Starting iteration 800
+2022-05-17 22:53:58,666 - __main__ - INFO - Starting iteration 800
+2022-05-17 22:53:58,668 - __main__ - INFO - Starting iteration 801
+2022-05-17 22:53:58,671 - __main__ - INFO - Starting iteration 802
+2022-05-17 22:53:58,673 - __main__ - INFO - Starting iteration 803
+2022-05-17 22:53:58,675 - __main__ - INFO - Starting iteration 804
+2022-05-17 22:53:58,678 - __main__ - INFO - Starting iteration 805
+2022-05-17 22:53:58,680 - __main__ - INFO - Starting iteration 806
+2022-05-17 22:53:58,682 - __main__ - INFO - Starting iteration 807
+2022-05-17 22:53:58,684 - __main__ - INFO - Starting iteration 808
+2022-05-17 22:53:58,686 - __main__ - INFO - Starting iteration 809
+2022-05-17 22:53:58,688 - __main__ - INFO - Starting iteration 810
+2022-05-17 22:53:58,691 - __main__ - INFO - Starting iteration 811
+2022-05-17 22:53:58,693 - __main__ - INFO - Starting iteration 812
+2022-05-17 22:53:58,695 - __main__ - INFO - Starting iteration 813
+2022-05-17 22:53:58,697 - __main__ - INFO - Starting iteration 814
+2022-05-17 22:53:58,699 - __main__ - INFO - Starting iteration 815
+2022-05-17 22:53:58,701 - __main__ - INFO - Starting iteration 816
+2022-05-17 22:53:58,704 - __main__ - INFO - Starting iteration 817
+2022-05-17 22:53:58,706 - __main__ - INFO - Starting iteration 818
+2022-05-17 22:53:58,708 - __main__ - INFO - Starting iteration 819
+2022-05-17 22:53:58,710 - __main__ - INFO - Starting iteration 820
+2022-05-17 22:53:58,713 - __main__ - INFO - Starting iteration 821
+2022-05-17 22:53:58,715 - __main__ - INFO - Starting iteration 822
+2022-05-17 22:53:58,717 - __main__ - INFO - Starting iteration 823
+2022-05-17 22:53:58,719 - __main__ - INFO - Starting iteration 824
+2022-05-17 22:53:58,721 - __main__ - INFO - Starting iteration 825
+2022-05-17 22:53:58,723 - __main__ - INFO - Starting iteration 826
+2022-05-17 22:53:58,726 - __main__ - INFO - Starting iteration 827
+2022-05-17 22:53:58,728 - __main__ - INFO - Starting iteration 828
+2022-05-17 22:53:58,730 - __main__ - INFO - Starting iteration 829
+2022-05-17 22:53:58,732 - __main__ - INFO - Starting iteration 830
+2022-05-17 22:53:58,734 - __main__ - INFO - Starting iteration 831
+2022-05-17 22:53:58,737 - __main__ - INFO - Starting iteration 832
+2022-05-17 22:53:58,739 - __main__ - INFO - Starting iteration 833
+2022-05-17 22:53:58,741 - __main__ - INFO - Starting iteration 834
+2022-05-17 22:53:58,744 - __main__ - INFO - Starting iteration 835
+2022-05-17 22:53:58,746 - __main__ - INFO - Starting iteration 836
+2022-05-17 22:53:58,748 - __main__ - INFO - Starting iteration 837
+2022-05-17 22:53:58,750 - __main__ - INFO - Starting iteration 838
+2022-05-17 22:53:58,752 - __main__ - INFO - Starting iteration 839
+2022-05-17 22:53:58,754 - __main__ - INFO - Starting iteration 840
+2022-05-17 22:53:58,756 - __main__ - INFO - Starting iteration 841
+2022-05-17 22:53:58,759 - __main__ - INFO - Starting iteration 842
+2022-05-17 22:53:58,761 - __main__ - INFO - Starting iteration 843
+2022-05-17 22:53:58,763 - __main__ - INFO - Starting iteration 844
+2022-05-17 22:53:58,765 - __main__ - INFO - Starting iteration 845
+2022-05-17 22:53:58,767 - __main__ - INFO - Starting iteration 846
+2022-05-17 22:53:58,769 - __main__ - INFO - Starting iteration 847
+2022-05-17 22:53:58,772 - __main__ - INFO - Starting iteration 848
+2022-05-17 22:53:58,775 - __main__ - INFO - Starting iteration 849
+2022-05-17 22:53:58,777 - __main__ - INFO - Starting iteration 850
+2022-05-17 22:53:58,779 - __main__ - INFO - Starting iteration 851
+2022-05-17 22:53:58,781 - __main__ - INFO - Starting iteration 852
+2022-05-17 22:53:58,783 - __main__ - INFO - Starting iteration 853
+2022-05-17 22:53:58,785 - __main__ - INFO - Starting iteration 854
+2022-05-17 22:53:58,787 - __main__ - INFO - Starting iteration 855
+2022-05-17 22:53:58,790 - __main__ - INFO - Starting iteration 856
+2022-05-17 22:53:58,792 - __main__ - INFO - Starting iteration 857
+2022-05-17 22:53:58,794 - __main__ - INFO - Starting iteration 858
+2022-05-17 22:53:58,796 - __main__ - INFO - Starting iteration 859
+2022-05-17 22:53:58,798 - __main__ - INFO - Starting iteration 860
+2022-05-17 22:53:58,800 - __main__ - INFO - Starting iteration 861
+2022-05-17 22:53:58,803 - __main__ - INFO - Starting iteration 862
+2022-05-17 22:53:58,805 - __main__ - INFO - Starting iteration 863
+2022-05-17 22:53:58,808 - __main__ - INFO - Starting iteration 864
+2022-05-17 22:53:58,810 - __main__ - INFO - Starting iteration 865
+2022-05-17 22:53:58,812 - __main__ - INFO - Starting iteration 866
+2022-05-17 22:53:58,814 - __main__ - INFO - Starting iteration 867
+2022-05-17 22:53:58,816 - __main__ - INFO - Starting iteration 868
+2022-05-17 22:53:58,819 - __main__ - INFO - Starting iteration 869
+2022-05-17 22:53:58,821 - __main__ - INFO - Starting iteration 870
+2022-05-17 22:53:58,823 - __main__ - INFO - Starting iteration 871
+2022-05-17 22:53:58,825 - __main__ - INFO - Starting iteration 872
+2022-05-17 22:53:58,827 - __main__ - INFO - Starting iteration 873
+2022-05-17 22:53:58,829 - __main__ - INFO - Starting iteration 874
+2022-05-17 22:53:58,831 - __main__ - INFO - Starting iteration 875
+2022-05-17 22:53:58,834 - __main__ - INFO - Starting iteration 876
+2022-05-17 22:53:58,836 - __main__ - INFO - Starting iteration 877
+2022-05-17 22:53:58,839 - __main__ - INFO - Starting iteration 878
+2022-05-17 22:53:58,841 - __main__ - INFO - Starting iteration 879
+2022-05-17 22:53:58,843 - __main__ - INFO - Starting iteration 880
+2022-05-17 22:53:58,845 - __main__ - INFO - Starting iteration 881
+2022-05-17 22:53:58,848 - __main__ - INFO - Starting iteration 882
+2022-05-17 22:53:58,850 - __main__ - INFO - Starting iteration 883
+2022-05-17 22:53:58,852 - __main__ - INFO - Starting iteration 884
+2022-05-17 22:53:58,854 - __main__ - INFO - Starting iteration 885
+2022-05-17 22:53:58,856 - __main__ - INFO - Starting iteration 886
+2022-05-17 22:53:58,859 - __main__ - INFO - Starting iteration 887
+2022-05-17 22:53:58,861 - __main__ - INFO - Starting iteration 888
+2022-05-17 22:53:58,863 - __main__ - INFO - Starting iteration 889
+2022-05-17 22:53:58,865 - __main__ - INFO - Starting iteration 890
+2022-05-17 22:53:58,867 - __main__ - INFO - Starting iteration 891
+2022-05-17 22:53:58,870 - __main__ - INFO - Starting iteration 892
+2022-05-17 22:53:58,873 - __main__ - INFO - Starting iteration 893
+2022-05-17 22:53:58,875 - __main__ - INFO - Starting iteration 894
+2022-05-17 22:53:58,877 - __main__ - INFO - Starting iteration 895
+2022-05-17 22:53:58,879 - __main__ - INFO - Starting iteration 896
+2022-05-17 22:53:58,881 - __main__ - INFO - Starting iteration 897
+2022-05-17 22:53:58,884 - __main__ - INFO - Starting iteration 898
+2022-05-17 22:53:58,886 - __main__ - INFO - Starting iteration 899
+2022-05-17 22:53:58,888 - __main__ - INFO - Starting iteration 900
+2022-05-17 22:53:58,888 - __main__ - INFO - Starting iteration 900
+2022-05-17 22:53:58,890 - __main__ - INFO - Starting iteration 901
+2022-05-17 22:53:58,892 - __main__ - INFO - Starting iteration 902
+2022-05-17 22:53:58,895 - __main__ - INFO - Starting iteration 903
+2022-05-17 22:53:58,897 - __main__ - INFO - Starting iteration 904
+2022-05-17 22:53:58,899 - __main__ - INFO - Starting iteration 905
+2022-05-17 22:53:58,901 - __main__ - INFO - Starting iteration 906
+2022-05-17 22:53:58,903 - __main__ - INFO - Starting iteration 907
+2022-05-17 22:53:58,906 - __main__ - INFO - Starting iteration 908
+2022-05-17 22:53:58,908 - __main__ - INFO - Starting iteration 909
+2022-05-17 22:53:58,910 - __main__ - INFO - Starting iteration 910
+2022-05-17 22:53:58,913 - __main__ - INFO - Starting iteration 911
+2022-05-17 22:53:58,915 - __main__ - INFO - Starting iteration 912
+2022-05-17 22:53:58,917 - __main__ - INFO - Starting iteration 913
+2022-05-17 22:53:58,919 - __main__ - INFO - Starting iteration 914
+2022-05-17 22:53:58,921 - __main__ - INFO - Starting iteration 915
+2022-05-17 22:53:58,923 - __main__ - INFO - Starting iteration 916
+2022-05-17 22:53:58,925 - __main__ - INFO - Starting iteration 917
+2022-05-17 22:53:58,927 - __main__ - INFO - Starting iteration 918
+2022-05-17 22:53:58,930 - __main__ - INFO - Starting iteration 919
+2022-05-17 22:53:58,932 - __main__ - INFO - Starting iteration 920
+2022-05-17 22:53:58,934 - __main__ - INFO - Starting iteration 921
+2022-05-17 22:53:58,936 - __main__ - INFO - Starting iteration 922
+2022-05-17 22:53:58,939 - __main__ - INFO - Starting iteration 923
+2022-05-17 22:53:58,941 - __main__ - INFO - Starting iteration 924
+2022-05-17 22:53:58,943 - __main__ - INFO - Starting iteration 925
+2022-05-17 22:53:58,946 - __main__ - INFO - Starting iteration 926
+2022-05-17 22:53:58,948 - __main__ - INFO - Starting iteration 927
+2022-05-17 22:53:58,950 - __main__ - INFO - Starting iteration 928
+2022-05-17 22:53:58,952 - __main__ - INFO - Starting iteration 929
+2022-05-17 22:53:58,954 - __main__ - INFO - Starting iteration 930
+2022-05-17 22:53:58,956 - __main__ - INFO - Starting iteration 931
+2022-05-17 22:53:58,958 - __main__ - INFO - Starting iteration 932
+2022-05-17 22:53:58,961 - __main__ - INFO - Starting iteration 933
+2022-05-17 22:53:58,963 - __main__ - INFO - Starting iteration 934
+2022-05-17 22:53:58,965 - __main__ - INFO - Starting iteration 935
+2022-05-17 22:53:58,967 - __main__ - INFO - Starting iteration 936
+2022-05-17 22:53:58,969 - __main__ - INFO - Starting iteration 937
+2022-05-17 22:53:58,972 - __main__ - INFO - Starting iteration 938
+2022-05-17 22:53:58,975 - __main__ - INFO - Starting iteration 939
+2022-05-17 22:53:58,977 - __main__ - INFO - Starting iteration 940
+2022-05-17 22:53:58,979 - __main__ - INFO - Starting iteration 941
+2022-05-17 22:53:58,981 - __main__ - INFO - Starting iteration 942
+2022-05-17 22:53:58,983 - __main__ - INFO - Starting iteration 943
+2022-05-17 22:53:58,985 - __main__ - INFO - Starting iteration 944
+2022-05-17 22:53:58,987 - __main__ - INFO - Starting iteration 945
+2022-05-17 22:53:58,990 - __main__ - INFO - Starting iteration 946
+2022-05-17 22:53:58,992 - __main__ - INFO - Starting iteration 947
+2022-05-17 22:53:58,994 - __main__ - INFO - Starting iteration 948
+2022-05-17 22:53:58,996 - __main__ - INFO - Starting iteration 949
+2022-05-17 22:53:58,998 - __main__ - INFO - Starting iteration 950
+2022-05-17 22:53:59,000 - __main__ - INFO - Starting iteration 951
+2022-05-17 22:53:59,003 - __main__ - INFO - Starting iteration 952
+2022-05-17 22:53:59,006 - __main__ - INFO - Starting iteration 953
+2022-05-17 22:53:59,008 - __main__ - INFO - Starting iteration 954
+2022-05-17 22:53:59,010 - __main__ - INFO - Starting iteration 955
+2022-05-17 22:53:59,012 - __main__ - INFO - Starting iteration 956
+2022-05-17 22:53:59,014 - __main__ - INFO - Starting iteration 957
+2022-05-17 22:53:59,017 - __main__ - INFO - Starting iteration 958
+2022-05-17 22:53:59,019 - __main__ - INFO - Starting iteration 959
+2022-05-17 22:53:59,021 - __main__ - INFO - Starting iteration 960
+2022-05-17 22:53:59,023 - __main__ - INFO - Starting iteration 961
+2022-05-17 22:53:59,025 - __main__ - INFO - Starting iteration 962
+2022-05-17 22:53:59,027 - __main__ - INFO - Starting iteration 963
+2022-05-17 22:53:59,029 - __main__ - INFO - Starting iteration 964
+2022-05-17 22:53:59,031 - __main__ - INFO - Starting iteration 965
+2022-05-17 22:53:59,034 - __main__ - INFO - Starting iteration 966
+2022-05-17 22:53:59,036 - __main__ - INFO - Starting iteration 967
+2022-05-17 22:53:59,039 - __main__ - INFO - Starting iteration 968
+2022-05-17 22:53:59,041 - __main__ - INFO - Starting iteration 969
+2022-05-17 22:53:59,043 - __main__ - INFO - Starting iteration 970
+2022-05-17 22:53:59,045 - __main__ - INFO - Starting iteration 971
+2022-05-17 22:53:59,047 - __main__ - INFO - Starting iteration 972
+2022-05-17 22:53:59,050 - __main__ - INFO - Starting iteration 973
+2022-05-17 22:53:59,052 - __main__ - INFO - Starting iteration 974
+2022-05-17 22:53:59,054 - __main__ - INFO - Starting iteration 975
+2022-05-17 22:53:59,056 - __main__ - INFO - Starting iteration 976
+2022-05-17 22:53:59,058 - __main__ - INFO - Starting iteration 977
+2022-05-17 22:53:59,060 - __main__ - INFO - Starting iteration 978
+2022-05-17 22:53:59,063 - __main__ - INFO - Starting iteration 979
+2022-05-17 22:53:59,065 - __main__ - INFO - Starting iteration 980
+2022-05-17 22:53:59,067 - __main__ - INFO - Starting iteration 981
+2022-05-17 22:53:59,069 - __main__ - INFO - Starting iteration 982
+2022-05-17 22:53:59,072 - __main__ - INFO - Starting iteration 983
+2022-05-17 22:53:59,074 - __main__ - INFO - Starting iteration 984
+2022-05-17 22:53:59,076 - __main__ - INFO - Starting iteration 985
+2022-05-17 22:53:59,079 - __main__ - INFO - Starting iteration 986
+2022-05-17 22:53:59,081 - __main__ - INFO - Starting iteration 987
+2022-05-17 22:53:59,083 - __main__ - INFO - Starting iteration 988
+2022-05-17 22:53:59,085 - __main__ - INFO - Starting iteration 989
+2022-05-17 22:53:59,087 - __main__ - INFO - Starting iteration 990
+2022-05-17 22:53:59,089 - __main__ - INFO - Starting iteration 991
+2022-05-17 22:53:59,091 - __main__ - INFO - Starting iteration 992
+2022-05-17 22:53:59,094 - __main__ - INFO - Starting iteration 993
+2022-05-17 22:53:59,096 - __main__ - INFO - Starting iteration 994
+2022-05-17 22:53:59,098 - __main__ - INFO - Starting iteration 995
+2022-05-17 22:53:59,100 - __main__ - INFO - Starting iteration 996
+2022-05-17 22:53:59,102 - __main__ - INFO - Starting iteration 997
+2022-05-17 22:53:59,105 - __main__ - INFO - Starting iteration 998
+2022-05-17 22:53:59,107 - __main__ - INFO - Starting iteration 999
+2022-05-17 22:53:59,110 - __main__ - INFO - Persisting the model...
+2022-05-17 22:54:45,857 - __main__ - INFO - Using C++ implementations
+2022-05-17 22:54:45,857 - __main__ - INFO - Using CFR solver
+2022-05-17 22:54:45,868 - __main__ - INFO - Starting iteration 0
+2022-05-17 22:54:45,984 - __main__ - INFO - Updated best policy on iteration 0
+2022-05-17 22:54:45,985 - __main__ - INFO - Iteration 0
+2022-05-17 22:54:45,985 - __main__ - INFO - walltime=0.031359
+2022-05-17 22:54:45,985 - __main__ - INFO - max_on_path_regret=0.574654
+2022-05-17 22:54:45,985 - __main__ - INFO - nash_conv=1.149248
+2022-05-17 22:54:46,174 - __main__ - INFO - Starting iteration 100
+2022-05-17 22:54:46,270 - __main__ - INFO - Updated best policy on iteration 100
+2022-05-17 22:54:46,271 - __main__ - INFO - Iteration 100
+2022-05-17 22:54:46,271 - __main__ - INFO - walltime=0.320070
+2022-05-17 22:54:46,271 - __main__ - INFO - max_on_path_regret=0.008225
+2022-05-17 22:54:46,271 - __main__ - INFO - nash_conv=0.016449
+2022-05-17 22:54:46,461 - __main__ - INFO - Starting iteration 200
+2022-05-17 22:54:46,555 - __main__ - INFO - Updated best policy on iteration 200
+2022-05-17 22:54:46,555 - __main__ - INFO - Iteration 200
+2022-05-17 22:54:46,555 - __main__ - INFO - walltime=0.606807
+2022-05-17 22:54:46,555 - __main__ - INFO - max_on_path_regret=0.004139
+2022-05-17 22:54:46,556 - __main__ - INFO - nash_conv=0.008278
+2022-05-17 22:54:46,745 - __main__ - INFO - Starting iteration 300
+2022-05-17 22:54:46,842 - __main__ - INFO - Updated best policy on iteration 300
+2022-05-17 22:54:46,842 - __main__ - INFO - Iteration 300
+2022-05-17 22:54:46,843 - __main__ - INFO - walltime=0.891367
+2022-05-17 22:54:46,843 - __main__ - INFO - max_on_path_regret=0.002766
+2022-05-17 22:54:46,843 - __main__ - INFO - nash_conv=0.005531
+2022-05-17 22:54:47,032 - __main__ - INFO - Starting iteration 400
+2022-05-17 22:54:47,125 - __main__ - INFO - Updated best policy on iteration 400
+2022-05-17 22:54:47,126 - __main__ - INFO - Iteration 400
+2022-05-17 22:54:47,126 - __main__ - INFO - walltime=1.178092
+2022-05-17 22:54:47,126 - __main__ - INFO - max_on_path_regret=0.002076
+2022-05-17 22:54:47,126 - __main__ - INFO - nash_conv=0.004153
+2022-05-17 22:54:47,316 - __main__ - INFO - Starting iteration 500
+2022-05-17 22:54:47,411 - __main__ - INFO - Updated best policy on iteration 500
+2022-05-17 22:54:47,411 - __main__ - INFO - Iteration 500
+2022-05-17 22:54:47,411 - __main__ - INFO - walltime=1.463409
+2022-05-17 22:54:47,411 - __main__ - INFO - max_on_path_regret=0.001662
+2022-05-17 22:54:47,411 - __main__ - INFO - nash_conv=0.003324
+2022-05-17 22:54:47,602 - __main__ - INFO - Starting iteration 600
+2022-05-17 22:54:47,697 - __main__ - INFO - Updated best policy on iteration 600
+2022-05-17 22:54:47,698 - __main__ - INFO - Iteration 600
+2022-05-17 22:54:47,698 - __main__ - INFO - walltime=1.747548
+2022-05-17 22:54:47,698 - __main__ - INFO - max_on_path_regret=0.001386
+2022-05-17 22:54:47,698 - __main__ - INFO - nash_conv=0.002771
+2022-05-17 22:54:47,889 - __main__ - INFO - Starting iteration 700
+2022-05-17 22:54:47,983 - __main__ - INFO - Updated best policy on iteration 700
+2022-05-17 22:54:47,983 - __main__ - INFO - Iteration 700
+2022-05-17 22:54:47,983 - __main__ - INFO - walltime=2.034606
+2022-05-17 22:54:47,983 - __main__ - INFO - max_on_path_regret=0.001188
+2022-05-17 22:54:47,983 - __main__ - INFO - nash_conv=0.002376
+2022-05-17 22:54:48,174 - __main__ - INFO - Starting iteration 800
+2022-05-17 22:54:48,269 - __main__ - INFO - Updated best policy on iteration 800
+2022-05-17 22:54:48,269 - __main__ - INFO - Iteration 800
+2022-05-17 22:54:48,269 - __main__ - INFO - walltime=2.319961
+2022-05-17 22:54:48,269 - __main__ - INFO - max_on_path_regret=0.001040
+2022-05-17 22:54:48,269 - __main__ - INFO - nash_conv=0.002080
+2022-05-17 22:54:48,460 - __main__ - INFO - Starting iteration 900
+2022-05-17 22:54:48,555 - __main__ - INFO - Updated best policy on iteration 900
+2022-05-17 22:54:48,555 - __main__ - INFO - Iteration 900
+2022-05-17 22:54:48,555 - __main__ - INFO - walltime=2.606099
+2022-05-17 22:54:48,555 - __main__ - INFO - max_on_path_regret=0.000925
+2022-05-17 22:54:48,555 - __main__ - INFO - nash_conv=0.001849
+2022-05-17 22:54:48,840 - __main__ - INFO - Updated best policy on iteration 999
+2022-05-17 22:54:48,840 - __main__ - INFO - Iteration 999
+2022-05-17 22:54:48,840 - __main__ - INFO - walltime=2.889541
+2022-05-17 22:54:48,841 - __main__ - INFO - max_on_path_regret=0.000833
+2022-05-17 22:54:48,841 - __main__ - INFO - nash_conv=0.001666
+2022-05-17 22:54:48,842 - __main__ - INFO - Persisting the model...
+2022-05-17 22:54:48,953 - __main__ - INFO - Saving strategy to ./neil/strategy.csv
+2022-05-17 22:54:48,962 - __main__ - INFO - Running processing script

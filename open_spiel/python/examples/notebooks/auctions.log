@@ -1,0 +1,747 @@
+[2022-04-27 00:08:29,688] {ubc_utils.py:123} INFO - Setting numpy and torch seed to 100
+[2022-04-27 00:08:29,689] {ubc_utils.py:408} INFO - Reading config from /apps/open_spiel/notebooks/configs/flatmlp/mlp.yml
+[2022-04-27 00:08:29,700] {nfsp.py:133} INFO - Network params: {'add_explore_transitions': False, 'anticipatory_param': 0.1, 'batch_size': 1024, 'epsilon_end': 0.05, 'epsilon_start': 0.9, 'learn_every': 16, 'loss_str': 'mse', 'sl_loss_str': 'cross_entropy', 'min_buffer_size_to_learn': 1000, 'optimizer_str': 'sgd', 'replay_buffer_capacity': 50000, 'reservoir_buffer_capacity': 2000000, 'rl_learning_rate': 0.0001, 'rl_model': 'mlp', 'rl_model_args': {'hidden_sizes': [256, 256]}, 'sl_learning_rate': 0.01, 'sl_model': 'mlp', 'sl_model_args': {'hidden_sizes': [256, 256]}, 'update_target_network_every': 1000, 'double_dqn': True, 'device': 'cuda', 'num_training_episodes': 10}
+[2022-04-27 00:08:29,700] {nfsp.py:134} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'num_training_episodes': 10, 'iterate_br': 0, 'require_br': 1, 'random_ic': 0, 'seed': 100, 'network_config_file': 'flatmlp/mlp', 'compute_nash_conv': False, 'device': <function default_device at 0x7f6db48a6d30>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'test_require_br', 'job_name': 'sats_5_test-flatmlpmlp-100', 'filename': 'sats_5.json', 'game_name': 'clock_auction', 'report_freq': 50000, 'eval_every': 1000000, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'dispatch_br': 0, 'br_portfolio_path': 'flatmlp', 'br_overrides': '--num_training_episodes 1_000_000', 'eval_overrides': '', 'rnr_player': None, 'rnr_exploit_prob': 0.5, 'rnr_checkpoints': [], 'replay_buffer_capacity': None, 'reservoir_buffer_capacity': None, 'batch_size': None, 'rl_learning_rate': None, 'sl_learning_rate': None, 'min_buffer_size_to_learn': None, 'learn_every': None, 'optimizer_str': None, 'epsilon_start': None, 'epsilon_end': None}
+[2022-04-27 00:08:29,720] {rl_environment.py:196} INFO - Using game instance: turn_based_simultaneous_game
+[2022-04-27 00:08:29,720] {ubc_nfsp_example.py:53} INFO - Game has a state size of 3275, 125 distinct actions, and 3 players
+[2022-04-27 00:08:29,720] {ubc_nfsp_example.py:54} INFO - Game has 3 products
+[2022-04-27 00:08:29,721] {ubc_nfsp.py:118} INFO - Creating NFSP using device: cuda for player 0
+[2022-04-27 00:08:29,721] {ubc_dqn.py:263} INFO - Double DQN activated for player 0
+[2022-04-27 00:08:29,721] {ubc_dqn.py:298} INFO - Creating DQN using device: cuda for player 0
+[2022-04-27 00:08:33,504] {ubc_nfsp.py:118} INFO - Creating NFSP using device: cuda for player 1
+[2022-04-27 00:08:33,504] {ubc_dqn.py:263} INFO - Double DQN activated for player 1
+[2022-04-27 00:08:33,505] {ubc_dqn.py:298} INFO - Creating DQN using device: cuda for player 1
+[2022-04-27 00:08:33,534] {ubc_nfsp.py:118} INFO - Creating NFSP using device: cuda for player 2
+[2022-04-27 00:08:33,535] {ubc_dqn.py:263} INFO - Double DQN activated for player 2
+[2022-04-27 00:08:33,535] {ubc_dqn.py:298} INFO - Creating DQN using device: cuda for player 2
+[2022-04-27 00:08:33,564] {ubc_utils.py:123} INFO - Setting numpy and torch seed to 100
+[2022-04-27 00:08:33,906] {ubc_nfsp_example.py:114} INFO - ----Episode 10 ---
+[2022-04-27 00:08:33,911] {ubc_nfsp_example.py:115} INFO - Episode length stats:
+count    10.000000
+mean      8.700000
+std       2.983287
+min       6.000000
+25%       6.000000
+50%       7.500000
+75%      12.000000
+max      12.000000
+dtype: float64
+[2022-04-27 00:08:33,911] {ubc_nfsp_example.py:117} INFO - PLAYER 0
+[2022-04-27 00:08:33,916] {ubc_nfsp_example.py:120} INFO - {'Bid for 0,0,0 licenses @ $0 with activity 0': tensor(0.0960), 'Bid for 0,0,1 licenses @ $88 with activity 8': tensor(-0.0195), 'Bid for 0,0,2 licenses @ $176 with activity 16': tensor(-0.0450), 'Bid for 0,0,3 licenses @ $264 with activity 24': tensor(0.0018), 'Bid for 0,0,4 licenses @ $352 with activity 32': tensor(0.0537), 'Bid for 0,1,0 licenses @ $165 with activity 15': tensor(0.0388), 'Bid for 0,1,1 licenses @ $253 with activity 23': tensor(0.0308), 'Bid for 0,1,2 licenses @ $341 with activity 31': tensor(-0.0432), 'Bid for 0,1,3 licenses @ $429 with activity 39': tensor(-0.0270), 'Bid for 0,1,4 licenses @ $517 with activity 47': tensor(-0.0416), 'Bid for 0,2,0 licenses @ $330 with activity 30': tensor(-0.0735), 'Bid for 0,2,1 licenses @ $418 with activity 38': tensor(-0.1234), 'Bid for 0,2,2 licenses @ $506 with activity 46': tensor(-0.0416), 'Bid for 0,2,3 licenses @ $594 with activity 54': tensor(0.0093), 'Bid for 0,2,4 licenses @ $682 with activity 62': tensor(0.0038), 'Bid for 0,3,0 licenses @ $495 with activity 45': tensor(-0.0260), 'Bid for 0,3,1 licenses @ $583 with activity 53': tensor(-0.0143), 'Bid for 0,3,2 licenses @ $671 with activity 61': tensor(-0.0179), 'Bid for 0,3,3 licenses @ $759 with activity 69': tensor(0.0285), 'Bid for 0,3,4 licenses @ $847 with activity 77': tensor(0.0487), 'Bid for 0,4,0 licenses @ $660 with activity 60': tensor(0.0075), 'Bid for 0,4,1 licenses @ $748 with activity 68': tensor(0.0305), 'Bid for 0,4,2 licenses @ $836 with activity 76': tensor(0.0362), 'Bid for 0,4,3 licenses @ $924 with activity 84': tensor(-0.0354), 'Bid for 0,4,4 licenses @ $1012 with activity 92': tensor(-0.0062), 'Bid for 1,0,0 licenses @ $55 with activity 5': tensor(0.0784), 'Bid for 1,0,1 licenses @ $143 with activity 13': tensor(0.0088), 'Bid for 1,0,2 licenses @ $231 with activity 21': tensor(0.0374), 'Bid for 1,0,3 licenses @ $319 with activity 29': tensor(0.0585), 'Bid for 1,0,4 licenses @ $407 with activity 37': tensor(0.0536), 'Bid for 1,1,0 licenses @ $220 with activity 20': tensor(0.0040), 'Bid for 1,1,1 licenses @ $308 with activity 28': tensor(-0.0117), 'Bid for 1,1,2 licenses @ $396 with activity 36': tensor(-0.0609), 'Bid for 1,1,3 licenses @ $484 with activity 44': tensor(-0.0930), 'Bid for 1,1,4 licenses @ $572 with activity 52': tensor(-0.0028), 'Bid for 1,2,0 licenses @ $385 with activity 35': tensor(0.0493), 'Bid for 1,2,1 licenses @ $473 with activity 43': tensor(0.0179), 'Bid for 1,2,2 licenses @ $561 with activity 51': tensor(-0.0418), 'Bid for 1,2,3 licenses @ $649 with activity 59': tensor(-0.0407), 'Bid for 1,2,4 licenses @ $737 with activity 67': tensor(0.0222), 'Bid for 1,3,0 licenses @ $550 with activity 50': tensor(0.0576), 'Bid for 1,3,1 licenses @ $638 with activity 58': tensor(0.0138), 'Bid for 1,3,2 licenses @ $726 with activity 66': tensor(0.0307), 'Bid for 1,3,3 licenses @ $814 with activity 74': tensor(0.0450), 'Bid for 1,3,4 licenses @ $902 with activity 82': tensor(-0.0337), 'Bid for 1,4,0 licenses @ $715 with activity 65': tensor(0.0002), 'Bid for 1,4,1 licenses @ $803 with activity 73': tensor(-0.0289), 'Bid for 1,4,2 licenses @ $891 with activity 81': tensor(-0.0062), 'Bid for 1,4,3 licenses @ $979 with activity 89': tensor(-0.0045), 'Bid for 1,4,4 licenses @ $1067 with activity 97': tensor(-0.0477), 'Bid for 2,0,0 licenses @ $110 with activity 10': tensor(-0.0177), 'Bid for 2,0,1 licenses @ $198 with activity 18': tensor(-0.0074), 'Bid for 2,0,2 licenses @ $286 with activity 26': tensor(-0.0443), 'Bid for 2,0,3 licenses @ $374 with activity 34': tensor(-0.0541), 'Bid for 2,0,4 licenses @ $462 with activity 42': tensor(-0.0152), 'Bid for 2,1,0 licenses @ $275 with activity 25': tensor(0.0218), 'Bid for 2,1,1 licenses @ $363 with activity 33': tensor(0.0534), 'Bid for 2,1,2 licenses @ $451 with activity 41': tensor(-0.0150), 'Bid for 2,1,3 licenses @ $539 with activity 49': tensor(-0.0418), 'Bid for 2,1,4 licenses @ $627 with activity 57': tensor(0.0040), 'Bid for 2,2,0 licenses @ $440 with activity 40': tensor(-0.0535), 'Bid for 2,2,1 licenses @ $528 with activity 48': tensor(-0.0030), 'Bid for 2,2,2 licenses @ $616 with activity 56': tensor(-0.0288), 'Bid for 2,2,3 licenses @ $704 with activity 64': tensor(-0.0014), 'Bid for 2,2,4 licenses @ $792 with activity 72': tensor(0.0764), 'Bid for 2,3,0 licenses @ $605 with activity 55': tensor(-0.0513), 'Bid for 2,3,1 licenses @ $693 with activity 63': tensor(0.0063), 'Bid for 2,3,2 licenses @ $781 with activity 71': tensor(-0.0158), 'Bid for 2,3,3 licenses @ $869 with activity 79': tensor(0.0126), 'Bid for 2,3,4 licenses @ $957 with activity 87': tensor(0.0582), 'Bid for 2,4,0 licenses @ $770 with activity 70': tensor(-0.0924), 'Bid for 2,4,1 licenses @ $858 with activity 78': tensor(-0.0130), 'Bid for 2,4,2 licenses @ $946 with activity 86': tensor(-0.0499), 'Bid for 2,4,3 licenses @ $1034 with activity 94': tensor(0.0527), 'Bid for 2,4,4 licenses @ $1122 with activity 102': tensor(-0.0150), 'Bid for 3,0,0 licenses @ $165 with activity 15': tensor(-0.0480), 'Bid for 3,0,1 licenses @ $253 with activity 23': tensor(0.0353), 'Bid for 3,0,2 licenses @ $341 with activity 31': tensor(-0.0143), 'Bid for 3,0,3 licenses @ $429 with activity 39': tensor(0.0499), 'Bid for 3,0,4 licenses @ $517 with activity 47': tensor(-0.0263), 'Bid for 3,1,0 licenses @ $330 with activity 30': tensor(-0.0588), 'Bid for 3,1,1 licenses @ $418 with activity 38': tensor(0.0446), 'Bid for 3,1,2 licenses @ $506 with activity 46': tensor(-0.0550), 'Bid for 3,1,3 licenses @ $594 with activity 54': tensor(-0.0639), 'Bid for 3,1,4 licenses @ $682 with activity 62': tensor(-0.0097), 'Bid for 3,2,0 licenses @ $495 with activity 45': tensor(0.0385), 'Bid for 3,2,1 licenses @ $583 with activity 53': tensor(0.0453), 'Bid for 3,2,2 licenses @ $671 with activity 61': tensor(-0.0667), 'Bid for 3,2,3 licenses @ $759 with activity 69': tensor(-0.0397), 'Bid for 3,2,4 licenses @ $847 with activity 77': tensor(0.0699), 'Bid for 3,3,0 licenses @ $660 with activity 60': tensor(-0.1124), 'Bid for 3,3,1 licenses @ $748 with activity 68': tensor(-0.0647), 'Bid for 3,3,2 licenses @ $836 with activity 76': tensor(0.0364), 'Bid for 3,3,3 licenses @ $924 with activity 84': tensor(-0.0413), 'Bid for 3,3,4 licenses @ $1012 with activity 92': tensor(0.0205), 'Bid for 3,4,0 licenses @ $825 with activity 75': tensor(0.0070), 'Bid for 3,4,1 licenses @ $913 with activity 83': tensor(0.0758), 'Bid for 3,4,2 licenses @ $1001 with activity 91': tensor(-0.0190), 'Bid for 3,4,3 licenses @ $1089 with activity 99': tensor(-0.0149), 'Bid for 3,4,4 licenses @ $1177 with activity 107': tensor(0.0887), 'Bid for 4,0,0 licenses @ $220 with activity 20': tensor(0.0090), 'Bid for 4,0,1 licenses @ $308 with activity 28': tensor(0.0118), 'Bid for 4,0,2 licenses @ $396 with activity 36': tensor(0.0595), 'Bid for 4,0,3 licenses @ $484 with activity 44': tensor(0.0195), 'Bid for 4,0,4 licenses @ $572 with activity 52': tensor(-0.0063), 'Bid for 4,1,0 licenses @ $385 with activity 35': tensor(0.0112), 'Bid for 4,1,1 licenses @ $473 with activity 43': tensor(-0.0067), 'Bid for 4,1,2 licenses @ $561 with activity 51': tensor(-0.0554), 'Bid for 4,1,3 licenses @ $649 with activity 59': tensor(0.0397), 'Bid for 4,1,4 licenses @ $737 with activity 67': tensor(0.0698), 'Bid for 4,2,0 licenses @ $550 with activity 50': tensor(-0.0725), 'Bid for 4,2,1 licenses @ $638 with activity 58': tensor(0.0003), 'Bid for 4,2,2 licenses @ $726 with activity 66': tensor(-0.0012), 'Bid for 4,2,3 licenses @ $814 with activity 74': tensor(0.0267), 'Bid for 4,2,4 licenses @ $902 with activity 82': tensor(-0.0460), 'Bid for 4,3,0 licenses @ $715 with activity 65': tensor(0.0169), 'Bid for 4,3,1 licenses @ $803 with activity 73': tensor(-0.0618), 'Bid for 4,3,2 licenses @ $891 with activity 81': tensor(0.0805), 'Bid for 4,3,3 licenses @ $979 with activity 89': tensor(-0.0112), 'Bid for 4,3,4 licenses @ $1067 with activity 97': tensor(-0.0590), 'Bid for 4,4,0 licenses @ $880 with activity 80': tensor(-0.0079), 'Bid for 4,4,1 licenses @ $968 with activity 88': tensor(0.0201), 'Bid for 4,4,2 licenses @ $1056 with activity 96': tensor(0.0046), 'Bid for 4,4,3 licenses @ $1144 with activity 104': tensor(0.0021), 'Bid for 4,4,4 licenses @ $1232 with activity 112': tensor(-0.0073)}
+[2022-04-27 00:08:33,954] {ubc_nfsp_example.py:121} INFO - Train time 0 seconds
+[2022-04-27 00:08:33,954] {ubc_nfsp_example.py:122} INFO - Total time 0.39 seconds
+[2022-04-27 00:08:33,954] {ubc_nfsp_example.py:123} INFO - Training the DQN for player 0 is a 0.00 fraction
+[2022-04-27 00:08:33,954] {ubc_nfsp_example.py:124} INFO - Loss (Supervised, RL): (None, tensor([0]))
+[2022-04-27 00:08:33,955] {ubc_nfsp_example.py:117} INFO - PLAYER 1
+[2022-04-27 00:08:33,960] {ubc_nfsp_example.py:120} INFO - {'Bid for 0,0,0 licenses @ $0 with activity 0': tensor(-0.0104), 'Bid for 0,0,1 licenses @ $88 with activity 8': tensor(-0.0678), 'Bid for 0,0,2 licenses @ $176 with activity 16': tensor(-0.0240), 'Bid for 0,0,3 licenses @ $264 with activity 24': tensor(-0.0230), 'Bid for 0,0,4 licenses @ $352 with activity 32': tensor(-0.1235), 'Bid for 0,1,0 licenses @ $165 with activity 15': tensor(-0.0444), 'Bid for 0,1,1 licenses @ $253 with activity 23': tensor(0.0664), 'Bid for 0,1,2 licenses @ $341 with activity 31': tensor(-0.0303), 'Bid for 0,1,3 licenses @ $429 with activity 39': tensor(-0.0104), 'Bid for 0,1,4 licenses @ $517 with activity 47': tensor(-0.0437), 'Bid for 0,2,0 licenses @ $330 with activity 30': tensor(0.0173), 'Bid for 0,2,1 licenses @ $418 with activity 38': tensor(-0.0378), 'Bid for 0,2,2 licenses @ $506 with activity 46': tensor(0.0396), 'Bid for 0,2,3 licenses @ $594 with activity 54': tensor(0.0125), 'Bid for 0,2,4 licenses @ $682 with activity 62': tensor(0.0010), 'Bid for 0,3,0 licenses @ $495 with activity 45': tensor(-0.0084), 'Bid for 0,3,1 licenses @ $583 with activity 53': tensor(0.1115), 'Bid for 0,3,2 licenses @ $671 with activity 61': tensor(-0.0608), 'Bid for 0,3,3 licenses @ $759 with activity 69': tensor(-0.0427), 'Bid for 0,3,4 licenses @ $847 with activity 77': tensor(-0.0537), 'Bid for 0,4,0 licenses @ $660 with activity 60': tensor(0.0298), 'Bid for 0,4,1 licenses @ $748 with activity 68': tensor(0.0333), 'Bid for 0,4,2 licenses @ $836 with activity 76': tensor(-0.0993), 'Bid for 0,4,3 licenses @ $924 with activity 84': tensor(0.0433), 'Bid for 0,4,4 licenses @ $1012 with activity 92': tensor(-0.0172), 'Bid for 1,0,0 licenses @ $55 with activity 5': tensor(-0.0527), 'Bid for 1,0,1 licenses @ $143 with activity 13': tensor(-0.0061), 'Bid for 1,0,2 licenses @ $231 with activity 21': tensor(0.0382), 'Bid for 1,0,3 licenses @ $319 with activity 29': tensor(-0.0505), 'Bid for 1,0,4 licenses @ $407 with activity 37': tensor(0.0147), 'Bid for 1,1,0 licenses @ $220 with activity 20': tensor(-0.0214), 'Bid for 1,1,1 licenses @ $308 with activity 28': tensor(-0.0155), 'Bid for 1,1,2 licenses @ $396 with activity 36': tensor(0.0105), 'Bid for 1,1,3 licenses @ $484 with activity 44': tensor(0.0060), 'Bid for 1,1,4 licenses @ $572 with activity 52': tensor(-0.0314), 'Bid for 1,2,0 licenses @ $385 with activity 35': tensor(-0.0277), 'Bid for 1,2,1 licenses @ $473 with activity 43': tensor(-0.0449), 'Bid for 1,2,2 licenses @ $561 with activity 51': tensor(-0.0135), 'Bid for 1,2,3 licenses @ $649 with activity 59': tensor(-0.0074), 'Bid for 1,2,4 licenses @ $737 with activity 67': tensor(0.0079), 'Bid for 1,3,0 licenses @ $550 with activity 50': tensor(0.0875), 'Bid for 1,3,1 licenses @ $638 with activity 58': tensor(0.0278), 'Bid for 1,3,2 licenses @ $726 with activity 66': tensor(-0.0493), 'Bid for 1,3,3 licenses @ $814 with activity 74': tensor(0.0406), 'Bid for 1,3,4 licenses @ $902 with activity 82': tensor(0.0503), 'Bid for 1,4,0 licenses @ $715 with activity 65': tensor(0.0110), 'Bid for 1,4,1 licenses @ $803 with activity 73': tensor(0.0012), 'Bid for 1,4,2 licenses @ $891 with activity 81': tensor(-0.0158), 'Bid for 1,4,3 licenses @ $979 with activity 89': tensor(0.0036), 'Bid for 1,4,4 licenses @ $1067 with activity 97': tensor(-0.0407), 'Bid for 2,0,0 licenses @ $110 with activity 10': tensor(-0.0707), 'Bid for 2,0,1 licenses @ $198 with activity 18': tensor(-0.0131), 'Bid for 2,0,2 licenses @ $286 with activity 26': tensor(-0.0569), 'Bid for 2,0,3 licenses @ $374 with activity 34': tensor(-0.0002), 'Bid for 2,0,4 licenses @ $462 with activity 42': tensor(-0.0269), 'Bid for 2,1,0 licenses @ $275 with activity 25': tensor(-0.0930), 'Bid for 2,1,1 licenses @ $363 with activity 33': tensor(-0.0099), 'Bid for 2,1,2 licenses @ $451 with activity 41': tensor(0.0703), 'Bid for 2,1,3 licenses @ $539 with activity 49': tensor(-0.0569), 'Bid for 2,1,4 licenses @ $627 with activity 57': tensor(0.0122), 'Bid for 2,2,0 licenses @ $440 with activity 40': tensor(0.0080), 'Bid for 2,2,1 licenses @ $528 with activity 48': tensor(-0.0075), 'Bid for 2,2,2 licenses @ $616 with activity 56': tensor(-0.0803), 'Bid for 2,2,3 licenses @ $704 with activity 64': tensor(0.0205), 'Bid for 2,2,4 licenses @ $792 with activity 72': tensor(-0.0544), 'Bid for 2,3,0 licenses @ $605 with activity 55': tensor(-0.0379), 'Bid for 2,3,1 licenses @ $693 with activity 63': tensor(0.0321), 'Bid for 2,3,2 licenses @ $781 with activity 71': tensor(-0.0437), 'Bid for 2,3,3 licenses @ $869 with activity 79': tensor(0.0207), 'Bid for 2,3,4 licenses @ $957 with activity 87': tensor(0.0081), 'Bid for 2,4,0 licenses @ $770 with activity 70': tensor(-0.0393), 'Bid for 2,4,1 licenses @ $858 with activity 78': tensor(0.0680), 'Bid for 2,4,2 licenses @ $946 with activity 86': tensor(0.0147), 'Bid for 2,4,3 licenses @ $1034 with activity 94': tensor(-0.0261), 'Bid for 2,4,4 licenses @ $1122 with activity 102': tensor(-0.0584), 'Bid for 3,0,0 licenses @ $165 with activity 15': tensor(-0.0453), 'Bid for 3,0,1 licenses @ $253 with activity 23': tensor(0.0451), 'Bid for 3,0,2 licenses @ $341 with activity 31': tensor(-0.0444), 'Bid for 3,0,3 licenses @ $429 with activity 39': tensor(-0.0831), 'Bid for 3,0,4 licenses @ $517 with activity 47': tensor(-0.0097), 'Bid for 3,1,0 licenses @ $330 with activity 30': tensor(0.0030), 'Bid for 3,1,1 licenses @ $418 with activity 38': tensor(-0.0209), 'Bid for 3,1,2 licenses @ $506 with activity 46': tensor(0.0573), 'Bid for 3,1,3 licenses @ $594 with activity 54': tensor(-0.0079), 'Bid for 3,1,4 licenses @ $682 with activity 62': tensor(-0.0622), 'Bid for 3,2,0 licenses @ $495 with activity 45': tensor(-0.0529), 'Bid for 3,2,1 licenses @ $583 with activity 53': tensor(0.0298), 'Bid for 3,2,2 licenses @ $671 with activity 61': tensor(-0.0199), 'Bid for 3,2,3 licenses @ $759 with activity 69': tensor(0.0350), 'Bid for 3,2,4 licenses @ $847 with activity 77': tensor(-0.0893), 'Bid for 3,3,0 licenses @ $660 with activity 60': tensor(0.0321), 'Bid for 3,3,1 licenses @ $748 with activity 68': tensor(0.0156), 'Bid for 3,3,2 licenses @ $836 with activity 76': tensor(0.0287), 'Bid for 3,3,3 licenses @ $924 with activity 84': tensor(0.0541), 'Bid for 3,3,4 licenses @ $1012 with activity 92': tensor(-0.0797), 'Bid for 3,4,0 licenses @ $825 with activity 75': tensor(-0.0075), 'Bid for 3,4,1 licenses @ $913 with activity 83': tensor(0.0092), 'Bid for 3,4,2 licenses @ $1001 with activity 91': tensor(-0.0448), 'Bid for 3,4,3 licenses @ $1089 with activity 99': tensor(0.0089), 'Bid for 3,4,4 licenses @ $1177 with activity 107': tensor(-0.0016), 'Bid for 4,0,0 licenses @ $220 with activity 20': tensor(0.0189), 'Bid for 4,0,1 licenses @ $308 with activity 28': tensor(-0.0905), 'Bid for 4,0,2 licenses @ $396 with activity 36': tensor(0.0053), 'Bid for 4,0,3 licenses @ $484 with activity 44': tensor(-0.0324), 'Bid for 4,0,4 licenses @ $572 with activity 52': tensor(0.0473), 'Bid for 4,1,0 licenses @ $385 with activity 35': tensor(0.0300), 'Bid for 4,1,1 licenses @ $473 with activity 43': tensor(-0.0202), 'Bid for 4,1,2 licenses @ $561 with activity 51': tensor(0.0177), 'Bid for 4,1,3 licenses @ $649 with activity 59': tensor(-0.0358), 'Bid for 4,1,4 licenses @ $737 with activity 67': tensor(-0.0334), 'Bid for 4,2,0 licenses @ $550 with activity 50': tensor(-0.0330), 'Bid for 4,2,1 licenses @ $638 with activity 58': tensor(0.0957), 'Bid for 4,2,2 licenses @ $726 with activity 66': tensor(0.0325), 'Bid for 4,2,3 licenses @ $814 with activity 74': tensor(0.0391), 'Bid for 4,2,4 licenses @ $902 with activity 82': tensor(-0.0580), 'Bid for 4,3,0 licenses @ $715 with activity 65': tensor(0.0365), 'Bid for 4,3,1 licenses @ $803 with activity 73': tensor(-0.0277), 'Bid for 4,3,2 licenses @ $891 with activity 81': tensor(-0.0283), 'Bid for 4,3,3 licenses @ $979 with activity 89': tensor(-0.0345), 'Bid for 4,3,4 licenses @ $1067 with activity 97': tensor(-0.0196), 'Bid for 4,4,0 licenses @ $880 with activity 80': tensor(-0.0457), 'Bid for 4,4,1 licenses @ $968 with activity 88': tensor(0.0452), 'Bid for 4,4,2 licenses @ $1056 with activity 96': tensor(-0.0006), 'Bid for 4,4,3 licenses @ $1144 with activity 104': tensor(-0.0098), 'Bid for 4,4,4 licenses @ $1232 with activity 112': tensor(0.0469)}
+[2022-04-27 00:08:33,997] {ubc_nfsp_example.py:121} INFO - Train time 0 seconds
+[2022-04-27 00:08:33,998] {ubc_nfsp_example.py:122} INFO - Total time 0.43 seconds
+[2022-04-27 00:08:33,998] {ubc_nfsp_example.py:123} INFO - Training the DQN for player 1 is a 0.00 fraction
+[2022-04-27 00:08:33,998] {ubc_nfsp_example.py:124} INFO - Loss (Supervised, RL): (None, tensor([0]))
+[2022-04-27 00:08:33,998] {ubc_nfsp_example.py:117} INFO - PLAYER 2
+[2022-04-27 00:08:34,004] {ubc_nfsp_example.py:120} INFO - {'Bid for 0,0,0 licenses @ $0 with activity 0': tensor(-0.0239), 'Bid for 0,0,1 licenses @ $88 with activity 8': tensor(0.0287), 'Bid for 0,0,2 licenses @ $176 with activity 16': tensor(0.0800), 'Bid for 0,0,3 licenses @ $264 with activity 24': tensor(0.0047), 'Bid for 0,0,4 licenses @ $352 with activity 32': tensor(0.0119), 'Bid for 0,1,0 licenses @ $165 with activity 15': tensor(-0.0174), 'Bid for 0,1,1 licenses @ $253 with activity 23': tensor(0.1215), 'Bid for 0,1,2 licenses @ $341 with activity 31': tensor(0.0157), 'Bid for 0,1,3 licenses @ $429 with activity 39': tensor(0.1009), 'Bid for 0,1,4 licenses @ $517 with activity 47': tensor(-0.0791), 'Bid for 0,2,0 licenses @ $330 with activity 30': tensor(0.0168), 'Bid for 0,2,1 licenses @ $418 with activity 38': tensor(-0.0167), 'Bid for 0,2,2 licenses @ $506 with activity 46': tensor(-0.0139), 'Bid for 0,2,3 licenses @ $594 with activity 54': tensor(-0.0242), 'Bid for 0,2,4 licenses @ $682 with activity 62': tensor(-0.0479), 'Bid for 0,3,0 licenses @ $495 with activity 45': tensor(-0.0344), 'Bid for 0,3,1 licenses @ $583 with activity 53': tensor(-0.0841), 'Bid for 0,3,2 licenses @ $671 with activity 61': tensor(-0.0058), 'Bid for 0,3,3 licenses @ $759 with activity 69': tensor(0.0151), 'Bid for 0,3,4 licenses @ $847 with activity 77': tensor(0.0642), 'Bid for 0,4,0 licenses @ $660 with activity 60': tensor(0.0511), 'Bid for 0,4,1 licenses @ $748 with activity 68': tensor(0.0521), 'Bid for 0,4,2 licenses @ $836 with activity 76': tensor(-0.0314), 'Bid for 0,4,3 licenses @ $924 with activity 84': tensor(0.0350), 'Bid for 0,4,4 licenses @ $1012 with activity 92': tensor(0.0195), 'Bid for 1,0,0 licenses @ $55 with activity 5': tensor(-0.0600), 'Bid for 1,0,1 licenses @ $143 with activity 13': tensor(0.0647), 'Bid for 1,0,2 licenses @ $231 with activity 21': tensor(0.0507), 'Bid for 1,0,3 licenses @ $319 with activity 29': tensor(0.0078), 'Bid for 1,0,4 licenses @ $407 with activity 37': tensor(0.0416), 'Bid for 1,1,0 licenses @ $220 with activity 20': tensor(-0.0743), 'Bid for 1,1,1 licenses @ $308 with activity 28': tensor(-0.0467), 'Bid for 1,1,2 licenses @ $396 with activity 36': tensor(0.0437), 'Bid for 1,1,3 licenses @ $484 with activity 44': tensor(0.0028), 'Bid for 1,1,4 licenses @ $572 with activity 52': tensor(0.0085), 'Bid for 1,2,0 licenses @ $385 with activity 35': tensor(-0.0914), 'Bid for 1,2,1 licenses @ $473 with activity 43': tensor(0.0679), 'Bid for 1,2,2 licenses @ $561 with activity 51': tensor(-0.0034), 'Bid for 1,2,3 licenses @ $649 with activity 59': tensor(0.0198), 'Bid for 1,2,4 licenses @ $737 with activity 67': tensor(0.0129), 'Bid for 1,3,0 licenses @ $550 with activity 50': tensor(0.0164), 'Bid for 1,3,1 licenses @ $638 with activity 58': tensor(0.0737), 'Bid for 1,3,2 licenses @ $726 with activity 66': tensor(-0.0402), 'Bid for 1,3,3 licenses @ $814 with activity 74': tensor(0.0323), 'Bid for 1,3,4 licenses @ $902 with activity 82': tensor(-0.0244), 'Bid for 1,4,0 licenses @ $715 with activity 65': tensor(-0.0041), 'Bid for 1,4,1 licenses @ $803 with activity 73': tensor(0.0576), 'Bid for 1,4,2 licenses @ $891 with activity 81': tensor(0.0218), 'Bid for 1,4,3 licenses @ $979 with activity 89': tensor(0.0451), 'Bid for 1,4,4 licenses @ $1067 with activity 97': tensor(-0.0716), 'Bid for 2,0,0 licenses @ $110 with activity 10': tensor(0.0586), 'Bid for 2,0,1 licenses @ $198 with activity 18': tensor(0.0626), 'Bid for 2,0,2 licenses @ $286 with activity 26': tensor(0.0429), 'Bid for 2,0,3 licenses @ $374 with activity 34': tensor(0.0549), 'Bid for 2,0,4 licenses @ $462 with activity 42': tensor(-0.0022), 'Bid for 2,1,0 licenses @ $275 with activity 25': tensor(0.0374), 'Bid for 2,1,1 licenses @ $363 with activity 33': tensor(-0.1213), 'Bid for 2,1,2 licenses @ $451 with activity 41': tensor(-0.0014), 'Bid for 2,1,3 licenses @ $539 with activity 49': tensor(-0.0480), 'Bid for 2,1,4 licenses @ $627 with activity 57': tensor(0.0604), 'Bid for 2,2,0 licenses @ $440 with activity 40': tensor(0.0670), 'Bid for 2,2,1 licenses @ $528 with activity 48': tensor(-0.0384), 'Bid for 2,2,2 licenses @ $616 with activity 56': tensor(-0.0196), 'Bid for 2,2,3 licenses @ $704 with activity 64': tensor(-0.0007), 'Bid for 2,2,4 licenses @ $792 with activity 72': tensor(-0.0752), 'Bid for 2,3,0 licenses @ $605 with activity 55': tensor(0.0496), 'Bid for 2,3,1 licenses @ $693 with activity 63': tensor(-0.0197), 'Bid for 2,3,2 licenses @ $781 with activity 71': tensor(-0.0299), 'Bid for 2,3,3 licenses @ $869 with activity 79': tensor(-0.0124), 'Bid for 2,3,4 licenses @ $957 with activity 87': tensor(0.0266), 'Bid for 2,4,0 licenses @ $770 with activity 70': tensor(0.0052), 'Bid for 2,4,1 licenses @ $858 with activity 78': tensor(-0.0190), 'Bid for 2,4,2 licenses @ $946 with activity 86': tensor(0.0130), 'Bid for 2,4,3 licenses @ $1034 with activity 94': tensor(-0.0450), 'Bid for 2,4,4 licenses @ $1122 with activity 102': tensor(0.0084), 'Bid for 3,0,0 licenses @ $165 with activity 15': tensor(0.0053), 'Bid for 3,0,1 licenses @ $253 with activity 23': tensor(0.0510), 'Bid for 3,0,2 licenses @ $341 with activity 31': tensor(0.0371), 'Bid for 3,0,3 licenses @ $429 with activity 39': tensor(-0.0243), 'Bid for 3,0,4 licenses @ $517 with activity 47': tensor(0.0357), 'Bid for 3,1,0 licenses @ $330 with activity 30': tensor(0.0027), 'Bid for 3,1,1 licenses @ $418 with activity 38': tensor(0.0062), 'Bid for 3,1,2 licenses @ $506 with activity 46': tensor(-0.0194), 'Bid for 3,1,3 licenses @ $594 with activity 54': tensor(-0.0192), 'Bid for 3,1,4 licenses @ $682 with activity 62': tensor(-0.0358), 'Bid for 3,2,0 licenses @ $495 with activity 45': tensor(-0.0347), 'Bid for 3,2,1 licenses @ $583 with activity 53': tensor(-0.0739), 'Bid for 3,2,2 licenses @ $671 with activity 61': tensor(0.0451), 'Bid for 3,2,3 licenses @ $759 with activity 69': tensor(-0.0069), 'Bid for 3,2,4 licenses @ $847 with activity 77': tensor(-0.0435), 'Bid for 3,3,0 licenses @ $660 with activity 60': tensor(-0.1062), 'Bid for 3,3,1 licenses @ $748 with activity 68': tensor(-0.0269), 'Bid for 3,3,2 licenses @ $836 with activity 76': tensor(-0.0505), 'Bid for 3,3,3 licenses @ $924 with activity 84': tensor(-0.0009), 'Bid for 3,3,4 licenses @ $1012 with activity 92': tensor(-0.0196), 'Bid for 3,4,0 licenses @ $825 with activity 75': tensor(-0.0262), 'Bid for 3,4,1 licenses @ $913 with activity 83': tensor(0.0226), 'Bid for 3,4,2 licenses @ $1001 with activity 91': tensor(-0.0313), 'Bid for 3,4,3 licenses @ $1089 with activity 99': tensor(-0.0009), 'Bid for 3,4,4 licenses @ $1177 with activity 107': tensor(0.0101), 'Bid for 4,0,0 licenses @ $220 with activity 20': tensor(-0.0677), 'Bid for 4,0,1 licenses @ $308 with activity 28': tensor(0.0142), 'Bid for 4,0,2 licenses @ $396 with activity 36': tensor(0.0370), 'Bid for 4,0,3 licenses @ $484 with activity 44': tensor(0.0535), 'Bid for 4,0,4 licenses @ $572 with activity 52': tensor(0.0316), 'Bid for 4,1,0 licenses @ $385 with activity 35': tensor(0.0699), 'Bid for 4,1,1 licenses @ $473 with activity 43': tensor(0.0603), 'Bid for 4,1,2 licenses @ $561 with activity 51': tensor(-0.0153), 'Bid for 4,1,3 licenses @ $649 with activity 59': tensor(0.0234), 'Bid for 4,1,4 licenses @ $737 with activity 67': tensor(-0.0215), 'Bid for 4,2,0 licenses @ $550 with activity 50': tensor(0.0469), 'Bid for 4,2,1 licenses @ $638 with activity 58': tensor(-0.0334), 'Bid for 4,2,2 licenses @ $726 with activity 66': tensor(-0.0314), 'Bid for 4,2,3 licenses @ $814 with activity 74': tensor(-0.0033), 'Bid for 4,2,4 licenses @ $902 with activity 82': tensor(-0.0004), 'Bid for 4,3,0 licenses @ $715 with activity 65': tensor(-0.0115), 'Bid for 4,3,1 licenses @ $803 with activity 73': tensor(-0.0090), 'Bid for 4,3,2 licenses @ $891 with activity 81': tensor(0.0010), 'Bid for 4,3,3 licenses @ $979 with activity 89': tensor(-0.0310), 'Bid for 4,3,4 licenses @ $1067 with activity 97': tensor(-0.0434), 'Bid for 4,4,0 licenses @ $880 with activity 80': tensor(0.0853), 'Bid for 4,4,1 licenses @ $968 with activity 88': tensor(7.8665e-05), 'Bid for 4,4,2 licenses @ $1056 with activity 96': tensor(-0.0819), 'Bid for 4,4,3 licenses @ $1144 with activity 104': tensor(0.0485), 'Bid for 4,4,4 licenses @ $1232 with activity 112': tensor(-0.0481)}
+[2022-04-27 00:08:34,041] {ubc_nfsp_example.py:121} INFO - Train time 0 seconds
+[2022-04-27 00:08:34,041] {ubc_nfsp_example.py:122} INFO - Total time 0.48 seconds
+[2022-04-27 00:08:34,041] {ubc_nfsp_example.py:123} INFO - Training the DQN for player 2 is a 0.00 fraction
+[2022-04-27 00:08:34,041] {ubc_nfsp_example.py:124} INFO - Loss (Supervised, RL): (None, tensor([0]))
+[2022-04-27 00:08:34,041] {ubc_nfsp_example.py:127} INFO - EVALUATION AT ITERATION 10
+[2022-04-27 00:08:34,042] {ubc_nfsp_example.py:221} INFO - Walltime: 0.48 seconds
+[2022-04-27 00:08:34,042] {ubc_nfsp_example.py:222} INFO - All done. Goodbye!
+[2022-04-27 00:09:06,366] {ubc_utils.py:123} INFO - Setting numpy and torch seed to 100
+[2022-04-27 00:09:06,367] {ubc_utils.py:408} INFO - Reading config from /apps/open_spiel/notebooks/configs/flatmlp/mlp.yml
+[2022-04-27 00:09:06,378] {nfsp.py:133} INFO - Network params: {'add_explore_transitions': False, 'anticipatory_param': 0.1, 'batch_size': 1024, 'epsilon_end': 0.05, 'epsilon_start': 0.9, 'learn_every': 16, 'loss_str': 'mse', 'sl_loss_str': 'cross_entropy', 'min_buffer_size_to_learn': 1000, 'optimizer_str': 'sgd', 'replay_buffer_capacity': 50000, 'reservoir_buffer_capacity': 2000000, 'rl_learning_rate': 0.0001, 'rl_model': 'mlp', 'rl_model_args': {'hidden_sizes': [256, 256]}, 'sl_learning_rate': 0.01, 'sl_model': 'mlp', 'sl_model_args': {'hidden_sizes': [256, 256]}, 'update_target_network_every': 1000, 'double_dqn': True, 'device': 'cuda', 'num_training_episodes': 1000}
+[2022-04-27 00:09:06,379] {nfsp.py:134} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'num_training_episodes': 1000, 'iterate_br': 0, 'require_br': 1, 'random_ic': 0, 'seed': 100, 'network_config_file': 'flatmlp/mlp', 'compute_nash_conv': False, 'device': <function default_device at 0x7f7d8dc7ad30>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'test_require_br', 'job_name': 'sats_5_test-flatmlpmlp-100', 'filename': 'sats_5.json', 'game_name': 'clock_auction', 'report_freq': 50000, 'eval_every': 1000000, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'dispatch_br': 0, 'br_portfolio_path': 'flatmlp', 'br_overrides': '--num_training_episodes 1_000_000', 'eval_overrides': '', 'rnr_player': None, 'rnr_exploit_prob': 0.5, 'rnr_checkpoints': [], 'replay_buffer_capacity': None, 'reservoir_buffer_capacity': None, 'batch_size': None, 'rl_learning_rate': None, 'sl_learning_rate': None, 'min_buffer_size_to_learn': None, 'learn_every': None, 'optimizer_str': None, 'epsilon_start': None, 'epsilon_end': None}
+[2022-04-27 00:09:06,396] {rl_environment.py:196} INFO - Using game instance: turn_based_simultaneous_game
+[2022-04-27 00:09:06,396] {ubc_nfsp_example.py:53} INFO - Game has a state size of 3275, 125 distinct actions, and 3 players
+[2022-04-27 00:09:06,396] {ubc_nfsp_example.py:54} INFO - Game has 3 products
+[2022-04-27 00:09:06,397] {ubc_nfsp.py:118} INFO - Creating NFSP using device: cuda for player 0
+[2022-04-27 00:09:06,397] {ubc_dqn.py:263} INFO - Double DQN activated for player 0
+[2022-04-27 00:09:06,398] {ubc_dqn.py:298} INFO - Creating DQN using device: cuda for player 0
+[2022-04-27 00:09:10,140] {ubc_nfsp.py:118} INFO - Creating NFSP using device: cuda for player 1
+[2022-04-27 00:09:10,141] {ubc_dqn.py:263} INFO - Double DQN activated for player 1
+[2022-04-27 00:09:10,141] {ubc_dqn.py:298} INFO - Creating DQN using device: cuda for player 1
+[2022-04-27 00:09:10,171] {ubc_nfsp.py:118} INFO - Creating NFSP using device: cuda for player 2
+[2022-04-27 00:09:10,171] {ubc_dqn.py:263} INFO - Double DQN activated for player 2
+[2022-04-27 00:09:10,171] {ubc_dqn.py:298} INFO - Creating DQN using device: cuda for player 2
+[2022-04-27 00:09:10,200] {ubc_utils.py:123} INFO - Setting numpy and torch seed to 100
+[2022-04-27 00:09:54,071] {ubc_utils.py:123} INFO - Setting numpy and torch seed to 100
+[2022-04-27 00:09:54,072] {ubc_utils.py:408} INFO - Reading config from /apps/open_spiel/notebooks/configs/flatmlp/mlp.yml
+[2022-04-27 00:09:54,083] {nfsp.py:133} INFO - Network params: {'add_explore_transitions': False, 'anticipatory_param': 0.1, 'batch_size': 1024, 'epsilon_end': 0.05, 'epsilon_start': 0.9, 'learn_every': 16, 'loss_str': 'mse', 'sl_loss_str': 'cross_entropy', 'min_buffer_size_to_learn': 1000, 'optimizer_str': 'sgd', 'replay_buffer_capacity': 50000, 'reservoir_buffer_capacity': 2000000, 'rl_learning_rate': 0.0001, 'rl_model': 'mlp', 'rl_model_args': {'hidden_sizes': [256, 256]}, 'sl_learning_rate': 0.01, 'sl_model': 'mlp', 'sl_model_args': {'hidden_sizes': [256, 256]}, 'update_target_network_every': 1000, 'double_dqn': True, 'device': 'cuda', 'num_training_episodes': 10000}
+[2022-04-27 00:09:54,084] {nfsp.py:134} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'num_training_episodes': 10000, 'iterate_br': 0, 'require_br': 1, 'random_ic': 0, 'seed': 100, 'network_config_file': 'flatmlp/mlp', 'compute_nash_conv': False, 'device': <function default_device at 0x7f8248457d30>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'test_require_br', 'job_name': 'sats_5_test-flatmlpmlp-100', 'filename': 'sats_5.json', 'game_name': 'clock_auction', 'report_freq': 50000, 'eval_every': 1000000, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'dispatch_br': 0, 'br_portfolio_path': 'flatmlp', 'br_overrides': '--num_training_episodes 1_000_000', 'eval_overrides': '', 'rnr_player': None, 'rnr_exploit_prob': 0.5, 'rnr_checkpoints': [], 'replay_buffer_capacity': None, 'reservoir_buffer_capacity': None, 'batch_size': None, 'rl_learning_rate': None, 'sl_learning_rate': None, 'min_buffer_size_to_learn': None, 'learn_every': None, 'optimizer_str': None, 'epsilon_start': None, 'epsilon_end': None}
+[2022-04-27 00:09:54,102] {rl_environment.py:196} INFO - Using game instance: turn_based_simultaneous_game
+[2022-04-27 00:09:54,103] {ubc_nfsp_example.py:53} INFO - Game has a state size of 3275, 125 distinct actions, and 3 players
+[2022-04-27 00:09:54,103] {ubc_nfsp_example.py:54} INFO - Game has 3 products
+[2022-04-27 00:09:54,104] {ubc_nfsp.py:118} INFO - Creating NFSP using device: cuda for player 0
+[2022-04-27 00:09:54,104] {ubc_dqn.py:263} INFO - Double DQN activated for player 0
+[2022-04-27 00:09:54,104] {ubc_dqn.py:298} INFO - Creating DQN using device: cuda for player 0
+[2022-04-27 00:09:57,892] {ubc_nfsp.py:118} INFO - Creating NFSP using device: cuda for player 1
+[2022-04-27 00:09:57,892] {ubc_dqn.py:263} INFO - Double DQN activated for player 1
+[2022-04-27 00:09:57,892] {ubc_dqn.py:298} INFO - Creating DQN using device: cuda for player 1
+[2022-04-27 00:09:57,922] {ubc_nfsp.py:118} INFO - Creating NFSP using device: cuda for player 2
+[2022-04-27 00:09:57,922] {ubc_dqn.py:263} INFO - Double DQN activated for player 2
+[2022-04-27 00:09:57,922] {ubc_dqn.py:298} INFO - Creating DQN using device: cuda for player 2
+[2022-04-27 00:09:57,952] {ubc_utils.py:123} INFO - Setting numpy and torch seed to 100
+[2022-10-04 23:08:11,495] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-04 23:08:11,496] {ppo_utils.py:43} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo_reward.yml
+[2022-10-04 23:11:24,477] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-04 23:11:24,478] {ppo_utils.py:43} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo_reward.yml
+[2022-10-04 23:11:24,480] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-04 23:11:24,480] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'reward_function': 'revenue_sparse_normalized', 'schedule_function': 'linear', 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-04 23:11:24,480] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo_reward', 'compute_nash_conv': False, 'device': <function default_device at 0x7f1dfc3b83a0>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'testrewardshape', 'job_name': 'parameters-aug11ppo-104', 'filename': 'sats_2regions_2licenses_2players_5types.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 500, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 1, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-04 23:11:26,484] {clock_auction.py:136} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-04 23:11:26,484] {clock_auction.py:140} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-04 23:11:26,484] {clock_auction.py:143} INFO - Parsing configuration from /apps/open_spiel/configs/sats_2regions_2licenses_2players_5types.json
+[2022-10-04 23:11:26,485] {clock_auction.py:207} INFO - Done config parsing
+[2022-10-04 23:11:26,486] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-04 23:11:26,504] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-04 23:11:26,505] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-04 23:11:26,506] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-04 23:11:26,506] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-04 23:11:26,507] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-04 23:11:26,507] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-04 23:11:26,508] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-04 23:11:26,508] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-04 23:11:30,629] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-04 23:11:30,635] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-04 23:11:30,635] {ppo_utils.py:214} INFO - Training for 976 updates
+[2022-10-04 23:11:30,636] {ppo_utils.py:215} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-04 23:11:30,636] {ppo_utils.py:260} INFO - EVALUATION AFTER 128 steps
+[2022-10-04 23:13:57,352] {ppo_utils.py:244} INFO - Policy has not changed for 5 updates. Stopping training
+[2022-10-04 23:13:57,352] {ppo_utils.py:250} INFO - Terminating PPO training after 38 updates
+[2022-10-04 23:13:57,352] {ppo_utils.py:295} INFO - Update 38
+[2022-10-04 23:13:57,352] {ppo_utils.py:260} INFO - EVALUATION AFTER 4864 steps
+[2022-10-04 23:13:57,353] {ppo_utils.py:301} INFO - Walltime: 2 minutes and 26.72 seconds
+[2022-10-04 23:13:57,353] {ppo_utils.py:302} INFO - All done. Goodbye!
+[2022-10-11 21:56:27,494] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 21:56:27,496] {ppo_utils.py:43} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo.yml
+[2022-10-11 21:56:27,500] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 21:56:27,500] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 21:56:27,500] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo', 'compute_nash_conv': False, 'device': <function default_device at 0x7f544606d4c0>, 'overwrite_db': 1, 'dry_run': 0, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'bully', 'job_name': 'baseline', 'filename': 'bully_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 21:56:30,710] {clock_auction.py:136} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 21:56:30,711] {clock_auction.py:140} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 21:56:30,711] {clock_auction.py:143} INFO - Parsing configuration from /apps/open_spiel/configs/bully_2.json
+[2022-10-11 21:56:30,711] {clock_auction.py:207} INFO - Done config parsing
+[2022-10-11 21:56:30,736] {clock_auction.py:136} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 21:56:30,736] {clock_auction.py:140} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 21:56:30,736] {clock_auction.py:143} INFO - Parsing configuration from /apps/open_spiel/configs/bully_2.json
+[2022-10-11 21:56:30,737] {clock_auction.py:207} INFO - Done config parsing
+[2022-10-11 21:56:30,738] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:56:30,740] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:56:30,741] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:56:30,742] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:56:30,743] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:56:30,743] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:56:30,744] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:56:30,745] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:56:30,746] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:56:35,986] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:56:36,210] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 21:56:36,211] {ppo_utils.py:236} INFO - Training for 976 updates
+[2022-10-11 21:56:36,211] {ppo_utils.py:237} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 21:56:51,634] {ppo_utils.py:266} INFO - Policy has not changed for 5 updates. Stopping training
+[2022-10-11 21:56:51,635] {ppo_utils.py:272} INFO - Terminating PPO training after 5 updates
+[2022-10-11 21:56:51,635] {ppo_utils.py:317} INFO - Update 5
+[2022-10-11 21:56:51,635] {ppo_utils.py:282} INFO - EVALUATION AFTER 640 steps
+[2022-10-11 21:56:51,635] {savers.py:17} INFO - Saving episode 640 to DB
+[2022-10-11 21:56:51,770] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 21:56:51,885] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 21:56:52,001] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 21:56:52,002] {ppo_utils.py:323} INFO - Walltime: 15.79 seconds
+[2022-10-11 21:56:52,002] {ppo_utils.py:324} INFO - All done. Goodbye!
+[2022-10-11 21:58:58,800] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 21:58:58,801] {ppo_utils.py:43} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo_potential_pricing.yml
+[2022-10-11 21:58:58,803] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 21:58:58,803] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'potential_function': 'pricing', 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 21:58:58,803] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo_potential_pricing', 'compute_nash_conv': False, 'device': <function default_device at 0x7f68cbbdc4c0>, 'overwrite_db': 1, 'dry_run': 0, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'bully', 'job_name': 'pricing', 'filename': 'bully_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 21:59:00,746] {clock_auction.py:136} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 21:59:00,746] {clock_auction.py:140} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 21:59:00,746] {clock_auction.py:143} INFO - Parsing configuration from /apps/open_spiel/configs/bully_2.json
+[2022-10-11 21:59:00,746] {clock_auction.py:207} INFO - Done config parsing
+[2022-10-11 21:59:00,747] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:59:00,748] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:59:00,749] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:59:00,749] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:59:00,750] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:59:00,750] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:59:00,751] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:59:00,751] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:59:00,752] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:59:04,682] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 21:59:04,687] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 21:59:04,688] {ppo_utils.py:236} INFO - Training for 976 updates
+[2022-10-11 21:59:04,688] {ppo_utils.py:237} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 21:59:27,960] {ppo_utils.py:266} INFO - Policy has not changed for 5 updates. Stopping training
+[2022-10-11 21:59:27,961] {ppo_utils.py:272} INFO - Terminating PPO training after 5 updates
+[2022-10-11 21:59:27,961] {ppo_utils.py:317} INFO - Update 5
+[2022-10-11 21:59:27,961] {ppo_utils.py:282} INFO - EVALUATION AFTER 640 steps
+[2022-10-11 21:59:27,961] {savers.py:17} INFO - Saving episode 640 to DB
+[2022-10-11 21:59:28,091] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 21:59:28,208] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 21:59:28,324] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 21:59:28,325] {ppo_utils.py:323} INFO - Walltime: 23.64 seconds
+[2022-10-11 21:59:28,325] {ppo_utils.py:324} INFO - All done. Goodbye!
+[2022-10-11 22:13:22,383] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:13:22,384] {ppo_utils.py:43} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo_reward.yml
+[2022-10-11 22:13:22,386] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 22:13:22,386] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'reward_function': 'get_revenue_sparse_normalized', 'schedule_function': 'linear', 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 22:13:22,386] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo_reward', 'compute_nash_conv': False, 'device': <function default_device at 0x7f99c02514c0>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'testrewardshape', 'job_name': 'parameters-aug11ppo-104', 'filename': 'sats_2regions_2licenses_2players_5types.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 500, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 1, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 22:13:24,431] {clock_auction.py:136} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 22:13:24,431] {clock_auction.py:140} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 22:13:24,431] {clock_auction.py:143} INFO - Parsing configuration from /apps/open_spiel/configs/sats_2regions_2licenses_2players_5types.json
+[2022-10-11 22:13:24,432] {clock_auction.py:207} INFO - Done config parsing
+[2022-10-11 22:13:24,433] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:13:24,453] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:13:24,453] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:13:24,454] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:13:24,454] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:13:24,455] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:13:24,456] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:13:24,457] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:13:24,458] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:13:28,432] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:13:28,437] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:13:28,438] {ppo_utils.py:238} INFO - Training for 976 updates
+[2022-10-11 22:13:28,438] {ppo_utils.py:239} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 22:13:28,438] {ppo_utils.py:284} INFO - EVALUATION AFTER 128 steps
+[2022-10-11 22:15:00,132] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:15:00,133] {ppo_utils.py:43} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo_reward.yml
+[2022-10-11 22:15:00,135] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 22:15:00,136] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'reward_function': 'get_revenue_sparse_normalized', 'schedule_function': 'linear', 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 22:15:00,136] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo_reward', 'compute_nash_conv': False, 'device': <function default_device at 0x7f1384b314c0>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'testrewardshape', 'job_name': 'parameters-aug11ppo-104', 'filename': 'sats_2regions_2licenses_2players_5types.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 500, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 22:15:02,084] {clock_auction.py:136} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 22:15:02,084] {clock_auction.py:140} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 22:15:02,084] {clock_auction.py:143} INFO - Parsing configuration from /apps/open_spiel/configs/sats_2regions_2licenses_2players_5types.json
+[2022-10-11 22:15:02,085] {clock_auction.py:207} INFO - Done config parsing
+[2022-10-11 22:15:02,086] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:15:02,105] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:15:02,105] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:15:02,106] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:15:02,106] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:15:02,107] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:15:02,108] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:15:02,108] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:15:02,109] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:15:06,173] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:15:06,179] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:15:06,179] {ppo_utils.py:238} INFO - Training for 976 updates
+[2022-10-11 22:15:06,179] {ppo_utils.py:239} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 22:16:29,567] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:16:29,568] {ppo_utils.py:43} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo.yml
+[2022-10-11 22:16:29,570] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 22:16:29,570] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'track_states': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 22:16:29,570] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo', 'compute_nash_conv': False, 'device': <function default_device at 0x7f46522f94c0>, 'overwrite_db': 1, 'dry_run': 0, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'bully', 'job_name': 'baseline', 'filename': 'bully_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 22:16:31,606] {clock_auction.py:136} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 22:16:31,607] {clock_auction.py:140} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 22:16:31,607] {clock_auction.py:143} INFO - Parsing configuration from /apps/open_spiel/configs/bully_2.json
+[2022-10-11 22:16:31,607] {clock_auction.py:207} INFO - Done config parsing
+[2022-10-11 22:16:31,608] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:16:31,629] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:16:31,630] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:16:31,631] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:16:31,632] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:16:31,633] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:16:31,633] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:16:31,634] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:16:31,635] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:16:35,627] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:16:35,633] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:16:35,633] {ppo_utils.py:238} INFO - Training for 976 updates
+[2022-10-11 22:16:35,633] {ppo_utils.py:239} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 22:16:55,005] {ppo_utils.py:268} INFO - Policy has not changed for 5 updates. Stopping training
+[2022-10-11 22:16:55,005] {ppo_utils.py:274} INFO - Terminating PPO training after 5 updates
+[2022-10-11 22:16:55,005] {ppo_utils.py:319} INFO - Update 5
+[2022-10-11 22:16:55,005] {ppo_utils.py:284} INFO - EVALUATION AFTER 640 steps
+[2022-10-11 22:16:55,006] {savers.py:17} INFO - Saving episode 640 to DB
+[2022-10-11 22:16:55,130] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 22:16:55,239] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 22:16:55,349] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 22:16:55,350] {ppo_utils.py:325} INFO - Walltime: 19.72 seconds
+[2022-10-11 22:16:55,350] {ppo_utils.py:326} INFO - All done. Goodbye!
+[2022-10-11 22:18:45,660] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:18:45,660] {ppo_utils.py:43} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo.yml
+[2022-10-11 22:18:45,662] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 22:18:45,663] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 22:18:45,663] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo', 'compute_nash_conv': False, 'device': <function default_device at 0x7fa93765a4c0>, 'overwrite_db': 1, 'dry_run': 0, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'bully', 'job_name': 'baseline', 'filename': 'bully_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 22:18:47,698] {clock_auction.py:136} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 22:18:47,698] {clock_auction.py:140} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 22:18:47,698] {clock_auction.py:143} INFO - Parsing configuration from /apps/open_spiel/configs/bully_2.json
+[2022-10-11 22:18:47,699] {clock_auction.py:207} INFO - Done config parsing
+[2022-10-11 22:18:47,699] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:18:47,725] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:18:47,725] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:18:47,726] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:18:47,726] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:18:47,727] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:18:47,727] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:18:47,728] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:18:47,729] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:18:51,750] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:18:51,755] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:18:51,755] {ppo_utils.py:238} INFO - Training for 976 updates
+[2022-10-11 22:18:51,755] {ppo_utils.py:239} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 22:19:16,616] {ppo_utils.py:268} INFO - Policy has not changed for 5 updates. Stopping training
+[2022-10-11 22:19:16,617] {ppo_utils.py:274} INFO - Terminating PPO training after 5 updates
+[2022-10-11 22:19:16,617] {ppo_utils.py:319} INFO - Update 5
+[2022-10-11 22:19:16,617] {ppo_utils.py:284} INFO - EVALUATION AFTER 640 steps
+[2022-10-11 22:19:16,617] {savers.py:17} INFO - Saving episode 640 to DB
+[2022-10-11 22:19:16,740] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 22:19:16,847] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 22:19:16,955] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 22:19:16,956] {ppo_utils.py:325} INFO - Walltime: 25.20 seconds
+[2022-10-11 22:19:16,956] {ppo_utils.py:326} INFO - All done. Goodbye!
+[2022-10-11 22:22:09,170] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:22:09,170] {ppo_utils.py:43} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo_potential_neg_pricing.yml
+[2022-10-11 22:22:09,173] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 22:22:09,173] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'potential_function': 'neg_pricing', 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 22:22:09,173] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo_potential_neg_pricing', 'compute_nash_conv': False, 'device': <function default_device at 0x7ff5274c84c0>, 'overwrite_db': 1, 'dry_run': 0, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'bully', 'job_name': 'neg_pricing', 'filename': 'bully_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 22:22:11,135] {clock_auction.py:136} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 22:22:11,136] {clock_auction.py:140} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 22:22:11,136] {clock_auction.py:143} INFO - Parsing configuration from /apps/open_spiel/configs/bully_2.json
+[2022-10-11 22:22:11,136] {clock_auction.py:207} INFO - Done config parsing
+[2022-10-11 22:22:11,137] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:22:11,157] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:22:11,157] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:22:11,158] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:22:11,158] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:22:11,159] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:22:11,160] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:22:11,160] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:22:11,161] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:22:15,265] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:22:15,271] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:22:15,271] {ppo_utils.py:238} INFO - Training for 976 updates
+[2022-10-11 22:22:15,271] {ppo_utils.py:239} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 22:22:50,144] {ppo_utils.py:268} INFO - Policy has not changed for 5 updates. Stopping training
+[2022-10-11 22:22:50,144] {ppo_utils.py:274} INFO - Terminating PPO training after 5 updates
+[2022-10-11 22:22:50,145] {ppo_utils.py:319} INFO - Update 5
+[2022-10-11 22:22:50,145] {ppo_utils.py:284} INFO - EVALUATION AFTER 640 steps
+[2022-10-11 22:22:50,145] {savers.py:17} INFO - Saving episode 640 to DB
+[2022-10-11 22:22:50,267] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 22:22:50,373] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 22:22:50,480] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 22:22:50,481] {ppo_utils.py:325} INFO - Walltime: 35.21 seconds
+[2022-10-11 22:22:50,481] {ppo_utils.py:326} INFO - All done. Goodbye!
+[2022-10-11 22:25:07,849] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:25:07,850] {ppo_utils.py:42} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo_potential_neg_pricing.yml
+[2022-10-11 22:25:07,852] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 22:25:07,852] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'potential_function': 'neg_pricing', 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 22:25:07,852] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo_potential_neg_pricing', 'compute_nash_conv': False, 'device': <function default_device at 0x7f3c2f95b550>, 'overwrite_db': 1, 'dry_run': 0, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'bully', 'job_name': 'neg_pricing', 'filename': 'bully_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 22:25:09,889] {clock_auction.py:136} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 22:25:09,889] {clock_auction.py:140} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 22:25:09,889] {clock_auction.py:143} INFO - Parsing configuration from /apps/open_spiel/configs/bully_2.json
+[2022-10-11 22:25:09,890] {clock_auction.py:207} INFO - Done config parsing
+[2022-10-11 22:25:09,890] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:25:09,892] {ppo_utils.py:123} INFO - Shaping potential with function: neg_pricing
+[2022-10-11 22:25:09,892] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:25:09,893] {ppo_utils.py:123} INFO - Shaping potential with function: neg_pricing
+[2022-10-11 22:25:09,893] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:25:09,893] {ppo_utils.py:123} INFO - Shaping potential with function: neg_pricing
+[2022-10-11 22:25:09,894] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:25:09,894] {ppo_utils.py:123} INFO - Shaping potential with function: neg_pricing
+[2022-10-11 22:25:09,895] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:25:09,895] {ppo_utils.py:123} INFO - Shaping potential with function: neg_pricing
+[2022-10-11 22:25:09,896] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:25:09,896] {ppo_utils.py:123} INFO - Shaping potential with function: neg_pricing
+[2022-10-11 22:25:09,896] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:25:09,897] {ppo_utils.py:123} INFO - Shaping potential with function: neg_pricing
+[2022-10-11 22:25:09,897] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:25:09,897] {ppo_utils.py:123} INFO - Shaping potential with function: neg_pricing
+[2022-10-11 22:25:09,898] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:25:13,919] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:25:13,925] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:25:13,925] {ppo_utils.py:238} INFO - Training for 976 updates
+[2022-10-11 22:25:13,925] {ppo_utils.py:239} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 22:25:48,553] {ppo_utils.py:268} INFO - Policy has not changed for 5 updates. Stopping training
+[2022-10-11 22:25:48,553] {ppo_utils.py:274} INFO - Terminating PPO training after 5 updates
+[2022-10-11 22:25:48,553] {ppo_utils.py:319} INFO - Update 5
+[2022-10-11 22:25:48,553] {ppo_utils.py:284} INFO - EVALUATION AFTER 640 steps
+[2022-10-11 22:25:48,554] {savers.py:17} INFO - Saving episode 640 to DB
+[2022-10-11 22:25:48,680] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 22:25:48,792] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 22:25:48,903] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 22:25:48,904] {ppo_utils.py:325} INFO - Walltime: 34.98 seconds
+[2022-10-11 22:25:48,905] {ppo_utils.py:326} INFO - All done. Goodbye!
+[2022-10-11 22:53:26,393] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:53:26,394] {ppo_utils.py:42} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo.yml
+[2022-10-11 22:53:26,396] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 22:53:26,396] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 22:53:26,396] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo', 'compute_nash_conv': False, 'device': <function default_device at 0x7f3a099195e0>, 'overwrite_db': 1, 'dry_run': 0, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'bully1', 'job_name': 'baseline', 'filename': 'bully1_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 22:53:28,440] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 22:53:28,440] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 22:53:28,440] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/bully1_2.json
+[2022-10-11 22:54:47,456] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:54:47,457] {ppo_utils.py:42} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo.yml
+[2022-10-11 22:54:47,459] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 22:54:47,459] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 22:54:47,459] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo', 'compute_nash_conv': False, 'device': <function default_device at 0x7fde8cc445e0>, 'overwrite_db': 1, 'dry_run': 0, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'bully1', 'job_name': 'baseline', 'filename': 'bully1_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 22:54:49,447] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 22:54:49,447] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 22:54:49,447] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/bully1_2.json
+[2022-10-11 22:54:49,448] {clock_auction.py:209} INFO - Done config parsing
+[2022-10-11 22:54:49,466] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 22:54:49,467] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 22:54:49,467] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/bully1_2.json
+[2022-10-11 22:54:49,467] {clock_auction.py:209} INFO - Done config parsing
+[2022-10-11 22:54:49,468] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:54:49,489] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:54:49,490] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:54:49,491] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:54:49,492] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:54:49,493] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:54:49,493] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:54:49,494] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:54:49,495] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:54:53,489] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:54:53,495] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:54:53,495] {ppo_utils.py:239} INFO - Training for 976 updates
+[2022-10-11 22:54:53,495] {ppo_utils.py:240} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 22:55:20,232] {ppo_utils.py:269} INFO - Policy has not changed for 5 updates. Stopping training
+[2022-10-11 22:55:20,233] {ppo_utils.py:275} INFO - Terminating PPO training after 5 updates
+[2022-10-11 22:55:20,233] {ppo_utils.py:320} INFO - Update 5
+[2022-10-11 22:55:20,233] {ppo_utils.py:285} INFO - EVALUATION AFTER 640 steps
+[2022-10-11 22:55:20,233] {savers.py:17} INFO - Saving episode 640 to DB
+[2022-10-11 22:55:20,361] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 22:55:20,473] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 22:55:20,585] {ubc_dispatch.py:173} INFO - Dispatched experiment!
+[2022-10-11 22:55:20,586] {ppo_utils.py:326} INFO - Walltime: 27.09 seconds
+[2022-10-11 22:55:20,586] {ppo_utils.py:327} INFO - All done. Goodbye!
+[2022-10-11 22:59:13,463] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:59:13,464] {ppo_utils.py:42} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo.yml
+[2022-10-11 22:59:13,466] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 22:59:13,466] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 0, 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 22:59:13,466] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo', 'compute_nash_conv': False, 'device': <function default_device at 0x7fdc83c165e0>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'bully1', 'job_name': 'baseline', 'filename': 'bully1_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 0, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 22:59:13,483] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 22:59:13,484] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 22:59:13,484] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/bully1_2.json
+[2022-10-11 22:59:13,484] {clock_auction.py:209} INFO - Done config parsing
+[2022-10-11 22:59:13,485] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:13,505] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:13,505] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:13,506] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:13,506] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:13,507] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:13,507] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:13,508] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:13,508] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:17,492] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:17,497] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:59:17,497] {ppo_utils.py:239} INFO - Training for 976 updates
+[2022-10-11 22:59:17,497] {ppo_utils.py:240} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 22:59:39,873] {ppo_utils.py:269} INFO - Policy has not changed for 5 updates. Stopping training
+[2022-10-11 22:59:39,873] {ppo_utils.py:275} INFO - Terminating PPO training after 5 updates
+[2022-10-11 22:59:39,873] {ppo_utils.py:320} INFO - Update 5
+[2022-10-11 22:59:39,873] {ppo_utils.py:285} INFO - EVALUATION AFTER 640 steps
+[2022-10-11 22:59:39,874] {ppo_utils.py:326} INFO - Walltime: 22.38 seconds
+[2022-10-11 22:59:39,874] {ppo_utils.py:327} INFO - All done. Goodbye!
+[2022-10-11 22:59:59,798] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 22:59:59,798] {ppo_utils.py:42} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo.yml
+[2022-10-11 22:59:59,801] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 22:59:59,801] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 0, 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 22:59:59,801] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo', 'compute_nash_conv': False, 'device': <function default_device at 0x7f481d99c5e0>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'bully1', 'job_name': 'baseline', 'filename': 'bully1_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 0, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 22:59:59,815] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 22:59:59,815] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 22:59:59,815] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/bully1_2.json
+[2022-10-11 22:59:59,815] {clock_auction.py:209} INFO - Done config parsing
+[2022-10-11 22:59:59,816] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:59,836] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:59,837] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:59,837] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:59,838] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:59,838] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:59,839] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:59,839] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 22:59:59,840] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:00:03,815] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:00:03,821] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 23:00:03,821] {ppo_utils.py:239} INFO - Training for 976 updates
+[2022-10-11 23:00:03,821] {ppo_utils.py:240} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 23:00:35,018] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 23:00:35,018] {ppo_utils.py:42} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo.yml
+[2022-10-11 23:00:35,021] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 23:00:35,021] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 23:00:35,021] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo', 'compute_nash_conv': False, 'device': <function default_device at 0x7f7357bbf5e0>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'bully1', 'job_name': 'baseline', 'filename': 'bully1_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 23:00:36,981] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 23:00:36,981] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 23:00:36,982] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/bully1_2.json
+[2022-10-11 23:00:36,982] {clock_auction.py:209} INFO - Done config parsing
+[2022-10-11 23:00:36,983] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:00:37,005] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:00:37,005] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:00:37,006] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:00:37,007] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:00:37,007] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:00:37,008] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:00:37,008] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:00:37,009] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:00:41,034] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:00:41,039] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 23:00:41,039] {ppo_utils.py:239} INFO - Training for 976 updates
+[2022-10-11 23:00:41,039] {ppo_utils.py:240} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 23:12:40,929] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 23:12:40,930] {ppo_utils.py:42} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo.yml
+[2022-10-11 23:12:40,932] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 23:12:40,932] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 23:12:40,933] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo', 'compute_nash_conv': False, 'device': <function default_device at 0x7f87e480de50>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'two_equilibria', 'job_name': 'baseline', 'filename': 'two_equilibria.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 23:12:42,926] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 23:12:42,926] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 23:12:42,926] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/two_equilibria.json
+[2022-10-11 23:13:31,906] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 23:13:31,907] {ppo_utils.py:42} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo.yml
+[2022-10-11 23:13:31,909] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 23:13:31,909] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 23:13:31,909] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo', 'compute_nash_conv': False, 'device': <function default_device at 0x7f1a41645e50>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'two_equilibria', 'job_name': 'baseline', 'filename': 'two_equilibria.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 23:13:34,151] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 23:13:34,151] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 23:13:34,152] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/two_equilibria.json
+[2022-10-11 23:13:34,153] {clock_auction.py:209} INFO - Done config parsing
+[2022-10-11 23:13:34,163] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 23:13:34,163] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 23:13:34,163] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/two_equilibria.json
+[2022-10-11 23:13:34,164] {clock_auction.py:209} INFO - Done config parsing
+[2022-10-11 23:13:34,165] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:13:34,189] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:13:34,190] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:13:34,191] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:13:34,192] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:13:34,193] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:13:34,194] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:13:34,195] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:13:34,196] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:13:38,904] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:13:38,913] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 23:13:38,913] {ppo_utils.py:239} INFO - Training for 976 updates
+[2022-10-11 23:13:38,914] {ppo_utils.py:240} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 23:18:12,617] {ppo_utils.py:269} INFO - Policy has not changed for 5 updates. Stopping training
+[2022-10-11 23:18:12,617] {ppo_utils.py:275} INFO - Terminating PPO training after 37 updates
+[2022-10-11 23:18:12,617] {ppo_utils.py:320} INFO - Update 37
+[2022-10-11 23:18:12,617] {ppo_utils.py:285} INFO - EVALUATION AFTER 4736 steps
+[2022-10-11 23:18:12,618] {ppo_utils.py:326} INFO - Walltime: 4 minutes and 33.70 seconds
+[2022-10-11 23:18:12,618] {ppo_utils.py:327} INFO - All done. Goodbye!
+[2022-10-11 23:24:13,818] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 23:24:13,819] {ppo_utils.py:42} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo_potential_length.yml
+[2022-10-11 23:24:13,821] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 23:24:13,821] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'potential_function': 'auction_length', 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 23:24:13,822] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo_potential_length', 'compute_nash_conv': False, 'device': <function default_device at 0x7f4100554e50>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'two_equilibria', 'job_name': 'length', 'filename': 'two_equilibria.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 23:24:19,770] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 23:24:19,770] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 23:24:19,770] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/two_equilibria.json
+[2022-10-11 23:24:19,771] {clock_auction.py:209} INFO - Done config parsing
+[2022-10-11 23:24:19,772] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:24:19,792] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:24:19,793] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:24:19,793] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:24:19,794] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:24:19,794] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:24:19,794] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:24:19,796] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:24:19,797] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:24:19,797] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:24:19,798] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:24:19,798] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:24:19,798] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:24:19,799] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:24:19,799] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:24:19,799] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:24:19,800] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:24:24,523] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:24:24,532] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 23:24:24,532] {ppo_utils.py:239} INFO - Training for 976 updates
+[2022-10-11 23:24:24,532] {ppo_utils.py:240} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 23:29:16,115] {ppo_utils.py:269} INFO - Policy has not changed for 5 updates. Stopping training
+[2022-10-11 23:29:16,115] {ppo_utils.py:275} INFO - Terminating PPO training after 33 updates
+[2022-10-11 23:29:16,115] {ppo_utils.py:320} INFO - Update 33
+[2022-10-11 23:29:16,116] {ppo_utils.py:285} INFO - EVALUATION AFTER 4224 steps
+[2022-10-11 23:29:16,116] {ppo_utils.py:326} INFO - Walltime: 4 minutes and 51.58 seconds
+[2022-10-11 23:29:16,116] {ppo_utils.py:327} INFO - All done. Goodbye!
+[2022-10-11 23:42:06,154] {ppo_utils.py:269} INFO - Policy has not changed for 5 updates. Stopping training
+[2022-10-11 23:42:06,154] {ppo_utils.py:275} INFO - Terminating PPO training after 214 updates
+[2022-10-11 23:42:06,154] {ppo_utils.py:320} INFO - Update 214
+[2022-10-11 23:42:06,154] {ppo_utils.py:285} INFO - EVALUATION AFTER 27392 steps
+[2022-10-11 23:42:06,155] {ppo_utils.py:326} INFO - Walltime: 41 minutes and 25.12 seconds
+[2022-10-11 23:42:06,155] {ppo_utils.py:327} INFO - All done. Goodbye!
+[2022-10-11 23:44:55,768] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 23:44:55,769] {ppo_utils.py:42} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo.yml
+[2022-10-11 23:44:55,771] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 23:44:55,771] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 23:44:55,771] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo', 'compute_nash_conv': False, 'device': <function default_device at 0x7f81be4cbee0>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'two_equilibria_2', 'job_name': 'baseline', 'filename': 'two_equilibria_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 23:44:57,752] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 23:44:57,753] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 23:44:57,753] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/two_equilibria_2.json
+[2022-10-11 23:44:57,753] {clock_auction.py:209} INFO - Done config parsing
+[2022-10-11 23:44:57,763] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 23:44:57,763] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 23:44:57,763] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/two_equilibria_2.json
+[2022-10-11 23:44:57,764] {clock_auction.py:209} INFO - Done config parsing
+[2022-10-11 23:44:57,764] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:44:57,789] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:44:57,789] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:44:57,790] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:44:57,790] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:44:57,791] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:44:57,792] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:44:57,792] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:44:57,793] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:45:01,805] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:45:01,811] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 23:45:01,811] {ppo_utils.py:239} INFO - Training for 976 updates
+[2022-10-11 23:45:01,811] {ppo_utils.py:240} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 23:45:11,414] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 23:45:11,415] {ppo_utils.py:42} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo_potential_length.yml
+[2022-10-11 23:45:11,417] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 23:45:11,418] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'potential_function': 'auction_length', 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 23:45:11,418] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo_potential_length', 'compute_nash_conv': False, 'device': <function default_device at 0x7fe2511d3ee0>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'two_equilibria_2', 'job_name': 'length', 'filename': 'two_equilibria_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 23:45:13,381] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 23:45:13,381] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 23:45:13,382] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/two_equilibria_2.json
+[2022-10-11 23:45:13,382] {clock_auction.py:209} INFO - Done config parsing
+[2022-10-11 23:45:13,383] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:45:13,404] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:45:13,405] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:45:13,405] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:45:13,405] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:45:13,406] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:45:13,406] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:45:13,406] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:45:13,407] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:45:13,409] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:45:13,409] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:45:13,409] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:45:13,410] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:45:13,410] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:45:13,410] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:45:13,411] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:45:13,411] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:45:17,551] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:45:17,558] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 23:45:17,558] {ppo_utils.py:239} INFO - Training for 976 updates
+[2022-10-11 23:45:17,558] {ppo_utils.py:240} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 23:51:35,794] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 23:51:35,795] {ppo_utils.py:42} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo_potential_length.yml
+[2022-10-11 23:51:35,797] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-11 23:51:35,797] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'potential_function': 'auction_length', 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-11 23:51:35,798] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo_potential_length', 'compute_nash_conv': False, 'device': <function default_device at 0x7f79a20b1ee0>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'two_equilibria_2', 'job_name': 'length', 'filename': 'two_equilibria_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-11 23:51:37,889] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-11 23:51:37,889] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-11 23:51:37,889] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/two_equilibria_2.json
+[2022-10-11 23:51:37,890] {clock_auction.py:209} INFO - Done config parsing
+[2022-10-11 23:51:37,891] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:51:37,912] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:51:37,913] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:51:37,913] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:51:37,914] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:51:37,914] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:51:37,915] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:51:37,917] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:51:37,917] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:51:37,918] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:51:37,918] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:51:37,919] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:51:37,919] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:51:37,920] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:51:37,920] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:51:37,921] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-11 23:51:37,921] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:51:42,331] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-11 23:51:42,337] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-11 23:51:42,337] {ppo_utils.py:239} INFO - Training for 976 updates
+[2022-10-11 23:51:42,337] {ppo_utils.py:240} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-11 23:58:26,903] {ppo_utils.py:269} INFO - Policy has not changed for 5 updates. Stopping training
+[2022-10-11 23:58:26,903] {ppo_utils.py:275} INFO - Terminating PPO training after 36 updates
+[2022-10-11 23:58:26,903] {ppo_utils.py:320} INFO - Update 36
+[2022-10-11 23:58:26,903] {ppo_utils.py:285} INFO - EVALUATION AFTER 4608 steps
+[2022-10-11 23:58:26,904] {ppo_utils.py:326} INFO - Walltime: 6 minutes and 44.57 seconds
+[2022-10-11 23:58:26,904] {ppo_utils.py:327} INFO - All done. Goodbye!
+[2022-10-12 00:08:10,202] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-12 00:08:10,203] {ppo_utils.py:42} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo_potential_length.yml
+[2022-10-12 00:08:10,205] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-12 00:08:10,205] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'potential_function': 'auction_length', 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-12 00:08:10,205] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo_potential_length', 'compute_nash_conv': False, 'device': <function default_device at 0x7f94376c7ee0>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'two_equilibria_2', 'job_name': 'length', 'filename': 'two_equilibria_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-12 00:08:12,182] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-12 00:08:12,182] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-12 00:08:12,182] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/two_equilibria_2.json
+[2022-10-12 00:08:12,183] {clock_auction.py:209} INFO - Done config parsing
+[2022-10-12 00:08:12,184] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:12,204] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-12 00:08:12,205] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:12,206] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-12 00:08:12,207] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:12,207] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-12 00:08:12,208] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:12,208] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-12 00:08:12,209] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:12,210] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-12 00:08:12,211] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:12,212] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-12 00:08:12,212] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:12,213] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-12 00:08:12,213] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:12,214] {ppo_utils.py:123} INFO - Shaping potential with function: auction_length
+[2022-10-12 00:08:12,214] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:15,076] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-12 00:08:15,077] {ppo_utils.py:42} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo.yml
+[2022-10-12 00:08:15,079] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-12 00:08:15,079] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-12 00:08:15,080] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo', 'compute_nash_conv': False, 'device': <function default_device at 0x7f0f41d00ee0>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'two_equilibria_2', 'job_name': 'baseline', 'filename': 'two_equilibria_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-12 00:08:16,393] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:16,399] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-12 00:08:16,399] {ppo_utils.py:239} INFO - Training for 976 updates
+[2022-10-12 00:08:16,399] {ppo_utils.py:240} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-12 00:08:17,171] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-12 00:08:17,171] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-12 00:08:17,171] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/two_equilibria_2.json
+[2022-10-12 00:08:17,172] {clock_auction.py:209} INFO - Done config parsing
+[2022-10-12 00:08:17,172] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:17,192] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:17,193] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:17,194] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:17,194] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:17,196] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:17,197] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:17,197] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:17,198] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:21,447] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:08:21,455] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-12 00:08:21,455] {ppo_utils.py:239} INFO - Training for 976 updates
+[2022-10-12 00:08:21,455] {ppo_utils.py:240} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-12 00:12:21,478] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-12 00:12:21,479] {ppo_utils.py:42} INFO - Reading config from /apps/open_spiel/notebooks/configs/aug11/ppo_potential_neg_length.yml
+[2022-10-12 00:12:21,482] {ubc_utils.py:130} WARNING - Overriding use_wandb from command line
+[2022-10-12 00:12:21,482] {ppo.py:77} INFO - Network params: {'num_envs': 8, 'steps_per_batch': 128, 'num_minibatches': 4, 'update_epochs': 4, 'learning_rate': 0.00025, 'num_annealing_updates': None, 'gae': True, 'gamma': 0.99, 'gae_lambda': 0.95, 'normalize_advantages': True, 'clip_coef': 0.2, 'clip_vloss': True, 'agent_fn': 'PPOAgent', 'entropy_coef': 0.01, 'value_coef': 0.5, 'max_grad_norm': 0.5, 'target_kl': None, 'device': 'cuda', 'use_wandb': 1, 'potential_function': 'neg_auction_length', 'track_stats': True, 'seed': 1234, 'total_timesteps': 1000000}
+[2022-10-12 00:12:21,482] {ppo.py:78} INFO - Command line commands {'verbosity': 1, 'settings': None, 'pythonpath': None, 'traceback': False, 'no_color': False, 'force_color': False, 'skip_checks': False, 'total_timesteps': 1000000, 'seed': 1234, 'network_config_file': 'aug11/ppo_potential_neg_length', 'compute_nash_conv': False, 'device': <function default_device at 0x7f5c6535dee0>, 'overwrite_db': 1, 'dry_run': 1, 'output_dir': 'output', 'warn_on_overwrite': False, 'experiment_name': 'two_equilibria_2', 'job_name': 'neg_length', 'filename': 'two_equilibria_2.json', 'game_name': 'python_clock_auction', 'parent_checkpoint_pk': None, 'report_freq': 50000, 'eval_every': 9999, 'eval_every_early': None, 'eval_exactly': [], 'eval_zero': 0, 'use_wandb': 1, 'wandb_note': '', 'dispatch_br': 1, 'br_portfolio_path': None, 'br_overrides': '', 'eval_overrides': '', 'pprofile': 0, 'pprofile_file': 'profile.txt', 'cprofile': 0, 'cprofile_file': 'cprofile.txt'}
+[2022-10-12 00:12:23,466] {clock_auction.py:137} INFO - Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.
+[2022-10-12 00:12:23,466] {clock_auction.py:141} INFO - CLOCK_AUCTION_CONFIG_DIR=/apps/open_spiel/configs
+[2022-10-12 00:12:23,467] {clock_auction.py:144} INFO - Parsing configuration from /apps/open_spiel/configs/two_equilibria_2.json
+[2022-10-12 00:12:23,467] {clock_auction.py:209} INFO - Done config parsing
+[2022-10-12 00:12:23,468] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:12:23,488] {ppo_utils.py:123} INFO - Shaping potential with function: neg_auction_length
+[2022-10-12 00:12:23,489] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:12:23,489] {ppo_utils.py:123} INFO - Shaping potential with function: neg_auction_length
+[2022-10-12 00:12:23,490] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:12:23,490] {ppo_utils.py:123} INFO - Shaping potential with function: neg_auction_length
+[2022-10-12 00:12:23,491] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:12:23,492] {ppo_utils.py:123} INFO - Shaping potential with function: neg_auction_length
+[2022-10-12 00:12:23,493] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:12:23,493] {ppo_utils.py:123} INFO - Shaping potential with function: neg_auction_length
+[2022-10-12 00:12:23,494] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:12:23,494] {ppo_utils.py:123} INFO - Shaping potential with function: neg_auction_length
+[2022-10-12 00:12:23,494] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:12:23,495] {ppo_utils.py:123} INFO - Shaping potential with function: neg_auction_length
+[2022-10-12 00:12:23,495] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:12:23,495] {ppo_utils.py:123} INFO - Shaping potential with function: neg_auction_length
+[2022-10-12 00:12:23,496] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:12:28,241] {rl_environment.py:197} INFO - Using game instance: python_clock_auction
+[2022-10-12 00:12:28,250] {ubc_utils.py:44} INFO - Setting numpy and torch seed to 1234
+[2022-10-12 00:12:28,250] {ppo_utils.py:239} INFO - Training for 976 updates
+[2022-10-12 00:12:28,250] {ppo_utils.py:240} INFO - Fixed agents are set(). Learning agents are [0, 1]
+[2022-10-12 00:15:03,948] {ppo_utils.py:269} INFO - Policy has not changed for 5 updates. Stopping training
+[2022-10-12 00:15:03,948] {ppo_utils.py:275} INFO - Terminating PPO training after 36 updates
+[2022-10-12 00:15:03,949] {ppo_utils.py:320} INFO - Update 36
+[2022-10-12 00:15:03,949] {ppo_utils.py:285} INFO - EVALUATION AFTER 4608 steps
+[2022-10-12 00:15:03,949] {ppo_utils.py:326} INFO - Walltime: 6 minutes and 47.55 seconds
+[2022-10-12 00:15:03,950] {ppo_utils.py:327} INFO - All done. Goodbye!
+[2022-10-12 00:24:38,594] {ppo_utils.py:269} INFO - Policy has not changed for 5 updates. Stopping training
+[2022-10-12 00:24:38,594] {ppo_utils.py:275} INFO - Terminating PPO training after 62 updates
+[2022-10-12 00:24:38,594] {ppo_utils.py:320} INFO - Update 62
+[2022-10-12 00:24:38,594] {ppo_utils.py:285} INFO - EVALUATION AFTER 7936 steps
+[2022-10-12 00:24:38,595] {ppo_utils.py:326} INFO - Walltime: 12 minutes and 10.35 seconds
+[2022-10-12 00:24:38,595] {ppo_utils.py:327} INFO - All done. Goodbye!

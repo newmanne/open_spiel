@@ -26,7 +26,7 @@ import open_spiel.python.games # Need this import to detect python games
 import pyspiel
 from open_spiel.python.observation import make_observation
 from open_spiel.python.examples.ubc_utils import fix_seeds
-
+from pprint import pprint
 
 FLAGS = flags.FLAGS
 
@@ -96,11 +96,16 @@ def main(_):
       if state.is_chance_node():
         # Chance node: sample an outcome
         outcomes = state.chance_outcomes()
-        num_actions = len(outcomes)
-        print("Chance node, got " + str(num_actions) + " outcomes")
-        action_list, prob_list = zip(*outcomes)
-        action = np.random.choice(action_list, p=prob_list)
-        print("Sampled outcome: ", state.action_to_string(state.current_player(), action))
+        if isinstance(outcomes, dict):
+            print("Chance node, got " + str(outcomes['upper']) + " outcomes")
+            action = np.random.randint(0, high=outcomes['upper'])
+            print("Sampled outcome: ", state.action_to_string(state.current_player(), action))
+        else:
+            num_actions = len(outcomes)
+            print("Chance node, got " + str(num_actions) + " outcomes")
+            action_list, prob_list = zip(*outcomes)
+            action = np.random.choice(action_list, p=prob_list)
+            print("Sampled outcome: ", state.action_to_string(state.current_player(), action))
         state.apply_action(action)
 
       elif state.is_simultaneous_node():
@@ -119,7 +124,8 @@ def main(_):
       else:
         if FLAGS.show_obs:
           observation.set_from(state, player=state.current_player())
-          print(f"OBSERVATION DICT P{state.current_player()}", observation.dict)
+          print(f"OBSERVATION DICT P{state.current_player()}")
+          pprint(observation.dict)
           # print(observation.tensor)
 
         # Decision node: sample action for the single current player

@@ -40,6 +40,7 @@ class Command(BaseCommand):
 
         # Potential
         parser.add_argument('--potential_function', type=str, default=None) 
+        parser.add_argument('--scale_coef', type=float, default=None)
 
         # Reporting and evaluation
         parser.add_argument('--report_freq', type=int, default=50_000)
@@ -57,6 +58,7 @@ class Command(BaseCommand):
         parser.add_argument('--br_portfolio_path', type=str, default=None)
         parser.add_argument('--br_overrides', type=str, default='', help='These are arguments you want to pass to BR. DO NOT INCLUDE EVAL ARGS HERE')
         parser.add_argument('--eval_overrides', type=str, default='', help="These are arguments you want to pass directly through to evaluate. They ALSO get passed to best respones")
+        parser.add_argument('--eval_inline', type=util.strtobool, default=1, help="Eval inline means that we run the eval in the same process as the training")
 
         add_profiling_flags(parser)
 
@@ -131,7 +133,7 @@ class Command(BaseCommand):
                 env_and_policy = env_and_policy_for_dry_run(game_db, config, env_params=env_params)
 
         result_saver = DBPolicySaver(eq_solver_run=eq_solver_run) if not opts.dry_run else None
-        dispatcher = DBBRDispatcher(game_db.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path, opts.dispatch_br) if not opts.dry_run else None
+        dispatcher = DBBRDispatcher(game_db.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path, opts.dispatch_br, opts.eval_inline) if not opts.dry_run else None
         eval_episode_timer = EpisodeTimer(opts.eval_every, early_frequency=opts.eval_every_early, fixed_episodes=opts.eval_exactly, eval_zero=opts.eval_zero)
         report_timer = EpisodeTimer(opts.report_freq)
 

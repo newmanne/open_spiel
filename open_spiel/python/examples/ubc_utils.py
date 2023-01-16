@@ -137,6 +137,9 @@ def apply_optional_overrides(args, argv, config):
     if hasattr(args, 'potential_function') and args.potential_function is not None:
         logging.warning(f'Overriding potential function from command line to {args.potential_function}')
         config['potential_function'] = args.potential_function
+    if hasattr(args, 'scale_coef') and args.scale_coef is not None:
+        logging.warning(f'Overriding scale coef from command line to {args.scale_coef}')
+        config['scale_coef'] = args.scale_coef        
     if config.get('anneal_lr', False):
         config['num_annealing_updates'] = config['total_timesteps']
 
@@ -152,7 +155,11 @@ class UBCChanceEventSampler(object):
 
     def __call__(self, state):
         """Sample a chance event in the given state."""
-        actions, probs = zip(*state.chance_outcomes())
+        output = state.chance_outcomes()
+        if isinstance(output, dict):
+            return self._rng.randint(0, high=output['upper'])
+        else:
+            actions, probs = zip(*output)
         return fast_choice(actions, probs, rng=self._rng)
 
 
