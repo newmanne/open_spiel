@@ -20,7 +20,7 @@ class StraightforwardAgent(AbstractAgent):
 
         legal_actions = time_step.observations["legal_actions"][self.player_id]
         info_dict = time_step.observations["info_dict"][self.player_id]
-        profits = info_dict['sor_profits'] # TODO: Why not clock profits? I forget...
+        profits = info_dict['sor_bundle_prices_history'][-1] # TODO: Why not clock profits? I forget...
         legal_profits = [profits[i] for i in legal_actions]
         
         action = legal_actions[np.argmax(legal_profits)]

@@ -101,7 +101,7 @@ def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_policy=
                 letter = num_to_letter(i)
                 node[f'Processed {letter}'] = current_holdings[i]
                 node[f'Agg Demand {letter}'] = agg_demand[i]
-                node[f'Price Increments {letter}'] = info_dict['price_increments'][i]
+                # node[f'Price Increments {letter}'] = info_dict['price_increments'][i]
                 
             player_type = state.bidders[player_id]
             node['player_type'] = str(player_type)
@@ -114,9 +114,8 @@ def new_tree_node(node_type, str_desc, depth, agent_output=None, env_and_policy=
             
             observer = make_observation(game, params=dict(normalize=False))
             observer.set_from(state, player=player_id)
-            unnormalized_info_dict = observer.dict
 
-            profits = np.array(unnormalized_info_dict['clock_profits'])
+            profits = state.bidders[player_id].bidder.get_profits(state.clock_prices[-1])
             profit = profits[action_id]
             legal_actions = env._state.legal_actions() # Only show budget feasible
             max_cp_idx = pd.Series(profits[legal_actions]).idxmax()
@@ -354,15 +353,18 @@ def sample_game_from_position(env_and_policy, num_samples, report_freq=GameTreeS
     for sample_index in range(num_samples):
         if sample_index % report_freq == 0 and sample_index > 0:
             logging.info(f"----Episode {sample_index} ---")
-            
+
         # Sample history
+
+        # TODO: When history prefix is terminal, this will break because the RL_ENV circumvents the decorators and directly calls updates on the states with the actions
+
         time_step = env.reset()      
         while not time_step.last():
             current_player = time_step.observations['current_player']
             agent_output = agents[current_player].step(time_step, is_evaluation=True)
             time_step = env.step([agent_output.action])  
 
-        # Save stats
+
         stat_dict = env.stats_dict()
         node_action = 0 if terminal else env._state.history()[len(env._history_prefix)]
         node = action_nodes[node_action]

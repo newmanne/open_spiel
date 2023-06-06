@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Example use of the C++ MCCFR algorithms on Clcok Auction.
+"""Example use of the C++ MCCFR algorithms on Clock Auction.
 
 This examples calls the underlying C++ implementations via the Python bindings.
 Note that there are some pure Python implementations of some of these algorithms
@@ -51,9 +51,10 @@ flags.DEFINE_integer("persist_freq", -1, "Pickle the models every this many iter
 
 flags.DEFINE_bool("python", False, "Use python CFR impls")
 flags.DEFINE_bool("turn_based", True, "Convert simultaneous to turn based")
-flags.DEFINE_bool("use_best",True,"Use best iterate and not last iterate")
+flags.DEFINE_bool("use_best",False,"Use best iterate and not last iterate")
+flags.DEFINE_bool("store_db", True, "Add to database")
 
-flags.DEFINE_enum("solver", "cfr", ["cfr", "cfrplus", "cfrbr", "mccfr", "ecfr"], "CFR solver")
+flags.DEFINE_enum("solver", "cfr", ["cfr", "cfrplus", "cfrbr", "mccfr"], "CFR solver")
 flags.DEFINE_enum("sampling", "external", ["external", "outcome"], "Sampling for the MCCFR solver")
 flags.DEFINE_enum("metric", "max_regret", ["max_regret", "nash_conv"], "Metric to use for stopping condition")
 
@@ -65,13 +66,6 @@ flags.DEFINE_string("game", "clock_auction", "Name of the game")
 # Game params for clock auction
 flags.DEFINE_string("filename", 'parameters.json', "Filename with parameters")
 flags.DEFINE_integer("seed", '123', "Seed for randomized algs")
-
-# ECFR
-flags.DEFINE_float("initial_eps", 1e-1, "Initial epsilon")
-flags.DEFINE_float("decay_factor", 0.99, "Decay factor")
-flags.DEFINE_integer("decay_freq", 500, "Decay frequency")
-flags.DEFINE_float("min_eps", 1e-6, "Minimum epsilon")
-
 
 price_pattern = re.compile(r'^.*(Price:.*)$', flags=re.MULTILINE)
 allocation_pattern = re.compile(r'.*(Final bids:.*)$.*', flags=re.MULTILINE)
@@ -100,7 +94,17 @@ def action_to_bids(licenses):
 def state_to_final(game, s):
     '''Convert a state into unique final outcomes (but not caring about bidding being different in the middle). i.e., the allocation and the types and the price are all the same'''
     state_str = str(s)
-    info_state_string = '\n'.join(state_str.split('\n')[:game.num_players()]) + '\n' + re.findall(allocation_pattern, state_str)[0] + '\n' + re.findall(price_pattern, state_str)[0] + '\n' + re.findall(round_pattern, state_str)[0]
+    try:
+        info_state_string = '\n'.join(state_str.split('\n')[:game.num_players()]) + '\n' + re.findall(allocation_pattern, state_str)[0] + '\n' + re.findall(price_pattern, state_str)[0] + '\n' + re.findall(round_pattern, state_str)[0]
+    except:
+        raise ValueError(f'Could not parse state {state_str}')
+    return info_state_string
+
+def state_to_final_python(game, s):
+    '''Convert a state into unique final outcomes (but not caring about bidding being different in the middle). i.e., the allocation and the types and the price are all the same'''
+    info_state_string = f'Price: {s.posted_prices[-1]}\n'
+    info_state_string += f'Final bids: {s.get_allocation()}\n'
+    info_state_string += f'Round: {s.round}\n'
     return info_state_string
 
 def parse_state_str(game, state, info_state_str):
@@ -139,32 +143,7 @@ def persist_model(solver, i):
     except Exception as e:
         logger.exception("Error pickling solver!!!")
 
-def main(_):
-    start_time = time.time()
-    Path(FLAGS.output).mkdir(parents=True, exist_ok=True)
-
-    fh = logging.FileHandler(f'{FLAGS.output}/{FLAGS.solver}.log')
-    fh.setLevel(logging.INFO)
-    fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-    logger.addHandler(fh)
-
-    # LOAD GAME
-    load_function = pyspiel.load_game if not FLAGS.turn_based else pyspiel.load_game_as_turn_based
-    params = dict()
-    if FLAGS.game == 'clock_auction':
-        params['filename'] = FLAGS.filename
-
-    game = load_function(
-        FLAGS.game,
-        params,
-    )
-
-    solver_config = dict()
-    solver_config['solver'] = FLAGS.solver
-    solver_config['seed'] = FLAGS.seed
-    solver_config['python'] = FLAGS.python
-
-    # LOAD SOLVER
+def load_solver(solver_config, game):
     if not FLAGS.python:
         logger.info("Using C++ implementations")
         if FLAGS.solver == "cfr":
@@ -185,17 +164,6 @@ def main(_):
             elif FLAGS.sampling == "outcome":
                 logger.info("Using outcome sampling")
                 solver = pyspiel.OutcomeSamplingMCCFRSolver(game)
-        elif FLAGS.solver == "ecfr":
-            logger.info("Using EpsilonCFR solver")
-            initial_eps = FLAGS.initial_eps
-            decay_factor = FLAGS.decay_factor
-            decay_freq = FLAGS.decay_freq
-            min_eps = FLAGS.min_eps
-            solver_config['initial_eps'] = FLAGS.initial_eps
-            solver_config['decay_factor'] = FLAGS.decay_factor
-            solver_config['decay_freq'] = FLAGS.decay_freq
-            solver_config['min_eps'] = FLAGS.min_eps
-            solver = pyspiel.EpsilonCFRSolver(game, initial_eps)
     else:
         logger.info("Using python implementations")
         if FLAGS.solver == "cfr":
@@ -215,17 +183,48 @@ def main(_):
             else:
                 logger.info("Using external sampling")
                 solver = ExternalSamplingSolver(game)
-            
+    return solver
+
+def main(_):
+    start_time = time.time()
+    Path(FLAGS.output).mkdir(parents=True, exist_ok=True)
+
+    fh = logging.FileHandler(f'{FLAGS.output}/{FLAGS.solver}.log')
+    fh.setLevel(logging.INFO)
+    fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    logger.addHandler(fh)
+
+    # LOAD GAME
+    load_function = pyspiel.load_game if not FLAGS.turn_based else pyspiel.load_game_as_turn_based
+    params = dict()
+    if FLAGS.game == 'clock_auction' or FLAGS.game == 'python_clock_auction':
+        params['filename'] = FLAGS.filename
+
+    game = load_function(
+        FLAGS.game,
+        params,
+    )
+
+    solver_config = {
+        'solver': FLAGS.solver,
+        'seed': FLAGS.seed,
+        'python': FLAGS.python
+    }
+
+    solver = load_solver(solver_config, game)
+
     with open(f'{FLAGS.output}/solver.json', 'w') as f:
         json.dump(solver_config, f)
 
     # RUN SOLVER
     run_records = []
     best_policy = None
-    best_metric_value = float("inf")
     for i in range(FLAGS.iterations):
         if i % 100 == 0:
             logger.info(f"Starting iteration {i}")
+        if i == 1 or i == 2 or i == 3:
+            duration = time.time() - start_time
+            logger.info(f"Done iteration {i}. Took {duration:.2f} seconds")
 
         if FLAGS.solver == "mccfr":
             if FLAGS.python:
@@ -235,34 +234,23 @@ def main(_):
         else:
             solver.evaluate_and_update_policy()
 
-        if FLAGS.solver == 'ecfr' and i > 0 and i % FLAGS.decay_freq == 0:
-            old_eps = solver.epsilon()
-            new_eps = max(solver.epsilon() * decay_factor, min_eps)
-            solver.set_epsilon(new_eps)
-            logger.info(f"Changing epsilon from {old_eps} to {new_eps}")
-
         if i % FLAGS.report_freq == 0 or i == FLAGS.iterations - 1:
-            policy = solver.average_policy() if FLAGS.solver != 'ecfr' else solver.tabular_average_policy()
+            policy = solver.average_policy()
             record = dict(iteration=i, walltime=time.time() - start_time)
             if FLAGS.python:
                 metric = exploitability.nash_conv(game, policy)
             else:
-                regrets = pyspiel.player_regrets(game, policy, True)
-                max_regret = max(regrets)
-                nash_conv = sum(regrets)
-                record['max_on_path_regret'] = max_regret
-                record['nash_conv'] = nash_conv
-                if FLAGS.solver == 'ecfr':
-                    br_info = pyspiel.nash_conv_with_eps(game, policy)
-                    merged_table = pyspiel.merge_tables(br_info.cvtables)
-                    record['max_qv_diff'] = merged_table.max_qv_diff()
-                    record['avg_qv_diff'] = merged_table.avg_qv_diff()
-                if FLAGS.use_best:
-                    curr_metric_value = max_regret if FLAGS.metric=="max_regret" else nash_conv
-                    if best_policy == None or curr_metric_value < best_metric_value:
-                        best_policy = policy
-                        best_metric_value = curr_metric_value
-                        logger.info(f"Updated best policy on iteration {i}")
+                # regrets = pyspiel.player_regrets(game, policy, True)
+                # max_regret = max(regrets)
+                # nash_conv = sum(regrets)
+                # record['max_on_path_regret'] = max_regret
+                record['nash_conv'] = exploitability.nash_conv(game, policy)
+                # if FLAGS.use_best:
+                #     curr_metric_value = max_regret if FLAGS.metric=="max_regret" else nash_conv
+                #     if best_policy == None or curr_metric_value < best_metric_value:
+                #         best_policy = policy
+                #         best_metric_value = curr_metric_value
+                #         logger.info(f"Updated best policy on iteration {i}")
 
             run_records.append(record)
             logger.info(f"Iteration {i}")
@@ -277,71 +265,105 @@ def main(_):
         if FLAGS.persist and FLAGS.persist_freq > 0 and i % FLAGS.persist_freq == 0 and i > 0:
             persist_model(solver, i)
 
+
     if FLAGS.use_best:
         policy = best_policy
 
     if FLAGS.persist:
         persist_model(solver, i)
+    if FLAGS.store_db:
+        # TODO:
+        pass
 
     pd.DataFrame.from_records(run_records).to_csv(f'{FLAGS.output}/run_metrics.csv', index=False)
 
     records = []
-    if FLAGS.solver == 'ecfr':
-        info_state_to_cve = merged_table.table()
-    else:
-        info_state_to_cve = None
+
+    final_state_parser = lambda s: state_to_final(game, s) if not FLAGS.python else state_to_final_python(game, s)
+
+    all_states = get_all_states_with_policy.get_all_info_states_with_policy(
+        game,
+        depth_limit=-1,
+        include_terminals=True,
+        policy=policy,
+        to_string=final_state_parser
+    )
+
 
     if FLAGS.python:
-        raise ValueError("TODO")
+        all_bids = game.auction_params.all_bids
+        product_names = game.auction_params.license_names
+        records = []
+        num_products = game.auction_params.num_products
+        for info_state_key, state_dict in all_states.items():
+            state = state_dict['state']
+            prob = state_dict['prob']
+            record = dict(terminal=state.is_terminal(), prob=prob, info_state=info_state_key, round=state.round)
+            record.update({f'Price {product_names[i]}': state.posted_prices[-1][i] for i in range(num_products)})
+
+            if state.is_terminal() :
+                allocation = state.get_allocation() # Allocation is [P0, P1]
+                for i in range(num_products):
+                    alloc = []
+                    for j in range(game.num_players()):
+                        alloc.append(allocation[j][i])
+                    record[f'Allocation {product_names[i]}'] = alloc
+                record.update({f'Utility {i}': v for i, v in enumerate(state.returns())})
+                for i in range(game.num_players()): # 1 entry per player per terminal state for better filtering
+                    records.append({**record, **dict(player=i, type=state.bidders[i].type_index)})
+            else:
+                record.update({
+                    'player': state.current_player(),
+                    'type': state.bidders[state.current_player()].type_index,
+                    'bids': state.bidders[state.current_player()].submitted_demand,
+                    'total_demand': state.aggregate_demand[-1]
+                })
+                action_probabilities = policy.action_probabilities(state)
+                record.update({f'Bid ({all_bids[k]})': v for k, v in action_probabilities.items()})
+                records.append(record)
+
+        df = pd.DataFrame.from_records(records).set_index('info_state')
+        df = df.reindex(sorted(df.columns, key=str), axis=1) # Sort columns alphabetically
+        output_path = f'{FLAGS.output}/strategy.csv'
+        logger.info(f"Saving strategy to {output_path}")
+        df.to_csv(output_path)
     else:
-        all_states = get_all_states_with_policy.get_all_info_states_with_policy(
-            game,
-            depth_limit=-1,
-            include_terminals=True,
-            policy=policy,
-            to_string=lambda s: state_to_final(game, s),
-        )
+        with open(os.getenv('CLOCK_AUCTION_CONFIG_DIR') + f'/{FLAGS.filename}', 'r') as f:
+            params = json.load(f)
+        a2b = action_to_bids(params['licenses'])
 
-    with open(os.getenv('CLOCK_AUCTION_CONFIG_DIR') + f'/{FLAGS.filename}', 'r') as f:
-        params = json.load(f)
-    a2b = action_to_bids(params['licenses'])
+        records = []
+        for info_state_key, state_dict in all_states.items():
+            state = state_dict['state']
+            prob = state_dict['prob']
+            record = dict(terminal=state.is_terminal(), prob=prob, player=state.current_player())
+            record.update(parse_state_str(game, state, info_state_key))
+            if state.is_terminal():
+                record.update({f'Utility {n}': v for n,v in enumerate(state.returns())})
+                splits = info_state_key.splitlines()
+                for n, u in enumerate(state.returns()):
+                    # 1 entry per player per terminal state for better filtering
+                    r = dict(record)
+                    r.update(dict(player=n, info_state=info_state_key, type=splits[n]))
+                    records.append(r)
+            else:
+                action_probabilities = policy.action_probabilities(state)
+                record['info_state'] = info_state_key[18:] # Get rid of "Current Player line"
+                record.update({f'Bid ({a2b[k]})': v for k, v in action_probabilities.items()})
+                records.append(record)
 
-    records = []
-    for info_state_key, state_dict in all_states.items():
-        state = state_dict['state']
-        prob = state_dict['prob']
-        record = dict(terminal=state.is_terminal(), prob=prob, player=state.current_player())
-        record.update(parse_state_str(game, state, info_state_key))
-        if state.is_terminal():
-            record.update({f'Utility {n}': v for n,v in enumerate(state.returns())})
-            splits = info_state_key.splitlines()
-            for n, u in enumerate(state.returns()):
-                # 1 entry per player per terminal state for better filtering
-                r = dict(record)
-                r.update(dict(player=n, info_state=info_state_key, type=splits[n]))
-                records.append(r)
-        else:
-            action_probabilities = policy.action_probabilities(state)
-            record['info_state'] = info_state_key[18:] # Get rid of "Current Player line"
-            record.update({f'Bid ({a2b[k]})': v for k, v in action_probabilities.items()})
-            records.append(record)
+        df = pd.DataFrame.from_records(records).set_index('info_state')
+        df['value'] = df.type.str.extract(r'v(.+)b.*')
+        df['budget'] = df.type.str.extract(r'.*b(.+)$').astype(float)
+        df = df.drop(['type'], axis=1)
 
-    df = pd.DataFrame.from_records(records).set_index('info_state')
-    df['value'] = df.type.str.extract(r'v(.+)b.*')
-    df['budget'] = df.type.str.extract(r'.*b(.+)$').astype(float)
-    df = df.drop(['type'], axis=1)
+        df = df.reindex(sorted(df.columns, key=str), axis=1) # Sort columns alphabetically
+        output_path = f'{FLAGS.output}/strategy.csv'
+        logger.info(f"Saving strategy to {output_path}")
+        df.to_csv(output_path)
 
-    df = df.reindex(sorted(df.columns, key=str), axis=1) # Sort columns alphabetically
-    output_path = f'{FLAGS.output}/strategy.csv'
-    logger.info(f"Saving strategy to {output_path}")
-    df.to_csv(output_path)
-
-    logger.info(f"Running processing script")
-    sharpen_solution(output_path)
-
-    # logger.info("Loading the model...")
-    # with open(MODEL_FILE_NAME.format(FLAGS.sampling), "rb") as file:
-    #   loaded_solver = pickle.load(file)
+        logger.info(f"Running processing script")
+        sharpen_solution(output_path)
 
 if __name__ == "__main__":
   app.run(main)

@@ -108,10 +108,10 @@ def pulp_solve(problem, solve_function=solve, save_if_failed=True):
         status = LpStatus[solve_function(problem)]
         if status != "Optimal":
             fail_lp(problem, save_if_failed, status=status)
+        return objective_from_lp(problem)
     except pulp.PulpSolverError as e:
         logging.warning(e)
-        fail_lp(problem, save_if_failed)
-    return objective_from_lp(problem)
+        fail_lp(problem, save_if_failed) # Will reraise
 
 def pretty_time(seconds):
     delta = dt.timedelta(seconds=seconds)
@@ -140,8 +140,6 @@ def apply_optional_overrides(args, argv, config):
     if hasattr(args, 'scale_coef') and args.scale_coef is not None:
         logging.warning(f'Overriding scale coef from command line to {args.scale_coef}')
         config['scale_coef'] = args.scale_coef        
-    if config.get('anneal_lr', False):
-        config['num_annealing_updates'] = config['total_timesteps']
 
 
 class UBCChanceEventSampler(object):
@@ -230,3 +228,12 @@ def permute_array(arr, seed):
         permuted_arr[i], permuted_arr[swap_idx] = permuted_arr[swap_idx], permuted_arr[i]
     return permuted_arr
     
+def between_first(s, a, b):
+    '''Returns the substring between the first occurrence of characters a and b in the string s'''
+    start_index = s.find(a) + len(a) if a in s else -1
+    end_index = s.find(b, start_index) if start_index != -1 else -1
+
+    if start_index != -1 and end_index != -1:
+        return s[start_index:end_index]
+    else:
+        return ""

@@ -50,7 +50,7 @@ def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', 
             config = str(Path(experiment_config).relative_to(CONFIG_ROOT))
             experiments.append(
                 {
-                    'name': game_name + '-' + safe_config_name(config) + ('-' + extra_name if extra_name else '') + '-' + str(seed),
+                    'name': game_name.replace('/', '_') + '-' + safe_config_name(config) + ('-' + extra_name if extra_name else '') + '-' + str(seed),
                     'config': config.replace('.yml', ''),
                     'game_name': game_name,
                     'seed': seed

@@ -21,11 +21,12 @@ PPO_DEFAULTS = {
   'num_minibatches': 4,
   'update_epochs': 4,
   'learning_rate': 2.5e-4,
-  'num_annealing_updates': None,
+  'anneal_lr': False,
   'gae': True,
   'gamma': 0.99,
   'gae_lambda': 0.95,
   'normalize_advantages': True,
+  'use_returns_as_advantages': False,
   'clip_coef': 0.2,
   'clip_vloss': True,
   'agent_fn': 'PPOAgent',
@@ -36,6 +37,9 @@ PPO_DEFAULTS = {
   'target_kl': None,
   'device': default_device(),
   'use_wandb': False,
+  'optimizer': 'adam',
+  'optimizer_kwargs': {},
+  'use_sos': False,
 }
 
 def read_ppo_config(config_name):
@@ -116,6 +120,8 @@ class EnvParams:
   trap_value: float = None
   trap_delay: int = 0
 
+  include_state: bool = False
+
   def make_env(self, game):
     if not self.sync and self.num_envs > 1:
       raise ValueError("Sync must be True if num_envs > 1")
@@ -123,7 +129,7 @@ class EnvParams:
     def gen_env(seed, env_id=0):
         # Only track env_id == 0 so we don't have multi-valued metrics
 
-        env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(seed=seed), use_observer_api=True, history_prefix=self.history_prefix, observer_params=self.observer_params)
+        env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(seed=seed), use_observer_api=True, history_prefix=self.history_prefix, observer_params=self.observer_params, include_state=self.include_state)
         if self.num_states_to_save:
           logger.info("State saving decorator")
           env = StateSavingEnvDecorator(env, self.num_states_to_save)
@@ -202,24 +208,28 @@ def make_ppo_agent(player_id, config, game):
     if config.get('trap_value', None): 
       num_actions *= 2
 
-    state_size = rl_environment.Environment(game).observation_spec()["info_state"]
+    state_shape = rl_environment.Environment(game).observation_spec()["info_state_shape"]
 
     # TODO: Do you want to parameterize NN size/architecture?
     ppo_kwargs = make_ppo_kwargs_from_config(config)
 
     return PPO(
-        input_shape=state_size,
+        input_shape=state_shape,
         num_actions=num_actions,
         num_players=num_players,
         player_id=player_id,
         **ppo_kwargs
     )
 
-def make_env_and_policy(game, config, env_params=None):
+def make_env_and_policy(game, config, env_params=None, agent_fn=make_ppo_agent):
   if env_params is None:
     env_params = EnvParams(num_envs=config['num_envs'], seed=config['seed'])
+
+  if agent_fn != make_ppo_agent:
+    env_params.include_state = True
+
   env = env_params.make_env(game)
-  agents = [make_ppo_agent(player_id, config, game) for player_id in range(game.num_players())]
+  agents = [agent_fn(player_id, config, game) for player_id in range(game.num_players())]
   return EnvAndPolicy(env=env, agents=agents, game=game)
 
 class PPOTrainingLoop:
@@ -266,6 +276,7 @@ class PPOTrainingLoop:
       for _ in range(num_steps):
           for player_id, agent in enumerate(self.agents): 
               agent_output = agent.step(time_step, is_evaluation=player_id in self.fixed_agents)
+              # Could get round from TS here and log probs?
               time_step, reward, done, unreset_time_steps = self.env.step(agent_output, reset_if_done=True)
 
           for player_id, agent in enumerate(self.agents):
@@ -275,6 +286,8 @@ class PPOTrainingLoop:
       policy_changed = False
       for player_id, agent in enumerate(self.agents):
         if player_id in self.players_to_train:
+          if agent.anneal_lr:
+            agent.anneal_learning_rate(update - 1, num_updates)
           agent.learn(time_step)
         if agent.get_max_policy_diff() >= self.policy_diff_threshold:
           policy_changed = True
@@ -293,6 +306,10 @@ class PPOTrainingLoop:
         if 'welfares' in stats_dict:
             log_stats_dict[f'{prefix}/mean_welfare'] = np.mean(stats_dict['welfares'])
         
+        # TODO: DONT MAKE THIS EACH TIME, JUST RESET IT 
+        e = EnvParams(num_envs=1, sync=False, normalize_rewards=False).make_env(self.game)
+        e.reset()
+
         for player_id in range(len(self.agents)):
           if 'raw_rewards' in stats_dict:
             log_stats_dict[f'{prefix}/player_{player_id}_mean_reward'] = np.mean(stats_dict['raw_rewards'][player_id])
@@ -302,6 +319,21 @@ class PPOTrainingLoop:
 
           if 'traps' in stats_dict:
             log_stats_dict[f'{prefix}/player_{player_id}_traps'] = np.mean(stats_dict['traps'][player_id])
+
+          step_output = self.agents[player_id].step(e.get_time_step(), is_evaluation=True)
+          probs = step_output.probs
+          e.step([step_output.action])
+          for action_id in range(len(probs)):
+            log_stats_dict[f'actions/player_{player_id}_action_{action_id}_prob'] = probs[action_id]
+
+          # from open_spiel.python.observation import make_observation
+          # observer = make_observation(self.game, params=observer_params)
+          # initial_state = self.game.new_initial_state()
+          # observer.set_from(initial_state, player=player_id)
+          # info_state = np.array(observer.tensor)
+          # probs = self.agents[player_id].network.get_action_and_value(torch.tensor(info_state)).probs
+          # for action_id in range(len(probs)):
+          #   log_stats_dict[f'{prefix}/player_{player_id}_action_{action_id}_prob'] = probs[action_id]
 
         # TODO:
         # for player_id in range(self.n_players):
@@ -354,11 +386,13 @@ def run_ppo(env_and_policy, total_steps, result_saver=None, seed=1234, compute_n
   trainer = PPOTrainingLoop(game, env, agents, total_steps, report_timer=report_timer, eval_timer=eval_timer, use_wandb=use_wandb)
 
   def eval_hook(update, total_steps):
+    logging.info("Running eval hook")
     checkpoint = ppo_checkpoint(env_and_policy, total_steps, alg_start_time, compute_nash_conv=compute_nash_conv, update=update)
     if result_saver is not None:
       checkpoint_name = result_saver.save(checkpoint)
       if dispatcher is not None:
         dispatcher.dispatch(checkpoint_name)
+    logging.info("Done eval hook")
   
   def report_hook(update, total_steps):
     logging.info(f"Update {update}")

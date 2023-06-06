@@ -45,7 +45,7 @@ def allocation_scorer(game, normalizer_dict):
         
     return scorer
 
-def efficient_allocation(game, factor_in_opening_prices=True):
+def efficient_allocation(game, factor_in_opening_prices=True, verbose=True):
     # Parse all type combos
     types = [game.auction_params.player_types[player] for player in range(game.num_players())]
     for player_type in types:
@@ -55,7 +55,7 @@ def efficient_allocation(game, factor_in_opening_prices=True):
     type_combos = list(itertools.product(*types))
 
     records = []
-    for combo in tqdm(type_combos):
+    for combo in tqdm(type_combos, disable=not verbose):
         type_prob = np.product([t['prob'] for t in combo])
         score, allocation = efficient_allocation_from_types(game, combo, factor_in_opening_prices=factor_in_opening_prices)
         combo_index = tuple(t['index'] for t in combo)
@@ -76,7 +76,7 @@ def efficient_allocation_from_types(game, types, factor_in_opening_prices=True):
     profits = []
     for player in range(num_players):
         profits.append(
-            np.maximum(0, types[player]['bidder'].get_profits(p_open)).tolist() if factor_in_opening_prices else types[player]['bidder'].get_values().tolist()
+            types[player]['bidder'].get_profits(p_open).tolist() if factor_in_opening_prices else np.maximum(0, types[player]['bidder'].get_values().tolist())
         )
 
     return efficient_allocation_from_profits(game, profits)
@@ -116,6 +116,10 @@ def efficient_allocation_from_profits(game, profits):
     problem = LpProblem(f"EfficientAllocation", LpMaximize)
     bundle_variables = LpVariable.dicts("X", np.arange(n_vars), cat=LpBinary)
 
+    if np.asarray(profits).sum() == 0: # Nothing is profitable => no objective will get written (dummy) and causes errors
+        return 0, [tuple([0] * params.num_products) for _ in range(num_players)]
+
+
     # OBJECTIVE
     problem += lpDot(np.reshape(profits, -1).tolist(), bundle_variables.values())
     
@@ -136,7 +140,7 @@ def efficient_allocation_from_profits(game, profits):
         # problem.writeLP(f'efficient_allocation_{random_string(10)}.lp')
         obj = pulp_solve(problem, save_if_failed=True)
         for var_id in range(n_vars):
-            # print(var_id, bundle_variables[var_id], value(bundle_variables[var_id]), var_id_to_player_bundle[var_id])
+            # print(  var_id, bundle_variables[var_id], value(bundle_variables[var_id]), var_id_to_player_bundle[var_id])
             if value(bundle_variables[var_id]) > .99: # Rounding stupidness
                 allocation.append(var_id_to_player_bundle[var_id][1])
     except ValueError as e:
