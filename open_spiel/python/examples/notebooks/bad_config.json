@@ -1,0 +1,94 @@
+{
+  "scale": 1000000,
+  "auction_params": {
+    "increment": 0.1,
+    "fold_randomness": true,
+    "max_rounds": 8,
+    "agent_memory": 1,
+    "licenses": [
+      2,
+      3
+    ],
+    "opening_price": [
+      162,
+      93
+    ],
+    "activity": [
+      162,
+      93
+    ]
+  },
+  "bidders": [
+    {
+      "player": 0,
+      "types": [
+        {
+          "type": "regional",
+          "value_per_subscriber": {
+            "lower": 50,
+            "upper": 100
+          },
+          "hq": 0
+        },
+        {
+          "type": "regional",
+          "value_per_subscriber": {
+            "lower": 50,
+            "upper": 100
+          },
+          "hq": 1
+        }
+      ]
+    },
+    {
+      "player": 1,
+      "types": [
+        {
+          "type": "regional",
+          "value_per_subscriber": {
+            "lower": 50,
+            "upper": 100
+          },
+          "hq": 1
+        },
+        {
+          "type": "local",
+          "value_per_subscriber": {
+            "lower": 50,
+            "upper": 100
+          },
+          "local_regions": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "player": 2,
+      "types": [
+        {
+          "type": "regional",
+          "value_per_subscriber": {
+            "lower": 50,
+            "upper": 100
+          },
+          "hq": 0
+        },
+        {
+          "type": "local",
+          "value_per_subscriber": {
+            "lower": 50,
+            "upper": 100
+          },
+          "local_regions": [
+            1,
+            0
+          ]
+        }
+      ]
+    }
+  ],
+  "sats_seed": 167569391,
+  "map": "OntarioQuebec"
+}
