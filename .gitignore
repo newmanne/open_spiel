@@ -72,5 +72,13 @@ open_spiel/.vs
 *.log.INFO.*
 
 venv_old/*
+
+# various RL outputs
 open_spiel/python/examples/runs/
 open_spiel/python/examples/videos/
+web/auctions/wandb/
+runs/
+open_spiel/python/examples/notebooks/wandb/
+open_spiel/python/examples/notebooks/torchlogs/
+gym-examples/
+open_spiel/python/examples/notebooks/results/
