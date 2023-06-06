@@ -20,16 +20,23 @@ from __future__ import print_function
 
 # TODO: Use logs to avoid so much small number multiplication?
 
+class TooManyStates(ValueError):
+    pass
+
+
 def _get_subgames_states(state, all_states, depth_limit, depth,
                          include_terminals, to_string,
-                         policy, curr_prob=1.0, max_depth=0):
+                         policy, curr_prob=1.0, max_depth=0, max_num_states=None):
+  if max_num_states and len(all_states) > max_num_states:
+    raise TooManyStates()
+
   """Extract non-chance states for a subgame into the all_states dict."""
   if state.is_terminal():
     if include_terminals:
       # Include if not already present and then terminate recursion.
       state_str = to_string(state)
       if state_str not in all_states:
-        all_states[state_str] = dict(state=state.clone(), prob=curr_prob)
+        all_states[state_str] = dict(state=state.clone(), prob=curr_prob, history=state.history())
       else:
         all_states[state_str]['prob'] += curr_prob
     return max_depth
@@ -55,7 +62,7 @@ def _get_subgames_states(state, all_states, depth_limit, depth,
     state_for_search = state.child(action)
     md = _get_subgames_states(state_for_search, all_states, depth_limit, depth + 1,
                          include_terminals, to_string,
-                         policy, prob, max(depth + 1, max_depth))
+                         policy, prob, max(depth + 1, max_depth), max_num_states=max_num_states)
     md = max(md, max_depth)
   return md
  
@@ -64,7 +71,9 @@ def get_all_info_states_with_policy(game,
                    depth_limit=-1,
                    include_terminals=True,
                    to_string=lambda s: s.history_str(),
-                   policy=None):
+                   policy=None,
+                   max_num_states=None,
+                   ):
   '''to_string: collapse terminals that you want treated the same'''
                   
   # Get the root state.
@@ -81,7 +90,9 @@ def get_all_info_states_with_policy(game,
       to_string=to_string,
       policy=policy,
       curr_prob=1.0,
-      max_depth=1)
+      max_depth=1,
+      max_num_states=max_num_states
+      )
 
   print(f'Max Depth: {max_depth}')
 

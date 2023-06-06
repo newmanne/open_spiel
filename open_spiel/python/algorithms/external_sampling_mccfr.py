@@ -18,6 +18,7 @@ import enum
 import numpy as np
 from open_spiel.python.algorithms import mccfr
 import pyspiel
+from open_spiel.python.examples.ubc_math_utils import fast_choice
 
 
 class AverageType(enum.Enum):
@@ -124,7 +125,8 @@ class ExternalSamplingSolver(mccfr.MCCFRSolverBase):
 
     if state.is_chance_node():
       outcomes, probs = zip(*state.chance_outcomes())
-      outcome = np.random.choice(outcomes, p=probs)
+      outcome = fast_choice(outcomes, probs)
+      # outcome = np.random.choice(outcomes, p=probs)
       return self._update_regrets(state.child(outcome), player)
 
     cur_player = state.current_player()
@@ -141,7 +143,8 @@ class ExternalSamplingSolver(mccfr.MCCFRSolverBase):
     child_values = np.zeros(num_legal_actions, dtype=np.float64)
     if cur_player != player:
       # Sample at opponent node
-      action_idx = np.random.choice(np.arange(num_legal_actions), p=policy)
+      action_idx = fast_choice(np.arange(num_legal_actions), policy)
+      # action_idx = np.random.choice(np.arange(num_legal_actions), p=policy)
       value = self._update_regrets(
           state.child(legal_actions[action_idx]), player)
     else:

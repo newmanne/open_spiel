@@ -167,6 +167,7 @@ class _CFRSolverBase(object):
 
     self._info_state_nodes = {}
     self._initialize_info_state_nodes(self._root_node)
+    print(f"Game has {len(self._info_state_nodes)} info states!")
 
     self._iteration = 0  # For possible linear-averaging.
     self._linear_averaging = linear_averaging
@@ -329,8 +330,7 @@ class _CFRSolverBase(object):
 
       info_state_node.cumulative_regret[action] += cfr_regret
       if self._linear_averaging:
-        info_state_node.cumulative_policy[
-            action] += self._iteration * reach_prob * action_prob
+        info_state_node.cumulative_policy[action] += self._iteration * reach_prob * action_prob
       else:
         info_state_node.cumulative_policy[action] += reach_prob * action_prob
 

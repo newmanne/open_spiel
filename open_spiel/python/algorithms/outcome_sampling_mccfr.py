@@ -17,7 +17,7 @@
 import numpy as np
 from open_spiel.python.algorithms import mccfr
 import pyspiel
-
+from open_spiel.python.examples.ubc_math_utils import fast_choice
 
 class OutcomeSamplingSolver(mccfr.MCCFRSolverBase):
   """An implementation of outcome sampling MCCFR."""
@@ -77,8 +77,10 @@ class OutcomeSamplingSolver(mccfr.MCCFRSolverBase):
 
     if state.is_chance_node():
       outcomes, probs = zip(*state.chance_outcomes())
-      aidx = np.random.choice(range(len(outcomes)), p=probs)
-      state.apply_action(outcomes[aidx])
+      # aidx = np.random.choice(range(len(outcomes)), p=probs)
+      aidx = fast_choice(range(len(outcomes)), probs)
+      # state.apply_action(outcomes[aidx])
+      state = state.child(outcomes[aidx])
       return self._episode(state, update_player, my_reach,
                            probs[aidx] * opp_reach, probs[aidx] * sample_reach)
 
@@ -96,8 +98,10 @@ class OutcomeSamplingSolver(mccfr.MCCFRSolverBase):
       sample_policy = self._expl * uniform_policy + (1.0 - self._expl) * policy
     else:
       sample_policy = policy
-    sampled_aidx = np.random.choice(range(num_legal_actions), p=sample_policy)
-    state.apply_action(legal_actions[sampled_aidx])
+    # sampled_aidx = np.random.choice(range(num_legal_actions), p=sample_policy)
+    sampled_aidx = fast_choice(range(num_legal_actions), sample_policy)
+    # state.apply_action(legal_actions[sampled_aidx])
+    state = state.child(legal_actions[sampled_aidx])
     if cur_player == update_player:
       new_my_reach = my_reach * policy[sampled_aidx]
       new_opp_reach = opp_reach
