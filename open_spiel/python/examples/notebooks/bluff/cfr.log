@@ -1,0 +1,377 @@
+2023-04-18 22:23:13,744 - __main__ - INFO - Using python implementations
+2023-04-18 22:23:13,744 - __main__ - INFO - Using CFR solver
+2023-04-18 22:23:20,829 - __main__ - INFO - Starting iteration 0
+2023-04-18 22:23:36,613 - __main__ - INFO - Using python implementations
+2023-04-18 22:23:36,613 - __main__ - INFO - Using CFR solver
+2023-04-18 22:23:43,721 - __main__ - INFO - Starting iteration 0
+2023-04-18 22:26:41,310 - __main__ - INFO - Using python implementations
+2023-04-18 22:26:41,310 - __main__ - INFO - Using CFR solver
+2023-04-18 22:26:48,211 - __main__ - INFO - Starting iteration 0
+2023-04-18 22:26:54,516 - __main__ - INFO - Iteration 0
+2023-04-18 22:26:54,517 - __main__ - INFO - walltime=8.941684
+2023-04-18 22:26:54,519 - __main__ - INFO - Done iteration 1. Took 13.21 seconds
+2023-04-18 22:26:56,109 - __main__ - INFO - Done iteration 2. Took 14.80 seconds
+2023-04-18 22:26:56,846 - __main__ - INFO - Done iteration 3. Took 15.54 seconds
+2023-04-18 22:27:41,143 - __main__ - INFO - Starting iteration 100
+2023-04-18 22:27:45,211 - __main__ - INFO - Iteration 100
+2023-04-18 22:27:45,212 - __main__ - INFO - walltime=60.291590
+2023-04-18 22:28:30,421 - __main__ - INFO - Starting iteration 200
+2023-04-18 22:28:34,482 - __main__ - INFO - Iteration 200
+2023-04-18 22:28:34,482 - __main__ - INFO - walltime=109.568800
+2023-04-18 22:29:19,668 - __main__ - INFO - Starting iteration 300
+2023-04-18 22:29:23,733 - __main__ - INFO - Iteration 300
+2023-04-18 22:29:23,734 - __main__ - INFO - walltime=158.815859
+2023-04-18 22:30:08,852 - __main__ - INFO - Starting iteration 400
+2023-04-18 22:30:12,915 - __main__ - INFO - Iteration 400
+2023-04-18 22:30:12,915 - __main__ - INFO - walltime=208.000347
+2023-04-18 22:30:57,492 - __main__ - INFO - Using python implementations
+2023-04-18 22:30:57,492 - __main__ - INFO - Using CFR solver
+2023-04-18 22:30:58,116 - __main__ - INFO - Starting iteration 500
+2023-04-18 22:31:02,260 - __main__ - INFO - Iteration 500
+2023-04-18 22:31:02,260 - __main__ - INFO - walltime=257.273096
+2023-04-18 22:31:04,350 - __main__ - INFO - Starting iteration 0
+2023-04-18 22:31:10,693 - __main__ - INFO - Iteration 0
+2023-04-18 22:31:10,693 - __main__ - INFO - walltime=8.913565
+2023-04-18 22:31:10,696 - __main__ - INFO - Done iteration 1. Took 13.20 seconds
+2023-04-18 22:31:12,292 - __main__ - INFO - Done iteration 2. Took 14.80 seconds
+2023-04-18 22:31:13,033 - __main__ - INFO - Done iteration 3. Took 15.54 seconds
+2023-04-18 22:31:48,043 - __main__ - INFO - Starting iteration 600
+2023-04-18 22:31:52,172 - __main__ - INFO - Iteration 600
+2023-04-18 22:31:52,173 - __main__ - INFO - walltime=307.195594
+2023-04-18 22:32:37,791 - __main__ - INFO - Starting iteration 700
+2023-04-18 22:32:41,919 - __main__ - INFO - Iteration 700
+2023-04-18 22:32:41,920 - __main__ - INFO - walltime=356.943552
+2023-04-18 22:33:27,540 - __main__ - INFO - Starting iteration 800
+2023-04-18 22:33:31,662 - __main__ - INFO - Iteration 800
+2023-04-18 22:33:31,663 - __main__ - INFO - walltime=406.692686
+2023-04-18 22:33:58,662 - __main__ - INFO - Using python implementations
+2023-04-18 22:33:58,663 - __main__ - INFO - Using CFR solver
+2023-04-18 22:34:00,136 - __main__ - INFO - Starting iteration 0
+2023-04-18 22:34:00,775 - __main__ - INFO - Iteration 0
+2023-04-18 22:34:00,775 - __main__ - INFO - walltime=1.688421
+2023-04-18 22:34:00,778 - __main__ - INFO - Done iteration 1. Took 2.12 seconds
+2023-04-18 22:34:00,833 - __main__ - INFO - Done iteration 2. Took 2.17 seconds
+2023-04-18 22:34:00,859 - __main__ - INFO - Done iteration 3. Took 2.20 seconds
+2023-04-18 22:34:03,602 - __main__ - INFO - Iteration 99
+2023-04-18 22:34:03,602 - __main__ - INFO - walltime=4.636099
+2023-04-18 22:34:03,603 - __main__ - INFO - Persisting the model...
+2023-04-18 22:34:04,057 - __main__ - INFO - Saving strategy to bluff/strategy.csv
+2023-04-18 22:34:17,685 - __main__ - INFO - Starting iteration 900
+2023-04-18 22:34:21,795 - __main__ - INFO - Iteration 900
+2023-04-18 22:34:21,795 - __main__ - INFO - walltime=456.840260
+2023-04-18 22:35:07,136 - __main__ - INFO - Starting iteration 1000
+2023-04-18 22:35:11,228 - __main__ - INFO - Iteration 1000
+2023-04-18 22:35:11,229 - __main__ - INFO - walltime=506.287693
+2023-04-18 22:35:56,551 - __main__ - INFO - Starting iteration 1100
+2023-04-18 22:36:00,638 - __main__ - INFO - Iteration 1100
+2023-04-18 22:36:00,639 - __main__ - INFO - walltime=555.701137
+2023-04-18 22:36:46,371 - __main__ - INFO - Starting iteration 1200
+2023-04-18 22:36:50,504 - __main__ - INFO - Iteration 1200
+2023-04-18 22:36:50,505 - __main__ - INFO - walltime=605.526241
+2023-04-18 22:37:36,227 - __main__ - INFO - Starting iteration 1300
+2023-04-18 22:37:40,356 - __main__ - INFO - Iteration 1300
+2023-04-18 22:37:40,356 - __main__ - INFO - walltime=655.379709
+2023-04-18 22:38:26,025 - __main__ - INFO - Starting iteration 1400
+2023-04-18 22:38:30,159 - __main__ - INFO - Iteration 1400
+2023-04-18 22:38:30,159 - __main__ - INFO - walltime=705.179361
+2023-04-18 22:39:15,772 - __main__ - INFO - Starting iteration 1500
+2023-04-18 22:39:19,881 - __main__ - INFO - Iteration 1500
+2023-04-18 22:39:19,881 - __main__ - INFO - walltime=754.922882
+2023-04-18 22:40:05,062 - __main__ - INFO - Starting iteration 1600
+2023-04-18 22:40:09,106 - __main__ - INFO - Iteration 1600
+2023-04-18 22:40:09,107 - __main__ - INFO - walltime=804.209439
+2023-04-18 22:40:54,179 - __main__ - INFO - Starting iteration 1700
+2023-04-18 22:40:58,227 - __main__ - INFO - Iteration 1700
+2023-04-18 22:40:58,227 - __main__ - INFO - walltime=853.326643
+2023-04-18 22:41:43,203 - __main__ - INFO - Starting iteration 1800
+2023-04-18 22:41:47,250 - __main__ - INFO - Iteration 1800
+2023-04-18 22:41:47,251 - __main__ - INFO - walltime=902.349514
+2023-04-18 22:42:32,269 - __main__ - INFO - Starting iteration 1900
+2023-04-18 22:42:36,316 - __main__ - INFO - Iteration 1900
+2023-04-18 22:42:36,316 - __main__ - INFO - walltime=951.414937
+2023-04-18 22:43:21,398 - __main__ - INFO - Starting iteration 2000
+2023-04-18 22:43:25,458 - __main__ - INFO - Iteration 2000
+2023-04-18 22:43:25,458 - __main__ - INFO - walltime=1000.549419
+2023-04-18 22:44:10,424 - __main__ - INFO - Starting iteration 2100
+2023-04-18 22:44:14,467 - __main__ - INFO - Iteration 2100
+2023-04-18 22:44:14,467 - __main__ - INFO - walltime=1049.571129
+2023-04-18 22:44:59,415 - __main__ - INFO - Starting iteration 2200
+2023-04-18 22:45:03,465 - __main__ - INFO - Iteration 2200
+2023-04-18 22:45:03,465 - __main__ - INFO - walltime=1098.561949
+2023-04-18 22:45:48,426 - __main__ - INFO - Starting iteration 2300
+2023-04-18 22:45:52,469 - __main__ - INFO - Iteration 2300
+2023-04-18 22:45:52,469 - __main__ - INFO - walltime=1147.571913
+2023-04-18 22:46:37,490 - __main__ - INFO - Starting iteration 2400
+2023-04-18 22:46:41,532 - __main__ - INFO - Iteration 2400
+2023-04-18 22:46:41,532 - __main__ - INFO - walltime=1196.635510
+2023-04-18 22:47:26,469 - __main__ - INFO - Starting iteration 2500
+2023-04-18 22:47:30,516 - __main__ - INFO - Iteration 2500
+2023-04-18 22:47:30,516 - __main__ - INFO - walltime=1245.614759
+2023-04-18 22:48:15,505 - __main__ - INFO - Starting iteration 2600
+2023-04-18 22:48:19,548 - __main__ - INFO - Iteration 2600
+2023-04-18 22:48:19,548 - __main__ - INFO - walltime=1294.651331
+2023-04-18 22:49:04,497 - __main__ - INFO - Starting iteration 2700
+2023-04-18 22:49:08,541 - __main__ - INFO - Iteration 2700
+2023-04-18 22:49:08,541 - __main__ - INFO - walltime=1343.644858
+2023-04-18 22:49:53,579 - __main__ - INFO - Starting iteration 2800
+2023-04-18 22:49:57,628 - __main__ - INFO - Iteration 2800
+2023-04-18 22:49:57,629 - __main__ - INFO - walltime=1392.726696
+2023-04-18 22:50:42,698 - __main__ - INFO - Starting iteration 2900
+2023-04-18 22:50:46,748 - __main__ - INFO - Iteration 2900
+2023-04-18 22:50:46,749 - __main__ - INFO - walltime=1441.848499
+2023-04-18 22:51:31,740 - __main__ - INFO - Starting iteration 3000
+2023-04-18 22:51:35,780 - __main__ - INFO - Iteration 3000
+2023-04-18 22:51:35,780 - __main__ - INFO - walltime=1490.885861
+2023-04-18 22:52:20,789 - __main__ - INFO - Starting iteration 3100
+2023-04-18 22:52:24,847 - __main__ - INFO - Iteration 3100
+2023-04-18 22:52:24,847 - __main__ - INFO - walltime=1539.940648
+2023-04-18 22:53:09,845 - __main__ - INFO - Starting iteration 3200
+2023-04-18 22:53:13,895 - __main__ - INFO - Iteration 3200
+2023-04-18 22:53:13,895 - __main__ - INFO - walltime=1588.990869
+2023-04-18 22:53:58,882 - __main__ - INFO - Starting iteration 3300
+2023-04-18 22:54:02,924 - __main__ - INFO - Iteration 3300
+2023-04-18 22:54:02,925 - __main__ - INFO - walltime=1638.027431
+2023-04-18 22:54:47,830 - __main__ - INFO - Starting iteration 3400
+2023-04-18 22:54:51,872 - __main__ - INFO - Iteration 3400
+2023-04-18 22:54:51,872 - __main__ - INFO - walltime=1686.975769
+2023-04-18 22:55:36,939 - __main__ - INFO - Starting iteration 3500
+2023-04-18 22:55:40,982 - __main__ - INFO - Iteration 3500
+2023-04-18 22:55:40,982 - __main__ - INFO - walltime=1736.085513
+2023-04-18 22:56:25,864 - __main__ - INFO - Starting iteration 3600
+2023-04-18 22:56:29,905 - __main__ - INFO - Iteration 3600
+2023-04-18 22:56:29,905 - __main__ - INFO - walltime=1785.009542
+2023-04-18 22:57:15,000 - __main__ - INFO - Starting iteration 3700
+2023-04-18 22:57:19,047 - __main__ - INFO - Iteration 3700
+2023-04-18 22:57:19,047 - __main__ - INFO - walltime=1834.146807
+2023-04-18 22:58:04,041 - __main__ - INFO - Starting iteration 3800
+2023-04-18 22:58:08,099 - __main__ - INFO - Iteration 3800
+2023-04-18 22:58:08,099 - __main__ - INFO - walltime=1883.186750
+2023-04-18 22:58:53,264 - __main__ - INFO - Starting iteration 3900
+2023-04-18 22:58:57,309 - __main__ - INFO - Iteration 3900
+2023-04-18 22:58:57,309 - __main__ - INFO - walltime=1932.411127
+2023-04-18 22:59:42,686 - __main__ - INFO - Starting iteration 4000
+2023-04-18 22:59:46,864 - __main__ - INFO - Iteration 4000
+2023-04-18 22:59:46,864 - __main__ - INFO - walltime=1981.840834
+2023-04-18 23:00:32,629 - __main__ - INFO - Starting iteration 4100
+2023-04-18 23:00:36,756 - __main__ - INFO - Iteration 4100
+2023-04-18 23:00:36,756 - __main__ - INFO - walltime=2031.787920
+2023-04-18 23:01:22,762 - __main__ - INFO - Starting iteration 4200
+2023-04-18 23:01:26,901 - __main__ - INFO - Iteration 4200
+2023-04-18 23:01:26,902 - __main__ - INFO - walltime=2081.917597
+2023-04-18 23:02:12,645 - __main__ - INFO - Starting iteration 4300
+2023-04-18 23:02:16,811 - __main__ - INFO - Iteration 4300
+2023-04-18 23:02:16,811 - __main__ - INFO - walltime=2131.798870
+2023-04-18 23:03:02,406 - __main__ - INFO - Starting iteration 4400
+2023-04-18 23:03:06,537 - __main__ - INFO - Iteration 4400
+2023-04-18 23:03:06,537 - __main__ - INFO - walltime=2181.565911
+2023-04-18 23:03:21,682 - __main__ - INFO - Using python implementations
+2023-04-18 23:03:21,682 - __main__ - INFO - Using CFR solver
+2023-04-18 23:03:23,162 - __main__ - INFO - Starting iteration 0
+2023-04-18 23:03:23,798 - __main__ - INFO - Iteration 0
+2023-04-18 23:03:23,799 - __main__ - INFO - walltime=1.691892
+2023-04-18 23:03:23,801 - __main__ - INFO - Done iteration 1. Took 2.12 seconds
+2023-04-18 23:03:23,857 - __main__ - INFO - Done iteration 2. Took 2.18 seconds
+2023-04-18 23:03:23,882 - __main__ - INFO - Done iteration 3. Took 2.20 seconds
+2023-04-18 23:03:26,619 - __main__ - INFO - Iteration 99
+2023-04-18 23:03:26,619 - __main__ - INFO - walltime=4.634196
+2023-04-18 23:03:26,621 - __main__ - INFO - Persisting the model...
+2023-04-18 23:03:27,073 - __main__ - INFO - Saving strategy to bluff/strategy.csv
+2023-04-18 23:03:52,393 - __main__ - INFO - Starting iteration 4500
+2023-04-18 23:03:56,515 - __main__ - INFO - Iteration 4500
+2023-04-18 23:03:56,516 - __main__ - INFO - walltime=2231.545638
+2023-04-18 23:04:42,303 - __main__ - INFO - Starting iteration 4600
+2023-04-18 23:04:46,442 - __main__ - INFO - Iteration 4600
+2023-04-18 23:04:46,442 - __main__ - INFO - walltime=2281.459877
+2023-04-18 23:05:32,086 - __main__ - INFO - Starting iteration 4700
+2023-04-18 23:05:36,206 - __main__ - INFO - Iteration 4700
+2023-04-18 23:05:36,207 - __main__ - INFO - walltime=2331.239893
+2023-04-18 23:06:21,773 - __main__ - INFO - Starting iteration 4800
+2023-04-18 23:06:25,903 - __main__ - INFO - Iteration 4800
+2023-04-18 23:06:25,903 - __main__ - INFO - walltime=2380.925486
+2023-04-18 23:07:11,514 - __main__ - INFO - Starting iteration 4900
+2023-04-18 23:07:15,646 - __main__ - INFO - Iteration 4900
+2023-04-18 23:07:15,646 - __main__ - INFO - walltime=2430.667488
+2023-04-18 23:08:04,901 - __main__ - INFO - Iteration 4999
+2023-04-18 23:08:04,901 - __main__ - INFO - walltime=2479.930767
+2023-04-18 23:08:04,903 - __main__ - INFO - Persisting the model...
+2023-04-18 23:08:07,239 - __main__ - INFO - Saving strategy to bluff/strategy.csv
+2023-04-18 23:09:26,608 - __main__ - INFO - Using python implementations
+2023-04-18 23:09:26,609 - __main__ - INFO - Using CFR solver
+2023-04-18 23:09:28,080 - __main__ - INFO - Starting iteration 0
+2023-04-18 23:09:28,718 - __main__ - INFO - Iteration 0
+2023-04-18 23:09:28,718 - __main__ - INFO - walltime=1.687019
+2023-04-18 23:09:28,720 - __main__ - INFO - Done iteration 1. Took 2.11 seconds
+2023-04-18 23:09:28,776 - __main__ - INFO - Done iteration 2. Took 2.17 seconds
+2023-04-18 23:09:28,802 - __main__ - INFO - Done iteration 3. Took 2.19 seconds
+2023-04-18 23:09:31,241 - __main__ - INFO - Starting iteration 100
+2023-04-18 23:09:31,571 - __main__ - INFO - Iteration 100
+2023-04-18 23:09:31,571 - __main__ - INFO - walltime=4.659297
+2023-04-18 23:09:34,076 - __main__ - INFO - Starting iteration 200
+2023-04-18 23:09:34,406 - __main__ - INFO - Iteration 200
+2023-04-18 23:09:34,406 - __main__ - INFO - walltime=7.494400
+2023-04-18 23:09:36,883 - __main__ - INFO - Starting iteration 300
+2023-04-18 23:09:37,214 - __main__ - INFO - Iteration 300
+2023-04-18 23:09:37,214 - __main__ - INFO - walltime=10.301602
+2023-04-18 23:09:39,707 - __main__ - INFO - Starting iteration 400
+2023-04-18 23:09:40,037 - __main__ - INFO - Iteration 400
+2023-04-18 23:09:40,037 - __main__ - INFO - walltime=13.125625
+2023-04-18 23:09:42,519 - __main__ - INFO - Starting iteration 500
+2023-04-18 23:09:42,847 - __main__ - INFO - Iteration 500
+2023-04-18 23:09:42,848 - __main__ - INFO - walltime=15.936681
+2023-04-18 23:09:45,319 - __main__ - INFO - Starting iteration 600
+2023-04-18 23:09:45,649 - __main__ - INFO - Iteration 600
+2023-04-18 23:09:45,649 - __main__ - INFO - walltime=18.737665
+2023-04-18 23:09:48,126 - __main__ - INFO - Starting iteration 700
+2023-04-18 23:09:48,455 - __main__ - INFO - Iteration 700
+2023-04-18 23:09:48,455 - __main__ - INFO - walltime=21.543983
+2023-04-18 23:09:50,931 - __main__ - INFO - Starting iteration 800
+2023-04-18 23:09:51,262 - __main__ - INFO - Iteration 800
+2023-04-18 23:09:51,262 - __main__ - INFO - walltime=24.349547
+2023-04-18 23:09:53,739 - __main__ - INFO - Starting iteration 900
+2023-04-18 23:09:54,068 - __main__ - INFO - Iteration 900
+2023-04-18 23:09:54,069 - __main__ - INFO - walltime=27.156970
+2023-04-18 23:09:56,850 - __main__ - INFO - Iteration 999
+2023-04-18 23:09:56,851 - __main__ - INFO - walltime=29.939260
+2023-04-18 23:09:56,852 - __main__ - INFO - Persisting the model...
+2023-04-18 23:09:57,305 - __main__ - INFO - Saving strategy to bluff/strategy.csv
+2023-04-19 00:14:58,325 - __main__ - INFO - Using python implementations
+2023-04-19 00:14:58,325 - __main__ - INFO - Using CFR solver
+2023-04-19 00:15:04,808 - __main__ - INFO - Starting iteration 0
+2023-04-19 00:15:10,586 - __main__ - INFO - Iteration 0
+2023-04-19 00:15:10,586 - __main__ - INFO - walltime=8.324629
+2023-04-19 00:15:10,589 - __main__ - INFO - Done iteration 1. Took 12.26 seconds
+2023-04-19 00:15:11,006 - __main__ - INFO - Done iteration 2. Took 12.68 seconds
+2023-04-19 00:15:11,395 - __main__ - INFO - Done iteration 3. Took 13.07 seconds
+2023-04-19 00:15:24,586 - __main__ - INFO - Starting iteration 100
+2023-04-19 00:15:28,003 - __main__ - INFO - Iteration 100
+2023-04-19 00:15:28,003 - __main__ - INFO - walltime=26.396765
+2023-04-19 00:15:41,226 - __main__ - INFO - Starting iteration 200
+2023-04-19 00:15:44,640 - __main__ - INFO - Iteration 200
+2023-04-19 00:15:44,640 - __main__ - INFO - walltime=43.037290
+2023-04-19 00:15:57,872 - __main__ - INFO - Starting iteration 300
+2023-04-19 00:16:01,283 - __main__ - INFO - Iteration 300
+2023-04-19 00:16:01,283 - __main__ - INFO - walltime=59.682874
+2023-04-19 00:16:14,508 - __main__ - INFO - Starting iteration 400
+2023-04-19 00:16:17,935 - __main__ - INFO - Iteration 400
+2023-04-19 00:16:17,935 - __main__ - INFO - walltime=76.319440
+2023-04-19 00:16:31,212 - __main__ - INFO - Starting iteration 500
+2023-04-19 00:16:34,622 - __main__ - INFO - Iteration 500
+2023-04-19 00:16:34,623 - __main__ - INFO - walltime=93.022828
+2023-04-19 00:16:47,838 - __main__ - INFO - Starting iteration 600
+2023-04-19 00:16:51,281 - __main__ - INFO - Iteration 600
+2023-04-19 00:16:51,282 - __main__ - INFO - walltime=109.648687
+2023-04-19 00:17:04,528 - __main__ - INFO - Starting iteration 700
+2023-04-19 00:17:07,960 - __main__ - INFO - Iteration 700
+2023-04-19 00:17:07,960 - __main__ - INFO - walltime=126.338652
+2023-04-19 00:17:21,189 - __main__ - INFO - Starting iteration 800
+2023-04-19 00:17:24,602 - __main__ - INFO - Iteration 800
+2023-04-19 00:17:24,602 - __main__ - INFO - walltime=142.999602
+2023-04-19 00:17:37,825 - __main__ - INFO - Starting iteration 900
+2023-04-19 00:17:41,239 - __main__ - INFO - Iteration 900
+2023-04-19 00:17:41,239 - __main__ - INFO - walltime=159.634886
+2023-04-19 00:17:57,733 - __main__ - INFO - Iteration 999
+2023-04-19 00:17:57,733 - __main__ - INFO - walltime=176.132108
+2023-04-19 00:17:57,735 - __main__ - INFO - Persisting the model...
+2023-04-19 00:17:59,919 - __main__ - INFO - Saving strategy to bluff/strategy.csv
+2023-04-19 00:46:30,259 - __main__ - INFO - Using python implementations
+2023-04-19 00:46:30,259 - __main__ - INFO - Using CFR solver
+2023-04-19 00:46:33,336 - __main__ - INFO - Starting iteration 0
+2023-04-19 00:46:35,197 - __main__ - INFO - Iteration 0
+2023-04-19 00:46:35,197 - __main__ - INFO - walltime=3.666135
+2023-04-19 00:46:35,200 - __main__ - INFO - Done iteration 1. Took 4.94 seconds
+2023-04-19 00:46:35,369 - __main__ - INFO - Done iteration 2. Took 5.11 seconds
+2023-04-19 00:46:35,526 - __main__ - INFO - Done iteration 3. Took 5.27 seconds
+2023-04-19 00:46:41,761 - __main__ - INFO - Starting iteration 100
+2023-04-19 00:46:42,767 - __main__ - INFO - Iteration 100
+2023-04-19 00:46:42,767 - __main__ - INFO - walltime=11.568111
+2023-04-19 00:46:49,064 - __main__ - INFO - Starting iteration 200
+2023-04-19 00:46:50,071 - __main__ - INFO - Iteration 200
+2023-04-19 00:46:50,071 - __main__ - INFO - walltime=18.871039
+2023-04-19 00:46:56,368 - __main__ - INFO - Starting iteration 300
+2023-04-19 00:46:57,374 - __main__ - INFO - Iteration 300
+2023-04-19 00:46:57,374 - __main__ - INFO - walltime=26.175186
+2023-04-19 00:47:03,656 - __main__ - INFO - Starting iteration 400
+2023-04-19 00:47:04,662 - __main__ - INFO - Iteration 400
+2023-04-19 00:47:04,662 - __main__ - INFO - walltime=33.463451
+2023-04-19 00:47:10,971 - __main__ - INFO - Starting iteration 500
+2023-04-19 00:47:11,975 - __main__ - INFO - Iteration 500
+2023-04-19 00:47:11,975 - __main__ - INFO - walltime=40.778019
+2023-04-19 00:47:18,275 - __main__ - INFO - Starting iteration 600
+2023-04-19 00:47:19,278 - __main__ - INFO - Iteration 600
+2023-04-19 00:47:19,278 - __main__ - INFO - walltime=48.082068
+2023-04-19 00:47:25,571 - __main__ - INFO - Starting iteration 700
+2023-04-19 00:47:26,585 - __main__ - INFO - Iteration 700
+2023-04-19 00:47:26,585 - __main__ - INFO - walltime=55.378722
+2023-04-19 00:47:32,862 - __main__ - INFO - Starting iteration 800
+2023-04-19 00:47:33,872 - __main__ - INFO - Iteration 800
+2023-04-19 00:47:33,872 - __main__ - INFO - walltime=62.669531
+2023-04-19 00:47:40,157 - __main__ - INFO - Starting iteration 900
+2023-04-19 00:47:41,161 - __main__ - INFO - Iteration 900
+2023-04-19 00:47:41,161 - __main__ - INFO - walltime=69.964107
+2023-04-19 00:47:48,394 - __main__ - INFO - Iteration 999
+2023-04-19 00:47:48,394 - __main__ - INFO - walltime=77.196010
+2023-04-19 00:47:48,396 - __main__ - INFO - Persisting the model...
+2023-04-19 00:47:49,366 - __main__ - INFO - Saving strategy to bluff/strategy.csv
+2023-04-19 00:49:48,272 - __main__ - INFO - Using python implementations
+2023-04-19 00:49:48,272 - __main__ - INFO - Using CFR solver
+2023-04-19 00:49:51,324 - __main__ - INFO - Starting iteration 0
+2023-04-19 00:49:53,147 - __main__ - INFO - Iteration 0
+2023-04-19 00:49:53,148 - __main__ - INFO - walltime=3.630790
+2023-04-19 00:49:53,150 - __main__ - INFO - Done iteration 1. Took 4.88 seconds
+2023-04-19 00:49:53,331 - __main__ - INFO - Done iteration 2. Took 5.06 seconds
+2023-04-19 00:49:53,499 - __main__ - INFO - Done iteration 3. Took 5.23 seconds
+2023-04-19 00:50:02,513 - __main__ - INFO - Starting iteration 100
+2023-04-19 00:50:03,536 - __main__ - INFO - Iteration 100
+2023-04-19 00:50:03,537 - __main__ - INFO - walltime=14.328907
+2023-04-19 00:50:12,153 - __main__ - INFO - Starting iteration 200
+2023-04-19 00:50:13,184 - __main__ - INFO - Iteration 200
+2023-04-19 00:50:13,184 - __main__ - INFO - walltime=23.969874
+2023-04-19 00:50:21,752 - __main__ - INFO - Starting iteration 300
+2023-04-19 00:50:22,775 - __main__ - INFO - Iteration 300
+2023-04-19 00:50:22,775 - __main__ - INFO - walltime=33.567480
+2023-04-19 00:50:31,346 - __main__ - INFO - Starting iteration 400
+2023-04-19 00:50:32,373 - __main__ - INFO - Iteration 400
+2023-04-19 00:50:32,373 - __main__ - INFO - walltime=43.162451
+2023-04-19 00:50:41,885 - __main__ - INFO - Iteration 499
+2023-04-19 00:50:41,885 - __main__ - INFO - walltime=52.680669
+2023-04-19 00:50:41,887 - __main__ - INFO - Persisting the model...
+2023-04-19 00:50:42,851 - __main__ - INFO - Saving strategy to bluff/strategy.csv
+2023-04-19 00:51:39,146 - __main__ - INFO - Using python implementations
+2023-04-19 00:51:39,146 - __main__ - INFO - Using CFR solver
+2023-04-19 00:51:42,193 - __main__ - INFO - Starting iteration 0
+2023-04-19 00:51:44,028 - __main__ - INFO - Iteration 0
+2023-04-19 00:51:44,029 - __main__ - INFO - walltime=3.631878
+2023-04-19 00:51:44,031 - __main__ - INFO - Done iteration 1. Took 4.89 seconds
+2023-04-19 00:51:44,213 - __main__ - INFO - Done iteration 2. Took 5.07 seconds
+2023-04-19 00:51:44,384 - __main__ - INFO - Done iteration 3. Took 5.24 seconds
+2023-04-19 00:51:53,492 - __main__ - INFO - Starting iteration 100
+2023-04-19 00:51:54,517 - __main__ - INFO - Iteration 100
+2023-04-19 00:51:54,517 - __main__ - INFO - walltime=14.435713
+2023-04-19 00:52:03,276 - __main__ - INFO - Starting iteration 200
+2023-04-19 00:52:04,284 - __main__ - INFO - Iteration 200
+2023-04-19 00:52:04,284 - __main__ - INFO - walltime=24.218540
+2023-04-19 00:52:12,911 - __main__ - INFO - Starting iteration 300
+2023-04-19 00:52:13,929 - __main__ - INFO - Iteration 300
+2023-04-19 00:52:13,929 - __main__ - INFO - walltime=33.854078
+2023-04-19 00:52:22,554 - __main__ - INFO - Starting iteration 400
+2023-04-19 00:52:23,571 - __main__ - INFO - Iteration 400
+2023-04-19 00:52:23,571 - __main__ - INFO - walltime=43.496899
+2023-04-19 00:52:32,151 - __main__ - INFO - Starting iteration 500
+2023-04-19 00:52:33,166 - __main__ - INFO - Iteration 500
+2023-04-19 00:52:33,167 - __main__ - INFO - walltime=53.093254
+2023-04-19 00:52:41,811 - __main__ - INFO - Starting iteration 600
+2023-04-19 00:52:42,829 - __main__ - INFO - Iteration 600
+2023-04-19 00:52:42,829 - __main__ - INFO - walltime=62.754653
+2023-04-19 00:52:51,423 - __main__ - INFO - Starting iteration 700
+2023-04-19 00:52:52,452 - __main__ - INFO - Iteration 700
+2023-04-19 00:52:52,452 - __main__ - INFO - walltime=72.366803
+2023-04-19 00:53:01,036 - __main__ - INFO - Starting iteration 800
+2023-04-19 00:53:02,068 - __main__ - INFO - Iteration 800
+2023-04-19 00:53:02,069 - __main__ - INFO - walltime=81.979907
+2023-04-19 00:53:10,654 - __main__ - INFO - Starting iteration 900
+2023-04-19 00:53:11,673 - __main__ - INFO - Iteration 900
+2023-04-19 00:53:11,673 - __main__ - INFO - walltime=91.597444
+2023-04-19 00:53:21,203 - __main__ - INFO - Iteration 999
+2023-04-19 00:53:21,204 - __main__ - INFO - walltime=101.127916
+2023-04-19 00:53:21,205 - __main__ - INFO - Persisting the model...
+2023-04-19 00:53:22,179 - __main__ - INFO - Saving strategy to bluff/strategy.csv

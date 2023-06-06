@@ -1,0 +1,696 @@
+2023-04-18 00:12:50,658 - __main__ - INFO - Using python implementations
+2023-04-18 00:12:50,658 - __main__ - INFO - Using CFR solver
+2023-04-18 00:12:52,949 - __main__ - INFO - Starting iteration 0
+2023-04-18 00:12:53,623 - __main__ - INFO - Iteration 0
+2023-04-18 00:12:53,623 - __main__ - INFO - walltime=2.472783
+2023-04-18 00:12:53,625 - __main__ - INFO - Done iteration 1. Took 2.97 seconds
+2023-04-18 00:12:53,692 - __main__ - INFO - Done iteration 2. Took 3.04 seconds
+2023-04-18 00:12:53,741 - __main__ - INFO - Done iteration 3. Took 3.08 seconds
+2023-04-18 00:12:55,391 - __main__ - INFO - Starting iteration 100
+2023-04-18 00:12:55,636 - __main__ - INFO - Iteration 100
+2023-04-18 00:12:55,637 - __main__ - INFO - walltime=4.752182
+2023-04-18 00:12:57,299 - __main__ - INFO - Starting iteration 200
+2023-04-18 00:12:57,545 - __main__ - INFO - Iteration 200
+2023-04-18 00:12:57,545 - __main__ - INFO - walltime=6.660333
+2023-04-18 00:12:59,205 - __main__ - INFO - Starting iteration 300
+2023-04-18 00:12:59,450 - __main__ - INFO - Iteration 300
+2023-04-18 00:12:59,450 - __main__ - INFO - walltime=8.565976
+2023-04-18 00:13:01,115 - __main__ - INFO - Starting iteration 400
+2023-04-18 00:13:01,360 - __main__ - INFO - Iteration 400
+2023-04-18 00:13:01,360 - __main__ - INFO - walltime=10.475687
+2023-04-18 00:13:03,016 - __main__ - INFO - Starting iteration 500
+2023-04-18 00:13:03,260 - __main__ - INFO - Iteration 500
+2023-04-18 00:13:03,261 - __main__ - INFO - walltime=12.376611
+2023-04-18 00:13:04,909 - __main__ - INFO - Starting iteration 600
+2023-04-18 00:13:05,153 - __main__ - INFO - Iteration 600
+2023-04-18 00:13:05,153 - __main__ - INFO - walltime=14.269923
+2023-04-18 00:13:06,801 - __main__ - INFO - Starting iteration 700
+2023-04-18 00:13:07,046 - __main__ - INFO - Iteration 700
+2023-04-18 00:13:07,046 - __main__ - INFO - walltime=16.162025
+2023-04-18 00:13:08,700 - __main__ - INFO - Starting iteration 800
+2023-04-18 00:13:08,946 - __main__ - INFO - Iteration 800
+2023-04-18 00:13:08,946 - __main__ - INFO - walltime=18.060628
+2023-04-18 00:13:10,598 - __main__ - INFO - Starting iteration 900
+2023-04-18 00:13:10,844 - __main__ - INFO - Iteration 900
+2023-04-18 00:13:10,844 - __main__ - INFO - walltime=19.958861
+2023-04-18 00:13:12,723 - __main__ - INFO - Iteration 999
+2023-04-18 00:13:12,723 - __main__ - INFO - walltime=21.839923
+2023-04-18 00:13:12,725 - __main__ - INFO - Persisting the model...
+2023-04-18 00:13:13,554 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 00:17:09,536 - __main__ - INFO - Using python implementations
+2023-04-18 00:17:09,536 - __main__ - INFO - Using CFR solver
+2023-04-18 00:17:11,820 - __main__ - INFO - Starting iteration 0
+2023-04-18 00:17:12,496 - __main__ - INFO - Iteration 0
+2023-04-18 00:17:12,496 - __main__ - INFO - walltime=2.463606
+2023-04-18 00:17:12,498 - __main__ - INFO - Persisting the model...
+2023-04-18 00:17:13,320 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 20:07:29,778 - __main__ - INFO - Using python implementations
+2023-04-18 20:07:29,778 - __main__ - INFO - Using CFR solver
+2023-04-18 20:07:32,500 - __main__ - INFO - Starting iteration 0
+2023-04-18 20:07:34,052 - __main__ - INFO - Iteration 0
+2023-04-18 20:07:34,052 - __main__ - INFO - walltime=3.205116
+2023-04-18 20:07:34,055 - __main__ - INFO - Persisting the model...
+2023-04-18 20:07:35,121 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 20:10:31,144 - __main__ - INFO - Using python implementations
+2023-04-18 20:10:31,145 - __main__ - INFO - Using CFR solver
+2023-04-18 20:10:36,933 - __main__ - INFO - Using python implementations
+2023-04-18 20:10:36,933 - __main__ - INFO - Using CFR solver
+2023-04-18 20:10:39,650 - __main__ - INFO - Starting iteration 0
+2023-04-18 20:10:41,196 - __main__ - INFO - Iteration 0
+2023-04-18 20:10:41,196 - __main__ - INFO - walltime=3.198019
+2023-04-18 20:10:41,198 - __main__ - INFO - Done iteration 1. Took 4.27 seconds
+2023-04-18 20:10:41,407 - __main__ - INFO - Done iteration 2. Took 4.48 seconds
+2023-04-18 20:10:41,534 - __main__ - INFO - Done iteration 3. Took 4.60 seconds
+2023-04-18 20:10:42,380 - __main__ - INFO - Iteration 4
+2023-04-18 20:10:42,381 - __main__ - INFO - walltime=4.691678
+2023-04-18 20:10:42,382 - __main__ - INFO - Persisting the model...
+2023-04-18 20:10:43,437 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 20:28:28,517 - __main__ - INFO - Using python implementations
+2023-04-18 20:28:28,517 - __main__ - INFO - Using CFR solver
+2023-04-18 20:28:31,203 - __main__ - INFO - Starting iteration 0
+2023-04-18 20:28:32,740 - __main__ - INFO - Iteration 0
+2023-04-18 20:28:32,740 - __main__ - INFO - walltime=3.161464
+2023-04-18 20:28:32,742 - __main__ - INFO - Done iteration 1. Took 4.23 seconds
+2023-04-18 20:28:32,949 - __main__ - INFO - Done iteration 2. Took 4.43 seconds
+2023-04-18 20:28:33,076 - __main__ - INFO - Done iteration 3. Took 4.56 seconds
+2023-04-18 20:28:33,926 - __main__ - INFO - Iteration 4
+2023-04-18 20:28:33,926 - __main__ - INFO - walltime=4.648103
+2023-04-18 20:28:33,927 - __main__ - INFO - Persisting the model...
+2023-04-18 20:28:34,970 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 20:29:55,529 - __main__ - INFO - Using python implementations
+2023-04-18 20:29:55,529 - __main__ - INFO - Using CFR solver
+2023-04-18 20:33:17,106 - __main__ - INFO - Using python implementations
+2023-04-18 20:33:17,106 - __main__ - INFO - Using CFR solver
+2023-04-18 20:33:22,292 - __main__ - INFO - Starting iteration 0
+2023-04-18 20:33:39,843 - __main__ - INFO - Iteration 0
+2023-04-18 20:33:39,844 - __main__ - INFO - walltime=6.461722
+2023-04-18 20:33:39,846 - __main__ - INFO - Done iteration 1. Took 22.74 seconds
+2023-04-18 20:33:40,461 - __main__ - INFO - Done iteration 2. Took 23.36 seconds
+2023-04-18 20:33:40,854 - __main__ - INFO - Done iteration 3. Took 23.75 seconds
+2023-04-18 20:34:07,436 - __main__ - INFO - Iteration 4
+2023-04-18 20:34:07,436 - __main__ - INFO - walltime=24.064675
+2023-04-18 20:34:07,438 - __main__ - INFO - Persisting the model...
+2023-04-18 20:34:17,299 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 20:35:47,108 - __main__ - INFO - Using python implementations
+2023-04-18 20:35:47,108 - __main__ - INFO - Using CFR solver
+2023-04-18 20:35:49,820 - __main__ - INFO - Starting iteration 0
+2023-04-18 20:35:51,399 - __main__ - INFO - Iteration 0
+2023-04-18 20:35:51,400 - __main__ - INFO - walltime=3.189108
+2023-04-18 20:35:51,402 - __main__ - INFO - Done iteration 1. Took 4.29 seconds
+2023-04-18 20:35:51,614 - __main__ - INFO - Done iteration 2. Took 4.51 seconds
+2023-04-18 20:35:51,740 - __main__ - INFO - Done iteration 3. Took 4.63 seconds
+2023-04-18 20:35:52,587 - __main__ - INFO - Iteration 4
+2023-04-18 20:35:52,587 - __main__ - INFO - walltime=4.720954
+2023-04-18 20:35:52,588 - __main__ - INFO - Persisting the model...
+2023-04-18 20:35:53,656 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 20:36:14,915 - __main__ - INFO - Using python implementations
+2023-04-18 20:36:14,915 - __main__ - INFO - Using CFR solver
+2023-04-18 20:36:52,270 - __main__ - INFO - Using python implementations
+2023-04-18 20:36:52,270 - __main__ - INFO - Using CFR solver
+2023-04-18 20:36:54,977 - __main__ - INFO - Starting iteration 0
+2023-04-18 20:36:56,332 - __main__ - INFO - Iteration 0
+2023-04-18 20:36:56,333 - __main__ - INFO - walltime=3.005243
+2023-04-18 20:36:56,335 - __main__ - INFO - Done iteration 1. Took 4.07 seconds
+2023-04-18 20:36:56,453 - __main__ - INFO - Done iteration 2. Took 4.18 seconds
+2023-04-18 20:36:56,583 - __main__ - INFO - Done iteration 3. Took 4.31 seconds
+2023-04-18 20:36:57,922 - __main__ - INFO - Iteration 9
+2023-04-18 20:36:57,922 - __main__ - INFO - walltime=4.898782
+2023-04-18 20:36:57,924 - __main__ - INFO - Persisting the model...
+2023-04-18 20:36:58,977 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 20:38:35,334 - __main__ - INFO - Using python implementations
+2023-04-18 20:38:35,335 - __main__ - INFO - Using CFR solver
+2023-04-18 20:38:38,072 - __main__ - INFO - Starting iteration 0
+2023-04-18 20:38:39,439 - __main__ - INFO - Iteration 0
+2023-04-18 20:38:39,439 - __main__ - INFO - walltime=3.039235
+2023-04-18 20:38:39,441 - __main__ - INFO - Done iteration 1. Took 4.11 seconds
+2023-04-18 20:38:39,560 - __main__ - INFO - Done iteration 2. Took 4.23 seconds
+2023-04-18 20:38:39,690 - __main__ - INFO - Done iteration 3. Took 4.36 seconds
+2023-04-18 20:38:44,352 - __main__ - INFO - Starting iteration 100
+2023-04-18 20:38:45,150 - __main__ - INFO - Iteration 100
+2023-04-18 20:38:45,150 - __main__ - INFO - walltime=9.057905
+2023-04-18 20:38:48,996 - __main__ - INFO - Starting iteration 200
+2023-04-18 20:38:49,796 - __main__ - INFO - Iteration 200
+2023-04-18 20:38:49,796 - __main__ - INFO - walltime=13.702211
+2023-04-18 20:38:53,635 - __main__ - INFO - Starting iteration 300
+2023-04-18 20:38:54,433 - __main__ - INFO - Iteration 300
+2023-04-18 20:38:54,434 - __main__ - INFO - walltime=18.341159
+2023-04-18 20:38:58,270 - __main__ - INFO - Starting iteration 400
+2023-04-18 20:38:59,068 - __main__ - INFO - Iteration 400
+2023-04-18 20:38:59,068 - __main__ - INFO - walltime=22.975501
+2023-04-18 20:39:02,900 - __main__ - INFO - Starting iteration 500
+2023-04-18 20:39:03,698 - __main__ - INFO - Iteration 500
+2023-04-18 20:39:03,698 - __main__ - INFO - walltime=27.605680
+2023-04-18 20:39:07,549 - __main__ - INFO - Starting iteration 600
+2023-04-18 20:39:08,347 - __main__ - INFO - Iteration 600
+2023-04-18 20:39:08,347 - __main__ - INFO - walltime=32.254932
+2023-04-18 20:39:12,198 - __main__ - INFO - Starting iteration 700
+2023-04-18 20:39:12,998 - __main__ - INFO - Iteration 700
+2023-04-18 20:39:12,998 - __main__ - INFO - walltime=36.904350
+2023-04-18 20:39:22,385 - __main__ - INFO - Using python implementations
+2023-04-18 20:39:22,385 - __main__ - INFO - Using CFR solver
+2023-04-18 20:39:25,092 - __main__ - INFO - Starting iteration 0
+2023-04-18 20:39:26,630 - __main__ - INFO - Iteration 0
+2023-04-18 20:39:26,630 - __main__ - INFO - walltime=3.183119
+2023-04-18 20:39:26,632 - __main__ - INFO - Done iteration 1. Took 4.25 seconds
+2023-04-18 20:39:26,841 - __main__ - INFO - Done iteration 2. Took 4.46 seconds
+2023-04-18 20:39:26,967 - __main__ - INFO - Done iteration 3. Took 4.58 seconds
+2023-04-18 20:39:29,273 - __main__ - INFO - Starting iteration 100
+2023-04-18 20:39:30,062 - __main__ - INFO - Iteration 100
+2023-04-18 20:39:30,062 - __main__ - INFO - walltime=6.913489
+2023-04-18 20:39:32,369 - __main__ - INFO - Starting iteration 200
+2023-04-18 20:39:33,155 - __main__ - INFO - Iteration 200
+2023-04-18 20:39:33,155 - __main__ - INFO - walltime=10.008985
+2023-04-18 20:39:35,453 - __main__ - INFO - Starting iteration 300
+2023-04-18 20:39:36,239 - __main__ - INFO - Iteration 300
+2023-04-18 20:39:36,239 - __main__ - INFO - walltime=13.093128
+2023-04-18 20:39:38,543 - __main__ - INFO - Starting iteration 400
+2023-04-18 20:39:39,330 - __main__ - INFO - Iteration 400
+2023-04-18 20:39:39,330 - __main__ - INFO - walltime=16.183179
+2023-04-18 20:39:41,629 - __main__ - INFO - Starting iteration 500
+2023-04-18 20:39:42,420 - __main__ - INFO - Iteration 500
+2023-04-18 20:39:42,420 - __main__ - INFO - walltime=19.268790
+2023-04-18 20:39:44,725 - __main__ - INFO - Starting iteration 600
+2023-04-18 20:39:45,511 - __main__ - INFO - Iteration 600
+2023-04-18 20:39:45,512 - __main__ - INFO - walltime=22.364802
+2023-04-18 20:39:47,815 - __main__ - INFO - Starting iteration 700
+2023-04-18 20:39:48,603 - __main__ - INFO - Iteration 700
+2023-04-18 20:39:48,603 - __main__ - INFO - walltime=25.455045
+2023-04-18 20:39:50,901 - __main__ - INFO - Starting iteration 800
+2023-04-18 20:39:51,687 - __main__ - INFO - Iteration 800
+2023-04-18 20:39:51,687 - __main__ - INFO - walltime=28.540747
+2023-04-18 20:39:53,988 - __main__ - INFO - Starting iteration 900
+2023-04-18 20:39:54,774 - __main__ - INFO - Iteration 900
+2023-04-18 20:39:54,774 - __main__ - INFO - walltime=31.627872
+2023-04-18 20:39:57,071 - __main__ - INFO - Starting iteration 1000
+2023-04-18 20:39:57,863 - __main__ - INFO - Iteration 1000
+2023-04-18 20:39:57,863 - __main__ - INFO - walltime=34.711599
+2023-04-18 20:40:00,159 - __main__ - INFO - Starting iteration 1100
+2023-04-18 20:40:00,947 - __main__ - INFO - Iteration 1100
+2023-04-18 20:40:00,947 - __main__ - INFO - walltime=37.798990
+2023-04-18 20:40:03,250 - __main__ - INFO - Starting iteration 1200
+2023-04-18 20:40:04,039 - __main__ - INFO - Iteration 1200
+2023-04-18 20:40:04,039 - __main__ - INFO - walltime=40.890388
+2023-04-18 20:40:06,339 - __main__ - INFO - Starting iteration 1300
+2023-04-18 20:40:07,128 - __main__ - INFO - Iteration 1300
+2023-04-18 20:40:07,128 - __main__ - INFO - walltime=43.979473
+2023-04-18 20:40:09,432 - __main__ - INFO - Starting iteration 1400
+2023-04-18 20:40:10,220 - __main__ - INFO - Iteration 1400
+2023-04-18 20:40:10,220 - __main__ - INFO - walltime=47.072399
+2023-04-18 20:40:12,519 - __main__ - INFO - Starting iteration 1500
+2023-04-18 20:40:13,304 - __main__ - INFO - Iteration 1500
+2023-04-18 20:40:13,304 - __main__ - INFO - walltime=50.159316
+2023-04-18 20:40:15,599 - __main__ - INFO - Starting iteration 1600
+2023-04-18 20:40:16,391 - __main__ - INFO - Iteration 1600
+2023-04-18 20:40:16,391 - __main__ - INFO - walltime=53.238647
+2023-04-18 20:40:18,691 - __main__ - INFO - Starting iteration 1700
+2023-04-18 20:40:19,482 - __main__ - INFO - Iteration 1700
+2023-04-18 20:40:19,482 - __main__ - INFO - walltime=56.331392
+2023-04-18 20:40:21,781 - __main__ - INFO - Starting iteration 1800
+2023-04-18 20:40:22,569 - __main__ - INFO - Iteration 1800
+2023-04-18 20:40:22,570 - __main__ - INFO - walltime=59.421159
+2023-04-18 20:40:24,866 - __main__ - INFO - Starting iteration 1900
+2023-04-18 20:40:25,652 - __main__ - INFO - Iteration 1900
+2023-04-18 20:40:25,652 - __main__ - INFO - walltime=62.506068
+2023-04-18 20:40:27,956 - __main__ - INFO - Starting iteration 2000
+2023-04-18 20:40:28,741 - __main__ - INFO - Iteration 2000
+2023-04-18 20:40:28,742 - __main__ - INFO - walltime=65.596374
+2023-04-18 20:40:31,038 - __main__ - INFO - Starting iteration 2100
+2023-04-18 20:40:31,823 - __main__ - INFO - Iteration 2100
+2023-04-18 20:40:31,823 - __main__ - INFO - walltime=68.678612
+2023-04-18 20:40:34,128 - __main__ - INFO - Starting iteration 2200
+2023-04-18 20:40:34,920 - __main__ - INFO - Iteration 2200
+2023-04-18 20:40:34,920 - __main__ - INFO - walltime=71.768164
+2023-04-18 20:40:37,218 - __main__ - INFO - Starting iteration 2300
+2023-04-18 20:40:38,009 - __main__ - INFO - Iteration 2300
+2023-04-18 20:40:38,009 - __main__ - INFO - walltime=74.858416
+2023-04-18 20:40:40,313 - __main__ - INFO - Starting iteration 2400
+2023-04-18 20:40:41,098 - __main__ - INFO - Iteration 2400
+2023-04-18 20:40:41,098 - __main__ - INFO - walltime=77.953263
+2023-04-18 20:40:43,394 - __main__ - INFO - Starting iteration 2500
+2023-04-18 20:40:44,181 - __main__ - INFO - Iteration 2500
+2023-04-18 20:40:44,181 - __main__ - INFO - walltime=81.033779
+2023-04-18 20:40:46,478 - __main__ - INFO - Starting iteration 2600
+2023-04-18 20:40:47,264 - __main__ - INFO - Iteration 2600
+2023-04-18 20:40:47,264 - __main__ - INFO - walltime=84.118524
+2023-04-18 20:40:49,564 - __main__ - INFO - Starting iteration 2700
+2023-04-18 20:40:50,349 - __main__ - INFO - Iteration 2700
+2023-04-18 20:40:50,350 - __main__ - INFO - walltime=87.204319
+2023-04-18 20:40:52,644 - __main__ - INFO - Starting iteration 2800
+2023-04-18 20:40:53,439 - __main__ - INFO - Iteration 2800
+2023-04-18 20:40:53,439 - __main__ - INFO - walltime=90.284314
+2023-04-18 20:40:55,737 - __main__ - INFO - Starting iteration 2900
+2023-04-18 20:40:56,525 - __main__ - INFO - Iteration 2900
+2023-04-18 20:40:56,525 - __main__ - INFO - walltime=93.377627
+2023-04-18 20:40:58,826 - __main__ - INFO - Starting iteration 3000
+2023-04-18 20:40:59,614 - __main__ - INFO - Iteration 3000
+2023-04-18 20:40:59,614 - __main__ - INFO - walltime=96.466221
+2023-04-18 20:41:01,913 - __main__ - INFO - Starting iteration 3100
+2023-04-18 20:41:02,700 - __main__ - INFO - Iteration 3100
+2023-04-18 20:41:02,700 - __main__ - INFO - walltime=99.552734
+2023-04-18 20:41:04,997 - __main__ - INFO - Starting iteration 3200
+2023-04-18 20:41:05,793 - __main__ - INFO - Iteration 3200
+2023-04-18 20:41:05,793 - __main__ - INFO - walltime=102.636774
+2023-04-18 20:41:08,111 - __main__ - INFO - Starting iteration 3300
+2023-04-18 20:41:08,903 - __main__ - INFO - Iteration 3300
+2023-04-18 20:41:08,903 - __main__ - INFO - walltime=105.750974
+2023-04-18 20:41:11,210 - __main__ - INFO - Starting iteration 3400
+2023-04-18 20:41:12,001 - __main__ - INFO - Iteration 3400
+2023-04-18 20:41:12,001 - __main__ - INFO - walltime=108.850931
+2023-04-18 20:41:14,302 - __main__ - INFO - Starting iteration 3500
+2023-04-18 20:41:15,096 - __main__ - INFO - Iteration 3500
+2023-04-18 20:41:15,096 - __main__ - INFO - walltime=111.942658
+2023-04-18 20:41:17,400 - __main__ - INFO - Starting iteration 3600
+2023-04-18 20:41:18,195 - __main__ - INFO - Iteration 3600
+2023-04-18 20:41:18,195 - __main__ - INFO - walltime=115.040963
+2023-04-18 20:41:20,507 - __main__ - INFO - Starting iteration 3700
+2023-04-18 20:41:21,302 - __main__ - INFO - Iteration 3700
+2023-04-18 20:41:21,303 - __main__ - INFO - walltime=118.147351
+2023-04-18 20:41:23,606 - __main__ - INFO - Starting iteration 3800
+2023-04-18 20:41:24,399 - __main__ - INFO - Iteration 3800
+2023-04-18 20:41:24,399 - __main__ - INFO - walltime=121.247141
+2023-04-18 20:41:26,704 - __main__ - INFO - Starting iteration 3900
+2023-04-18 20:41:27,495 - __main__ - INFO - Iteration 3900
+2023-04-18 20:41:27,496 - __main__ - INFO - walltime=124.344370
+2023-04-18 20:41:29,812 - __main__ - INFO - Starting iteration 4000
+2023-04-18 20:41:30,607 - __main__ - INFO - Iteration 4000
+2023-04-18 20:41:30,607 - __main__ - INFO - walltime=127.454488
+2023-04-18 20:41:32,915 - __main__ - INFO - Starting iteration 4100
+2023-04-18 20:41:33,707 - __main__ - INFO - Iteration 4100
+2023-04-18 20:41:33,707 - __main__ - INFO - walltime=130.555409
+2023-04-18 20:41:36,012 - __main__ - INFO - Starting iteration 4200
+2023-04-18 20:41:36,803 - __main__ - INFO - Iteration 4200
+2023-04-18 20:41:36,803 - __main__ - INFO - walltime=133.652838
+2023-04-18 20:41:39,107 - __main__ - INFO - Starting iteration 4300
+2023-04-18 20:41:39,908 - __main__ - INFO - Iteration 4300
+2023-04-18 20:41:39,908 - __main__ - INFO - walltime=136.747011
+2023-04-18 20:41:42,218 - __main__ - INFO - Starting iteration 4400
+2023-04-18 20:41:43,010 - __main__ - INFO - Iteration 4400
+2023-04-18 20:41:43,010 - __main__ - INFO - walltime=139.858441
+2023-04-18 20:41:45,318 - __main__ - INFO - Starting iteration 4500
+2023-04-18 20:41:46,109 - __main__ - INFO - Iteration 4500
+2023-04-18 20:41:46,110 - __main__ - INFO - walltime=142.959033
+2023-04-18 20:41:48,418 - __main__ - INFO - Starting iteration 4600
+2023-04-18 20:41:49,209 - __main__ - INFO - Iteration 4600
+2023-04-18 20:41:49,209 - __main__ - INFO - walltime=146.058518
+2023-04-18 20:41:51,528 - __main__ - INFO - Starting iteration 4700
+2023-04-18 20:41:52,319 - __main__ - INFO - Iteration 4700
+2023-04-18 20:41:52,320 - __main__ - INFO - walltime=149.169491
+2023-04-18 20:41:54,627 - __main__ - INFO - Starting iteration 4800
+2023-04-18 20:41:55,419 - __main__ - INFO - Iteration 4800
+2023-04-18 20:41:55,420 - __main__ - INFO - walltime=152.267522
+2023-04-18 20:41:57,730 - __main__ - INFO - Starting iteration 4900
+2023-04-18 20:41:58,521 - __main__ - INFO - Iteration 4900
+2023-04-18 20:41:58,521 - __main__ - INFO - walltime=155.370913
+2023-04-18 20:42:01,609 - __main__ - INFO - Iteration 4999
+2023-04-18 20:42:01,610 - __main__ - INFO - walltime=158.459051
+2023-04-18 20:42:01,611 - __main__ - INFO - Persisting the model...
+2023-04-18 20:42:02,670 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 20:45:58,139 - __main__ - INFO - Using python implementations
+2023-04-18 20:45:58,140 - __main__ - INFO - Using CFR solver
+2023-04-18 20:46:00,856 - __main__ - INFO - Starting iteration 0
+2023-04-18 20:46:02,233 - __main__ - INFO - Iteration 0
+2023-04-18 20:46:02,233 - __main__ - INFO - walltime=3.018747
+2023-04-18 20:46:02,235 - __main__ - INFO - Done iteration 1. Took 4.10 seconds
+2023-04-18 20:46:02,354 - __main__ - INFO - Done iteration 2. Took 4.22 seconds
+2023-04-18 20:46:02,485 - __main__ - INFO - Done iteration 3. Took 4.35 seconds
+2023-04-18 20:46:07,169 - __main__ - INFO - Starting iteration 100
+2023-04-18 20:46:07,976 - __main__ - INFO - Iteration 100
+2023-04-18 20:46:07,977 - __main__ - INFO - walltime=9.070667
+2023-04-18 20:46:11,840 - __main__ - INFO - Starting iteration 200
+2023-04-18 20:46:12,646 - __main__ - INFO - Iteration 200
+2023-04-18 20:46:12,646 - __main__ - INFO - walltime=13.740717
+2023-04-18 20:46:16,516 - __main__ - INFO - Starting iteration 300
+2023-04-18 20:46:17,329 - __main__ - INFO - Iteration 300
+2023-04-18 20:46:17,329 - __main__ - INFO - walltime=18.417073
+2023-04-18 20:46:21,209 - __main__ - INFO - Starting iteration 400
+2023-04-18 20:46:22,022 - __main__ - INFO - Iteration 400
+2023-04-18 20:46:22,023 - __main__ - INFO - walltime=23.110161
+2023-04-18 20:46:25,884 - __main__ - INFO - Starting iteration 500
+2023-04-18 20:46:26,690 - __main__ - INFO - Iteration 500
+2023-04-18 20:46:26,690 - __main__ - INFO - walltime=27.784837
+2023-04-18 20:46:30,551 - __main__ - INFO - Starting iteration 600
+2023-04-18 20:46:31,357 - __main__ - INFO - Iteration 600
+2023-04-18 20:46:31,358 - __main__ - INFO - walltime=32.452581
+2023-04-18 20:46:35,219 - __main__ - INFO - Starting iteration 700
+2023-04-18 20:46:36,026 - __main__ - INFO - Iteration 700
+2023-04-18 20:46:36,026 - __main__ - INFO - walltime=37.120603
+2023-04-18 20:46:39,883 - __main__ - INFO - Starting iteration 800
+2023-04-18 20:46:40,690 - __main__ - INFO - Iteration 800
+2023-04-18 20:46:40,690 - __main__ - INFO - walltime=41.783938
+2023-04-18 20:46:44,547 - __main__ - INFO - Starting iteration 900
+2023-04-18 20:46:45,355 - __main__ - INFO - Iteration 900
+2023-04-18 20:46:45,355 - __main__ - INFO - walltime=46.448456
+2023-04-18 20:46:49,275 - __main__ - INFO - Starting iteration 1000
+2023-04-18 20:46:50,088 - __main__ - INFO - Iteration 1000
+2023-04-18 20:46:50,088 - __main__ - INFO - walltime=51.175948
+2023-04-18 20:46:53,967 - __main__ - INFO - Starting iteration 1100
+2023-04-18 20:46:54,776 - __main__ - INFO - Iteration 1100
+2023-04-18 20:46:54,776 - __main__ - INFO - walltime=55.867747
+2023-04-18 20:46:58,655 - __main__ - INFO - Starting iteration 1200
+2023-04-18 20:46:59,467 - __main__ - INFO - Iteration 1200
+2023-04-18 20:46:59,467 - __main__ - INFO - walltime=60.556460
+2023-04-18 20:47:03,344 - __main__ - INFO - Starting iteration 1300
+2023-04-18 20:47:04,154 - __main__ - INFO - Iteration 1300
+2023-04-18 20:47:04,154 - __main__ - INFO - walltime=65.245502
+2023-04-18 20:47:08,035 - __main__ - INFO - Starting iteration 1400
+2023-04-18 20:47:08,846 - __main__ - INFO - Iteration 1400
+2023-04-18 20:47:08,846 - __main__ - INFO - walltime=69.936457
+2023-04-18 20:47:12,724 - __main__ - INFO - Starting iteration 1500
+2023-04-18 20:47:13,537 - __main__ - INFO - Iteration 1500
+2023-04-18 20:47:13,537 - __main__ - INFO - walltime=74.625227
+2023-04-18 20:47:17,411 - __main__ - INFO - Starting iteration 1600
+2023-04-18 20:47:18,221 - __main__ - INFO - Iteration 1600
+2023-04-18 20:47:18,221 - __main__ - INFO - walltime=79.312837
+2023-04-18 20:47:22,101 - __main__ - INFO - Starting iteration 1700
+2023-04-18 20:47:22,910 - __main__ - INFO - Iteration 1700
+2023-04-18 20:47:22,910 - __main__ - INFO - walltime=84.002348
+2023-04-18 20:47:26,789 - __main__ - INFO - Starting iteration 1800
+2023-04-18 20:47:27,599 - __main__ - INFO - Iteration 1800
+2023-04-18 20:47:27,599 - __main__ - INFO - walltime=88.690480
+2023-04-18 20:47:31,478 - __main__ - INFO - Starting iteration 1900
+2023-04-18 20:47:32,286 - __main__ - INFO - Iteration 1900
+2023-04-18 20:47:32,287 - __main__ - INFO - walltime=93.379598
+2023-04-18 20:47:36,172 - __main__ - INFO - Starting iteration 2000
+2023-04-18 20:47:36,980 - __main__ - INFO - Iteration 2000
+2023-04-18 20:47:36,980 - __main__ - INFO - walltime=98.073294
+2023-04-18 20:47:40,858 - __main__ - INFO - Starting iteration 2100
+2023-04-18 20:47:41,667 - __main__ - INFO - Iteration 2100
+2023-04-18 20:47:41,667 - __main__ - INFO - walltime=102.759655
+2023-04-18 20:47:45,546 - __main__ - INFO - Starting iteration 2200
+2023-04-18 20:47:46,354 - __main__ - INFO - Iteration 2200
+2023-04-18 20:47:46,354 - __main__ - INFO - walltime=107.447202
+2023-04-18 20:47:50,229 - __main__ - INFO - Starting iteration 2300
+2023-04-18 20:47:51,038 - __main__ - INFO - Iteration 2300
+2023-04-18 20:47:51,039 - __main__ - INFO - walltime=112.130677
+2023-04-18 20:47:54,918 - __main__ - INFO - Starting iteration 2400
+2023-04-18 20:47:55,727 - __main__ - INFO - Iteration 2400
+2023-04-18 20:47:55,727 - __main__ - INFO - walltime=116.819794
+2023-04-18 20:47:59,604 - __main__ - INFO - Starting iteration 2500
+2023-04-18 20:48:00,414 - __main__ - INFO - Iteration 2500
+2023-04-18 20:48:00,414 - __main__ - INFO - walltime=121.505794
+2023-04-18 20:48:04,295 - __main__ - INFO - Starting iteration 2600
+2023-04-18 20:48:05,104 - __main__ - INFO - Iteration 2600
+2023-04-18 20:48:05,104 - __main__ - INFO - walltime=126.196362
+2023-04-18 20:48:08,982 - __main__ - INFO - Starting iteration 2700
+2023-04-18 20:48:09,792 - __main__ - INFO - Iteration 2700
+2023-04-18 20:48:09,792 - __main__ - INFO - walltime=130.883081
+2023-04-18 20:48:13,675 - __main__ - INFO - Starting iteration 2800
+2023-04-18 20:48:14,484 - __main__ - INFO - Iteration 2800
+2023-04-18 20:48:14,484 - __main__ - INFO - walltime=135.576186
+2023-04-18 20:48:18,360 - __main__ - INFO - Starting iteration 2900
+2023-04-18 20:48:19,169 - __main__ - INFO - Iteration 2900
+2023-04-18 20:48:19,169 - __main__ - INFO - walltime=140.261618
+2023-04-18 20:48:23,049 - __main__ - INFO - Starting iteration 3000
+2023-04-18 20:48:23,859 - __main__ - INFO - Iteration 3000
+2023-04-18 20:48:23,859 - __main__ - INFO - walltime=144.950719
+2023-04-18 20:48:27,745 - __main__ - INFO - Starting iteration 3100
+2023-04-18 20:48:28,556 - __main__ - INFO - Iteration 3100
+2023-04-18 20:48:28,556 - __main__ - INFO - walltime=149.646351
+2023-04-18 20:48:32,438 - __main__ - INFO - Starting iteration 3200
+2023-04-18 20:48:33,248 - __main__ - INFO - Iteration 3200
+2023-04-18 20:48:33,248 - __main__ - INFO - walltime=154.340064
+2023-04-18 20:48:37,127 - __main__ - INFO - Starting iteration 3300
+2023-04-18 20:48:37,938 - __main__ - INFO - Iteration 3300
+2023-04-18 20:48:37,938 - __main__ - INFO - walltime=159.028790
+2023-04-18 20:48:41,816 - __main__ - INFO - Starting iteration 3400
+2023-04-18 20:48:42,625 - __main__ - INFO - Iteration 3400
+2023-04-18 20:48:42,625 - __main__ - INFO - walltime=163.717387
+2023-04-18 20:48:46,503 - __main__ - INFO - Starting iteration 3500
+2023-04-18 20:48:47,314 - __main__ - INFO - Iteration 3500
+2023-04-18 20:48:47,314 - __main__ - INFO - walltime=168.404746
+2023-04-18 20:48:51,196 - __main__ - INFO - Starting iteration 3600
+2023-04-18 20:48:52,008 - __main__ - INFO - Iteration 3600
+2023-04-18 20:48:52,008 - __main__ - INFO - walltime=173.097757
+2023-04-18 20:48:55,883 - __main__ - INFO - Starting iteration 3700
+2023-04-18 20:48:56,694 - __main__ - INFO - Iteration 3700
+2023-04-18 20:48:56,695 - __main__ - INFO - walltime=177.784765
+2023-04-18 20:49:00,569 - __main__ - INFO - Starting iteration 3800
+2023-04-18 20:49:01,378 - __main__ - INFO - Iteration 3800
+2023-04-18 20:49:01,378 - __main__ - INFO - walltime=182.470050
+2023-04-18 20:49:05,253 - __main__ - INFO - Starting iteration 3900
+2023-04-18 20:49:06,062 - __main__ - INFO - Iteration 3900
+2023-04-18 20:49:06,062 - __main__ - INFO - walltime=187.154135
+2023-04-18 20:49:09,934 - __main__ - INFO - Starting iteration 4000
+2023-04-18 20:49:10,744 - __main__ - INFO - Iteration 4000
+2023-04-18 20:49:10,744 - __main__ - INFO - walltime=191.835159
+2023-04-18 20:49:14,623 - __main__ - INFO - Starting iteration 4100
+2023-04-18 20:49:15,441 - __main__ - INFO - Iteration 4100
+2023-04-18 20:49:15,442 - __main__ - INFO - walltime=196.524642
+2023-04-18 20:49:19,327 - __main__ - INFO - Starting iteration 4200
+2023-04-18 20:49:20,144 - __main__ - INFO - Iteration 4200
+2023-04-18 20:49:20,145 - __main__ - INFO - walltime=201.228395
+2023-04-18 20:49:24,029 - __main__ - INFO - Starting iteration 4300
+2023-04-18 20:49:24,841 - __main__ - INFO - Iteration 4300
+2023-04-18 20:49:24,841 - __main__ - INFO - walltime=205.930714
+2023-04-18 20:49:28,715 - __main__ - INFO - Starting iteration 4400
+2023-04-18 20:49:29,527 - __main__ - INFO - Iteration 4400
+2023-04-18 20:49:29,527 - __main__ - INFO - walltime=210.616607
+2023-04-18 20:49:33,403 - __main__ - INFO - Starting iteration 4500
+2023-04-18 20:49:34,215 - __main__ - INFO - Iteration 4500
+2023-04-18 20:49:34,215 - __main__ - INFO - walltime=215.304365
+2023-04-18 20:49:38,095 - __main__ - INFO - Starting iteration 4600
+2023-04-18 20:49:38,904 - __main__ - INFO - Iteration 4600
+2023-04-18 20:49:38,905 - __main__ - INFO - walltime=219.996222
+2023-04-18 20:49:42,784 - __main__ - INFO - Starting iteration 4700
+2023-04-18 20:49:43,594 - __main__ - INFO - Iteration 4700
+2023-04-18 20:49:43,594 - __main__ - INFO - walltime=224.685729
+2023-04-18 20:49:47,473 - __main__ - INFO - Starting iteration 4800
+2023-04-18 20:49:48,282 - __main__ - INFO - Iteration 4800
+2023-04-18 20:49:48,282 - __main__ - INFO - walltime=229.374064
+2023-04-18 20:49:52,177 - __main__ - INFO - Starting iteration 4900
+2023-04-18 20:49:52,986 - __main__ - INFO - Iteration 4900
+2023-04-18 20:49:52,986 - __main__ - INFO - walltime=234.077992
+2023-04-18 20:49:57,632 - __main__ - INFO - Iteration 4999
+2023-04-18 20:49:57,632 - __main__ - INFO - walltime=238.724081
+2023-04-18 20:49:57,634 - __main__ - INFO - Persisting the model...
+2023-04-18 20:49:58,697 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 20:53:39,527 - __main__ - INFO - Using python implementations
+2023-04-18 20:53:39,527 - __main__ - INFO - Using CFR solver
+2023-04-18 20:53:42,242 - __main__ - INFO - Starting iteration 0
+2023-04-18 20:53:43,612 - __main__ - INFO - Iteration 0
+2023-04-18 20:53:43,613 - __main__ - INFO - walltime=3.018155
+2023-04-18 20:53:43,615 - __main__ - INFO - Done iteration 1. Took 4.09 seconds
+2023-04-18 20:53:43,733 - __main__ - INFO - Done iteration 2. Took 4.21 seconds
+2023-04-18 20:53:43,864 - __main__ - INFO - Done iteration 3. Took 4.34 seconds
+2023-04-18 20:53:45,213 - __main__ - INFO - Iteration 9
+2023-04-18 20:53:45,213 - __main__ - INFO - walltime=4.925902
+2023-04-18 20:53:45,214 - __main__ - INFO - Persisting the model...
+2023-04-18 20:53:46,283 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 20:54:09,182 - __main__ - INFO - Using python implementations
+2023-04-18 20:54:09,182 - __main__ - INFO - Using CFR solver
+2023-04-18 20:54:11,876 - __main__ - INFO - Starting iteration 0
+2023-04-18 20:54:13,234 - __main__ - INFO - Iteration 0
+2023-04-18 20:54:13,235 - __main__ - INFO - walltime=2.991757
+2023-04-18 20:54:13,237 - __main__ - INFO - Done iteration 1. Took 4.06 seconds
+2023-04-18 20:54:13,355 - __main__ - INFO - Done iteration 2. Took 4.17 seconds
+2023-04-18 20:54:13,485 - __main__ - INFO - Done iteration 3. Took 4.30 seconds
+2023-04-18 20:54:18,882 - __main__ - INFO - Iteration 99
+2023-04-18 20:54:18,882 - __main__ - INFO - walltime=8.939316
+2023-04-18 20:54:18,884 - __main__ - INFO - Persisting the model...
+2023-04-18 20:54:19,934 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 20:55:47,416 - __main__ - INFO - Using python implementations
+2023-04-18 20:55:47,417 - __main__ - INFO - Using CFR solver
+2023-04-18 20:55:50,127 - __main__ - INFO - Starting iteration 0
+2023-04-18 20:55:51,511 - __main__ - INFO - Iteration 0
+2023-04-18 20:55:51,511 - __main__ - INFO - walltime=3.008847
+2023-04-18 20:55:51,513 - __main__ - INFO - Done iteration 1. Took 4.10 seconds
+2023-04-18 20:55:51,631 - __main__ - INFO - Done iteration 2. Took 4.22 seconds
+2023-04-18 20:55:51,762 - __main__ - INFO - Done iteration 3. Took 4.35 seconds
+2023-04-18 20:55:57,186 - __main__ - INFO - Iteration 99
+2023-04-18 20:55:57,187 - __main__ - INFO - walltime=9.009707
+2023-04-18 20:55:57,188 - __main__ - INFO - Persisting the model...
+2023-04-18 20:55:58,260 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 20:56:46,387 - __main__ - INFO - Using python implementations
+2023-04-18 20:56:46,387 - __main__ - INFO - Using CFR solver
+2023-04-18 20:56:49,075 - __main__ - INFO - Starting iteration 0
+2023-04-18 20:56:50,432 - __main__ - INFO - Iteration 0
+2023-04-18 20:56:50,433 - __main__ - INFO - walltime=2.985635
+2023-04-18 20:56:50,435 - __main__ - INFO - Done iteration 1. Took 4.05 seconds
+2023-04-18 20:56:50,553 - __main__ - INFO - Done iteration 2. Took 4.17 seconds
+2023-04-18 20:56:50,683 - __main__ - INFO - Done iteration 3. Took 4.30 seconds
+2023-04-18 20:56:56,075 - __main__ - INFO - Iteration 99
+2023-04-18 20:56:56,075 - __main__ - INFO - walltime=8.929163
+2023-04-18 20:56:56,077 - __main__ - INFO - Persisting the model...
+2023-04-18 20:56:57,122 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 20:58:29,483 - __main__ - INFO - Using python implementations
+2023-04-18 20:58:29,483 - __main__ - INFO - Using CFR solver
+2023-04-18 20:58:34,661 - __main__ - INFO - Starting iteration 0
+2023-04-18 20:58:51,873 - __main__ - INFO - Iteration 0
+2023-04-18 20:58:51,873 - __main__ - INFO - walltime=5.918273
+2023-04-18 20:58:51,876 - __main__ - INFO - Done iteration 1. Took 22.39 seconds
+2023-04-18 20:58:52,232 - __main__ - INFO - Done iteration 2. Took 22.75 seconds
+2023-04-18 20:58:52,639 - __main__ - INFO - Done iteration 3. Took 23.16 seconds
+2023-04-18 20:59:32,686 - __main__ - INFO - Iteration 99
+2023-04-18 20:59:32,686 - __main__ - INFO - walltime=36.524502
+2023-04-18 20:59:32,688 - __main__ - INFO - Persisting the model...
+2023-04-18 20:59:42,719 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 21:20:12,555 - __main__ - INFO - Using python implementations
+2023-04-18 21:20:12,555 - __main__ - INFO - Using CFR solver
+2023-04-18 21:20:15,282 - __main__ - INFO - Starting iteration 0
+2023-04-18 21:20:16,650 - __main__ - INFO - Iteration 0
+2023-04-18 21:20:16,650 - __main__ - INFO - walltime=3.028477
+2023-04-18 21:20:16,653 - __main__ - INFO - Done iteration 1. Took 4.10 seconds
+2023-04-18 21:20:16,771 - __main__ - INFO - Done iteration 2. Took 4.22 seconds
+2023-04-18 21:20:17,662 - __main__ - INFO - Iteration 2
+2023-04-18 21:20:17,662 - __main__ - INFO - walltime=4.348095
+2023-04-18 21:20:17,664 - __main__ - INFO - Persisting the model...
+2023-04-18 21:20:18,720 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv
+2023-04-18 22:13:14,849 - __main__ - INFO - Using python implementations
+2023-04-18 22:13:14,849 - __main__ - INFO - Using CFR solver
+2023-04-18 22:13:17,588 - __main__ - INFO - Starting iteration 0
+2023-04-18 22:13:18,960 - __main__ - INFO - Iteration 0
+2023-04-18 22:13:18,960 - __main__ - INFO - walltime=3.041317
+2023-04-18 22:13:18,963 - __main__ - INFO - Done iteration 1. Took 4.11 seconds
+2023-04-18 22:13:19,082 - __main__ - INFO - Done iteration 2. Took 4.23 seconds
+2023-04-18 22:13:19,213 - __main__ - INFO - Done iteration 3. Took 4.36 seconds
+2023-04-18 22:13:23,886 - __main__ - INFO - Starting iteration 100
+2023-04-18 22:13:24,686 - __main__ - INFO - Iteration 100
+2023-04-18 22:13:24,686 - __main__ - INFO - walltime=9.077154
+2023-04-18 22:13:28,509 - __main__ - INFO - Starting iteration 200
+2023-04-18 22:13:29,311 - __main__ - INFO - Iteration 200
+2023-04-18 22:13:29,311 - __main__ - INFO - walltime=13.700666
+2023-04-18 22:13:33,133 - __main__ - INFO - Starting iteration 300
+2023-04-18 22:13:33,930 - __main__ - INFO - Iteration 300
+2023-04-18 22:13:33,930 - __main__ - INFO - walltime=18.323813
+2023-04-18 22:13:37,752 - __main__ - INFO - Starting iteration 400
+2023-04-18 22:13:38,549 - __main__ - INFO - Iteration 400
+2023-04-18 22:13:38,549 - __main__ - INFO - walltime=22.942793
+2023-04-18 22:13:42,368 - __main__ - INFO - Starting iteration 500
+2023-04-18 22:13:43,165 - __main__ - INFO - Iteration 500
+2023-04-18 22:13:43,166 - __main__ - INFO - walltime=27.559273
+2023-04-18 22:13:46,990 - __main__ - INFO - Starting iteration 600
+2023-04-18 22:13:47,786 - __main__ - INFO - Iteration 600
+2023-04-18 22:13:47,787 - __main__ - INFO - walltime=32.181267
+2023-04-18 22:13:51,613 - __main__ - INFO - Starting iteration 700
+2023-04-18 22:13:52,412 - __main__ - INFO - Iteration 700
+2023-04-18 22:13:52,412 - __main__ - INFO - walltime=36.804320
+2023-04-18 22:13:56,244 - __main__ - INFO - Starting iteration 800
+2023-04-18 22:13:57,042 - __main__ - INFO - Iteration 800
+2023-04-18 22:13:57,042 - __main__ - INFO - walltime=41.434823
+2023-04-18 22:14:00,859 - __main__ - INFO - Starting iteration 900
+2023-04-18 22:14:01,658 - __main__ - INFO - Iteration 900
+2023-04-18 22:14:01,659 - __main__ - INFO - walltime=46.050226
+2023-04-18 22:14:05,478 - __main__ - INFO - Starting iteration 1000
+2023-04-18 22:14:06,279 - __main__ - INFO - Iteration 1000
+2023-04-18 22:14:06,279 - __main__ - INFO - walltime=50.668818
+2023-04-18 22:14:10,097 - __main__ - INFO - Starting iteration 1100
+2023-04-18 22:14:10,895 - __main__ - INFO - Iteration 1100
+2023-04-18 22:14:10,895 - __main__ - INFO - walltime=55.287922
+2023-04-18 22:14:14,716 - __main__ - INFO - Starting iteration 1200
+2023-04-18 22:14:15,514 - __main__ - INFO - Iteration 1200
+2023-04-18 22:14:15,514 - __main__ - INFO - walltime=59.906938
+2023-04-18 22:14:19,335 - __main__ - INFO - Starting iteration 1300
+2023-04-18 22:14:20,134 - __main__ - INFO - Iteration 1300
+2023-04-18 22:14:20,134 - __main__ - INFO - walltime=64.526463
+2023-04-18 22:14:23,960 - __main__ - INFO - Starting iteration 1400
+2023-04-18 22:14:24,758 - __main__ - INFO - Iteration 1400
+2023-04-18 22:14:24,758 - __main__ - INFO - walltime=69.150830
+2023-04-18 22:14:28,575 - __main__ - INFO - Starting iteration 1500
+2023-04-18 22:14:29,374 - __main__ - INFO - Iteration 1500
+2023-04-18 22:14:29,374 - __main__ - INFO - walltime=73.765872
+2023-04-18 22:14:33,192 - __main__ - INFO - Starting iteration 1600
+2023-04-18 22:14:33,989 - __main__ - INFO - Iteration 1600
+2023-04-18 22:14:33,989 - __main__ - INFO - walltime=78.382788
+2023-04-18 22:14:37,814 - __main__ - INFO - Starting iteration 1700
+2023-04-18 22:14:38,613 - __main__ - INFO - Iteration 1700
+2023-04-18 22:14:38,613 - __main__ - INFO - walltime=83.005582
+2023-04-18 22:14:42,434 - __main__ - INFO - Starting iteration 1800
+2023-04-18 22:14:43,233 - __main__ - INFO - Iteration 1800
+2023-04-18 22:14:43,233 - __main__ - INFO - walltime=87.625146
+2023-04-18 22:14:47,050 - __main__ - INFO - Starting iteration 1900
+2023-04-18 22:14:47,848 - __main__ - INFO - Iteration 1900
+2023-04-18 22:14:47,849 - __main__ - INFO - walltime=92.241240
+2023-04-18 22:14:51,672 - __main__ - INFO - Starting iteration 2000
+2023-04-18 22:14:52,471 - __main__ - INFO - Iteration 2000
+2023-04-18 22:14:52,472 - __main__ - INFO - walltime=96.863832
+2023-04-18 22:14:56,300 - __main__ - INFO - Starting iteration 2100
+2023-04-18 22:14:57,097 - __main__ - INFO - Iteration 2100
+2023-04-18 22:14:57,097 - __main__ - INFO - walltime=101.491144
+2023-04-18 22:15:00,928 - __main__ - INFO - Starting iteration 2200
+2023-04-18 22:15:01,725 - __main__ - INFO - Iteration 2200
+2023-04-18 22:15:01,725 - __main__ - INFO - walltime=106.119063
+2023-04-18 22:15:05,556 - __main__ - INFO - Starting iteration 2300
+2023-04-18 22:15:06,353 - __main__ - INFO - Iteration 2300
+2023-04-18 22:15:06,354 - __main__ - INFO - walltime=110.747559
+2023-04-18 22:15:10,182 - __main__ - INFO - Starting iteration 2400
+2023-04-18 22:15:10,981 - __main__ - INFO - Iteration 2400
+2023-04-18 22:15:10,982 - __main__ - INFO - walltime=115.372924
+2023-04-18 22:15:14,813 - __main__ - INFO - Starting iteration 2500
+2023-04-18 22:15:15,610 - __main__ - INFO - Iteration 2500
+2023-04-18 22:15:15,611 - __main__ - INFO - walltime=120.004204
+2023-04-18 22:15:19,441 - __main__ - INFO - Starting iteration 2600
+2023-04-18 22:15:20,237 - __main__ - INFO - Iteration 2600
+2023-04-18 22:15:20,237 - __main__ - INFO - walltime=124.632059
+2023-04-18 22:15:24,071 - __main__ - INFO - Starting iteration 2700
+2023-04-18 22:15:24,869 - __main__ - INFO - Iteration 2700
+2023-04-18 22:15:24,869 - __main__ - INFO - walltime=129.262073
+2023-04-18 22:15:28,699 - __main__ - INFO - Starting iteration 2800
+2023-04-18 22:15:29,497 - __main__ - INFO - Iteration 2800
+2023-04-18 22:15:29,497 - __main__ - INFO - walltime=133.889919
+2023-04-18 22:15:33,337 - __main__ - INFO - Starting iteration 2900
+2023-04-18 22:15:34,142 - __main__ - INFO - Iteration 2900
+2023-04-18 22:15:34,142 - __main__ - INFO - walltime=138.528655
+2023-04-18 22:15:37,969 - __main__ - INFO - Starting iteration 3000
+2023-04-18 22:15:38,766 - __main__ - INFO - Iteration 3000
+2023-04-18 22:15:38,766 - __main__ - INFO - walltime=143.160030
+2023-04-18 22:15:42,586 - __main__ - INFO - Starting iteration 3100
+2023-04-18 22:15:43,381 - __main__ - INFO - Iteration 3100
+2023-04-18 22:15:43,381 - __main__ - INFO - walltime=147.776918
+2023-04-18 22:15:47,197 - __main__ - INFO - Starting iteration 3200
+2023-04-18 22:15:47,995 - __main__ - INFO - Iteration 3200
+2023-04-18 22:15:47,995 - __main__ - INFO - walltime=152.388361
+2023-04-18 22:15:51,810 - __main__ - INFO - Starting iteration 3300
+2023-04-18 22:15:52,607 - __main__ - INFO - Iteration 3300
+2023-04-18 22:15:52,607 - __main__ - INFO - walltime=157.000791
+2023-04-18 22:15:56,439 - __main__ - INFO - Starting iteration 3400
+2023-04-18 22:15:57,236 - __main__ - INFO - Iteration 3400
+2023-04-18 22:15:57,236 - __main__ - INFO - walltime=161.630320
+2023-04-18 22:16:01,052 - __main__ - INFO - Starting iteration 3500
+2023-04-18 22:16:01,853 - __main__ - INFO - Iteration 3500
+2023-04-18 22:16:01,853 - __main__ - INFO - walltime=166.243275
+2023-04-18 22:16:05,671 - __main__ - INFO - Starting iteration 3600
+2023-04-18 22:16:06,473 - __main__ - INFO - Iteration 3600
+2023-04-18 22:16:06,474 - __main__ - INFO - walltime=170.862494
+2023-04-18 22:16:10,290 - __main__ - INFO - Starting iteration 3700
+2023-04-18 22:16:11,088 - __main__ - INFO - Iteration 3700
+2023-04-18 22:16:11,089 - __main__ - INFO - walltime=175.481662
+2023-04-18 22:16:14,911 - __main__ - INFO - Starting iteration 3800
+2023-04-18 22:16:15,717 - __main__ - INFO - Iteration 3800
+2023-04-18 22:16:15,717 - __main__ - INFO - walltime=180.102699
+2023-04-18 22:16:19,552 - __main__ - INFO - Starting iteration 3900
+2023-04-18 22:16:20,355 - __main__ - INFO - Iteration 3900
+2023-04-18 22:16:20,355 - __main__ - INFO - walltime=184.742901
+2023-04-18 22:16:24,181 - __main__ - INFO - Starting iteration 4000
+2023-04-18 22:16:24,982 - __main__ - INFO - Iteration 4000
+2023-04-18 22:16:24,982 - __main__ - INFO - walltime=189.372188
+2023-04-18 22:16:28,798 - __main__ - INFO - Starting iteration 4100
+2023-04-18 22:16:29,594 - __main__ - INFO - Iteration 4100
+2023-04-18 22:16:29,594 - __main__ - INFO - walltime=193.988600
+2023-04-18 22:16:33,407 - __main__ - INFO - Starting iteration 4200
+2023-04-18 22:16:34,204 - __main__ - INFO - Iteration 4200
+2023-04-18 22:16:34,205 - __main__ - INFO - walltime=198.598596
+2023-04-18 22:16:38,022 - __main__ - INFO - Starting iteration 4300
+2023-04-18 22:16:38,820 - __main__ - INFO - Iteration 4300
+2023-04-18 22:16:38,821 - __main__ - INFO - walltime=203.213184
+2023-04-18 22:16:42,637 - __main__ - INFO - Starting iteration 4400
+2023-04-18 22:16:43,440 - __main__ - INFO - Iteration 4400
+2023-04-18 22:16:43,440 - __main__ - INFO - walltime=207.828518
+2023-04-18 22:16:47,299 - __main__ - INFO - Starting iteration 4500
+2023-04-18 22:16:48,098 - __main__ - INFO - Iteration 4500
+2023-04-18 22:16:48,098 - __main__ - INFO - walltime=212.490506
+2023-04-18 22:16:51,944 - __main__ - INFO - Starting iteration 4600
+2023-04-18 22:16:52,749 - __main__ - INFO - Iteration 4600
+2023-04-18 22:16:52,749 - __main__ - INFO - walltime=217.134951
+2023-04-18 22:16:56,578 - __main__ - INFO - Starting iteration 4700
+2023-04-18 22:16:57,378 - __main__ - INFO - Iteration 4700
+2023-04-18 22:16:57,378 - __main__ - INFO - walltime=221.769973
+2023-04-18 22:17:01,203 - __main__ - INFO - Starting iteration 4800
+2023-04-18 22:17:02,011 - __main__ - INFO - Iteration 4800
+2023-04-18 22:17:02,012 - __main__ - INFO - walltime=226.393822
+2023-04-18 22:17:05,833 - __main__ - INFO - Starting iteration 4900
+2023-04-18 22:17:06,632 - __main__ - INFO - Iteration 4900
+2023-04-18 22:17:06,632 - __main__ - INFO - walltime=231.024714
+2023-04-18 22:17:11,222 - __main__ - INFO - Iteration 4999
+2023-04-18 22:17:11,223 - __main__ - INFO - walltime=235.617015
+2023-04-18 22:17:11,224 - __main__ - INFO - Persisting the model...
+2023-04-18 22:17:12,311 - __main__ - INFO - Saving strategy to odd_licenses/strategy.csv

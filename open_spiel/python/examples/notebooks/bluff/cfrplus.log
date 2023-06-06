@@ -1,0 +1,24 @@
+2023-04-20 00:30:40,649 - __main__ - INFO - Using python implementations
+2023-04-20 00:30:40,649 - __main__ - INFO - Using CFR+ solver
+2023-04-20 00:30:43,682 - __main__ - INFO - Starting iteration 0
+2023-04-20 00:30:45,479 - __main__ - INFO - Iteration 0
+2023-04-20 00:30:45,479 - __main__ - INFO - walltime=3.605257
+2023-04-20 00:30:45,481 - __main__ - INFO - Done iteration 1. Took 4.83 seconds
+2023-04-20 00:30:45,649 - __main__ - INFO - Done iteration 2. Took 5.00 seconds
+2023-04-20 00:30:45,803 - __main__ - INFO - Done iteration 3. Took 5.15 seconds
+2023-04-20 00:30:47,272 - __main__ - INFO - Iteration 9
+2023-04-20 00:30:47,272 - __main__ - INFO - walltime=5.663890
+2023-04-20 00:30:47,273 - __main__ - INFO - Persisting the model...
+2023-04-20 00:30:48,235 - __main__ - INFO - Saving strategy to bluff/strategy.csv
+2023-04-20 00:31:25,284 - __main__ - INFO - Using python implementations
+2023-04-20 00:31:25,284 - __main__ - INFO - Using CFR+ solver
+2023-04-20 00:31:28,364 - __main__ - INFO - Starting iteration 0
+2023-04-20 00:31:30,188 - __main__ - INFO - Iteration 0
+2023-04-20 00:31:30,188 - __main__ - INFO - walltime=3.660720
+2023-04-20 00:31:30,191 - __main__ - INFO - Done iteration 1. Took 4.91 seconds
+2023-04-20 00:31:30,360 - __main__ - INFO - Done iteration 2. Took 5.08 seconds
+2023-04-20 00:31:30,517 - __main__ - INFO - Done iteration 3. Took 5.23 seconds
+2023-04-20 00:31:37,802 - __main__ - INFO - Iteration 99
+2023-04-20 00:31:37,802 - __main__ - INFO - walltime=11.570785
+2023-04-20 00:31:37,804 - __main__ - INFO - Persisting the model...
+2023-04-20 00:31:38,767 - __main__ - INFO - Saving strategy to bluff/strategy.csv
