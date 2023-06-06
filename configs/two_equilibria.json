@@ -1,0 +1,46 @@
+{
+    "activity": [
+        1
+    ],
+    "increment": 1.0,
+    "information_policy": "show_demand",
+    "licenses": [
+        2
+    ],
+    "opening_price": [
+        10
+    ],
+    "undersell_rule": "undersell",
+    "players": [
+        {
+            "type": [
+                {
+                    "value": [
+                        0,
+                        30,
+                        100
+                    ],
+                    "value_format": "full",
+                    "budget": 200,
+                    "prob": 1.0,
+                    "drop_out_heuristic": false
+                }
+            ]
+        },
+        {
+            "type": [
+                {
+                    "value": [
+                        0,
+                        60,
+                        70
+                    ],
+                    "value_format": "full",
+                    "budget": 200,
+                    "prob": 1.0,
+                    "drop_out_heuristic": false
+                }
+            ]
+        }
+    ]
+}

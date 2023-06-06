@@ -1,0 +1,5 @@
+[default]
+entity = ubc-algorithms
+project = testwandb
+base_url = https://api.wandb.ai
+

@@ -1,0 +1,197 @@
+{
+    "activity": [
+        5,
+        8
+    ],
+    "increment": 0.1,
+    "information_policy": "show_demand",
+    "licenses": [
+        2,
+        2
+    ],
+    "opening_price": [
+        200,
+        320
+    ],
+    "undersell_rule": "undersell",
+    "players": [
+        {
+            "type": [
+                {
+                    "value": [
+                        0,
+                        431,
+                        735,
+                        639,
+                        1070,
+                        1374,
+                        1088,
+                        1519,
+                        1824
+                    ],
+                    "value_format": "full",
+                    "budget": 1824,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        302,
+                        515,
+                        480,
+                        783,
+                        996,
+                        860,
+                        1163,
+                        1375
+                    ],
+                    "value_format": "full",
+                    "budget": 1375,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        393,
+                        661,
+                        617,
+                        1011,
+                        1279,
+                        1057,
+                        1451,
+                        1719
+                    ],
+                    "value_format": "full",
+                    "budget": 1719,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        450,
+                        797,
+                        555,
+                        1006,
+                        1353,
+                        905,
+                        1355,
+                        1703
+                    ],
+                    "value_format": "full",
+                    "budget": 1703,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        315,
+                        522,
+                        550,
+                        865,
+                        1072,
+                        991,
+                        1306,
+                        1513
+                    ],
+                    "value_format": "full",
+                    "budget": 1513,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                }
+            ]
+        },
+        {
+            "type": [
+                {
+                    "value": [
+                        0,
+                        1048,
+                        1883,
+                        599,
+                        1766,
+                        2661,
+                        1017,
+                        2214,
+                        3109
+                    ],
+                    "value_format": "full",
+                    "budget": 3109,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1177,
+                        2015,
+                        653,
+                        1876,
+                        2735,
+                        1073,
+                        2306,
+                        3165
+                    ],
+                    "value_format": "full",
+                    "budget": 3165,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1099,
+                        1786,
+                        742,
+                        1969,
+                        2704,
+                        1239,
+                        2501,
+                        3236
+                    ],
+                    "value_format": "full",
+                    "budget": 3236,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        983,
+                        1699,
+                        622,
+                        1749,
+                        2528,
+                        1084,
+                        2252,
+                        3032
+                    ],
+                    "value_format": "full",
+                    "budget": 3032,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1394,
+                        2347,
+                        981,
+                        2441,
+                        3419,
+                        1774,
+                        3255,
+                        4234
+                    ],
+                    "value_format": "full",
+                    "budget": 4234,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                }
+            ]
+        }
+    ]
+}

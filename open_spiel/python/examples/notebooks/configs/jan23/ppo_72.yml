@@ -1,0 +1,32 @@
+agent_fn: AuctionNet
+agent_fn_kwargs:
+  activation: relu
+  add_skip_connections: true
+  hidden_sizes:
+  - 128
+  - 128
+  - 128
+  use_torso: false
+anneal_lr: false
+clip_coef: 0.025285435028824164
+clip_vloss: true
+entropy_coef: 0.001722956377186853
+gae: false
+gae_lambda: 0.9636260012075623
+gamma: 1.0
+learning_rate: 0.0001
+max_grad_norm: 0.18110351285372556
+normalize_advantages: false
+num_annealing_updates: null
+num_envs: 4
+num_minibatches: 8
+optimizer: adam
+optimizer_kwargs:
+  betas:
+  - 0.40873710178349976
+  - 0.6949953787126586
+steps_per_batch: 64
+target_kl: null
+track_stats: true
+update_epochs: 16
+value_coef: 0.9545712518108262

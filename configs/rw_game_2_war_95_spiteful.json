@@ -17,10 +17,11 @@
             "type": [
                 {
                     "value": [
-                        [101, 99]
+                        [101, 95]
                     ],
                     "budget": 200,
-                    "prob": 1
+                    "prob": 1,
+                    "pricing_bonus": 0.25
                 }
             ]
         },
@@ -31,7 +32,8 @@
                         [47, 10.5]
                     ],
                     "budget": 200,
-                    "prob": 1
+                    "prob": 1,
+                    "pricing_bonus": 0.25
                 }
             ]
         }

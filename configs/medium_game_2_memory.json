@@ -1,0 +1,60 @@
+{
+    "activity": [
+        75,
+        50
+    ],
+    "increment": 0.2,
+    "information_policy": "hide_demand",
+    "licenses": [
+        2,
+        1
+    ],
+    "opening_price": [
+        75,
+        50
+    ],
+    "undersell_rule": "undersell",
+    "agent_memory": -1,
+    "players": [
+        {
+            "type": [
+                {
+                    "value": [
+                        120,
+                        80
+                    ],
+                    "budget": 250,
+                    "prob": 0.67
+                },
+                {
+                    "value": [
+                        100,
+                        70
+                    ],
+                    "budget": 250,
+                    "prob": 0.33
+                }
+            ]
+        },
+        {
+            "type": [
+                {
+                    "value": [
+                        150,
+                        80
+                    ],
+                    "budget": 250,
+                    "prob": 0.2
+                },
+                {
+                    "value": [
+                        100,
+                        80
+                    ],
+                    "budget": 250,
+                    "prob": 0.8
+                }
+            ]
+        }
+    ]
+}

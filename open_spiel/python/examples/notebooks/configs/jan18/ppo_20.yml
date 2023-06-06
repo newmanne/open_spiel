@@ -1,0 +1,25 @@
+agent_fn: AuctionNet
+agent_fn_kwargs:
+  activation: relu
+  add_skip_connections: false
+  hidden_sizes:
+  - 64
+  - 64
+anneal_lr: false
+clip_coef: 0.015795765971788483
+clip_vloss: false
+entropy_coef: 0.0023086012425254784
+gae: false
+gae_lambda: 0.9759568451593184
+gamma: 1.0
+learning_rate: 3.0e-05
+max_grad_norm: 0.5
+normalize_advantages: true
+num_annealing_updates: null
+num_envs: 8
+num_minibatches: 2
+steps_per_batch: 256
+target_kl: null
+track_stats: true
+update_epochs: 8
+value_coef: 0.2581367496896738

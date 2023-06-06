@@ -1,0 +1,1220 @@
+{
+    "activity": [
+        5,
+        8
+    ],
+    "increment": 0.1,
+    "information_policy": "show_demand",
+    "licenses": [
+        2,
+        2
+    ],
+    "opening_price": [
+        200,
+        320
+    ],
+    "undersell_rule": "undersell",
+    "players": [
+        {
+            "type": [
+                {
+                    "value": [
+                        0,
+                        431,
+                        735,
+                        639,
+                        1070,
+                        1374,
+                        1088,
+                        1519,
+                        1824
+                    ],
+                    "value_format": "full",
+                    "budget": 1824,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        302,
+                        515,
+                        480,
+                        783,
+                        996,
+                        860,
+                        1163,
+                        1375
+                    ],
+                    "value_format": "full",
+                    "budget": 1375,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        393,
+                        661,
+                        617,
+                        1011,
+                        1279,
+                        1057,
+                        1451,
+                        1719
+                    ],
+                    "value_format": "full",
+                    "budget": 1719,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        450,
+                        797,
+                        555,
+                        1006,
+                        1353,
+                        905,
+                        1355,
+                        1703
+                    ],
+                    "value_format": "full",
+                    "budget": 1703,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        315,
+                        522,
+                        550,
+                        865,
+                        1072,
+                        991,
+                        1306,
+                        1513
+                    ],
+                    "value_format": "full",
+                    "budget": 1513,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        431,
+                        735,
+                        639,
+                        1070,
+                        1374,
+                        1088,
+                        1519,
+                        1824
+                    ],
+                    "value_format": "full",
+                    "budget": 1824,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        302,
+                        515,
+                        480,
+                        783,
+                        996,
+                        860,
+                        1163,
+                        1375
+                    ],
+                    "value_format": "full",
+                    "budget": 1375,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        393,
+                        661,
+                        617,
+                        1011,
+                        1279,
+                        1057,
+                        1451,
+                        1719
+                    ],
+                    "value_format": "full",
+                    "budget": 1719,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        450,
+                        797,
+                        555,
+                        1006,
+                        1353,
+                        905,
+                        1355,
+                        1703
+                    ],
+                    "value_format": "full",
+                    "budget": 1703,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        315,
+                        522,
+                        550,
+                        865,
+                        1072,
+                        991,
+                        1306,
+                        1513
+                    ],
+                    "value_format": "full",
+                    "budget": 1513,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        383,
+                        676,
+                        512,
+                        895,
+                        1189,
+                        856,
+                        1240,
+                        1533
+                    ],
+                    "value_format": "full",
+                    "budget": 1533,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        357,
+                        603,
+                        576,
+                        934,
+                        1180,
+                        1020,
+                        1377,
+                        1623
+                    ],
+                    "value_format": "full",
+                    "budget": 1623,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        389,
+                        703,
+                        539,
+                        929,
+                        1242,
+                        920,
+                        1310,
+                        1624
+                    ],
+                    "value_format": "full",
+                    "budget": 1624,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        359,
+                        605,
+                        553,
+                        912,
+                        1158,
+                        940,
+                        1300,
+                        1545
+                    ],
+                    "value_format": "full",
+                    "budget": 1545,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        442,
+                        779,
+                        547,
+                        990,
+                        1327,
+                        891,
+                        1334,
+                        1671
+                    ],
+                    "value_format": "full",
+                    "budget": 1671,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        431,
+                        735,
+                        639,
+                        1070,
+                        1374,
+                        1088,
+                        1519,
+                        1824
+                    ],
+                    "value_format": "full",
+                    "budget": 1824,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        302,
+                        515,
+                        480,
+                        783,
+                        996,
+                        860,
+                        1163,
+                        1375
+                    ],
+                    "value_format": "full",
+                    "budget": 1375,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        393,
+                        661,
+                        617,
+                        1011,
+                        1279,
+                        1057,
+                        1451,
+                        1719
+                    ],
+                    "value_format": "full",
+                    "budget": 1719,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        450,
+                        797,
+                        555,
+                        1006,
+                        1353,
+                        905,
+                        1355,
+                        1703
+                    ],
+                    "value_format": "full",
+                    "budget": 1703,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        315,
+                        522,
+                        550,
+                        865,
+                        1072,
+                        991,
+                        1306,
+                        1513
+                    ],
+                    "value_format": "full",
+                    "budget": 1513,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        383,
+                        676,
+                        512,
+                        895,
+                        1189,
+                        856,
+                        1240,
+                        1533
+                    ],
+                    "value_format": "full",
+                    "budget": 1533,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        357,
+                        603,
+                        576,
+                        934,
+                        1180,
+                        1020,
+                        1377,
+                        1623
+                    ],
+                    "value_format": "full",
+                    "budget": 1623,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        389,
+                        703,
+                        539,
+                        929,
+                        1242,
+                        920,
+                        1310,
+                        1624
+                    ],
+                    "value_format": "full",
+                    "budget": 1624,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        359,
+                        605,
+                        553,
+                        912,
+                        1158,
+                        940,
+                        1300,
+                        1545
+                    ],
+                    "value_format": "full",
+                    "budget": 1545,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        442,
+                        779,
+                        547,
+                        990,
+                        1327,
+                        891,
+                        1334,
+                        1671
+                    ],
+                    "value_format": "full",
+                    "budget": 1671,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        314,
+                        533,
+                        499,
+                        813,
+                        1032,
+                        877,
+                        1192,
+                        1410
+                    ],
+                    "value_format": "full",
+                    "budget": 1410,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        331,
+                        540,
+                        542,
+                        874,
+                        1083,
+                        917,
+                        1249,
+                        1458
+                    ],
+                    "value_format": "full",
+                    "budget": 1458,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        418,
+                        688,
+                        645,
+                        1063,
+                        1333,
+                        1075,
+                        1494,
+                        1764
+                    ],
+                    "value_format": "full",
+                    "budget": 1764,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        353,
+                        626,
+                        527,
+                        880,
+                        1154,
+                        938,
+                        1291,
+                        1564
+                    ],
+                    "value_format": "full",
+                    "budget": 1564,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        319,
+                        525,
+                        570,
+                        890,
+                        1096,
+                        1030,
+                        1350,
+                        1556
+                    ],
+                    "value_format": "full",
+                    "budget": 1556,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        297,
+                        499,
+                        415,
+                        713,
+                        915,
+                        682,
+                        979,
+                        1181
+                    ],
+                    "value_format": "full",
+                    "budget": 1181,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        419,
+                        715,
+                        568,
+                        988,
+                        1284,
+                        941,
+                        1360,
+                        1657
+                    ],
+                    "value_format": "full",
+                    "budget": 1657,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        467,
+                        789,
+                        727,
+                        1195,
+                        1517,
+                        1250,
+                        1718,
+                        2039
+                    ],
+                    "value_format": "full",
+                    "budget": 2039,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        416,
+                        711,
+                        597,
+                        1013,
+                        1308,
+                        1008,
+                        1425,
+                        1720
+                    ],
+                    "value_format": "full",
+                    "budget": 1720,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        385,
+                        698,
+                        486,
+                        872,
+                        1185,
+                        806,
+                        1191,
+                        1505
+                    ],
+                    "value_format": "full",
+                    "budget": 1505,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                }
+            ]
+        },
+        {
+            "type": [
+                {
+                    "value": [
+                        0,
+                        1048,
+                        1883,
+                        599,
+                        1766,
+                        2661,
+                        1017,
+                        2214,
+                        3109
+                    ],
+                    "value_format": "full",
+                    "budget": 3109,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1177,
+                        2015,
+                        653,
+                        1876,
+                        2735,
+                        1073,
+                        2306,
+                        3165
+                    ],
+                    "value_format": "full",
+                    "budget": 3165,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1099,
+                        1786,
+                        742,
+                        1969,
+                        2704,
+                        1239,
+                        2501,
+                        3236
+                    ],
+                    "value_format": "full",
+                    "budget": 3236,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        983,
+                        1699,
+                        622,
+                        1749,
+                        2528,
+                        1084,
+                        2252,
+                        3032
+                    ],
+                    "value_format": "full",
+                    "budget": 3032,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1394,
+                        2347,
+                        981,
+                        2441,
+                        3419,
+                        1774,
+                        3255,
+                        4234
+                    ],
+                    "value_format": "full",
+                    "budget": 4234,
+                    "prob": 0.2,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1048,
+                        1883,
+                        599,
+                        1766,
+                        2661,
+                        1017,
+                        2214,
+                        3109
+                    ],
+                    "value_format": "full",
+                    "budget": 3109,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1177,
+                        2015,
+                        653,
+                        1876,
+                        2735,
+                        1073,
+                        2306,
+                        3165
+                    ],
+                    "value_format": "full",
+                    "budget": 3165,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1099,
+                        1786,
+                        742,
+                        1969,
+                        2704,
+                        1239,
+                        2501,
+                        3236
+                    ],
+                    "value_format": "full",
+                    "budget": 3236,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        983,
+                        1699,
+                        622,
+                        1749,
+                        2528,
+                        1084,
+                        2252,
+                        3032
+                    ],
+                    "value_format": "full",
+                    "budget": 3032,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1394,
+                        2347,
+                        981,
+                        2441,
+                        3419,
+                        1774,
+                        3255,
+                        4234
+                    ],
+                    "value_format": "full",
+                    "budget": 4234,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1445,
+                        2454,
+                        966,
+                        2568,
+                        3641,
+                        1704,
+                        3353,
+                        4427
+                    ],
+                    "value_format": "full",
+                    "budget": 4427,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1010,
+                        1729,
+                        586,
+                        1664,
+                        2413,
+                        978,
+                        2072,
+                        2820
+                    ],
+                    "value_format": "full",
+                    "budget": 2820,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1068,
+                        1829,
+                        691,
+                        1806,
+                        2588,
+                        1214,
+                        2344,
+                        3126
+                    ],
+                    "value_format": "full",
+                    "budget": 3126,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1330,
+                        2352,
+                        748,
+                        2099,
+                        3133,
+                        1254,
+                        2610,
+                        3644
+                    ],
+                    "value_format": "full",
+                    "budget": 3644,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1091,
+                        1938,
+                        592,
+                        1815,
+                        2728,
+                        982,
+                        2235,
+                        3148
+                    ],
+                    "value_format": "full",
+                    "budget": 3148,
+                    "prob": 0.1,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1048,
+                        1883,
+                        599,
+                        1766,
+                        2661,
+                        1017,
+                        2214,
+                        3109
+                    ],
+                    "value_format": "full",
+                    "budget": 3109,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1177,
+                        2015,
+                        653,
+                        1876,
+                        2735,
+                        1073,
+                        2306,
+                        3165
+                    ],
+                    "value_format": "full",
+                    "budget": 3165,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1099,
+                        1786,
+                        742,
+                        1969,
+                        2704,
+                        1239,
+                        2501,
+                        3236
+                    ],
+                    "value_format": "full",
+                    "budget": 3236,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        983,
+                        1699,
+                        622,
+                        1749,
+                        2528,
+                        1084,
+                        2252,
+                        3032
+                    ],
+                    "value_format": "full",
+                    "budget": 3032,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1394,
+                        2347,
+                        981,
+                        2441,
+                        3419,
+                        1774,
+                        3255,
+                        4234
+                    ],
+                    "value_format": "full",
+                    "budget": 4234,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1445,
+                        2454,
+                        966,
+                        2568,
+                        3641,
+                        1704,
+                        3353,
+                        4427
+                    ],
+                    "value_format": "full",
+                    "budget": 4427,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1010,
+                        1729,
+                        586,
+                        1664,
+                        2413,
+                        978,
+                        2072,
+                        2820
+                    ],
+                    "value_format": "full",
+                    "budget": 2820,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1068,
+                        1829,
+                        691,
+                        1806,
+                        2588,
+                        1214,
+                        2344,
+                        3126
+                    ],
+                    "value_format": "full",
+                    "budget": 3126,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1330,
+                        2352,
+                        748,
+                        2099,
+                        3133,
+                        1254,
+                        2610,
+                        3644
+                    ],
+                    "value_format": "full",
+                    "budget": 3644,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1091,
+                        1938,
+                        592,
+                        1815,
+                        2728,
+                        982,
+                        2235,
+                        3148
+                    ],
+                    "value_format": "full",
+                    "budget": 3148,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1289,
+                        2107,
+                        968,
+                        2317,
+                        3157,
+                        1728,
+                        3097,
+                        3937
+                    ],
+                    "value_format": "full",
+                    "budget": 3937,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1130,
+                        1834,
+                        809,
+                        2018,
+                        2752,
+                        1372,
+                        2605,
+                        3339
+                    ],
+                    "value_format": "full",
+                    "budget": 3339,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1041,
+                        1879,
+                        642,
+                        1769,
+                        2650,
+                        1146,
+                        2299,
+                        3180
+                    ],
+                    "value_format": "full",
+                    "budget": 3180,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1484,
+                        2552,
+                        989,
+                        2650,
+                        3793,
+                        1792,
+                        3509,
+                        4653
+                    ],
+                    "value_format": "full",
+                    "budget": 4653,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1403,
+                        2286,
+                        985,
+                        2488,
+                        3410,
+                        1675,
+                        3208,
+                        4129
+                    ],
+                    "value_format": "full",
+                    "budget": 4129,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1407,
+                        2499,
+                        808,
+                        2356,
+                        3516,
+                        1368,
+                        2951,
+                        4111
+                    ],
+                    "value_format": "full",
+                    "budget": 4111,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1236,
+                        2113,
+                        745,
+                        2024,
+                        2920,
+                        1259,
+                        2550,
+                        3445
+                    ],
+                    "value_format": "full",
+                    "budget": 3445,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1363,
+                        2290,
+                        847,
+                        2305,
+                        3272,
+                        1421,
+                        2904,
+                        3871
+                    ],
+                    "value_format": "full",
+                    "budget": 3871,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1019,
+                        1786,
+                        545,
+                        1618,
+                        2410,
+                        894,
+                        1978,
+                        2771
+                    ],
+                    "value_format": "full",
+                    "budget": 2771,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                },
+                {
+                    "value": [
+                        0,
+                        1111,
+                        1832,
+                        794,
+                        1925,
+                        2654,
+                        1390,
+                        2527,
+                        3256
+                    ],
+                    "value_format": "full",
+                    "budget": 3256,
+                    "prob": 0.05,
+                    "pricing_bonus": 0.05
+                }
+            ]
+        },
+        {
+            "type": []
+        }
+    ]
+}
