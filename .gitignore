@@ -72,3 +72,5 @@ open_spiel/.vs
 *.log.INFO.*
 
 venv_old/*
+open_spiel/python/examples/runs/
+open_spiel/python/examples/videos/
