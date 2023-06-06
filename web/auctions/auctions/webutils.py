@@ -3,12 +3,14 @@ from statsmodels.distributions.empirical_distribution import ECDF
 from open_spiel.python.examples.ubc_utils import load_game_config
 from auctions.models import *
 from open_spiel.python.examples.ppo_utils import make_env_and_policy, EnvParams, make_ppo_agent
+from open_spiel.python.examples.cfr_utils import make_cfr_agent
 from open_spiel.python.examples.ubc_plotting_utils import parse_run
 import pytz
 import datetime
 import torch
 import pyspiel
 from distutils import util
+import json
 
 NORMALIZATION_DATE = datetime.datetime(2022, 3, 23, 4, 33, 3, 722237, tzinfo=pytz.UTC)
 
@@ -37,9 +39,10 @@ def get_or_create_game(game_name):
 
     return game
 
-def env_and_policy_from_run(run, env_params=None):
+def env_and_policy_from_run(run, env_params=None, cfr=False):
     game = run.game.load_as_spiel()
-    env_and_policy = make_env_and_policy(game, dict(run.config), env_params=env_params)
+    agent_fn = make_ppo_agent if not cfr else make_cfr_agent
+    env_and_policy = make_env_and_policy(game, dict(run.config), env_params=env_params, agent_fn=agent_fn)
     return env_and_policy
 
 def env_and_policy_for_dry_run(game_db_obj, config, env_params=None):
@@ -47,13 +50,19 @@ def env_and_policy_for_dry_run(game_db_obj, config, env_params=None):
     env_and_policy = make_env_and_policy(game, dict(config), env_params=env_params)
     return env_and_policy
 
-def ppo_db_checkpoint_loader(checkpoint, env_params=None):
+def ppo_db_checkpoint_loader(checkpoint, env_params=None, cfr=False):
     # Create an env_and_policy based on a checkpoint in the database
-    env_and_policy = env_and_policy_from_run(checkpoint.equilibrium_solver_run, env_params=env_params)
-    # Restore the parameters
-    policy = env_and_policy.make_policy()
-    policy.restore(pickle.loads(checkpoint.policy))
+    env_and_policy = env_and_policy_from_run(checkpoint.equilibrium_solver_run, env_params=env_params, cfr=cfr)
+    if cfr:
+        policy = pickle.loads(checkpoint.policy)
+        for agent in env_and_policy.agents:
+            agent.policy = policy
+    else:
+        # Restore the parameters
+        policy = env_and_policy.make_policy()
+        policy.restore(pickle.loads(checkpoint.policy))
     return env_and_policy
+
 
 def load_ppo_agent(best_response):
     # Takes a DB best response object and returns the PPO agent
@@ -125,25 +134,66 @@ def find_best_checkpoint(run, max_t=None):
     best_checkpoint = get_checkpoint(run, t=best_t)
     return nash_conv_by_t, best_checkpoint, nash_conv_by_t.min()
 
+
 def convert_pesky_np(d):
+    # TODO: This solution is dumb in retrospect: Use a serializer
     '''Django complains it doesn't know to JSON serialize numpy arrays'''
-    new_d = dict()
-    for k, v in d.items():
-        if isinstance(v, np.ndarray):
-            new_d[k] = v.tolist()
-        elif isinstance(v, np.int64):
-            new_d[k] = int(v)
-        elif isinstance(v, dict):
-            new_d[k] = convert_pesky_np(v)
-        else:
-            new_d[k] = v
-    return new_d
+    if isinstance(d, np.ndarray):
+        return convert_pesky_np(d.tolist())
+    elif isinstance(d, list):
+        return [convert_pesky_np(x) for x in d]
+    elif isinstance(d, np.int64):
+        return int(d)
+    elif isinstance(d, dict):
+        return {k: convert_pesky_np(v) for k, v in d.items()}
+    else:
+        return d
+
+    # new_d = dict()
+    # for k, v in d.items():
+    #     if isinstance(v, list):
+    #         new_d[k] = convert_pesky_np(np.array(v))
+    #     if isinstance(v, np.ndarray):
+    #         new_d[k] = v.tolist()
+    #     elif isinstance(v, np.int64):
+    #         new_d[k] = int(v)
+    #     elif isinstance(v, dict):
+    #         new_d[k] = convert_pesky_np(v)
+    #     else:
+    #         new_d[k] = v
+    # return new_d
 
 def add_profiling_flags(parser):
     parser.add_argument('--pprofile', type=util.strtobool, default=0)
     parser.add_argument('--pprofile_file', type=str, default='profile.txt')
     parser.add_argument('--cprofile', type=util.strtobool, default=0)
     parser.add_argument('--cprofile_file', type=str, default='cprofile.txt')
+
+def add_experiment_flags(parser):
+    parser.add_argument('--experiment_name', type=str)
+    parser.add_argument('--job_name', type=str, default='auction')
+    parser.add_argument('--filename', type=str, default='parameters.json') # Select clock auction game
+    parser.add_argument('--game_name', type=str, default='python_clock_auction')
+
+def add_reporting_flags(parser):
+    parser.add_argument('--report_freq', type=int, default=50_000)
+    parser.add_argument('--eval_every', type=int, default=300_000)
+    parser.add_argument("--eval_every_early", type=int, default=None)
+    parser.add_argument("--eval_exactly", nargs="+", default=[], type=int)
+    parser.add_argument("--eval_zero", type=util.strtobool, default=1)
+
+def add_dispatching_flags(parser):
+    parser.add_argument('--dispatch_br', type=util.strtobool, default=1)
+    parser.add_argument('--br_portfolio_path', type=str, default=None)
+    parser.add_argument('--br_overrides', type=str, default='', help='These are arguments you want to pass to BR. DO NOT INCLUDE EVAL ARGS HERE')
+    parser.add_argument('--eval_overrides', type=str, default='', help="These are arguments you want to pass directly through to evaluate. They ALSO get passed to best respones")
+    parser.add_argument('--eval_inline', type=util.strtobool, default=1, help="Eval inline means that we run the eval in the same process as the training")
+
+
+def add_wandb_flags(parser, default=True):
+    parser.add_argument('--use_wandb', type=util.strtobool, default=1 if default else 0) 
+    parser.add_argument('--wandb_note', type=str, default='') 
+
 
 def profile_cmd(cmd, pprofile, pprofile_file, cprofile, cprofile_file):
     if pprofile:

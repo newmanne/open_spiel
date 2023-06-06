@@ -18,10 +18,14 @@ def eval_command(t, experiment_name, run_name, br_name, br_player, dry_run=False
     # Find the equilibrium_solver_run_checkpoint 
     equilibrium_solver_run_checkpoint = get_checkpoint_by_name(experiment_name, run_name, t)
 
-    # Load the environment
-    env_params = EnvParams(track_stats=True, seed=seed, num_envs=num_envs)
-    env_and_policy = ppo_db_checkpoint_loader(equilibrium_solver_run_checkpoint, env_params=env_params)
+    c = equilibrium_solver_run_checkpoint.equilibrium_solver_run.config
+    cfr = c.get('solver_type') == 'cfr'
+    env_params_kwargs = {'observer_params': dict(normalize=False)} if cfr else {}
 
+    # Load the environment
+    env_params = EnvParams(track_stats=True, seed=seed, num_envs=num_envs, **env_params_kwargs)
+    env_and_policy = ppo_db_checkpoint_loader(equilibrium_solver_run_checkpoint, env_params=env_params, cfr=cfr)
+    
     # Replace agents if necessary
     if br_name is None:
         logging.info("No best reponders provided. Just evaluating the policy")
