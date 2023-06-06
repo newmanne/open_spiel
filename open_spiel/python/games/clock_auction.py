@@ -1,110 +1,106 @@
 from collections import defaultdict
-from dataclasses import dataclass, field
-from distutils.command.build import build
-from multiprocessing.sharedctypes import Value
-from tkinter.messagebox import NO
 import numpy as np
-import pandas as pd
-from open_spiel.python.examples.ubc_utils import players_not_me, pulp_solve, random_string, permute_array, num_to_letter
+from open_spiel.python.examples.ubc_utils import players_not_me, pulp_solve, random_string, permute_array
 import pyspiel
-import json
-import os
 import logging
-import enum
-import itertools
-from typing import List, Dict, Tuple, Optional, Any, Union, Iterable
 import math
-from open_spiel.python.games import clock_auction_bidders
-from functools import cached_property
+from open_spiel.python.games.clock_auction_parser import parse_auction_params
+from open_spiel.python.games.clock_auction_observer import ClockAuctionObserver
+from cachetools import LRUCache
+from open_spiel.python.games.clock_auction_base import AuctionParams, LotteryState, ActivityPolicy, UndersellPolicy, InformationPolicy, InformationPolicyConstants, ValueFormat, BidderState
 from pulp import LpProblem, LpMinimize, LpVariable, LpStatus, LpBinary, lpSum, lpDot, LpMaximize, LpInteger, value
+import pandas as pd
+from functools import lru_cache, cached_property
+import inspect
 
-DEFAULT_MAX_ROUNDS = 100
-DEFAULT_AGENT_MEMORY = 3
+MAX_CACHE_SIZE = 250_000
 
-class ActivityPolicy(enum.IntEnum):
-  ON = 0
-  OFF = 1
+def make_key(bidders):
+  key = (tuple([(b.activity, tuple(b.processed_demand[-1]), tuple(b.submitted_demand[-1])) for b in bidders]))
+  return key
 
-class UndersellPolicy(enum.IntEnum):
-  UNDERSELL = 0
-  UNDERSELL_ALLOWED = 1
+def _apply_bid(auction_params, change_request, bid, points, current_agg):
+  (player_id, product_id, delta) = change_request
+  changed = False
 
-class InformationPolicy(enum.IntEnum):
-  SHOW_DEMAND = 0
-  HIDE_DEMAND = 1
+  # Process drop
+  if delta < 0:
+    drop_room = current_agg[product_id] - auction_params.licenses[product_id]
+    if drop_room > 0:
+      amount = min(drop_room, -delta)
+      bid[product_id] -= amount
+      delta += amount
+      assert bid[product_id] >= 0
+      changed = True
+      points[player_id] += amount * auction_params.activity[product_id]
+      current_agg[product_id] -= amount
 
-class InformationPolicyConstants:
-  OVER_DEMAND = 1
-  AT_SUPPLY = 0
-  UNDER_DEMAND = 3
+  # Process pickup
+  while delta > 0 and (auction_params.activity_policy == ActivityPolicy.OFF or points[player_id] >= auction_params.activity[product_id]):
+    bid[product_id] += 1
+    assert bid[product_id] <= auction_params.licenses[product_id]
+    current_agg[product_id] += 1
+    changed = True
+    points[player_id] -= auction_params.activity[product_id]
+    delta -= 1
 
-class ValueFormat(enum.IntEnum):
-  LINEAR = 0
-  FULL = 1
-  MARGINAL = 2
+  return changed, delta
 
-@dataclass
-class AuctionParams:
-  opening_prices: List[float] = field(default_factory=lambda : [])
-  licenses: List[int] = field(default_factory=lambda : [])
-  license_names: List[str] = field(default_factory=lambda : [])
-  activity: List[int] = field(default_factory=lambda : [])
-  num_products: int = 0
-  increment: float = 0.1
-  reveal_type_round: int = None
+def stateless_process_bids(auction_params, bidders, current_agg, processing_queue):
+  # Compute the output without modifying any state and return the solution (everyone's processed demand)
+  points = [bidder.activity for bidder in bidders]
+  bids = []
+  for player_id, bidder in enumerate(bidders):
+    last_round_holdings = bidder.processed_demand[-1]
+    for j in range(auction_params.num_products):
+      points[player_id] -= last_round_holdings[j] * auction_params.activity[j]
+    bids.append(last_round_holdings.copy())
 
-  max_round: int = DEFAULT_MAX_ROUNDS
-  player_types: Dict = None
+  """
+  for (player_id, product_id, delta) in self.processing_queue:
+    - try to process it
+    - if it fails, add it to the unfinished queue
 
-  all_bids: List[List[int]] = None
-  all_bids_activity: List[int] = None
+    - try:
+      - process each bid in the unfinished queue; restart from beginning of unfinished queue if even partially successful
+    - until nothing changes
+  """
+  starting_agg_demand = current_agg.copy()
+  unfinished_queue = []
 
-  activity_policy: ActivityPolicy = ActivityPolicy.ON
-  undersell_policy: UndersellPolicy = UndersellPolicy.UNDERSELL
-  information_policy: InformationPolicy = InformationPolicy.SHOW_DEMAND
+  for change_request in processing_queue:
+    (player_id, product_id, delta) = change_request
+    _, new_delta = _apply_bid(auction_params, change_request, bids[player_id], points, current_agg)
 
-  agent_memory: int = DEFAULT_AGENT_MEMORY
+    if new_delta != 0: # The bid is not fully finished
+      unfinished_queue.append((player_id, product_id, new_delta))
 
-  @cached_property
-  def max_activity(self):
-    return np.array(self.activity) @ np.array(self.licenses)
+    unfinished_processing = True
 
-  def max_budget_for_player(self, player_id):
-    return max([t['bidder'].get_budget() for t in self.player_types[player_id]])
+    # Try to process the unfinished queue
+    while unfinished_processing:
+      unfinished_processing = False
+      for idx, unfinished_change_request in enumerate(list(unfinished_queue)):
+        (player_id, product_id, delta) = unfinished_change_request
+        unfinished_change, new_delta = _apply_bid(auction_params, unfinished_change_request, bids[player_id], points, current_agg)
+        if new_delta == 0:
+          del unfinished_queue[idx]
+        else:
+          unfinished_queue[idx] = (player_id, product_id, new_delta)
+        if unfinished_change:
+          unfinished_processing = True
+          break
 
-  @cached_property
-  def max_budget(self):
-    return max([self.max_budget_for_player(p) for p in range(len(self.player_types))])
-
-  @cached_property
-  def max_total_spend(self):
-    return sum([self.max_budget_for_player(p) for p in range(len(self.player_types))])
-
-  def max_opponent_spend(self, player_id):
-    return sum([self.max_budget_for_player(p) for p in range(len(self.player_types)) if p != player_id])
-
-  @cached_property
-  def max_opponent_spends(self):
-    return np.array([self.max_opponent_spend(p) for p in range(len(self.player_types))])
-
-@dataclass
-class BidderState:
-  processed_demand: List[List[int]] = field(default_factory=lambda : [])
-  submitted_demand: List[List[int]] = field(default_factory=lambda : [])
-  activity: int = None
-  bidder: clock_auction_bidders.Bidder = None
-  type_index: int = None
-  drop_out_heuristic: bool = True
-
-def action_to_bundles(licenses):
-    bids = []
-    for n in licenses:
-        b = []
-        for i in range(n + 1):
-            b.append(i)
-        bids.append(b)
-    actions = np.array(list(itertools.product(*bids)))
-    return actions
+  # Sanity checks
+  for player_id, bidder in enumerate(bidders):
+    for product_id in range(auction_params.num_products):
+      assert 0 <= bids[player_id][product_id] <= min(auction_params.licenses[product_id], max(bidder.submitted_demand[-1][product_id], bidder.processed_demand[-1][product_id])) # Can't be bigger than supply, and can't be bigger than what you asked for, or what you used to have
+      
+  for j in range(auction_params.num_products):
+    if (current_agg[j] < auction_params.licenses[j]) and (current_agg[j] < starting_agg_demand[j]):
+      raise ValueError("Aggregate demand fell for underdemanded product {}".format(j))
+  
+  return bids
 
 _GAME_TYPE = pyspiel.GameType(
     short_name="python_clock_auction",
@@ -126,114 +122,21 @@ _GAME_TYPE = pyspiel.GameType(
       }
     )
 
-def parse_auction_params(file_name):
-  if file_name.startswith('/'):
-    full_path = file_name
-  else:
-    logging.info("Reading from env variable CLOCK_AUCTION_CONFIG_DIR. If it is not set, there will be trouble.")
-    config_dir = os.environ.get('CLOCK_AUCTION_CONFIG_DIR')
-    if config_dir is None:
-      raise ValueError("CLOCK_AUCTION_CONFIG_DIR env variable is not set.")
-    logging.info(f"CLOCK_AUCTION_CONFIG_DIR={config_dir}")
-    full_path = f'{config_dir}/{file_name}';
-
-  logging.info(f"Parsing configuration from {full_path}")
-  with open(full_path, 'r') as f:
-    game_params = json.load(f)
-
-    players = game_params['players']
-
-    opening_prices = game_params['opening_price']
-    licenses = np.array(game_params['licenses'])
-    if 'license_names' in game_params:
-      license_names = game_params['license_names']
-    else:
-      license_names = [num_to_letter(i) for i in range(len(licenses))]
-
-    num_products = len(licenses)
-
-    if len(opening_prices) != num_products:
-      raise ValueError("Number of opening prices must match number of products.")
-    
-    activity = game_params['activity']
-    if len(activity) != num_products:
-      raise ValueError("Number of activity must match number of products.")
-
-    activity_policy = game_params.get('activity_policy', ActivityPolicy.ON)
-    if isinstance(activity_policy, bool):
-      activity_policy = ActivityPolicy.ON if activity_policy else ActivityPolicy.OFF
-
-    information_policy = game_params.get('information_policy', InformationPolicy.SHOW_DEMAND)  
-    if isinstance(information_policy, str):
-      information_policy = InformationPolicy[information_policy.upper()]
-
-    undersell_policy = game_params.get('undersell_rule', UndersellPolicy.UNDERSELL)
-    if isinstance(undersell_policy, str):
-      undersell_policy = UndersellPolicy[undersell_policy.upper()]
-
-    reveal_type_round = int(game_params.get('reveal_type_round', -1))
-
-    all_bids = action_to_bundles(licenses)
-    all_bids_activity = np.array([activity @ bid for bid in all_bids])
-
-    types = defaultdict(list)
-
-    for player_id, player in enumerate(players):
-      player_types = player['type']
-      for player_type in player_types:
-        values = player_type['value']
-        if np.array(values).ndim == 2:
-          default_assumption = ValueFormat.MARGINAL
-        else:
-          default_assumption = ValueFormat.LINEAR
-        value_format = player_type.get('value_format', default_assumption)
-        if isinstance(value_format, str):
-          value_format = ValueFormat[value_format.upper()]
-        budget = player_type['budget']
-        prob = player_type['prob']
-        pricing_bonus = player_type.get('pricing_bonus', 0)
-        drop_out_heuristic = player_type.get('drop_out_heuristic', True)
-        name = player_type.get('name', None)
-
-        if value_format == ValueFormat.LINEAR:
-          if len(values) != num_products:
-            raise ValueError("Number of values must match number of products.")
-          bidder = clock_auction_bidders.LinearBidder(values, budget, pricing_bonus, all_bids, drop_out_heuristic)  
-        elif value_format == ValueFormat.FULL:
-          if len(values) != len(all_bids):
-            raise ValueError("Number of values must match number of bids.")
-          bidder = clock_auction_bidders.EnumeratedValueBidder(values, budget, pricing_bonus, all_bids, drop_out_heuristic, name)
-        elif value_format == ValueFormat.MARGINAL:
-          bidder = clock_auction_bidders.MarginalValueBidder(values, budget, pricing_bonus, all_bids, drop_out_heuristic)
-        else:
-          raise ValueError("Unknown value format")
-        
-        types[player_id].append(dict(prob=prob, bidder=bidder))
-
-  logging.info("Done config parsing")
-  return AuctionParams(
-      opening_prices=opening_prices,
-      licenses=licenses,
-      license_names=license_names,
-      num_products=num_products,
-      activity=activity,
-      increment=game_params.get('increment', 0.1),
-      max_round=game_params.get('max_rounds', DEFAULT_MAX_ROUNDS),
-      player_types=types,
-      all_bids=all_bids,
-      all_bids_activity=all_bids_activity,
-      activity_policy=activity_policy,
-      undersell_policy=undersell_policy,
-      information_policy=information_policy,
-      reveal_type_round=reveal_type_round,
-      agent_memory=game_params.get('agent_memory', DEFAULT_AGENT_MEMORY),
-    )
-
 class ClockAuctionGame(pyspiel.Game):
 
   def __init__(self, params=None):
     file_name = params.get('filename', 'parameters.json')
     self.auction_params = parse_auction_params(file_name)
+
+    if self.auction_params.fold_randomness:
+      # Maps from a state to a set of outcomes, with probs 
+      # How to determine a unique entry? If I face the same vector of (activity, processed demands, submitted demand), that implies same lottery mapping to new processed demands regardless of all else!
+      # Note that you could imagine pickling this
+      logging.info("Folding randomnesss...")
+      self.lottery_cache = LRUCache(maxsize=MAX_CACHE_SIZE)
+    
+    self.state_cache = LRUCache(maxsize=MAX_CACHE_SIZE)
+
     num_players = len(self.auction_params.player_types)
 
     # Max of # of type draws and tie-breaking
@@ -245,7 +148,7 @@ class ClockAuctionGame(pyspiel.Game):
     # MAX AND MIN UTILITY
     self.upper_bounds = []
     self.lower_bounds = []
-    for player_id, types in self.auction_params.player_types.items():
+    for types in self.auction_params.player_types.values():
       player_upper_bounds = []
       player_lower_bounds = []
       for t in types:
@@ -284,6 +187,11 @@ class ClockAuctionGame(pyspiel.Game):
         iig_obs_type or pyspiel.IIGObservationType(perfect_recall=False),
         params)
 
+  def observation_tensor_shape(self):
+    """Returns the shape of the observation tensor."""
+    observer = self.make_py_observer()
+    return observer.observation_shape
+
 class ClockAuctionState(pyspiel.State):
   """A python version of the Atari Game state."""
 
@@ -297,7 +205,7 @@ class ClockAuctionState(pyspiel.State):
     self.bidders = []
     self.posted_prices = [np.array(self.auction_params.opening_prices)]
     self.sor_prices = [np.array(self.auction_params.opening_prices)]
-    self.clock_prices = [np.array(self.auction_params.opening_prices)]
+    self.clock_prices = [np.array(self.auction_params.opening_prices) * (1 + self.auction_params.increment)]
     self.aggregate_demand = [np.zeros(self.auction_params.num_products, dtype=int)]
     self.round = 1
     self._cur_player = 0
@@ -305,7 +213,17 @@ class ClockAuctionState(pyspiel.State):
     self.price_increments = np.zeros(self.auction_params.num_products, dtype=int)
     self.legal_action_mask = np.ones(len(self.auction_params.all_bids), dtype=bool)
     self.processing_queue = None
+    self.folded_chance_outcomes = None
 
+  # An LRU cache here is a bad idea - it will get too big. Just use the game cache
+  def child(self, action):
+    key = tuple(self.history() + [action])
+    kid = self.get_game().state_cache.get(key) 
+    if kid is None:
+      kid = super(ClockAuctionState, self).child(action)
+      self.get_game().state_cache[key] = kid
+    return kid
+  
   def current_player(self) -> pyspiel.PlayerId:
     """Returns the current player.
 
@@ -319,57 +237,78 @@ class ClockAuctionState(pyspiel.State):
     else:
       return self._cur_player
 
+  @lru_cache(maxsize=MAX_CACHE_SIZE) # would probably be better to use a per-instance cache here, but this is probably close enough
   def _legal_actions(self, player):
     """Returns a list of legal actions, sorted in ascending order."""
     assert player >= 0 
     legal_actions = []
     bidder = self.bidders[player]
 
-    if len(bidder.submitted_demand) > 1 and bidder.submitted_demand[-1].sum() == 0:
+    if (self.round >= self.auction_params.max_round) or (len(bidder.submitted_demand) > 1 and bidder.submitted_demand[-1].sum() == 0):
       # Don't need to recalculate - can only bid 0
+      # (If you're over max rounds, the government randomly tie-breaks)
       return [0]
 
-    price = np.array(self.clock_prices[-1])
-    budget = bidder.bidder.budget
-    hard_budget_on = True # TODO: Make param
-    positive_profit_on = False # TODO: Make param
+    sor_price = np.asarray(self.sor_prices[-1])
+    # budget = bidder.bidder.budget
+    # hard_budget_on = True # TODO: Make param.
+    # positive_profit_on = False # TODO: Make param
 
-    prices = self.auction_params.all_bids @ price
-    profits = bidder.bidder.get_profits(price)
+    # sor_bundle_prices = self.auction_params.all_bids @ sor_price
+    profits = bidder.bidder.get_profits(sor_price)
 
     # Note we assume all drops go through. A more sophisticated bidder might think differently (e.g., try to fulfill budget in expectation)
     # Consider e.g. if you drop a product you might get stuck! So you can wind up over your budget if your drop fails
     # Also consider that if you drop a product and get stuck, you only pay SoR on that product
 
     legal_actions = self.legal_action_mask.copy()
+    legal_actions[np.where(bidder.bidder.get_values() < 0)[0]] = 0 # Shorthand to make actions illegal, does not really mean "negative value"
 
     if self.auction_params.activity_policy == ActivityPolicy.ON:
       legal_actions[np.where(bidder.activity < self.auction_params.all_bids_activity)[0]] = 0
 
-    if hard_budget_on:
-      legal_actions[prices > budget] = 0
 
-    if positive_profit_on:
-      legal_actions[profits < 0] = 0
+    # if hard_budget_on:
+    #   legal_actions[prices > budget] = 0
 
-    # TODO: Shouldn't I be using LegalProfits here? (i.e., accounting for the fact that it needs to be a legal bundle?)
+    # if positive_profit_on:
+    #   legal_actions[profits < 0] = 0
+
     if not (profits[legal_actions] > 0).any():
-      # If you have no way to make a profit ever going forwards, just drop out. Helps minimize game size
+      # If you have no way to make a profit ever going forwards, just drop out. This is done at SoR prices. If you stay in longer, things get (weakly) worse! Helps minimize game size
       return [0]
-    else:
-      if bidder.bidder.drop_out_heuristic:
-        # At least one bid leads to positive profit. Dropping out is never the right thing to do in this case. It will always be action 0
-        legal_actions[0] = 0
+    # elif bidder.bidder.drop_out_heuristic:
+    #   # At least one bid leads to positive profit. Dropping out is never the right thing to do in this case. It will always be action 0
+    #   legal_actions[0] = 0
+
+    if bidder.bidder.straightforward:
+      clock_price = np.asarray(self.clock_prices[-1])
+      clock_profits = bidder.bidder.get_profits(clock_price) # Select your favorite bundle at the clock prices is our naive straightforward bidder. This is problematic though because you can get stuck etc.
+      clock_profits[np.where(legal_actions == 0)[0]] = -1
+      return [np.argmax(clock_profits)]
 
     if legal_actions.sum() == 0:
-      print(self)
-      raise ValueError("No legal actions!")
+      raise ValueError("No legal actions!\n{self}")
     
     return legal_actions.nonzero()[0]
+
+  # Override
+  def apply_action(self, action):
+    raise ValueError("You are circumventing caching!!! Use state.child()")
+
+  def clear_cached_properties(self):
+    # Need to do this because clone() should force a recompute
+    self.__dict__.pop('_as_string', None) 
+    self.__dict__.pop('_chance_outcomes', None) 
+    self.__dict__.pop('_returns', None) 
+    self.__dict__.pop('_my_hash', None) 
 
   def _apply_action(self, action):
     """Applies the specified action to the state.
     """
+    # IF YOU APPLY AN ACTION, YOU MODIFY THE STATE SO YOU MUST CLEAR ALL CACHED PROPERTIES
+    self.clear_cached_properties()
+
     if not self.is_chance_node():
       # Colelct the bid in submitted demand
       assert not self._game_over
@@ -406,9 +345,26 @@ class ClockAuctionState(pyspiel.State):
         if len(self.bidders) == self.num_players(): # All of the assignments have been made
           self._is_chance = False
       else:
-        # Tie breaking 
-        self.processing_queue = permute_array(self.processing_queue, action)
-        self._process_bids()
+        self._handle_chance_tiebreak(action)
+
+
+  def _handle_chance_tiebreak(self, action):
+    # Tie breaking 
+    if self.auction_params.fold_randomness:
+      # Let's just index into the solution that we must have already computed
+      key = make_key(self.bidders)
+      processed = self.get_game().lottery_cache.get(key)['results'][action]
+    else:
+      self.processing_queue = permute_array(self.processing_queue, action)
+      processed = stateless_process_bids(self.auction_params, self.bidders, self.aggregate_demand[-1].copy(), self.processing_queue)
+
+    # Actually copy
+    for player_id, bidder in enumerate(self.bidders):
+      bidder.processed_demand.append(np.asarray(processed[player_id]))
+      assert len(bidder.processed_demand) == len(bidder.submitted_demand)    
+    
+    self._post_process()
+
 
   def _generate_processing_queue(self):
     # Generate a processing queue, in a fixed order, where each element is a bid of the form (player, product, delta)
@@ -430,7 +386,42 @@ class ClockAuctionState(pyspiel.State):
       self._post_process()
     elif self.auction_params.undersell_policy == UndersellPolicy.UNDERSELL:
       self._generate_processing_queue()
-      self._is_chance = True
+
+      if self.auction_params.fold_randomness:
+        # 1) Is this in the cache?
+        key = make_key(self.bidders)
+        res = self.get_game().lottery_cache.get(key)
+        if res is None:
+          seen = []
+          # 1) Find the number of permtuations
+          n_permutations = math.factorial(len(self.processing_queue))
+          # 2) Try ALL of them. Surely you could be much smarter about this (e.g, don't I need >= 2 drop bids for this ordering to matter? And even then, given that I always e.g. put drop bids at the front, couldn't I achieve every outcome still while having many fewer permutations?
+          for i in range(n_permutations):
+            queue = permute_array(self.processing_queue, i)
+            processed = stateless_process_bids(self.auction_params, self.bidders, self.aggregate_demand[-1].copy(), queue)
+            seen.append(tuple(tuple(p) for p in processed))
+
+          # 3) Only keep the unique ones
+          # OUTCOMES
+          p = pd.Series(seen).value_counts(normalize=True).to_dict()
+          res = {
+            'lottery': list(p.values()),
+            'results': list(p.keys())
+          }
+          # print(f"New state not in cache, processed... {n_permutations} outcomes into {len(p)} outcomes")
+          # 4) Cache it
+          self.get_game().lottery_cache[key] = res
+
+        self.folded_chance_outcomes = res['lottery']
+
+        ### Was there only a single outcome? If so, let's remove a chance node here so the game tree is smaller (good for cache size)
+        if self.auction_params.skip_single_chance_nodes and len(self.folded_chance_outcomes) == 1:
+          self._handle_chance_tiebreak(0)
+        else:
+          self._is_chance = True
+
+      else:
+        self._is_chance = True
     else:
       raise ValueError("Unknown undersell policy")
 
@@ -451,7 +442,8 @@ class ClockAuctionState(pyspiel.State):
     """Returns True if the game is over."""
     return self._game_over
 
-  def returns(self):
+  @cached_property
+  def _returns(self):
     """Total reward for each player over the course of the game so far."""
     assert self._game_over
     assert self._auction_finished
@@ -465,11 +457,14 @@ class ClockAuctionState(pyspiel.State):
       payment = final_bid @ final_prices
       self._final_payments[player_id] = payment
       value = bidder.bidder.value_for_package(final_bid)
-      returns[player_id] = value - payment
-
+      returns[player_id] = value - payment 
     return returns
 
-  def __str__(self):
+  def returns(self):
+    return self._returns
+
+  @cached_property
+  def _as_string(self):
     with np.printoptions(precision=3):
 
       """String for debug purposes. No particular semantics are required."""
@@ -494,8 +489,12 @@ class ClockAuctionState(pyspiel.State):
           result += f'Final bids player {player_id}: {player.processed_demand[-1]}\n'
 
     return result
+  
+  def __str__(self):
+    return self._as_string
 
-  def chance_outcomes(self):
+  @cached_property
+  def _chance_outcomes(self):
     """Returns the possible chance outcomes and their probabilities."""
     assert self._is_chance
     if len(self.bidders) < self.num_players(): # Chance node is assigning a type
@@ -503,11 +502,18 @@ class ClockAuctionState(pyspiel.State):
       player_types = self.auction_params.player_types[player_index]
       probs = [t['prob'] for t in player_types]
     else: # Chance node is breaking a tie
-      chance_outcomes_required = math.factorial(len(self.processing_queue))
-      if chance_outcomes_required > 1_000:
-        return dict(upper=chance_outcomes_required - 1) # This breaks the openspiel API, but otherwise generating the list gets too big and blows up memory. See UBC Chance Event Sampler that knows how to decode this. Also, it's WAYYYY faster than actually making the lists
-      probs = [1 / chance_outcomes_required] * chance_outcomes_required
+      if self.auction_params.fold_randomness:
+        probs = self.folded_chance_outcomes
+        # self.folded_chance_outcomes = None # TODO: I want to do this, but it actually makes it unsafe to call chance_outcomes multiple times in a row, so what can you do.... Definitely opens up a risk though
+      else:
+        chance_outcomes_required = math.factorial(len(self.processing_queue))
+        if chance_outcomes_required > 1_000:
+          return dict(upper=chance_outcomes_required - 1) # This breaks the openspiel API, but otherwise generating the list gets too big and blows up memory. See UBC Chance Event Sampler that knows how to decode this. Also, it's WAYYYY faster than actually making the lists
+        probs = [1 / chance_outcomes_required] * chance_outcomes_required
     return list(enumerate(probs))
+
+  def chance_outcomes(self):
+    return self._chance_outcomes
 
   def _post_process(self):
     # Calculate aggregate demand
@@ -546,101 +552,10 @@ class ClockAuctionState(pyspiel.State):
       self.round += 1
       if self.round > self.auction_params.max_round:
         # An alternative: set game_over = True (auction_finished will still be false) and simply track this. Maybe give large negative rewards. But right now this seems more obvious as a way of triggering
-        raise ValueError("Auction went on too long")
+        raise ValueError(f"Auction went on too long {self.history()}")
 
     self._cur_player = 0
     self._is_chance = False
-
-  def _apply_bid(self, change_request, bid, points, current_agg):
-    (player_id, product_id, delta) = change_request
-    changed = False
-
-    # Process drop
-    if delta < 0:
-      drop_room = current_agg[product_id] - self.auction_params.licenses[product_id]
-      if drop_room > 0:
-        amount = min(drop_room, -delta)
-        bid[product_id] -= amount
-        delta += amount
-        assert bid[product_id] >= 0
-        changed = True
-        points[player_id] += amount * self.auction_params.activity[product_id]
-        current_agg[product_id] -= amount
-  
-    # Process pickup
-    while delta > 0 and (self.auction_params.activity_policy == ActivityPolicy.OFF or points[player_id] >= self.auction_params.activity[product_id]):
-      bid[product_id] += 1
-      assert bid[product_id] <= self.auction_params.licenses[product_id]
-      current_agg[product_id] += 1
-      changed = True
-      points[player_id] -= self.auction_params.activity[product_id]
-      delta -= 1
-
-    return changed, delta
-
-  def _process_bids(self):
-    # Copy over the current aggregate demand
-    # TODO: For now points is a zero vector, but possible grace period implementations would change that
-    points = [bidder.activity for bidder in self.bidders]
-    bids = []
-    for player_id, bidder in enumerate(self.bidders):
-      last_round_holdings = bidder.processed_demand[-1]
-      for j in range(self.auction_params.num_products):
-        points[player_id] -= last_round_holdings[j] * self.auction_params.activity[j]
-      bids.append(last_round_holdings.copy())
-
-    """
-    for (player_id, product_id, delta) in self.processing_queue:
-      - try to process it
-      - if it fails, add it to the unfinished queue
-
-      - try:
-        - process each bid in the unfinished queue; restart from beginning of unfinished queue if even partially successful
-      - until nothing changes
-    """
-    current_agg = self.aggregate_demand[-1].copy()
-    starting_agg_demand = current_agg.copy()
-    self.unfinished_queue = []
-
-    for change_request in self.processing_queue:
-      (player_id, product_id, delta) = change_request
-      _, new_delta = self._apply_bid(change_request, bids[player_id], points, current_agg)
-
-      if new_delta != 0: # The bid is not fully finished
-        self.unfinished_queue.append((player_id, product_id, new_delta))
-
-      unfinished_processing = True
-
-      # Try to process the unfinished queue
-      while unfinished_processing:
-        unfinished_processing = False
-        for idx, unfinished_change_request in enumerate(list(self.unfinished_queue)):
-          (player_id, product_id, delta) = unfinished_change_request
-          unfinished_change, new_delta = self._apply_bid(unfinished_change_request, bids[player_id], points, current_agg)
-          if new_delta == 0:
-            del self.unfinished_queue[idx]
-          else:
-            self.unfinished_queue[idx] = (player_id, product_id, new_delta)
-          if unfinished_change:
-            unfinished_processing = True
-            break
-
-    # Finally, copy over submitted -> processed
-    for player_id, bidder in enumerate(self.bidders):
-      for product_id in range(self.auction_params.num_products):
-        assert bids[player_id][product_id] >= 0
-        assert bids[player_id][product_id] <= self.auction_params.licenses[product_id]
-        assert bids[player_id][product_id] <= max(bidder.submitted_demand[-1][product_id], bidder.processed_demand[-1][product_id]) # Either what you asked for, or what you used to have
-
-      bidder.processed_demand.append(np.asarray(bids[player_id]))
-      assert len(bidder.processed_demand) == len(bidder.submitted_demand)
-    
-    for j in range(self.auction_params.num_products):
-      if (current_agg[j] < self.auction_params.licenses[j]) and (current_agg[j] < starting_agg_demand[j]):
-        raise ValueError("Aggregate demand fell for underdemanded product {}".format(j))
-
-    self._post_process()
-
 
   def get_final_payments(self):
     assert self._game_over
@@ -768,191 +683,12 @@ class ClockAuctionState(pyspiel.State):
 
     return obj, allocation
 
+  @cached_property
+  def _my_hash(self):
+    return hash(tuple(self.history())) # If you cache this, you need to remember to clear it in a clone
 
-class ClockAuctionObserver:
-  """Observer, conforming to the PyObserver interface (see observation.py)."""
-  
-  def __init__(self, iig_obs_type, params):
-    auction_params = params.get('auction_params')
-    self.normalize = params.get('normalize', True) # Raw features? Or normalized ones
-    if not isinstance(auction_params, AuctionParams):
-      raise ValueError("params must be an AuctionParams object")
-    self.auction_params = auction_params
-
-    num_players = len(auction_params.player_types)
-    num_products = auction_params.num_products
-
-    # self.round_buffer = 100 if iig_obs_type.perfect_recall else auction_params.agent_memory
-    self.round_buffer = auction_params.agent_memory # TODO: We are abusing the API here a bit. Only offers binary perfect recall or not, but we want to interpolate.
-    length = self.round_buffer * num_products
-    shape = (self.round_buffer, num_products)
-
-    """Initializes an empty observation tensor."""
-    # Determine which observation pieces we want to include.
-    # NOTE: It should be possible to use the params to exclude some of these if we want a smaller input to the NN (or to have the NN reassamble the tensor from specific pieces).
-
-    pieces = [("player", num_players, (num_players,))] 
-    if iig_obs_type.private_info == pyspiel.PrivateInfoType.SINGLE_PLAYER:
-      # 1-hot type encoding
-      max_num_types = max([len(p) for p in auction_params.player_types.values()])
-      pieces.append(("bidder_type", max_num_types, (max_num_types,)))
-      pieces.append(("activity", 1, (1,)))
-      pieces.append(("sor_exposure", 1, (1,)))
-
-      pieces.append(("submitted_demand_history", length, shape))
-      pieces.append(("processed_demand_history", length, shape))
-      num_bundles = len(auction_params.all_bids)
-      pieces.append(("sor_profits", num_bundles, (num_bundles,)))
-      pieces.append(("clock_profits", num_bundles, (num_bundles,)))
-
-    if iig_obs_type.public_info:
-      # 1-hot round encoding
-      pieces.append(("round", self.auction_params.max_round, (self.auction_params.max_round,))) # Always remember what round you are in, regardless of anything else
-      pieces.append(("agg_demand_history", length, shape))
-      pieces.append(("posted_price_history", self.round_buffer * num_products, (self.round_buffer, num_products)))
-      pieces.append(("clock_prices", num_products, (num_products,)))
-      pieces.append(("price_increments", num_products, (num_products,)))
-
-      if self.auction_params.reveal_type_round != -1:
-        for i in range(num_players):
-          player_types = len(self.auction_params.player_types[i])
-          # Could be smaller if I excluded my own types, but this is simpler 
-          pieces.append((f"revealed_types_{i}", player_types, (player_types,)))
-
-    # Build the single flat tensor.
-    total_size = sum(size for name, size, shape in pieces)
-    self.tensor = np.zeros(total_size, np.float32)
-
-    # Build the named & reshaped views of the bits of the flat tensor.
-    self.dict = {}
-    index = 0
-    for name, size, shape in pieces:
-      self.dict[name] = self.tensor[index:index + size].reshape(shape)
-      index += size
-
-  def set_from(self, state, player):
-    """Updates `tensor` and `dict` to reflect `state` from PoV of `player`."""
-
-    # BE VERY VERY CAREFUL NOT TO OVERRIDE THE DICT ENTRIES FROM POINTING INTO THE TENSOR
-    # Very subtle e.g., self.dict["sor_profits"][:] = profits vs self.dict["sor_profits"] = profits
-    self.tensor.fill(0)
-
-    length = min(state.round, self.round_buffer)
-    start_ind = max(1, state.round - self.round_buffer)
-    end_ind = start_ind + length
-
-    if "player" in self.dict:
-      self.dict["player"][player] = 1
-    if "round" in self.dict:
-      self.dict["round"][state.round - 1] = 1
-
-    # These require the bidder to be initialized
-    if len(state.bidders) > player:
-      if "bidder_type" in self.dict:
-        self.dict["bidder_type"][state.bidders[player].type_index] = 1
-      if "activity" in self.dict:
-        activity = state.bidders[player].activity
-        if self.normalize:
-          activity /= self.auction_params.max_activity
-        self.dict["activity"][0] = activity
-      if "sor_profits" in self.dict:
-        price = np.array(state.sor_prices[-1])
-        profits = state.bidders[player].bidder.get_profits(price)
-        if self.normalize:
-          profits = profits / self.auction_params.max_budget
-        self.dict["sor_profits"][:] = profits
-      if "clock_profits" in self.dict:
-        price = np.array(state.clock_prices[-1])
-        profits = state.bidders[player].bidder.get_profits(price)
-        if self.normalize:
-          profits = profits / self.auction_params.max_budget
-        self.dict["clock_profits"][:] = profits
-
-    if state.round > 1:     
-      if "agg_demand_history" in self.dict:
-        if self.auction_params.information_policy == InformationPolicy.SHOW_DEMAND:
-          agg_demand_history = np.array(state.aggregate_demand)[start_ind:end_ind]
-        elif self.auction_params.information_policy == InformationPolicy.HIDE_DEMAND:
-          agg_demand_history = np.array(state.aggregate_demand)[start_ind:end_ind]
-          over_demanded = agg_demand_history > self.auction_params.licenses
-          at_demand = agg_demand_history == self.auction_params.licenses
-          under_demanded = agg_demand_history < self.auction_params.licenses
-          agg_demand_history[over_demanded] = InformationPolicyConstants.OVER_DEMAND
-          agg_demand_history[at_demand] = InformationPolicyConstants.AT_SUPPLY
-          agg_demand_history[under_demanded] = InformationPolicyConstants.UNDER_DEMAND
-        else:
-          raise ValueError("Unknown information policy")
-        if self.normalize:
-          agg_demand_history = agg_demand_history / self.auction_params.licenses
-        self.dict["agg_demand_history"][:min(length, len(agg_demand_history))] = agg_demand_history
-      if "submitted_demand_history" in self.dict:
-        submitted_demand_history = np.array(state.bidders[player].submitted_demand)[start_ind:end_ind]
-        if self.normalize:
-          submitted_demand_history = submitted_demand_history / self.auction_params.licenses
-        self.dict["submitted_demand_history"][:min(length, len(submitted_demand_history))] = submitted_demand_history
-      if "processed_demand_history" in self.dict:
-        processed_demand_history = np.array(state.bidders[player].processed_demand)[start_ind:end_ind]
-        if self.normalize:
-          processed_demand_history = processed_demand_history / self.auction_params.licenses
-        self.dict["processed_demand_history"][:min(length, len(processed_demand_history))] = processed_demand_history
-      if "sor_exposure" in self.dict:
-        sor_exposure = state.bidders[player].processed_demand[-1] @ state.sor_prices[-1]
-        if self.normalize:
-          sor_exposure = sor_exposure / self.auction_params.max_budget # TODO: Why not use a player specific bound here?
-        self.dict["sor_exposure"][0] = sor_exposure
-
-    if "posted_price_history" in self.dict:
-      posted_prices = np.array(state.posted_prices)[start_ind:end_ind]
-      if self.normalize:
-        posted_prices = posted_prices / self.auction_params.max_budget
-      self.dict["posted_price_history"][:min(length, len(posted_prices))] = posted_prices
-
-    if "clock_prices" in self.dict:
-      clock_prices = np.array(state.clock_prices[-1])
-      if self.normalize:
-        clock_prices = clock_prices / self.auction_params.max_budget
-      self.dict['clock_prices'][:] = clock_prices
-
-    if "price_increments" in self.dict:
-      price_increments = np.array(state.price_increments)
-      if self.normalize:
-        price_increments = price_increments / self.auction_params.max_round
-      self.dict['price_increments'][:] = price_increments
-
-    for i in range(len(self.auction_params.player_types)):
-      if f"revealed_types_{i}" in self.dict and state.round >= self.auction_params.reveal_type_round:
-        self.dict[f'revealed_types_{i}'][state.bidders[i].type_index] = 1
-
-    if np.isnan(self.tensor).any():
-      raise ValueError(f"NaN in observation {self.dict}")
-
-  def string_from(self, state, player):
-    """Observation of `state` from the PoV of `player`, as a string."""
-    pieces = []
-    if "player" in self.dict:
-      pieces.append(f"p{player}")
-    if "bidder_type" in self.dict:
-      pieces.append(f"t{state.bidders[player].type_index}")
-    if "activity" in self.dict:
-      pieces.append(f"a{state.bidders[player].activity}")
-    if "round" in self.dict:
-      pieces.append(f"r{state.round}")
-    if "agg_demand_history" in self.dict:
-      pieces.append(f"agg{state.aggregate_demand}")
-    if "submitted_demand_history" in self.dict:
-      pieces.append(f"sub{state.bidders[player].submitted_demand}")
-    if "processed_demand_history" in self.dict:
-      pieces.append(f"proc{state.bidders[player].processed_demand}")
-    if "posted_price_history" in self.dict:
-      pieces.append(f"posted{state.posted_prices}")
-    if "clock_prices" in self.dict:
-      pieces.append(f"clock{state.clock_prices[-1]}")
-    if "sor_exposure" in self.dict and state.round > 1:
-      pieces.append(f"sor_exposure{state.bidders[player].processed_demand[-1] @ state.sor_prices[-1]}")
-    if "price_increments" in self.dict and state.round > 1:
-      pieces.append(f"increments{state.price_increments}")
-
-    return " ".join(str(p) for p in pieces)
+  def __hash__(self): # Two states that have the same history are the same
+    return self._my_hash
 
 # Register the game with the OpenSpiel library
 pyspiel.register_game(_GAME_TYPE, ClockAuctionGame)

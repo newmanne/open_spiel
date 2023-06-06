@@ -159,7 +159,9 @@ class Environment(object):
                enable_legality_check=False,
                use_observer_api=False,
                observer_params=None,
-               **kwargs):
+               include_state=False,
+               use_child=True, # The way we've built caching into the clock auction, this is the way to do it
+               **kwargs): 
     """Constructor.
 
     Args:
@@ -177,6 +179,7 @@ class Environment(object):
       enable_legality_check: Check the legality of the move before stepping.
       **kwargs: dict, additional settings passed to the Open Spiel game.
     """
+    self.use_child = use_child
     self._chance_event_sampler = chance_event_sampler or ChanceEventSampler()
     if history_prefix is None:
       history_prefix = []
@@ -185,6 +188,8 @@ class Environment(object):
     self._mfg_distribution = mfg_distribution
     self._mfg_population = mfg_population
     self._enable_legality_check = enable_legality_check
+
+    self.include_state = include_state
 
     if isinstance(game, str):
       if kwargs:
@@ -197,7 +202,7 @@ class Environment(object):
     else:  # pyspiel.Game or API-compatible object.
       logging.info("Using game instance: %s", game.get_type().short_name)
       self._game = game
-
+    
     self._num_players = self._game.num_players()
     self._state = None
     self._should_reset = True
@@ -281,6 +286,9 @@ class Environment(object):
       observations["serialized_state"] = pyspiel.serialize_game_and_state(
           self._game, self._state)
 
+    if self.include_state:
+      observations['state'] = self._state
+
     return TimeStep(
         observations=observations,
         rewards=rewards,
@@ -334,8 +342,13 @@ class Environment(object):
       self._check_legality(actions)
 
     if self.is_turn_based:
-      self._state.apply_action(actions[0])
+      if self.use_child:
+        self._state = self._state.child(actions[0])
+      else:
+        self._state.apply_action(actions[0])
     else:
+      if self.use_child:
+        raise ValueError("Not clear what you should do here?")
       self._state.apply_actions(actions)
     self._sample_external_events()
 
@@ -361,8 +374,13 @@ class Environment(object):
       self._state = self._game.new_initial_state()
     for action in self._history_prefix:
       if self.is_turn_based:
-        self._state.apply_action(action)
+        if self.use_child:
+          self._state = self._state.child(action)
+        else:
+          self._state.apply_action(action)
       else:
+        if self.use_child:
+          raise ValueError("Not clear what to do here")
         self._state.apply_actions(action)
     self._sample_external_events()
 
@@ -401,7 +419,10 @@ class Environment(object):
                                            == pyspiel.PlayerId.MEAN_FIELD):
       if self._state.is_chance_node():
         outcome = self._chance_event_sampler(self._state)
-        self._state.apply_action(outcome)
+        if self.use_child:
+          self._state = self._state.child(outcome)
+        else:
+          self._state.apply_action(outcome)
       if self._state.current_player() == pyspiel.PlayerId.MEAN_FIELD:
         dist_to_register = self._state.distribution_support()
         dist = [
@@ -425,6 +446,10 @@ class Environment(object):
             self._game.observation_tensor_size() if self._use_observation else
             self._game.information_state_tensor_size()
         ]),
+        info_state_shape=
+            self._game.observation_tensor_shape() if self._use_observation else
+            self._game.information_state_tensor_shape()
+        ,
         legal_actions=(self._game.num_distinct_actions(),),
         current_player=(),
         serialized_state=(),

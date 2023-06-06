@@ -9,6 +9,7 @@ class Bidder:
     self.all_bids = all_bids
     self.bundle_values = None
     self.drop_out_heuristic = drop_out_heuristic
+    self.straightforward = False
 
   def value_for_package(package, package_index=None):
     raise NotImplementedError()
@@ -24,7 +25,7 @@ class Bidder:
   
   def get_profits(self, prices):
     return self.get_values() - (self.all_bids @ np.asarray(prices))
-
+  
 class LinearBidder(Bidder):
 
   def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic) -> None:
@@ -54,10 +55,11 @@ class MarginalValueBidder(Bidder):
 
 class EnumeratedValueBidder(Bidder):
 
-  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic, name) -> None:
+  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic, name, straightforward=False) -> None:
     super().__init__(values, budget, pricing_bonus, all_bids, drop_out_heuristic)
     self.bundle_values = self.values
     self.name = name
+    self.straightforward = straightforward
 
   def value_for_package(self, package, package_index=None):
     if package_index is None:

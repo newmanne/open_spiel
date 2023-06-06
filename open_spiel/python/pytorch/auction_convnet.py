@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
-    torch.nn.init.orthogonal_(layer.weight, std)
+    torch.nn.init.orthogonal_(layer.weight, std) # Somewhat arbitrary choice, but this is what CleanRL used
     torch.nn.init.constant_(layer.bias, bias_const)
     return layer
 
@@ -14,10 +14,12 @@ def num_products_to_conv_layer(num_products):
     elif num_products == 3:
         return nn.Conv3d
     else:
+        # ConvND libraries exist online, could check those out
         raise ValueError(f"num_products must be 2 or 3, got {num_products}")
 
 def build_conv_layer(num_products, in_channels, out_channels, kernel_size, std=1):
     conv_layer = num_products_to_conv_layer(num_products)
+    # TODO: What if there is 1 product and 10 units and kernel size is 4? This says pad 1 on each side, but that's not enough, right?
     padding = (kernel_size - 1) // 2
     return layer_init(conv_layer(in_channels, out_channels, kernel_size, padding=padding), std=std)
 
@@ -53,7 +55,7 @@ class AuctionConvNet(nn.Module):
 
         layers.append(build_conv_layer(num_products, in_channels, num_hidden_channels, kernel_size))
         layers.append(activation())
-        for i in range(len(hidden_sizes) - 1):
+        for _ in range(len(hidden_sizes) - 1):
             layers.append(ResidualLayer(num_products, num_hidden_channels, kernel_size, activation, add_skip_connections))
         self.torso = nn.Sequential(*layers)
 

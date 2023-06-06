@@ -223,23 +223,35 @@ class AuctionStatTrackingDecorator(EnvDecorator):
         self.welfares = []
         self.revenues = []
 
+    def fill_metrics(self, time_step, state):
+        for player_id, reward in enumerate(time_step.rewards):
+            self.rewards[player_id].append(reward)
+        for player_id, payment in enumerate(state.get_final_payments()):
+            self.payments[player_id].append(payment)
+        self.revenues.append(state.revenue)
+        for player_id, allocation in enumerate(state.get_allocation()):
+            self.allocations[player_id].append(allocation.tolist())
+        self.auction_lengths.append(state.round)
+        self.welfares.append(state.get_welfare())
+
     def step(self, step_outputs):
         _ = self._env.step(step_outputs)
         time_step = self._env.get_time_step()
         state = self._env._state
 
         if time_step.last():
-            for player_id, reward in enumerate(time_step.rewards):
-                self.rewards[player_id].append(reward)
-            for player_id, payment in enumerate(state.get_final_payments()):
-                self.payments[player_id].append(payment)
-            self.revenues.append(state.revenue)
-            for player_id, allocation in enumerate(state.get_allocation()):
-                self.allocations[player_id].append(allocation.tolist())
-            self.auction_lengths.append(state.round)
-            self.welfares.append(state.get_welfare())
+            self.fill_metrics(time_step, state)
 
         return self.get_time_step()
+
+    def reset(self):
+        _ = self._env.reset()
+        time_step = self.get_time_step() # No, you can't just use the return value from above because if a game begins in a terminal state, it won't handle properly
+
+        if time_step.last():
+            self.fill_metrics(time_step, self._env._state)
+
+        return time_step
 
     def stats_dict(self):
         return {
