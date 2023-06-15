@@ -128,9 +128,10 @@ class BestResponsePolicy(openspiel_policy.Policy):
           parent_state.is_simultaneous_node()):
         yield (parent_state, 1.0)
       for action, p_action in self.transitions(parent_state):
-        for state, p_state in self.decision_nodes(
-            openspiel_policy.child(parent_state, action)):
-          yield (state, p_state * p_action)
+        if p_action > 0:
+          for state, p_state in self.decision_nodes(
+              openspiel_policy.child(parent_state, action)):
+            yield (state, p_state * p_action)
 
   def joint_action_probabilities_counterfactual(self, state):
     """Get list of action, probability tuples for simultaneous node.
