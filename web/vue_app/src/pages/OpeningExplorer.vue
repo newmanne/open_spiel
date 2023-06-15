@@ -200,8 +200,8 @@ export default defineComponent({
       } else {
         let node = this.trees[this.selected_player];
         let nodes = [{...node}];
-        for (const action of this.selected_actions[this.selected_player]) {
-          node = node.children[action];
+        for (const action_key of this.selected_actions[this.selected_player]) {
+          node = node.children[action_key];
           nodes.push({...node});
         }
         return nodes;
@@ -210,7 +210,7 @@ export default defineComponent({
     previous_nodes() {
       let prev_node_names = ["(root)"].concat(this.selected_actions[this.selected_player]);
       return this.selected_path.map((node, i) => ({
-        action: prev_node_names[i],
+        action_key: prev_node_names[i],
         ...formatNode(node),
       }));
     },
@@ -220,9 +220,9 @@ export default defineComponent({
         return [];
       } else {
         let children = selected_node.children;
-        let table_nodes = Object.keys(children).map((action) => ({
-          action: action,
-          ...formatNode(children[action]),
+        let table_nodes = Object.keys(children).map((action_key) => ({
+          action_key: action_key,
+          ...formatNode(children[action_key]),
         }))
         let conditional_num_plays = _.sum(table_nodes.map(row => row['num_plays']));
         for (const row of table_nodes) {
@@ -256,11 +256,11 @@ export default defineComponent({
       this.game = game.value;
     },
     onClickPreviousActionRow(evt, row) {
-      let idx = this.selected_actions[this.selected_player].indexOf(row.action);
+      let idx = this.selected_actions[this.selected_player].indexOf(row.action_key);
       this.selected_actions[this.selected_player] = this.selected_actions[this.selected_player].slice(0, idx + 1);
     },
     onClickNextActionRow(evt, row) {
-      this.selected_actions[this.selected_player].push(row.action);
+      this.selected_actions[this.selected_player].push(row.action_key);
     },
     onSelectionUpdated(evt) {
       let {player, ...data} = evt;
