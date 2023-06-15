@@ -156,11 +156,13 @@ class PPO(nn.Module):
         optimizer='adam',
         use_returns_as_advantages=False,
         optimizer_kwargs=None,
+        wall=False,
         ):
         super().__init__()
 
         self.use_sos = use_sos
         self.anneal_lr = anneal_lr
+        self.wall = wall
 
         self.past_models = collections.deque(maxlen=100)
         self.past_rounds = [1, 10, 50]
@@ -228,7 +230,7 @@ class PPO(nn.Module):
             optimizer_fn, default_kwargs = self._optimizers_and_default_params[optimizer]
             optimizer_kwargs = {**default_kwargs, **optimizer_kwargs}
             self.optimizer = optimizer_fn(self.parameters(), lr=self.learning_rate, **optimizer_kwargs)
-            print(f"Using optimizer {self.optimizer}")
+            # print(f"Using optimizer {self.optimizer}")
         else:
             raise ValueError(f"Unknown optimizer {optimizer}; must be one of {list(self._optimizers_and_default_params.keys())}")
         
@@ -383,19 +385,22 @@ class PPO(nn.Module):
                 if self.normalize_advantages:
                     mb_advantages = (mb_advantages - mb_advantages.mean()) / (mb_advantages.std() + 1e-8)
 
-                # Policy loss
-                pg_loss1 = -mb_advantages * ratio
-                pg_loss2 = -mb_advantages * torch.clamp(ratio, 1 - self.clip_coef, 1 + self.clip_coef)
-                pg_loss = torch.max(pg_loss1, pg_loss2).mean()
 
                 #### BEGIN WALL ####
-                # pg_loss = (-mb_advantages * ratio).mean()
-                # # Penalty for moving the ratio that only applies when the ratio is outside of the clip range
-                # # round up small probabilities and take ratios with log for numerical stability
-                # all_ratios = (torch.clip(probs, min=1e-6).log() - torch.clip(b_probs[mb_inds], min=1e-6).log()).exp() 
-                # all_ratios_minus_one_abs = torch.abs(all_ratios - 1)
-                # wall_loss = ((self.wall_coef / (2 * self.clip_coef)) * (all_ratios_minus_one_abs > self.clip_coef) * (all_ratios_minus_one_abs - self.clip_coef)**2).sum(axis=1).mean()
+                if self.wall:
+                    pg_loss = (-mb_advantages * ratio).mean()
+                    # Penalty for moving the ratio that only applies when the ratio is outside of the clip range
+                    # round up small probabilities and take ratios with log for numerical stability
+                    all_ratios = (torch.clip(probs, min=1e-6).log() - torch.clip(b_probs[mb_inds], min=1e-6).log()).exp() 
+                    all_ratios_minus_one_abs = torch.abs(all_ratios - 1)
+                    wall_loss = ((self.wall_coef / (2 * self.clip_coef)) * (all_ratios_minus_one_abs > self.clip_coef) * (all_ratios_minus_one_abs - self.clip_coef)**2).sum(axis=1).mean()
                 #### END WALL ####
+                else:
+                    # Policy loss
+                    pg_loss1 = -mb_advantages * ratio
+                    pg_loss2 = -mb_advantages * torch.clamp(ratio, 1 - self.clip_coef, 1 + self.clip_coef)
+                    pg_loss = torch.max(pg_loss1, pg_loss2).mean()
+
 
                 # Value loss
                 newvalue = newvalue.view(-1)
@@ -417,8 +422,10 @@ class PPO(nn.Module):
                 else:
                     entropy_loss = entropy.mean()
 
-                loss = pg_loss - self.entropy_coef * entropy_loss + v_loss * self.value_coef  
-                # loss = wall_loss + pg_loss - self.entropy_coef * entropy_loss + v_loss * self.value_coef
+                if self.wall:
+                    loss = wall_loss + pg_loss - self.entropy_coef * entropy_loss + v_loss * self.value_coef
+                else:
+                    loss = pg_loss - self.entropy_coef * entropy_loss + v_loss * self.value_coef  
 
                 self.optimizer.zero_grad()
                 loss.backward()
@@ -473,11 +480,13 @@ class PPO(nn.Module):
                 metrics[f'{prefix}/approx_kl_{k}'] = v
             metrics[f'{prefix}/converged'] = int(conveged)
 
+            if self.wall:
+                metrics[f"{prefix}/wall_loss"] =  wall_loss.item()
+
             wandb.log({
                 f"{prefix}/learning_rate": self.optimizer.param_groups[0]["lr"],
                 f"{prefix}/value_loss": v_loss.item(), # TODO: Note these are just from the last minibatch
                 f"{prefix}/policy_loss": pg_loss.item(),
-                # f"{prefix}/wall_loss": wall_loss.item(),
                 f"{prefix}/entropy": entropy_loss.item(),
                 f"{prefix}/old_approx_kl": old_approx_kl.item(),
                 f"{prefix}/approx_kl": approx_kl.item(),
