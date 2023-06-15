@@ -27,7 +27,12 @@ class OutcomeSamplingSolver(mccfr.MCCFRSolverBase):
     # This is the epsilon exploration factor. When sampling episodes, the
     # updating player will sampling according to expl * uniform + (1 - expl) *
     # current_policy.
-    self._expl = 0.6
+    self._expl = 0.25
+    
+    # Opponent sampling 
+    self._tremble = 0.01 
+    # TODO: make this a hyperparameter
+    # TODO: add uniform? softmax? tremble to similar bids?
 
     assert game.get_type().dynamics == pyspiel.GameType.Dynamics.SEQUENTIAL, (
         "MCCFR requires sequential games. If you're trying to run it " +
@@ -92,12 +97,18 @@ class OutcomeSamplingSolver(mccfr.MCCFRSolverBase):
                                                  num_legal_actions)
     policy = self._regret_matching(infostate_info[mccfr.REGRET_INDEX],
                                    num_legal_actions)
-    if cur_player == update_player:
-      uniform_policy = (
-          np.ones(num_legal_actions, dtype=np.float64) / num_legal_actions)
-      sample_policy = self._expl * uniform_policy + (1.0 - self._expl) * policy
-    else:
-      sample_policy = policy
+
+    
+    uniform_weight = self._expl if cur_player == update_player else self._tremble
+    uniform_policy = (np.ones(num_legal_actions, dtype=np.float64) / num_legal_actions)
+    sample_policy = uniform_weight * uniform_policy + (1.0 - uniform_weight) * policy
+    # if cur_player == update_player:
+    #   uniform_policy = (
+    #       np.ones(num_legal_actions, dtype=np.float64) / num_legal_actions)
+    #   sample_policy = self._expl * uniform_policy + (1.0 - self._expl) * policy
+    # else: # opponents
+    #   sample_policy = policy
+
     # sampled_aidx = np.random.choice(range(num_legal_actions), p=sample_policy)
     sampled_aidx = fast_choice(range(num_legal_actions), sample_policy)
     # state.apply_action(legal_actions[sampled_aidx])
@@ -147,5 +158,7 @@ class OutcomeSamplingSolver(mccfr.MCCFRSolverBase):
       for aidx in range(num_legal_actions):
         increment = my_reach * policy[aidx] / sample_reach
         self._add_avstrat(info_state_key, aidx, increment)
+
+      # self._add_visit(info_state_key) #FIXME
 
     return value_estimate
