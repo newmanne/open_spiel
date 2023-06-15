@@ -11,6 +11,7 @@ import torch
 import pyspiel
 from distutils import util
 import json
+from open_spiel.python.examples.ppo_eval import EvalDefaults
 
 NORMALIZATION_DATE = datetime.datetime(2022, 3, 23, 4, 33, 3, 722237, tzinfo=pytz.UTC)
 
@@ -193,6 +194,13 @@ def add_dispatching_flags(parser):
 def add_wandb_flags(parser, default=True):
     parser.add_argument('--use_wandb', type=util.strtobool, default=1 if default else 0) 
     parser.add_argument('--wandb_note', type=str, default='') 
+
+def add_eval_flags(parser):
+    parser.add_argument('--eval_num_samples', type=int, default=EvalDefaults.DEFAULT_NUM_SAMPLES)
+    parser.add_argument('--eval_report_freq', type=int, default=EvalDefaults.DEFAULT_REPORT_FREQ)
+    parser.add_argument('--eval_num_envs', type=int, default=EvalDefaults.DEFAULT_NUM_ENVS)
+    parser.add_argument('--eval_compute_efficiency', type=util.strtobool, default=EvalDefaults.DEFAULT_COMPUTE_EFFICIENCY)
+
 
 
 def profile_cmd(cmd, pprofile, pprofile_file, cprofile, cprofile_file):

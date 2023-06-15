@@ -60,6 +60,10 @@ class EquilibriumSolverRun(TimeStampedModel):
     def __str__(self):
         return f'{self.name} ({self.experiment})'
 
+    def get_config_name(self):
+        return self.name.split('-')[1]
+
+
     class Meta:
         unique_together = ('experiment', 'name',)
 
@@ -78,6 +82,17 @@ class EquilibriumSolverRunCheckpoint(TimeStampedModel):
 
     def get_model(self):
         return pickle.loads(self.policy)
+
+    def get_old_eval(self):
+        return self.evaluation_set.get(name='')
+    
+    def get_modal_eval(self):
+        modal_name = ''
+        for p in range(self.equilibrium_solver_run.game.num_players):
+            if modal_name:
+                modal_name += '+'
+            modal_name += f'p{p}=modal'
+        return self.evaluation_set.get(name=modal_name)
 
     @property
     def game(self):
@@ -103,22 +118,17 @@ class BestResponse(TimeStampedModel):
     class Meta:
         unique_together = ('checkpoint', 'br_player', 'name',)
 
-class BREvaluation(TimeStampedModel):
-
-    best_response = models.OneToOneField(BestResponse, on_delete=CASCADE, primary_key=True)
-    walltime = models.FloatField()
-    expected_value_cdf = ArrayField(models.FloatField(), size=101)
-    expected_value_stats = JSONField()
-
-    def __str__(self):
-        return f'{self.best_response}'
-
 class Evaluation(TimeStampedModel):
-    
-    checkpoint = models.OneToOneField(EquilibriumSolverRunCheckpoint, on_delete=CASCADE, primary_key=True)
+    checkpoint = models.ForeignKey(EquilibriumSolverRunCheckpoint, on_delete=CASCADE)
+    name = models.TextField()
     walltime = models.FloatField()
     samples = JSONField()
     mean_rewards = ArrayField(models.FloatField()) # For quick nash conv calcs
+    best_response = models.OneToOneField(BestResponse, on_delete=CASCADE, null=True)
+
+    class Meta:
+        unique_together = ('checkpoint', 'name',)
+
     '''
         List[Allocations],
         List[Revenue]
@@ -128,4 +138,4 @@ class Evaluation(TimeStampedModel):
     '''
 
     def __str__(self):
-        return f'Evaluation for {self.checkpoint}'
+        return f'Evaluation {self.name} for {self.checkpoint}'

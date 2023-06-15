@@ -3,6 +3,9 @@ from auctions.models import EquilibriumSolverRunCheckpoint, BestResponse
 import pickle
 import logging
 import open_spiel.python.examples.ubc_dispatch as dispatch
+from open_spiel.python.examples.ubc_utils import players_not_me
+from auctions.webutils import add_eval_flags
+import argparse
 
 logger = logging.getLogger(__name__)
 
@@ -39,22 +42,39 @@ class DBBRDispatcher:
         self.eval_inline = eval_inline
 
     def dispatch(self, t):
+        from auctions.management.commands.ppo_eval import eval_command
+        # TODO: This isn't reading from eval_overrides, which is a problem! You could imagine parsing it...
+        # TODO: Could modify this to leverage the game cache if that would help
+
+        
+        parser = argparse.ArgumentParser()
+        add_eval_flags(parser)
+        eval_args = vars(parser.parse_args(self.eval_overrides.split()))
+        eval_args = {k.replace('eval_', ''):v for k,v in eval_args.items()}
         eq = self.eq_solver_run
+
+        # Let's just do all this inline always for now
+        for player in range(self.num_players):
+            logger.info(f"Running inline straightforward eval for player {player} at t={t}")
+            eval_command(t, eq.experiment.name, eq.name, {player: 'straightforward'}, reseed=False, **eval_args) 
+            logger.info(f"Running inline trembling eval for player {player} at t={t}")
+            eval_command(t, eq.experiment.name, eq.name, {p: 'tremble' for p in players_not_me(player, self.num_players)}, reseed=False, **eval_args) 
+            logger.info(f"Running inline modal eval for player {player} at t={t}")
+            eval_command(t, eq.experiment.name, eq.name, {player: 'modal'}, reseed=False, **eval_args) 
+                    
         if self.dispatch_br:
-            for player in range(self.num_players):
-                dispatch.dispatch_br_database(eq.experiment.name, eq.name, t, player, self.br_portfolio_path, overrides=self.br_overrides + " " + self.eval_overrides)
-                if self.eval_inline: # Straightforward eval
-                    from auctions.management.commands.ppo_eval import eval_command
-                    logger.info(f"Running inline straightforward eval for player {player} at t={t}")
-                    eval_command(t, eq.experiment.name, eq.name, 'straightforward', player, reseed=False) # TODO: This isn't reading from eval_overrides, which is a problem! You could imagine parsing it...
-                else:
-                    dispatch.dispatch_eval_database(eq.experiment.name, eq.name, t, player, 'straightforward', overrides=self.eval_overrides) 
+            dispatch.dispatch_br_database(eq.experiment.name, eq.name, t, player, self.br_portfolio_path, overrides=self.br_overrides + " " + self.eval_overrides)
+
+        # Handle evaluations
         if self.eval_inline:
-            from auctions.management.commands.ppo_eval import eval_command
             logger.info(f"Running inline overall eval at t={t}")
-            eval_command(t, eq.experiment.name, eq.name, None, None, reseed=False) # TODO: This isn't reading from eval_overrides, which is a problem! You could imagine parsing it...
+            eval_command(t, eq.experiment.name, eq.name, reseed=False, **eval_args) 
+            logger.info(f"Running inline overall modal eval at t={t}")
+            br_mapping = {p: 'modal' for p in range(self.num_players)}
+            eval_command(t, eq.experiment.name, eq.name, br_mapping, reseed=False, **eval_args) 
         else:
-            dispatch.dispatch_eval_database(eq.experiment.name,  eq.name, t, None, None, overrides=self.eval_overrides)
+            raise # Figure this out later or never
+            dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, overrides=self.eval_overrides)
 
 class DBBRResultSaver:
 
