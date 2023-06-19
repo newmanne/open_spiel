@@ -55,26 +55,35 @@ class DBBRDispatcher:
 
         # Let's just do all this inline always for now
         for player in range(self.num_players):
-            logger.info(f"Running inline straightforward eval for player {player} at t={t}")
-            eval_command(t, eq.experiment.name, eq.name, {player: 'straightforward'}, reseed=False, **eval_args) 
-            logger.info(f"Running inline trembling eval for player {player} at t={t}")
-            eval_command(t, eq.experiment.name, eq.name, {p: 'tremble' for p in players_not_me(player, self.num_players)}, reseed=False, **eval_args) 
-            logger.info(f"Running inline modal eval for player {player} at t={t}")
-            eval_command(t, eq.experiment.name, eq.name, {player: 'modal'}, reseed=False, **eval_args) 
+            straightforward = {player: 'straightforward'}
+            tremble = {p: 'tremble' for p in players_not_me(player, self.num_players)}
+            modal = {player: 'modal'}
+            if self.eval_inline:
+                logger.info(f"Running inline straightforward eval for player {player} at t={t}")
+                eval_command(t, eq.experiment.name, eq.name, straightforward, reseed=False, **eval_args) 
+                logger.info(f"Running inline trembling eval for player {player} at t={t}")
+                eval_command(t, eq.experiment.name, eq.name, tremble, reseed=False, **eval_args) 
+                logger.info(f"Running inline modal eval for player {player} at t={t}")
+                eval_command(t, eq.experiment.name, eq.name, {player: 'modal'}, reseed=False, **eval_args) 
+            else:
+                dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, str(straightforward), overrides=self.eval_overrides)
+                dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, str(tremble), overrides=self.eval_overrides)
+                dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, str(modal), overrides=self.eval_overrides)
+
                     
-        if self.dispatch_br:
-            dispatch.dispatch_br_database(eq.experiment.name, eq.name, t, player, self.br_portfolio_path, overrides=self.br_overrides + " " + self.eval_overrides)
+            if self.dispatch_br: # We never do this inline
+                dispatch.dispatch_br_database(eq.experiment.name, eq.name, t, player, self.br_portfolio_path, overrides=self.br_overrides + " " + self.eval_overrides)
 
         # Handle evaluations
+        br_mapping = {p: 'modal' for p in range(self.num_players)}
         if self.eval_inline:
             logger.info(f"Running inline overall eval at t={t}")
             eval_command(t, eq.experiment.name, eq.name, reseed=False, **eval_args) 
             logger.info(f"Running inline overall modal eval at t={t}")
-            br_mapping = {p: 'modal' for p in range(self.num_players)}
             eval_command(t, eq.experiment.name, eq.name, br_mapping, reseed=False, **eval_args) 
         else:
-            raise # Figure this out later or never
             dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, overrides=self.eval_overrides)
+            dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, str(br_mapping), overrides=self.eval_overrides)
 
 class DBBRResultSaver:
 

@@ -45,60 +45,34 @@ def parse_run(run, max_t=None, expected_additional_br=1):
     '''
     expected_additional_br: In addition to straightforward, how many BRs am I expecting?
     '''
+
+    # TODO: This whole function is in need of rewriting
+
     players = list(range(run.game.num_players))
 
-    br_evals_qs = BREvaluation.objects.filter(best_response__checkpoint__equilibrium_solver_run=run)
-    if len(br_evals_qs) == 1:
-        logging.warning(f"No BR found for {run}")
+    evals_qs = Evaluation.objects.filter(checkpoint__equilibrium_solver_run=run)
+    if len(evals_qs) == 0:
+        logging.warning(f"No evals found for {run}")
         return
 
-    br_values = br_evals_qs.values(t=F('best_response__checkpoint__t'), name=F('best_response__name'), reward=F('expected_value_stats__mean'), br_player=F('best_response__br_player'))
-    best_response_df = pd.DataFrame.from_records(br_values)
-    best_response_df['player'] = best_response_df['br_player']
+    # negative_reward_br = best_response_df.query('name != "straightforward" and reward < 0')
+    # if len(negative_reward_br) > 0:
+    #     logging.warning(f"Negative BR value ({negative_reward_br['reward']}) shouldn't happen. DQN should always find the drop out strategy... ")
 
-    negative_reward_br = best_response_df.query('name != "straightforward" and reward < 0')
-    if len(negative_reward_br) > 0:
-        logging.warning(f"Negative BR value ({negative_reward_br['reward']}) shouldn't happen. DQN should always find the drop out strategy... ")
-
-    # Get all evaluations corresponding to the run
-    evaluations = list(Evaluation.objects.filter(checkpoint__equilibrium_solver_run=run).values('mean_rewards', t=F('checkpoint__t'), length=F('samples__auction_lengths')))
-    if len(evaluations) == 0:
-        logging.warning(f"No evaluations found for {run}")
-        return
-
-    for i in range(len(evaluations)):
-        evaluations[i]['median_length'] = pd.Series(evaluations[i]['length']).median()
-        del evaluations[i]['length']
+    # for i in range(len(evaluations)):
+        # evaluations[i]['median_length'] = pd.Series(evaluations[i]['length']).median()
+        # del evaluations[i]['length']
 
     # GOAL: Dataframe with t, reward, player, br_player, config columns
-    evaluations_df = pd.DataFrame.from_records(evaluations)
-    evaluations_df['br_player'] = None
-    evaluations_df['name'] = None
-    frames = []
-    for player_id in players:
-        frame = evaluations_df.copy()
-        frame['reward'] = frame['mean_rewards'].apply(lambda x: x[player_id])
-        frame['player'] = player_id
-        del frame['mean_rewards']
-        frames.append(frame)
-    ev_df = pd.concat((best_response_df, *frames))
-
-    if ev_df.empty:
-        raise ValueError("ev_df is empty!")
-
-    if expected_additional_br is not None:
-        # At least it should have an evaluation, a straightforward, and a BR. Plus 2 is b/c eval and straightforward
-        # print("BEFORE", len(ev_df))
-        ev_df = ev_df.groupby(['player', 't']).filter(lambda grp: len(grp) >= expected_additional_br + 2)
-        # print("AFTER", len(ev_df))
-        if ev_df.empty:
-            raise ValueError("ev_df is empty after applying conservative filter! This likely means there are no best responses")
+    ev_df = pd.DataFrame.from_records(evals_qs.values('name', t=F('checkpoint__t'), reward=F('mean_rewards')))
+    ev_df['player'] = ev_df['reward'].apply(lambda x: list(range(len(x))))
+    ev_df = ev_df.explode(['player', 'reward'])
 
     logging.info("Rewards parsed. Adding regret features")
 
     # Regret for not having played the best response
     def get_baseline(grp):
-        baseline = grp.query('br_player.isnull() and name.isnull()', engine='python')
+        baseline = grp.query('name == ""')
         if len(baseline) != 1:
             t = grp["t"].unique()[0]
             raise ValueError(f"Found {len(baseline)} records for baseline! Is there are an evaluation for this timestep ({t})?")
@@ -110,10 +84,17 @@ def parse_run(run, max_t=None, expected_additional_br=1):
 
     ev_df['Regret'] = ev_df['reward'] - ev_df['Baseline']
     ev_df['PositiveRegret'] = ev_df['Regret'].clip(lower=0)
+    
+    ev_df['num_players'] = run.game.num_players
+    ev_df['model'] = run.name
+    ev_df['game'] = run.game.name
 
     if max_t is not None:
         ev_df = ev_df.query(f't <= {max_t}')
 
+    
+    return ev_df
+        
     # If player != BR player, this isn't so meaningful
     ev_df = ev_df.merge(ev_df.query('player == br_player').groupby(['t', 'player']).apply(lambda grp: grp['PositiveRegret'].max()).reset_index().rename(columns={0: 'MaxPositiveRegret'}))
     ev_df = ev_df.merge(ev_df.groupby(['t', 'player'])['MaxPositiveRegret'].first().unstack().sum(axis='columns').reset_index().rename(columns={0:'ApproxNashConv'}))
@@ -124,11 +105,100 @@ def parse_run(run, max_t=None, expected_additional_br=1):
     #     true_br_df = make_true_br_df(experiment_dir)
     #     ev_df = ev_df.merge(true_br_df, on='t')
 
-    ev_df['num_players'] = run.game.num_players
-    ev_df['model'] = run.name
-    ev_df['game'] = run.game.name
 
     return ev_df.sort_values('t')
+
+# def parse_run(run, max_t=None, expected_additional_br=1):
+#     '''
+#     expected_additional_br: In addition to straightforward, how many BRs am I expecting?
+#     '''
+
+#     # TODO: This whole function is in need of rewriting
+
+#     players = list(range(run.game.num_players))
+
+#     br_evals_qs = Evaluation.objects.filter(best_response__checkpoint__equilibrium_solver_run=run)
+#     if len(br_evals_qs) == 1:
+#         logging.warning(f"No BR found for {run}")
+#         return
+
+#     br_values = br_evals_qs.values(t=F('best_response__checkpoint__t'), name=F('best_response__name'), reward=F('expected_value_stats__mean'), br_player=F('best_response__br_player'))
+#     best_response_df = pd.DataFrame.from_records(br_values)
+#     best_response_df['player'] = best_response_df['br_player']
+
+#     negative_reward_br = best_response_df.query('name != "straightforward" and reward < 0')
+#     if len(negative_reward_br) > 0:
+#         logging.warning(f"Negative BR value ({negative_reward_br['reward']}) shouldn't happen. DQN should always find the drop out strategy... ")
+
+#     # Get all evaluations corresponding to the run
+#     evaluations = list(Evaluation.objects.filter(checkpoint__equilibrium_solver_run=run).values('mean_rewards', 'name', t=F('checkpoint__t'), length=F('samples__auction_lengths')))
+#     if len(evaluations) == 0:
+#         logging.warning(f"No evaluations found for {run}")
+#         return
+
+#     for i in range(len(evaluations)):
+#         evaluations[i]['median_length'] = pd.Series(evaluations[i]['length']).median()
+#         del evaluations[i]['length']
+
+#     # GOAL: Dataframe with t, reward, player, br_player, config columns
+#     evaluations_df = pd.DataFrame.from_records(evaluations)
+#     evaluations_df['br_player'] = None
+#     evaluations_df['name'] = None
+#     frames = []
+#     for player_id in players:
+#         frame = evaluations_df.copy()
+#         frame['reward'] = frame['mean_rewards'].apply(lambda x: x[player_id])
+#         frame['player'] = player_id
+#         del frame['mean_rewards']
+#         frames.append(frame)
+#     ev_df = pd.concat((best_response_df, *frames))
+
+#     if ev_df.empty:
+#         raise ValueError("ev_df is empty!")
+
+#     if expected_additional_br is not None:
+#         # At least it should have an evaluation, a straightforward, and a BR. Plus 2 is b/c eval and straightforward
+#         # print("BEFORE", len(ev_df))
+#         ev_df = ev_df.groupby(['player', 't']).filter(lambda grp: len(grp) >= expected_additional_br + 2)
+#         # print("AFTER", len(ev_df))
+#         if ev_df.empty:
+#             raise ValueError("ev_df is empty after applying conservative filter! This likely means there are no best responses")
+
+#     logging.info("Rewards parsed. Adding regret features")
+
+#     # Regret for not having played the best response
+#     def get_baseline(grp):
+#         baseline = grp.query('br_player.isnull() and name.isnull()', engine='python')
+#         if len(baseline) != 1:
+#             t = grp["t"].unique()[0]
+#             raise ValueError(f"Found {len(baseline)} records for baseline! Is there are an evaluation for this timestep ({t})?")
+#         return baseline['reward'].iloc[0]
+
+#     # Regret for not having played the best response
+#     baselines = ev_df.groupby(['t', 'player']).apply(get_baseline).reset_index().rename(columns={0: 'Baseline'})
+#     ev_df = ev_df.merge(baselines)
+
+#     ev_df['Regret'] = ev_df['reward'] - ev_df['Baseline']
+#     ev_df['PositiveRegret'] = ev_df['Regret'].clip(lower=0)
+
+#     if max_t is not None:
+#         ev_df = ev_df.query(f't <= {max_t}')
+
+#     # If player != BR player, this isn't so meaningful
+#     ev_df = ev_df.merge(ev_df.query('player == br_player').groupby(['t', 'player']).apply(lambda grp: grp['PositiveRegret'].max()).reset_index().rename(columns={0: 'MaxPositiveRegret'}))
+#     ev_df = ev_df.merge(ev_df.groupby(['t', 'player'])['MaxPositiveRegret'].first().unstack().sum(axis='columns').reset_index().rename(columns={0:'ApproxNashConv'}))
+
+
+#     # if truth_available:
+#     #     # TODO: This won't work until you fix it
+#     #     true_br_df = make_true_br_df(experiment_dir)
+#     #     ev_df = ev_df.merge(true_br_df, on='t')
+
+#     ev_df['num_players'] = run.game.num_players
+#     ev_df['model'] = run.name
+#     ev_df['game'] = run.game.name
+
+#     return ev_df.sort_values('t')
 
 
 def get_all_frames(experiment, truth_available=False, expected_additional_br=None):

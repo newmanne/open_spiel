@@ -53,6 +53,9 @@ import numpy as np
 from open_spiel.python.observation import make_observation
 from copy import deepcopy
 
+# import StepOutput
+from open_spiel.python.rl_agent import StepOutput
+
 import pyspiel
 
 SIMULTANEOUS_PLAYER_ID = pyspiel.PlayerId.SIMULTANEOUS
@@ -332,6 +335,11 @@ class Environment(object):
           `StepType.FIRST`.
         step_type: A `StepType` value.
     """
+    # UBC change: allow for a stepoutput to be passed in; if so, just keep the actions
+    # TODO this probably doesn't work for simultaneous-move games
+    if isinstance(actions[0], StepOutput):
+      actions = [s.action for s in actions] 
+
     assert len(actions) == self.num_actions_per_step, (
         "Invalid number of actions! Expected {}".format(
             self.num_actions_per_step))

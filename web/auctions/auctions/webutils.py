@@ -2,8 +2,7 @@ import logging
 from statsmodels.distributions.empirical_distribution import ECDF
 from open_spiel.python.examples.ubc_utils import load_game_config
 from auctions.models import *
-from open_spiel.python.examples.ppo_utils import make_env_and_policy, EnvParams, make_ppo_agent
-from open_spiel.python.examples.cfr_utils import make_cfr_agent
+from open_spiel.python.examples.ppo_utils import make_env_and_policy, EnvParams, make_ppo_agent, make_dqn_agent
 from open_spiel.python.examples.ubc_plotting_utils import parse_run
 import pytz
 import datetime
@@ -12,8 +11,6 @@ import pyspiel
 from distutils import util
 import json
 from open_spiel.python.examples.ppo_eval import EvalDefaults
-
-NORMALIZATION_DATE = datetime.datetime(2022, 3, 23, 4, 33, 3, 722237, tzinfo=pytz.UTC)
 
 OUTPUT_ROOT = '/shared/outputs'
 
@@ -40,10 +37,9 @@ def get_or_create_game(game_name):
 
     return game
 
-def env_and_policy_from_run(run, env_params=None, cfr=False):
+def env_and_policy_from_run(run, env_params=None):
     game = run.game.load_as_spiel()
-    agent_fn = make_ppo_agent if not cfr else make_cfr_agent
-    env_and_policy = make_env_and_policy(game, dict(run.config), env_params=env_params, agent_fn=agent_fn)
+    env_and_policy = make_env_and_policy(game, dict(run.config), env_params=env_params)
     return env_and_policy
 
 def env_and_policy_for_dry_run(game_db_obj, config, env_params=None):
@@ -51,10 +47,11 @@ def env_and_policy_for_dry_run(game_db_obj, config, env_params=None):
     env_and_policy = make_env_and_policy(game, dict(config), env_params=env_params)
     return env_and_policy
 
-def ppo_db_checkpoint_loader(checkpoint, env_params=None, cfr=False):
+def ppo_db_checkpoint_loader(checkpoint, env_params=None):
     # Create an env_and_policy based on a checkpoint in the database
-    env_and_policy = env_and_policy_from_run(checkpoint.equilibrium_solver_run, env_params=env_params, cfr=cfr)
-    if cfr:
+    env_and_policy = env_and_policy_from_run(checkpoint.equilibrium_solver_run, env_params=env_params)
+    solver_type = checkpoint.equilibrium_solver_run.config.get('solver_type', 'ppo')
+    if solver_type == 'cfr':
         policy = pickle.loads(checkpoint.policy)
         for agent in env_and_policy.agents:
             agent.policy = policy

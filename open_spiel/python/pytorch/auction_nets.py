@@ -140,6 +140,7 @@ class AuctionNet(nn.Module):
         x: (batch_size, features, bundles)
         output: (batch_size, bundles)
         """
+        print(x.shape)
         x = x.permute(0, 2, 1) # (batch_size, bundles, features)
         if self.use_torso:
             torso_output = self.torso(x)

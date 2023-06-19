@@ -13,7 +13,8 @@ import pandas as pd
 from functools import lru_cache, cached_property
 import inspect
 
-MAX_CACHE_SIZE = 250_000
+MAX_CACHE_SIZE = 125_000
+ACTION_TIEBREAK_EPS = 0
 
 def make_key(bidders):
   key = (tuple([(b.activity, tuple(b.processed_demand[-1]), tuple(b.submitted_demand[-1])) for b in bidders]))
@@ -215,6 +216,10 @@ class ClockAuctionState(pyspiel.State):
     self.processing_queue = None
     self.folded_chance_outcomes = None
 
+    # TODO: This should really be a decorator or at the very least be read from auction params but I'm tired
+    self.tiebreak_actions = True
+    self._action_rewards = defaultdict(float)
+
   # An LRU cache here is a bad idea - it will get too big. Just use the game cache
   def child(self, action):
     key = tuple(self.history() + [action])
@@ -317,6 +322,11 @@ class ClockAuctionState(pyspiel.State):
       assert self.round == len(bidder.submitted_demand)
       bid = self.auction_params.all_bids[action]
 
+      ### Tiebreak to prefer larger actions
+      if self.tiebreak_actions:
+        self._action_rewards[self._cur_player] += action * ACTION_TIEBREAK_EPS
+      ###
+
       if self.auction_params.activity_policy == ActivityPolicy.ON:
         bid_activity_cost = self.auction_params.all_bids_activity[action]
         if bidder.activity < bid_activity_cost:
@@ -353,7 +363,7 @@ class ClockAuctionState(pyspiel.State):
     if self.auction_params.fold_randomness:
       # Let's just index into the solution that we must have already computed
       key = make_key(self.bidders)
-      processed = self.get_game().lottery_cache.get(key)['results'][action]
+      processed = self.get_game().lottery_cache.get(key)['results'][action] # TODO: Error when undersell policy is off - you will need to comptue explicitly
     else:
       self.processing_queue = permute_array(self.processing_queue, action)
       processed = stateless_process_bids(self.auction_params, self.bidders, self.aggregate_demand[-1].copy(), self.processing_queue)
@@ -458,6 +468,10 @@ class ClockAuctionState(pyspiel.State):
       self._final_payments[player_id] = payment
       value = bidder.bidder.value_for_package(final_bid)
       returns[player_id] = value - payment 
+      if self.tiebreak_actions:
+        returns[player_id] += self._action_rewards[player_id]
+
+
     return returns
 
   def returns(self):

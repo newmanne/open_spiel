@@ -1,9 +1,12 @@
 from dataclasses import dataclass, field
 from open_spiel.python import rl_environment
 from open_spiel.python.examples.env_and_policy import EnvAndPolicy
+from open_spiel.python.examples.ubc_decorators import TremblingAgentDecorator
 from open_spiel.python.examples.ubc_utils import *
 import numpy as np
 from open_spiel.python.pytorch.ppo import PPO
+from open_spiel.python.pytorch.dqn import DQN
+from open_spiel.python.utils.replay_buffer import ReplayBuffer
 import time
 import logging
 from open_spiel.python.algorithms.exploitability import nash_conv
@@ -12,6 +15,8 @@ from open_spiel.python.env_decorator import NormalizingEnvDecorator, AuctionStat
 from typing import Callable, List
 from dataclasses import asdict
 from open_spiel.python.env_decorator import AuctionStatTrackingDecorator
+from open_spiel.python.algorithms.exploitability import nash_conv
+from open_spiel.python.examples.cfr_utils import make_cfr_agent
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +45,41 @@ PPO_DEFAULTS = {
   'optimizer': 'adam',
   'optimizer_kwargs': {},
   'use_sos': False,
+  'wall': False,
 }
+
+DQN_DEFAULTS = {
+  'hidden_layers_sizes': 128,
+  'replay_buffer_capacity': 10000,
+  'batch_size': 128,
+  'replay_buffer_class': ReplayBuffer,
+  'learning_rate': 0.01,
+  'update_target_network_every': 1000,
+  'learn_every': 10,
+  'discount_factor': 1.0,
+  'min_buffer_size_to_learn': 1000,
+  'epsilon_start': 1.0,
+  'epsilon_end': 0.1,
+  'epsilon_decay_duration': 1_000_000,
+  'optimizer_str': "sgd",
+  'loss_str': "mse",
+  'agent_fn': 'mlp',
+  'agent_fn_kwargs': {},
+}
+    
+
+def read_dqn_config(config_name):
+    config_file = config_path_from_config_name(config_name)
+    logging.info(f"Reading config from {config_file}")
+    with open(config_file, 'rb') as fh: 
+        config = yaml.load(fh, Loader=yaml.FullLoader)
+
+    config = {**DQN_DEFAULTS, **config}  # priority from right to left
+
+    print(config)
+    return config
+
+
 
 def read_ppo_config(config_name):
     config_file = config_path_from_config_name(config_name)
@@ -122,6 +161,7 @@ class EnvParams:
 
   include_state: bool = False
 
+
   def make_env(self, game):
     if not self.sync and self.num_envs > 1:
       raise ValueError("Sync must be True if num_envs > 1")
@@ -198,8 +238,12 @@ class EpisodeTimer:
 def make_ppo_kwargs_from_config(config):
   ppo_kwargs = {**PPO_DEFAULTS, **config}  # priority from right to left
   ppo_kwargs = {k:v for k,v in ppo_kwargs.items() if k in PPO_DEFAULTS.keys()} 
-
   return ppo_kwargs
+
+def make_dqn_kwargs_from_config(config):
+  dqn_kwargs = {**DQN_DEFAULTS, **config}  # priority from right to left
+  dqn_kwargs = {k:v for k,v in dqn_kwargs.items() if k in DQN_DEFAULTS.keys()} 
+  return dqn_kwargs
 
 def make_ppo_agent(player_id, config, game):
     num_players, num_actions, num_products = game.num_players(), game.num_distinct_actions(), game.auction_params.num_products
@@ -213,7 +257,7 @@ def make_ppo_agent(player_id, config, game):
     # TODO: Do you want to parameterize NN size/architecture?
     ppo_kwargs = make_ppo_kwargs_from_config(config)
 
-    return PPO(
+    agent = PPO(
         input_shape=state_shape,
         num_actions=num_actions,
         num_players=num_players,
@@ -221,12 +265,39 @@ def make_ppo_agent(player_id, config, game):
         **ppo_kwargs
     )
 
-def make_env_and_policy(game, config, env_params=None, agent_fn=make_ppo_agent):
-  if env_params is None:
-    env_params = EnvParams(num_envs=config['num_envs'], seed=config['seed'])
+    if config.get('tremble', None):
+      logger.info("Adding trembling agent decorator")
+      agent = TremblingAgentDecorator(agent, config['tremble'])
 
-  if agent_fn != make_ppo_agent:
-    env_params.include_state = True
+    return agent
+
+def make_dqn_agent(player_id, config, game):
+    num_players, num_actions, num_products = game.num_players(), game.num_distinct_actions(), game.auction_params.num_products
+    state_shape = rl_environment.Environment(game).observation_spec()["info_state_shape"]
+    dqn_kwargs = make_dqn_kwargs_from_config(config)
+    agent = DQN(
+        player_id,
+        state_shape,
+        num_actions,
+        **dqn_kwargs
+    )
+    return agent
+
+
+def make_env_and_policy(game, config, env_params=None):
+  if env_params is None:
+    env_params = EnvParams(num_envs=config.get('num_envs', 1), seed=config.get('seed', 1234))
+
+  solver_type = config.get('solver_type', 'ppo')
+  if solver_type == 'cfr':
+      agent_fn = make_cfr_agent
+      env_params.include_state = True
+      env_params.normalize_rewards = False
+  elif solver_type == 'dqn':
+      agent_fn = make_dqn_agent
+  else:
+      agent_fn = make_ppo_agent
+
 
   env = env_params.make_env(game)
   agents = [agent_fn(player_id, config, game) for player_id in range(game.num_players())]
@@ -257,7 +328,17 @@ class PPOTrainingLoop:
     self.eval_hooks.append(hook)
 
   def training_loop(self):
-    num_steps = self.agents[self.players_to_train[0]].steps_per_batch # Assuming it's all the same across agents...
+    agent_zero = self.agents[self.players_to_train[0]] # Assuming it's all the same across agents...
+    model = None
+    if hasattr(agent_zero, 'steps_per_batch'):
+      num_steps = agent_zero.steps_per_batch
+      model = 'PPO'
+    elif hasattr(agent_zero, '_learn_every'):
+      num_steps = agent_zero._learn_every
+      model = 'DQN'
+    else:
+      raise ValueError("I don't know what you are training")
+
     batch_size = int(len(self.env) * num_steps)
     num_updates = self.total_timesteps // batch_size
 
@@ -279,18 +360,20 @@ class PPOTrainingLoop:
               # Could get round from TS here and log probs?
               time_step, reward, done, unreset_time_steps = self.env.step(agent_output, reset_if_done=True)
 
-          for player_id, agent in enumerate(self.agents):
-            if player_id in self.players_to_train:  
-              agent.post_step([r[player_id] for r in reward], done)
+          if model == 'PPO':
+            for player_id, agent in enumerate(self.agents):
+              if player_id in self.players_to_train:  
+                agent.post_step([r[player_id] for r in reward], done)
 
-      policy_changed = False
-      for player_id, agent in enumerate(self.agents):
-        if player_id in self.players_to_train:
-          if agent.anneal_lr:
-            agent.anneal_learning_rate(update - 1, num_updates)
-          agent.learn(time_step)
-        if agent.get_max_policy_diff() >= self.policy_diff_threshold:
-          policy_changed = True
+      if model == 'PPO':
+        policy_changed = False
+        for player_id, agent in enumerate(self.agents):
+          if player_id in self.players_to_train:
+            if agent.anneal_lr:
+              agent.anneal_learning_rate(update - 1, num_updates)
+            agent.learn(time_step)
+          if agent.get_max_policy_diff() >= self.policy_diff_threshold:
+            policy_changed = True
 
       # Commit wandb
       if self.use_wandb:
@@ -343,16 +426,17 @@ class PPOTrainingLoop:
         # This should be the ONLY commit=True. Step sizes will now be in terms of updates
         wandb.log(log_stats_dict, commit=True)
 
-      if not policy_changed:
-        self.policy_diff_count += 1
-        if self.policy_diff_count >= self.max_policy_diff_count:
-          logging.info("Policy has not changed for {} updates. Stopping training".format(self.max_policy_diff_count))
-          break
-      else:
-        self.policy_diff_count = 0  
+      if model == 'PPO':
+        if not policy_changed:
+          self.policy_diff_count += 1
+          if self.policy_diff_count >= self.max_policy_diff_count:
+            logging.info("Policy has not changed for {} updates. Stopping training".format(self.max_policy_diff_count))
+            break
+        else:
+          self.policy_diff_count = 0  
 
 
-    logging.info(f"Terminating PPO training after {update} updates and {update * batch_size} steps")
+    logging.info(f"Terminating {model} training after {update} updates and {update * batch_size} steps")
     update += 1 # Prevent stupid DB mismatch errors
     for hook in self.report_hooks:
       hook(update, update * batch_size)

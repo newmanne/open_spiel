@@ -1,12 +1,13 @@
 from django.core.management.base import BaseCommand
 from open_spiel.python.examples.ppo_eval import run_eval, EvalDefaults
-from open_spiel.python.examples.ubc_utils import series_to_quantiles, fix_seeds, players_not_me
+from open_spiel.python.examples.ubc_utils import series_to_quantiles, fix_seeds, players_not_me, time_bounded_run
 import logging
 from auctions.models import *
 from auctions.webutils import *
 from open_spiel.python.examples.ubc_decorators import TakeSingleActionDecorator, TremblingAgentDecorator, ModalAgentDecorator
 from open_spiel.python.examples.straightforward_agent import StraightforwardAgent
 from distutils import util
+from open_spiel.python.algorithms.exploitability import nash_conv
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,11 @@ def make_fake_br(equilibrium_solver_run_checkpoint, br_player, name):
 
 
 def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, seed=EvalDefaults.DEFAULT_SEED, report_freq=EvalDefaults.DEFAULT_REPORT_FREQ, num_samples=EvalDefaults.DEFAULT_NUM_SAMPLES, compute_efficiency=False, num_envs=EvalDefaults.DEFAULT_NUM_ENVS, reseed=True, store_samples=True):
+    import os, psutil
+    logging.info("BEFORE EVAL")
+    logging.info(str(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2)) # MiB
+
+    
     if br_mapping is None:
         br_mapping = dict()
     '''br_mapping is a dict with keys of player_ids mapping to br_names'''
@@ -41,7 +47,7 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
 
     # Load the environment
     env_params = EnvParams(track_stats=True, seed=seed, num_envs=num_envs, **env_params_kwargs)
-    env_and_policy = ppo_db_checkpoint_loader(equilibrium_solver_run_checkpoint, env_params=env_params, cfr=cfr)
+    env_and_policy = ppo_db_checkpoint_loader(equilibrium_solver_run_checkpoint, env_params=env_params)
     game = env_and_policy.game
     real_br = False
     name = ''
@@ -89,15 +95,29 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
         
         eval_output = convert_pesky_np(eval_output)
 
+        # Run NashConv only if all players are modal
+        # (running NashConv against non-modal players takes a ton more memory and time)
+        # TODO: is this safe to do on larger games, or will it run out of memory?
+        all_modal = (len(br_mapping) == game.num_players()) and np.all([v == 'modal' for v in br_mapping.values()])
+        nc = None
+        if all_modal:
+            worked, nc = time_bounded_run(300, nash_conv, game, env_and_policy.make_policy())
+            if not worked:
+                logging.info("Aborted NC calc run because time")
+
         Evaluation.objects.create(
             name = name,
             walltime = eval_output.pop('walltime'),
             checkpoint = equilibrium_solver_run_checkpoint,
             samples = eval_output if store_samples else [],
             mean_rewards = mean_rewards,
-            best_response = best_response if real_br else None
+            best_response = best_response if real_br else None,
+            nash_conv = nc,
         )
         logging.info("Saved to DB")
+
+    print("AFTER EVAL")
+    logging.info(str(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2)) # MiB
 
     return eval_output
 

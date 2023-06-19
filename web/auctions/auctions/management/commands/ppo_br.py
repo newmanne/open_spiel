@@ -84,5 +84,4 @@ class Command(BaseCommand):
         run_br(env_and_policy, br_player, opts.total_timesteps, config, report_freq=opts.report_freq, result_saver=result_saver, seed=opts.seed, compute_exact_br=opts.compute_exact_br, use_wandb=opts.use_wandb)
 
         # Evaluation
-        if opts.dispatch_rewards:
-            eval_command(opts.t, opts.experiment_name, opts.run_name, config_name, opts.br_player, opts.dry_run, opts.seed, opts.eval_report_freq, opts.eval_num_samples, opts.eval_compute_efficiency)
+        eval_command(opts.t, opts.experiment_name, opts.run_name, {opts.br_player: config_name}, dry_run=opts.dry_run, seed=opts.seed, report_freq=opts.eval_report_freq, num_samples=opts.eval_num_samples, compute_efficiency=opts.eval_compute_efficiency)

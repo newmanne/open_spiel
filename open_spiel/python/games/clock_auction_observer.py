@@ -179,14 +179,24 @@ class ClockAuctionObserver:
     pieces = []
     pieces.append(f"p{player}t{state.bidders[player].type_index}")
     pieces.append(f"r{state.round}")
-    pieces.append(f"posted{np.array(state.posted_prices[-self.auction_params.agent_memory:]).tolist()}")
+    pieces.append(f"posted{np.round(np.array(state.posted_prices[-self.auction_params.agent_memory:]), 2).tolist()}")
     # Dumb temporary hack to be backward compatible with old policies. I'm so sorry for this.
     if self.auction_params.skip_single_chance_nodes:
       pieces.append(f"sub{np.array(state.bidders[player].submitted_demand[-self.auction_params.agent_memory:]).tolist()}") # Need this for perfect recall
     if "activity" in self.dict:
       pieces.append(f"a{state.bidders[player].activity}")
     if "agg_demand_history" in self.dict:
-      pieces.append(f"agg{np.array(state.aggregate_demand[-self.auction_params.agent_memory:]).tolist()}")
+        agg = np.array(state.aggregate_demand[-self.auction_params.agent_memory:])
+        if self.auction_params.information_policy == InformationPolicy.HIDE_DEMAND:
+          over_demanded = agg > self.auction_params.licenses
+          at_demand = agg == self.auction_params.licenses
+          under_demanded = agg < self.auction_params.licenses
+          agg[over_demanded] = InformationPolicyConstants.OVER_DEMAND
+          agg[at_demand] = InformationPolicyConstants.AT_SUPPLY
+          agg[under_demanded] = InformationPolicyConstants.UNDER_DEMAND
+          pieces.append(f"agg{agg.tolist()}")
+        else:
+          pieces.append(f"agg{agg.tolist()}")
     # if "submitted_demand_history" in self.dict: # TODO: If you want TRUE perfect recall, we have to uncomment this
     if "processed_demand_history" in self.dict:
       pieces.append(f"proc{np.array(state.bidders[player].processed_demand[-self.auction_params.agent_memory:]).tolist()}")
@@ -196,5 +206,4 @@ class ClockAuctionObserver:
       # pieces.append(f"sor_exposure{state.bidders[player].processed_demand[-1] @ state.sor_prices[-1]}")
     # if "price_increments" in self.dict and state.round > 1: # Nice for debugging, but adds no new info (Derived from clcok prices)
       # pieces.append(f"increments{state.price_increments}")
-
     return " ".join(str(p) for p in pieces)

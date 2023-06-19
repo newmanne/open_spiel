@@ -17,6 +17,7 @@ import json
 import yaml
 import shutil
 from open_spiel.python.examples.ubc_math_utils import fast_choice
+import signal
 
 CONFIG_ROOT = '/apps/open_spiel/notebooks/configs'
 
@@ -237,3 +238,20 @@ def between_first(s, a, b):
         return s[start_index:end_index]
     else:
         return ""
+
+
+class SignalTimeout(ValueError):
+    pass
+
+def signal_handler(*args):
+    raise SignalTimeout()
+
+def time_bounded_run(t, f, *args, **kwargs):
+    signal.signal(signal.SIGALRM, signal_handler)
+    signal.alarm(t)
+    try:
+        return True, f(*args, **kwargs)
+    except SignalTimeout as ex:
+        return False, None
+    finally:
+        signal.alarm(0) # Clear alarm

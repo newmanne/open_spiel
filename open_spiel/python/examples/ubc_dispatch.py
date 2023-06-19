@@ -4,7 +4,7 @@ from absl import logging
 import glob
 import os
 from pathlib import Path
-from open_spiel.python.examples.ubc_utils import EVAL_DIR, BR_DIR, CONFIG_ROOT, config_path_from_config_name, safe_config_name
+from open_spiel.python.examples.ubc_utils import EVAL_DIR, BR_DIR, CONFIG_ROOT, config_path_from_config_name, safe_config_name, random_string
 
 
 def verify_config():
@@ -28,6 +28,7 @@ def write_job_file(job_file_path, job_file_text):
 def write_and_submit(experiment_output_dir, experiment_name, job_file_text, submit):
     job_file_path = f'{experiment_output_dir}/{experiment_name}.sh'
     write_job_file(job_file_path, job_file_text)
+    # print(f"Writing job to {job_file_path}")
     if submit:
         os.system(f'cd {experiment_output_dir} && sbatch {job_file_path}')
 
@@ -145,14 +146,13 @@ eval $CMD
 
     logging.info(f"Dispatched experiment!")
 
-def dispatch_eval_database(experiment_name, run_name, t, br_player, br_name, submit=True, cpus=16, overrides='', django_command='ppo_eval'):
+def dispatch_eval_database(t, experiment_name, run_name, br_mapping=dict(), submit=True, cpus=16, overrides='', django_command='ppo_eval'):
     spiel_path, config_dir, pydir, manage_path = verify_config()
 
     slurm_job_name = f'eval_{run_name}_{t}_{experiment_name}'
-    command = f'python {manage_path} {django_command} --experiment_name {experiment_name} --run_name {run_name} --t {t} {overrides}'
-    if br_player is not None and br_name is not None:
-        command += f' --br_name {br_name} --br_player {br_player}'
-        slurm_job_name += f'_{safe_config_name(br_name)}_{br_player}'
+    br_mapping_str = str(br_mapping)
+    command = f'python {manage_path} {django_command} --experiment_name {experiment_name} --run_name {run_name} --t {t} {overrides} --br_mapping "{br_mapping_str}"'
+    slurm_job_name += '_' + random_string(10)
 
     experiment_dir = f'/shared/outputs/{experiment_name}/{run_name}/{EVAL_DIR}'
 
