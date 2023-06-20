@@ -30,7 +30,8 @@ from open_spiel.python.games import dynamic_routing
 from open_spiel.python.games import iterated_prisoners_dilemma
 from open_spiel.python.games import kuhn_poker
 from open_spiel.python.games import tic_tac_toe
-from open_spiel.python.games import atari
+# Removing because of gym dependency
+# from open_spiel.python.games import atari
 from open_spiel.python.games import clock_auction
 
 # from open_spiel.python.games import sequential_auction

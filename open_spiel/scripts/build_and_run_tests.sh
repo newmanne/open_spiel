@@ -58,7 +58,7 @@ set -e  # exit when any command fails
 MYDIR="$(dirname "$(realpath "$0")")"
 source "${MYDIR}/global_variables.sh"
 
-CXX=clang++-10
+CXX=clang++-7
 #CXX=${CXX:-`which clang++`}
 #if [ ! -x $CXX ]
 #then

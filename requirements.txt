@@ -12,8 +12,8 @@
 pip >= 20.0.2
 attrs >= 19.3.0
 absl-py >= 0.10.0
-numpy >= 1.21.5
-scipy >= 1.7.3
+numpy
+scipy
 pandas
 torch
 torchvision
@@ -37,9 +37,10 @@ django-extensions
 djangorestframework 
 django-filter 
 statsmodels
-psycopg2
 statsmodels
 pygraphviz
 psycopg2-binary
 django-cors-headers
+django-debug-toolbar
+django-extensions
 plotly >= 5.6.0
