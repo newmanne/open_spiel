@@ -19,7 +19,7 @@ from open_spiel.python import policy
 
 REGRET_INDEX = 0
 AVG_POLICY_INDEX = 1
-
+# VISIT_COUNT_INDEX = 2 #FIXME
 
 class AveragePolicy(policy.Policy):
   """A policy object representing the average policy for MCCFR algorithms."""
@@ -66,7 +66,7 @@ class MCCFRSolverBase(object):
 
   def __init__(self, game):
     self._game = game
-    self._infostates = {}  # infostate keys -> [regrets, avg strat]
+    self._infostates = {}  # infostate keys -> [regrets, avg strat, visit count]
     self._num_players = game.num_players()
 
   def _lookup_infostate_info(self, info_state_key, num_legal_actions):
@@ -92,6 +92,7 @@ class MCCFRSolverBase(object):
     self._infostates[info_state_key] = [
         np.ones(num_legal_actions, dtype=np.float64) / 1e6,
         np.ones(num_legal_actions, dtype=np.float64) / 1e6,
+        # 0, #FIXME
     ]
     return self._infostates[info_state_key]
 
@@ -100,6 +101,9 @@ class MCCFRSolverBase(object):
 
   def _add_avstrat(self, info_state_key, action_idx, amount):
     self._infostates[info_state_key][AVG_POLICY_INDEX][action_idx] += amount
+
+  # def _add_visit(self, info_state_key): #FIXME
+  #   self._infostates[info_state_key][VISIT_COUNT_INDEX] += 1 #FIXME
 
   def average_policy(self):
     """Computes the average policy, containing the policy for all players.

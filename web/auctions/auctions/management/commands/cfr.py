@@ -25,6 +25,7 @@ class Command(BaseCommand):
         parser.add_argument('--seed', type=int, default=1234)
         parser.add_argument('--network_config_file', type=str, default='network.yml')
         parser.add_argument('--compute_nash_conv', type=bool, default=False)
+        parser.add_argument('--time_limit_seconds', type=int, default=None)
 
         parser.add_argument('--overwrite_db', type=util.strtobool, default=0)
         parser.add_argument('--dry_run', type=util.strtobool, default=0)
@@ -93,26 +94,53 @@ class Command(BaseCommand):
 
 
         result_saver = DBPolicySaver(eq_solver_run=eq_solver_run) if not opts.dry_run else None
-        dispatcher = DBBRDispatcher(game_db.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path, opts.dispatch_br, opts.eval_inline) if not opts.dry_run else None
+        dispatcher = DBBRDispatcher(game_db.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path, opts.dispatch_br, opts.eval_inline, opts.profile_memory) if not opts.dry_run else None
         eval_episode_timer = EpisodeTimer(opts.eval_every, early_frequency=opts.eval_every_early, fixed_episodes=opts.eval_exactly, eval_zero=opts.eval_zero)
         report_timer = EpisodeTimer(opts.report_freq)
 
         game = game_db.load_as_spiel()
         solver = load_solver(config, game)
 
-        cmd = lambda: run_cfr(config, game, solver, opts.total_timesteps, result_saver=result_saver, seed=seed, compute_nash_conv=opts.compute_nash_conv, dispatcher=dispatcher, report_timer=report_timer, eval_timer=eval_episode_timer, use_wandb=opts.use_wandb)
+        cmd = lambda: run_cfr(config, game, solver, opts.total_timesteps, result_saver=result_saver, seed=seed, compute_nash_conv=opts.compute_nash_conv, dispatcher=dispatcher, report_timer=report_timer, eval_timer=eval_episode_timer, use_wandb=opts.use_wandb, time_limit_seconds=opts.time_limit_seconds)
         profile_cmd(cmd, opts.pprofile, opts.pprofile_file, opts.cprofile, opts.cprofile_file)
 
         logging.info("All done. Goodbye")
 
 
-def run_cfr(solver_config, game, solver, total_timesteps, result_saver=None, seed=1234, dispatcher=None, report_timer=None, eval_timer=None, use_wandb=False, compute_nash_conv=False):
+def trigger(solver, i, start_time, result_saver, dispatcher):
+    print("--------")
+    print(i)
+    import os, psutil
+    print(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2) # MiB
+    policy = solver.average_policy()
+    checkpoint = dict(episode=i, walltime=time.time() - start_time, policy=policy)
+    if result_saver is not None:
+        checkpoint_name = result_saver.save(checkpoint)
+        if dispatcher is not None:
+            dispatcher.dispatch(checkpoint_name)
+    print("POST")
+    import os, psutil
+    print(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2) # MiB
+    print("--------")
+
+
+
+def run_cfr(solver_config, game, solver, total_timesteps, result_saver=None, seed=1234, dispatcher=None, report_timer=None, eval_timer=None, use_wandb=False, compute_nash_conv=False, time_limit_seconds=None):
     start_time = time.time()
     # TODO: Wandb see ppo_utils: How often should we do this? On report? Eval? 
-
     # RUN SOLVER
+
+    if time_limit_seconds:
+        logger.info(f"Running for a time limit of {time_limit_seconds} seconds")
+
     for i in range(total_timesteps):
+
+        if time_limit_seconds and time.time() - start_time > time_limit_seconds:
+            logger.info("Out of time!")
+            break
+        
         last_iter = i == total_timesteps - 1
+
         if report_timer is not None and report_timer.should_trigger(i) and i > 0:
             avg_iter_time = (time.time() - start_time) / i
             extrapolated_time = (total_timesteps - i) * avg_iter_time
@@ -142,11 +170,8 @@ def run_cfr(solver_config, game, solver, total_timesteps, result_saver=None, see
         else:
             solver.evaluate_and_update_policy()
 
-        if eval_timer and (eval_timer.should_trigger(i) or last_iter):
-            policy = solver.average_policy()
-            checkpoint = dict(episode=i, walltime=time.time() - start_time, policy=policy)
-            # exploitability.nash_conv(game, policy)
-            if result_saver is not None:
-                checkpoint_name = result_saver.save(checkpoint)
-                if dispatcher is not None:
-                    dispatcher.dispatch(checkpoint_name)
+        if eval_timer and (eval_timer.should_trigger(i)):
+            trigger(solver, i, start_time, result_saver, dispatcher)
+
+    # One last time
+    trigger(solver, i, start_time, result_saver, dispatcher)

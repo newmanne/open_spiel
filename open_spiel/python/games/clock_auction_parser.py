@@ -41,14 +41,14 @@ def parse_auction_params(file_name):
       raise ValueError("Number of activity must match number of products.")
 
     activity_policy = game_params.get('activity_policy', ActivityPolicy.ON)
-    if isinstance(activity_policy, bool):
-      activity_policy = ActivityPolicy.ON if activity_policy else ActivityPolicy.OFF
+    if isinstance(activity_policy, str):
+      activity_policy = ActivityPolicy[activity_policy.upper()]
 
     information_policy = game_params.get('information_policy', InformationPolicy.SHOW_DEMAND)  
     if isinstance(information_policy, str):
       information_policy = InformationPolicy[information_policy.upper()]
 
-    undersell_policy = game_params.get('undersell_rule', UndersellPolicy.UNDERSELL)
+    undersell_policy = game_params.get('undersell_policy', UndersellPolicy.UNDERSELL)
     if isinstance(undersell_policy, str):
       undersell_policy = UndersellPolicy[undersell_policy.upper()]
 

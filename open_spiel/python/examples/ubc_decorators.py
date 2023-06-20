@@ -1,4 +1,4 @@
-from open_spiel.python.rl_agent import AbstractAgent
+from open_spiel.python.rl_agent import AbstractAgent, StepOutput
 from cachetools import cached, LRUCache, TTLCache
 from cachetools.keys import hashkey
 from open_spiel.python.examples.ubc_utils import single_action_result, fast_choice
@@ -78,6 +78,80 @@ class TakeSingleActionDecorator(AgentDecorator):
             return single_action_result(legal_actions, self.num_actions, as_output=True)
         return self._agent.step(time_step, is_evaluation=is_evaluation)
 
+
+
+class TremblingAgentDecorator(AgentDecorator):
+
+    def __init__(self, agent, tremble_prob=0.01, tremble_model=None):
+        super().__init__(agent)
+        self.tremble_model = tremble_model
+        self.tremble_prob = tremble_prob
+        self.curr_tremble_prob = self.tremble_prob
+
+    def _step(self, regular_output, time_step):
+        regular_probs = np.asarray(regular_output.probs) # Might be torch
+        legal_actions = time_step.observations["legal_actions"][self.player_id]
+        num_legal_actions = len(legal_actions)
+
+        if len(regular_probs) == num_legal_actions:
+            # We only see probs for legal actions
+            uniform_policy = np.ones(len(regular_probs), dtype=np.float64) / num_legal_actions
+            sample_policy = self.curr_tremble_prob * uniform_policy + (1.0 - self.curr_tremble_prob) * regular_probs
+            return StepOutput(action=fast_choice(legal_actions, sample_policy), probs=sample_policy)
+        else:
+            # Illegal actions are NOT BEING MASKED OUT and may have positive probabilities
+            uniform_policy = np.zeros(len(regular_probs), dtype=np.float64)
+            uniform_policy[legal_actions] = 1. / num_legal_actions
+            sample_policy = self.curr_tremble_prob * uniform_policy + (1.0 - self.curr_tremble_prob) * regular_probs
+            s = sample_policy[legal_actions] / sample_policy[legal_actions].sum()
+            return StepOutput(action=fast_choice(legal_actions, s), probs=s)
+
+    def step(self, time_step, is_evaluation=False):
+        regular_output = self._agent.step(time_step, is_evaluation=is_evaluation)
+        if isinstance(regular_output, list):
+            o = []
+            for ro, ts in zip(regular_output, time_step):
+                o.append(self._step(ro, ts))
+            return o
+        else:
+            return self._step(regular_output, time_step)
+
+
+    def anneal_learning_rate(self, update, num_total_updates):
+        # Super hack
+        self._agent.anneal_learning_rate(update, num_total_updates)
+        frac = 1.0 - (update / num_total_updates)
+        self.curr_tremble_prob = frac * self.tremble_prob
+        print(f"Annealed to {self.curr_tremble_prob}")
+
+
+class ModalAgentDecorator(AgentDecorator):
+
+    def __init__(self, agent):
+        super().__init__(agent)
+
+    def step(self, time_step, is_evaluation=False):
+        if isinstance(time_step, list):
+            return [self.step(time_step[i], is_evaluation=is_evaluation) for i in range(len(time_step))]
+        
+        legal_actions = time_step.observations["legal_actions"][self.player_id]
+        num_legal_actions = len(legal_actions)
+        regular_output = self._agent.step(time_step, is_evaluation=is_evaluation)
+        regular_probs = regular_output.probs
+        new_probs = np.zeros_like(regular_probs, dtype=np.float64)
+
+        if len(regular_probs) == num_legal_actions:
+            # We only see probs for legal actions
+            legal_action_idx = np.argmax(regular_probs)
+            action = legal_actions[legal_action_idx]
+            new_probs[legal_action_idx] = 1.
+            return StepOutput(action=action, probs=new_probs)
+        else:
+            # We see probs for all actions; illegal actions are NOT BEING MASKED OUT and may have positive probabilities
+            action = legal_actions[np.argmax(regular_probs[legal_actions])]
+            new_probs[action] = 1.
+            return StepOutput(action=action, probs=new_probs)
+    
 
 class UniformRestrictedNashResponseAgent(AgentDecorator):
 

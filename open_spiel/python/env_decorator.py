@@ -5,6 +5,8 @@ from collections import defaultdict
 import numpy as np
 import collections
 from typing import Callable
+import scipy.stats
+from open_spiel.python.examples.ubc_math_utils import fast_choice
 
 class EnvDecorator(object):
 
@@ -118,6 +120,7 @@ class RewardShapingEnvDecorator(EnvDecorator):
         self.t += 1
         return self.get_time_step()
 
+
 class TrapEnvDecorator(EnvDecorator):
     '''Sets "trap" actions, which mirror the real actions, but cause you a loss of value after horizon turns (or all explode at the end)'''
 
@@ -155,7 +158,8 @@ class TrapEnvDecorator(EnvDecorator):
     def step(self, step_outputs):
         player = self._env._state.current_player()
         actions = []
-        for action in step_outputs:
+        for step_output in step_outputs:
+            action = step_output.action
             if action >= self.num_actions:
                 self.traps[player][self._env._state.round + self.trap_delay] += self.trap_value
                 self.traps_triggered[player] += 1
@@ -215,6 +219,8 @@ class AuctionStatTrackingDecorator(EnvDecorator):
         self.clear_on_report = clear_on_report
         self.clear()
 
+        self.current_episode_entropies = defaultdict(float)
+
     def clear(self):
         self.rewards = defaultdict(list)
         self.payments = defaultdict(list)
@@ -222,6 +228,10 @@ class AuctionStatTrackingDecorator(EnvDecorator):
         self.auction_lengths = []
         self.welfares = []
         self.revenues = []
+        self.processed_demands = defaultdict(list)
+        self.types = defaultdict(list)
+
+        self.total_entropies = defaultdict(list)
 
     def fill_metrics(self, time_step, state):
         for player_id, reward in enumerate(time_step.rewards):
@@ -231,10 +241,22 @@ class AuctionStatTrackingDecorator(EnvDecorator):
         self.revenues.append(state.revenue)
         for player_id, allocation in enumerate(state.get_allocation()):
             self.allocations[player_id].append(allocation.tolist())
+            self.processed_demands[player_id].append(state.bidders[player_id].processed_demand) # TODO: watch for array convert
+            self.types[player_id].append(state.bidders[player_id].type_index) # TODO: watch for array convert
+
+            self.total_entropies[player_id].append(self.current_episode_entropies[player_id])
+            self.current_episode_entropies[player_id] = 0
+
         self.auction_lengths.append(state.round)
         self.welfares.append(state.get_welfare())
 
+
     def step(self, step_outputs):
+        prev_state = self._env._state
+        prev_player = prev_state.current_player()
+        for step_output in step_outputs:
+            self.current_episode_entropies[prev_player] += scipy.stats.entropy(step_output.probs)
+
         _ = self._env.step(step_outputs)
         time_step = self._env.get_time_step()
         state = self._env._state
@@ -261,6 +283,9 @@ class AuctionStatTrackingDecorator(EnvDecorator):
             'auction_lengths': self.auction_lengths,
             'revenues': self.revenues,
             'welfares': self.welfares,
+            'processed_demands': self.processed_demands,
+            'types': self.types,
+            'total_entropies': self.total_entropies,
         }
 
     @staticmethod

@@ -25,6 +25,8 @@ import torch.nn.functional as F
 
 from open_spiel.python import rl_agent
 from open_spiel.python.utils.replay_buffer import ReplayBuffer
+from open_spiel.python.pytorch.auction_nets import AuctionQNet
+
 
 Transition = collections.namedtuple(
     "Transition",
@@ -118,6 +120,8 @@ class DQN(rl_agent.AbstractAgent):
                state_representation_size,
                num_actions,
                hidden_layers_sizes=128,
+               agent_fn=AuctionQNet,
+               agent_fn_kwargs=None,
                replay_buffer_capacity=10000,
                batch_size=128,
                replay_buffer_class=ReplayBuffer,
@@ -130,15 +134,35 @@ class DQN(rl_agent.AbstractAgent):
                epsilon_end=0.1,
                epsilon_decay_duration=int(1e6),
                optimizer_str="sgd",
-               loss_str="mse"):
+               device='cpu',
+               loss_str="mse",
+               use_wandb=False,
+               ):
     """Initialize the DQN agent."""
 
     # This call to locals() is used to store every argument used to initialize
     # the class instance, so it can be copied with no hyperparameter change.
+
+    self._double_dqn = False
     self._kwargs = locals()
+    self.device = device
 
     self.player_id = player_id
     self._num_actions = num_actions
+
+    if agent_fn_kwargs is None:
+        agent_fn_kwargs = {}
+
+    if isinstance(agent_fn, str):
+        agent_fns = {
+            'mlp': MLP,
+            'auctionqnet': AuctionQNet,
+        }
+        try:
+            agent_fn = agent_fns[agent_fn.lower()]
+        except KeyError:
+            raise ValueError(f"Unknown agent_fn {agent_fn}")
+
     if isinstance(hidden_layers_sizes, int):
       hidden_layers_sizes = [hidden_layers_sizes]
     self._layer_sizes = hidden_layers_sizes
@@ -166,11 +190,19 @@ class DQN(rl_agent.AbstractAgent):
     self._last_loss_value = None
 
     # Create the Q-network instances
-    self._q_network = MLP(state_representation_size, self._layer_sizes,
-                          num_actions)
+      # TODO: Use AuctionNet
+  #         self.network_fn = lambda: agent_fn(self.num_actions, self.input_shape, device, **agent_fn_kwargs).to(device)
+  # self.network = self.network_fn()
+  #from open_spiel.python.pytorch.auction_nets import AuctionNet, layer_init, string_to_activation, CategoricalMasked, INVALID_ACTION_PENALTY
+  #
+    self.input_shape = state_representation_size
+    self.network_fn = lambda: agent_fn(self._num_actions, self.input_shape, device, **agent_fn_kwargs).to(device)
 
-    self._target_q_network = MLP(state_representation_size, self._layer_sizes,
-                                 num_actions)
+    # TODO: Make this work w/ MLP again
+    self._q_network = self.network_fn()
+    self._target_q_network = self.network_fn()
+
+    # self._target_q_network = agent_fn(state_representation_size, self._layer_sizes, num_actions)
 
     if loss_str == "mse":
       self.loss_class = F.mse_loss
@@ -188,6 +220,8 @@ class DQN(rl_agent.AbstractAgent):
     else:
       raise ValueError("Not implemented, choose from 'adam' and 'sgd'.")
 
+    self.use_wandb = use_wandb
+
   def step(self, time_step, is_evaluation=False, add_transition_record=True):
     """Returns the action to be taken and updates the Q-network if needed.
 
@@ -199,14 +233,21 @@ class DQN(rl_agent.AbstractAgent):
     Returns:
       A `rl_agent.StepOutput` containing the action probs and chosen action.
     """
+    was_list = False
+    if isinstance(time_step, list):
+      if len(time_step) > 1:
+        raise ValueError("THINK")
+      time_step = time_step[0] # Assert it's only lenght 1
+      was_list = True
 
     # Act step: don't act at terminal info states or if its not our turn.
     if (not time_step.last()) and (
         time_step.is_simultaneous_move() or
         self.player_id == time_step.current_player()):
-      info_state = time_step.observations["info_state"][self.player_id]
+      info_state =time_step.observations["info_state"][self.player_id]
       legal_actions = time_step.observations["legal_actions"][self.player_id]
       epsilon = self._get_epsilon(is_evaluation)
+      # print(info_state)
       action, probs = self._epsilon_greedy(info_state, legal_actions, epsilon)
     else:
       action = None
@@ -236,7 +277,8 @@ class DQN(rl_agent.AbstractAgent):
         self._prev_timestep = time_step
         self._prev_action = action
 
-    return rl_agent.StepOutput(action=action, probs=probs)
+    retval = rl_agent.StepOutput(action=action, probs=probs)
+    return retval if not was_list else [retval]
 
   def add_transition(self, prev_time_step, prev_action, time_step):
     """Adds the new transition using `time_step` to the replay buffer.
@@ -281,7 +323,7 @@ class DQN(rl_agent.AbstractAgent):
       action = np.random.choice(legal_actions)
       probs[legal_actions] = 1.0 / len(legal_actions)
     else:
-      info_state = torch.Tensor(np.reshape(info_state, [1, -1]))
+      info_state = torch.Tensor(np.reshape(info_state, [1, -1])).reshape((-1,) + self.input_shape).to(self.device)
       q_values = self._q_network(info_state).detach()[0]
       legal_q_values = q_values[legal_actions]
       action = legal_actions[torch.argmax(legal_q_values)]
@@ -313,22 +355,27 @@ class DQN(rl_agent.AbstractAgent):
       return None
 
     transitions = self._replay_buffer.sample(self._batch_size)
-    info_states = torch.Tensor([t.info_state for t in transitions])
-    actions = torch.LongTensor([t.action for t in transitions])
-    rewards = torch.Tensor([t.reward for t in transitions])
-    next_info_states = torch.Tensor([t.next_info_state for t in transitions])
-    are_final_steps = torch.Tensor([t.is_final_step for t in transitions])
-    legal_actions_mask = torch.Tensor(
-        np.array([t.legal_actions_mask for t in transitions]))
+    info_states = torch.Tensor(np.array([t.info_state for t in transitions])).reshape((-1,) + self.input_shape)
+    actions = torch.LongTensor(np.array([t.action for t in transitions]))
+    rewards = torch.Tensor(np.array([t.reward for t in transitions]))
+    next_info_states = torch.Tensor(np.array([t.next_info_state for t in transitions])).reshape((-1,) + self.input_shape)
+    are_final_steps = torch.Tensor(np.array([t.is_final_step for t in transitions]))
+    legal_actions_mask = torch.Tensor(np.array(np.array([t.legal_actions_mask for t in transitions]))).reshape(-1, self._num_actions)
 
     self._q_values = self._q_network(info_states)
     self._target_q_values = self._target_q_network(next_info_states).detach()
+    if self._double_dqn:
+      next_q_values = self._q_network(next_info_states).cpu().detach()
 
-    illegal_actions_mask = 1 - legal_actions_mask
-    legal_target_q_values = self._target_q_values.masked_fill(
-        illegal_actions_mask, ILLEGAL_ACTION_LOGITS_PENALTY)
-    max_next_q = torch.max(legal_target_q_values, dim=1)[0]
-
+    illegal_actions = 1 - legal_actions_mask
+    illegal_logits = illegal_actions * ILLEGAL_ACTION_LOGITS_PENALTY
+    if self._double_dqn:
+      # pick the action that has the highest Q value according to the normal Q network, and
+      max_indices = torch.argmax(next_q_values + illegal_logits, dim=1)
+      # grab the Q value of that action from the target Q network
+      max_next_q = torch.gather(self._target_q_values, 1, max_indices.view(-1, 1)).squeeze()
+    else:
+      max_next_q = torch.max(self._target_q_values + illegal_logits, dim=1)[0]
     target = (
         rewards + (1 - are_final_steps) * self._discount_factor * max_next_q)
     action_indices = torch.stack([
@@ -342,6 +389,16 @@ class DQN(rl_agent.AbstractAgent):
     self._optimizer.zero_grad()
     loss.backward()
     self._optimizer.step()
+
+    if self.use_wandb:
+      import wandb
+      prefix = f'network_{self.player_id}'
+      wandb.log({
+        f"{prefix}/learning_rate": self._optimizer.param_groups[0]["lr"],
+        f"{prefix}/loss": loss.item(),
+        f"{prefix}/epsilon": self._get_epsilon(False),
+        f"{prefix}/step_counter": self._step_counter,
+      })
 
     return loss
 

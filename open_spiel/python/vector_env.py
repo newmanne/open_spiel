@@ -24,7 +24,7 @@ class SyncVectorEnv(object):
         if not isinstance(step_outputs, list):
             step_outputs = [step_outputs]
         
-        time_steps = [self.envs[i].step([step_outputs[i].action]) for i in range(len(self.envs))]
+        time_steps = [self.envs[i].step([step_outputs[i]]) for i in range(len(self.envs))]
         reward = [step.rewards for step in time_steps]
         done = [step.last() for step in time_steps]
         unreset_time_steps = time_steps # Copy these because you may want to look at the unreset versions to extract information from them

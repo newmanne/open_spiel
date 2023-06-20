@@ -7,13 +7,13 @@ import math
 from open_spiel.python.games.clock_auction_parser import parse_auction_params
 from open_spiel.python.games.clock_auction_observer import ClockAuctionObserver
 from cachetools import LRUCache
-from open_spiel.python.games.clock_auction_base import AuctionParams, LotteryState, ActivityPolicy, UndersellPolicy, InformationPolicy, InformationPolicyConstants, ValueFormat, BidderState
+from open_spiel.python.games.clock_auction_base import AuctionParams, LotteryState, ActivityPolicy, UndersellPolicy, InformationPolicy, InformationPolicyConstants, ValueFormat, BidderState, MAX_CACHE_SIZE
 from pulp import LpProblem, LpMinimize, LpVariable, LpStatus, LpBinary, lpSum, lpDot, LpMaximize, LpInteger, value
 import pandas as pd
 from functools import lru_cache, cached_property
 import inspect
 
-MAX_CACHE_SIZE = 250_000
+ACTION_TIEBREAK_EPS = 0
 
 def make_key(bidders):
   key = (tuple([(b.activity, tuple(b.processed_demand[-1]), tuple(b.submitted_demand[-1])) for b in bidders]))
@@ -132,7 +132,7 @@ class ClockAuctionGame(pyspiel.Game):
       # Maps from a state to a set of outcomes, with probs 
       # How to determine a unique entry? If I face the same vector of (activity, processed demands, submitted demand), that implies same lottery mapping to new processed demands regardless of all else!
       # Note that you could imagine pickling this
-      logging.info("Folding randomnesss...")
+      logging.info("Folding randomness...")
       self.lottery_cache = LRUCache(maxsize=MAX_CACHE_SIZE)
     
     self.state_cache = LRUCache(maxsize=MAX_CACHE_SIZE)
@@ -215,12 +215,22 @@ class ClockAuctionState(pyspiel.State):
     self.processing_queue = None
     self.folded_chance_outcomes = None
 
+    # TODO: This should really be a decorator or at the very least be read from auction params but I'm tired
+    self.tiebreak_actions = True
+    self._action_rewards = defaultdict(float)
+
   # An LRU cache here is a bad idea - it will get too big. Just use the game cache
   def child(self, action):
     key = tuple(self.history() + [action])
     kid = self.get_game().state_cache.get(key) 
     if kid is None:
       kid = super(ClockAuctionState, self).child(action)
+
+      # don't clone AuctionParams and bidders
+      kid.auction_params = self.auction_params
+      for i in range(len(self.bidders)):
+        kid.bidders[i].bidder = self.bidders[i].bidder
+
       self.get_game().state_cache[key] = kid
     return kid
   
@@ -317,6 +327,11 @@ class ClockAuctionState(pyspiel.State):
       assert self.round == len(bidder.submitted_demand)
       bid = self.auction_params.all_bids[action]
 
+      ### Tiebreak to prefer larger actions
+      if self.tiebreak_actions:
+        self._action_rewards[self._cur_player] += action * ACTION_TIEBREAK_EPS
+      ###
+
       if self.auction_params.activity_policy == ActivityPolicy.ON:
         bid_activity_cost = self.auction_params.all_bids_activity[action]
         if bidder.activity < bid_activity_cost:
@@ -352,8 +367,9 @@ class ClockAuctionState(pyspiel.State):
     # Tie breaking 
     if self.auction_params.fold_randomness:
       # Let's just index into the solution that we must have already computed
-      key = make_key(self.bidders)
-      processed = self.get_game().lottery_cache.get(key)['results'][action]
+      processed = self.folded_chance_outcomes['results'][action]
+      # key = make_key(self.bidders)
+      # processed = self.get_game().lottery_cache.get(key)['results'][action] # TODO: Error when undersell policy is off - you will need to comptue explicitly
     else:
       self.processing_queue = permute_array(self.processing_queue, action)
       processed = stateless_process_bids(self.auction_params, self.bidders, self.aggregate_demand[-1].copy(), self.processing_queue)
@@ -378,7 +394,7 @@ class ClockAuctionState(pyspiel.State):
 
   def _handle_bids(self):
     # Demand Processing
-    if self.round == 1 or self.auction_params.undersell_policy == UndersellPolicy.UNDERSELL_ALLOWED:
+    if (self.round == 1) or (self.auction_params.undersell_policy == UndersellPolicy.UNDERSELL_ALLOWED):
       # Just copy it straight over
       for bidder in self.bidders:
         bid = bidder.submitted_demand[-1]
@@ -412,10 +428,10 @@ class ClockAuctionState(pyspiel.State):
           # 4) Cache it
           self.get_game().lottery_cache[key] = res
 
-        self.folded_chance_outcomes = res['lottery']
+        self.folded_chance_outcomes = res
 
         ### Was there only a single outcome? If so, let's remove a chance node here so the game tree is smaller (good for cache size)
-        if self.auction_params.skip_single_chance_nodes and len(self.folded_chance_outcomes) == 1:
+        if self.auction_params.skip_single_chance_nodes and len(self.folded_chance_outcomes['lottery']) == 1:
           self._handle_chance_tiebreak(0)
         else:
           self._is_chance = True
@@ -458,6 +474,10 @@ class ClockAuctionState(pyspiel.State):
       self._final_payments[player_id] = payment
       value = bidder.bidder.value_for_package(final_bid)
       returns[player_id] = value - payment 
+      if self.tiebreak_actions:
+        returns[player_id] += self._action_rewards[player_id]
+
+
     return returns
 
   def returns(self):
@@ -503,7 +523,7 @@ class ClockAuctionState(pyspiel.State):
       probs = [t['prob'] for t in player_types]
     else: # Chance node is breaking a tie
       if self.auction_params.fold_randomness:
-        probs = self.folded_chance_outcomes
+        probs = self.folded_chance_outcomes['lottery']
         # self.folded_chance_outcomes = None # TODO: I want to do this, but it actually makes it unsafe to call chance_outcomes multiple times in a row, so what can you do.... Definitely opens up a risk though
       else:
         chance_outcomes_required = math.factorial(len(self.processing_queue))

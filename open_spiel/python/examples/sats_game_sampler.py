@@ -189,10 +189,10 @@ def main(seed=1234, output='configs.pkl', external=True, geography=None, track_m
     N_CONFIGS = 5
     MIN_TYPES = 2
     MAX_TYPES = 2
-    MIN_BIDDERS = 2
-    MAX_BIDDERS = 2
+    MIN_BIDDERS = 3
+    MAX_BIDDERS = 3
     MAX_ACTION_SPACE = 16
-    MAX_NUM_LICENSES = 5
+    MAX_NUM_LICENSES = 6
 
     failures = defaultdict(int)
 
@@ -202,7 +202,7 @@ def main(seed=1234, output='configs.pkl', external=True, geography=None, track_m
         'auction_params': {
             'increment': .3,
             'fold_randomness': True,
-            'max_rounds': 5, # TODO: Think!
+            'max_rounds': 10, # TODO: Think!
         },
         'bidders': [
         ]

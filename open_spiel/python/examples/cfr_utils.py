@@ -71,13 +71,12 @@ class CFRAgent:
     def _act(self, time_step):
         if time_step.last():
             return
-        
+
         state = time_step.observations['state']
         action_probs = self.policy.action_probabilities(state)
         action = fast_choice(list(action_probs.keys()), list(action_probs.values())) # TODO: Give rng
 
-        probs = np.ones(1) # Is anyone using this?
-        # probs[action] = 1.0
+        probs = np.array(list(action_probs.values())) # TODO: is this indexed right? It's good enough to compute entropies...
         return StepOutput(action=action, probs=probs)
 
 def make_cfr_agent(player_id, config, game):

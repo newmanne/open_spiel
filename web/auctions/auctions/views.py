@@ -127,7 +127,7 @@ class EquilibriumSolverRunCheckpointViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True)
     def evaluation(self, request, pk=None):
         checkpoint = self.get_object()
-        samples = checkpoint.evaluation.samples
+        samples = checkpoint.get_old_eval().samples
         allocations = samples['allocations']
         supply = checkpoint.equilibrium_solver_run.game.supply()
         retval = dict()

@@ -248,8 +248,7 @@ def sample_game_tree(env_and_policy, num_samples, report_freq=GameTreeSampleDefa
             child_list[player_id].append(action_string)
 
             # Take action
-            action_list = [agent_output.action]
-            time_step = env.step(action_list)
+            time_step = env.step([agent_output])
 
         stat_dict = env.stats_dict()
         for i, agent in enumerate(agents):

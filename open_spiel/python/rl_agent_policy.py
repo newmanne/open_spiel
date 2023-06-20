@@ -65,6 +65,7 @@ class JointRLAgentPolicy(policy.Policy):
 
     legal_actions = state.legal_actions(player_id)
 
+    self._obs['state'] = state
     self._obs["current_player"] = player_id
     self._obs["info_state"][player_id] = (
         state.observation_tensor(player_id)
@@ -74,7 +75,7 @@ class JointRLAgentPolicy(policy.Policy):
     info_state = rl_environment.TimeStep(observations=self._obs, rewards=None, discounts=None, step_type=None)
 
     p = self._agents[player_id].step(info_state, is_evaluation=True).probs
-    prob_dict = {action: p[action] for action in legal_actions}
+    prob_dict = {action: p[i] for i, action in enumerate(legal_actions)}
 
     return prob_dict
 

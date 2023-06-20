@@ -2,8 +2,7 @@ import logging
 from statsmodels.distributions.empirical_distribution import ECDF
 from open_spiel.python.examples.ubc_utils import load_game_config
 from auctions.models import *
-from open_spiel.python.examples.ppo_utils import make_env_and_policy, EnvParams, make_ppo_agent
-from open_spiel.python.examples.cfr_utils import make_cfr_agent
+from open_spiel.python.examples.ppo_utils import make_env_and_policy, EnvParams, make_ppo_agent, make_dqn_agent
 from open_spiel.python.examples.ubc_plotting_utils import parse_run
 import pytz
 import datetime
@@ -11,8 +10,7 @@ import torch
 import pyspiel
 from distutils import util
 import json
-
-NORMALIZATION_DATE = datetime.datetime(2022, 3, 23, 4, 33, 3, 722237, tzinfo=pytz.UTC)
+from open_spiel.python.examples.ppo_eval import EvalDefaults
 
 OUTPUT_ROOT = '/shared/outputs'
 
@@ -39,10 +37,9 @@ def get_or_create_game(game_name):
 
     return game
 
-def env_and_policy_from_run(run, env_params=None, cfr=False):
+def env_and_policy_from_run(run, env_params=None):
     game = run.game.load_as_spiel()
-    agent_fn = make_ppo_agent if not cfr else make_cfr_agent
-    env_and_policy = make_env_and_policy(game, dict(run.config), env_params=env_params, agent_fn=agent_fn)
+    env_and_policy = make_env_and_policy(game, dict(run.config), env_params=env_params)
     return env_and_policy
 
 def env_and_policy_for_dry_run(game_db_obj, config, env_params=None):
@@ -50,10 +47,11 @@ def env_and_policy_for_dry_run(game_db_obj, config, env_params=None):
     env_and_policy = make_env_and_policy(game, dict(config), env_params=env_params)
     return env_and_policy
 
-def ppo_db_checkpoint_loader(checkpoint, env_params=None, cfr=False):
+def ppo_db_checkpoint_loader(checkpoint, env_params=None):
     # Create an env_and_policy based on a checkpoint in the database
-    env_and_policy = env_and_policy_from_run(checkpoint.equilibrium_solver_run, env_params=env_params, cfr=cfr)
-    if cfr:
+    env_and_policy = env_and_policy_from_run(checkpoint.equilibrium_solver_run, env_params=env_params)
+    solver_type = checkpoint.equilibrium_solver_run.config.get('solver_type', 'ppo')
+    if solver_type == 'cfr':
         policy = pickle.loads(checkpoint.policy)
         for agent in env_and_policy.agents:
             agent.policy = policy
@@ -168,6 +166,7 @@ def add_profiling_flags(parser):
     parser.add_argument('--pprofile_file', type=str, default='profile.txt')
     parser.add_argument('--cprofile', type=util.strtobool, default=0)
     parser.add_argument('--cprofile_file', type=str, default='cprofile.txt')
+    parser.add_argument('--profile_memory', type=util.strtobool, default=0)
 
 def add_experiment_flags(parser):
     parser.add_argument('--experiment_name', type=str)
@@ -192,7 +191,15 @@ def add_dispatching_flags(parser):
 
 def add_wandb_flags(parser, default=True):
     parser.add_argument('--use_wandb', type=util.strtobool, default=1 if default else 0) 
+    parser.add_argument('--wandb_step_interval', type=int, default=1024, help='Approximate number of steps between wandb logs')
     parser.add_argument('--wandb_note', type=str, default='') 
+
+def add_eval_flags(parser):
+    parser.add_argument('--eval_num_samples', type=int, default=EvalDefaults.DEFAULT_NUM_SAMPLES)
+    parser.add_argument('--eval_report_freq', type=int, default=EvalDefaults.DEFAULT_REPORT_FREQ)
+    parser.add_argument('--eval_num_envs', type=int, default=EvalDefaults.DEFAULT_NUM_ENVS)
+    parser.add_argument('--eval_compute_efficiency', type=util.strtobool, default=EvalDefaults.DEFAULT_COMPUTE_EFFICIENCY)
+
 
 
 def profile_cmd(cmd, pprofile, pprofile_file, cprofile, cprofile_file):
