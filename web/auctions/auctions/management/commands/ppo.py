@@ -125,6 +125,6 @@ class Command(BaseCommand):
         eval_episode_timer = EpisodeTimer(opts.eval_every, early_frequency=opts.eval_every_early, fixed_episodes=opts.eval_exactly, eval_zero=opts.eval_zero)
         report_timer = EpisodeTimer(opts.report_freq)
 
-        cmd = lambda: run_ppo(env_and_policy, opts.total_timesteps, result_saver=result_saver, seed=seed, compute_nash_conv=opts.compute_nash_conv, dispatcher=dispatcher, report_timer=report_timer, eval_timer=eval_episode_timer, use_wandb=opts.use_wandb)
+        cmd = lambda: run_ppo(env_and_policy, opts.total_timesteps, result_saver=result_saver, seed=seed, compute_nash_conv=opts.compute_nash_conv, dispatcher=dispatcher, report_timer=report_timer, eval_timer=eval_episode_timer, use_wandb=opts.use_wandb, wandb_step_interval=opts.wandb_step_interval)
         profile_cmd(cmd, opts.pprofile, opts.pprofile_file, opts.cprofile, opts.cprofile_file)
         

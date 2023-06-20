@@ -88,7 +88,53 @@ class ResidualLayer(nn.Module):
         y = self.linear2(y)
         return self.activation(x + y if self.add_skip_connection else y)
 
+def build_auction_net_torso(observation_shape, hidden_sizes, activation=nn.ReLU, add_skip_connections=True, add_max_features=True):
+    layers = []
+    in_features, num_bundles = observation_shape
+    num_hidden_features = hidden_sizes[0]
+
+    if add_max_features:
+        layers.append(LinearWithMax(in_features, num_hidden_features))
+    else:
+        layers.append(layer_init(nn.Linear(in_features, num_hidden_features), std=1))
+    layers.append(string_to_activation(activation)())
+    for i in range(len(hidden_sizes) - 1):
+        layers.append(ResidualLayer(num_hidden_features, activation, add_skip_connections, add_max_features))
+    return layers
+
+class AuctionQNet(nn.Module):
+    """
+    For use in DQN. 
+
+    TODO: avoid code duplication with AuctionNet?
+    """
+    def __init__(self, num_actions, observation_shape, device, hidden_sizes, activation=nn.ReLU, output_std=0.01, add_skip_connections=True, add_max_features=True):
+        super(AuctionQNet, self).__init__()
+
+        if not np.allclose(hidden_sizes, hidden_sizes[0]):
+            raise ValueError("All hidden sizes must be equal")
+        num_hidden_features = hidden_sizes[0]
+
+        self.network = nn.Sequential(
+            *build_auction_net_torso(observation_shape, hidden_sizes, activation, add_skip_connections, add_max_features), 
+            layer_init(nn.Linear(num_hidden_features, 1), std=output_std)
+        )
+        
+        self.device = device
+        self.num_actions = num_actions
+    
+    def forward(self, x):
+        """
+        x: (batch_size, features, bundles)
+        output: (batch_size, bundles)
+        """
+        x = x.permute(0, 2, 1) # (batch_size, bundles, features)
+        return self.network(x).squeeze(-1)
+
 class AuctionNet(nn.Module):
+    """
+    For use in PPO. Supplies both actor (action probabilities) and critic (state advantage) heads.
+    """
     def __init__(self, num_actions, observation_shape, device, hidden_sizes, activation=nn.ReLU, actor_std=0.01, critic_std=1, add_skip_connections=True, add_max_features=True, use_torso=True):
         super(AuctionNet, self).__init__()
 
@@ -100,19 +146,19 @@ class AuctionNet(nn.Module):
         self.use_torso = use_torso
 
         if self.use_torso:
-            self.torso = nn.Sequential(*self.build_torso(num_actions, observation_shape, device, hidden_sizes, activation, add_skip_connections, add_max_features))
+            self.torso = nn.Sequential(*build_auction_net_torso(observation_shape, hidden_sizes, activation, add_skip_connections, add_max_features))
             self.actor_head = layer_init(nn.Linear(num_hidden_features, 1), std=actor_std)
             self.critic_head = nn.Sequential(
                 nn.Flatten(),
                 layer_init(nn.Linear(num_bundles*num_hidden_features, 1), std=critic_std),
             )
-        else:
+        else: # separate torso for each head
             self.actor_head = nn.Sequential(
-                *self.build_torso(num_actions, observation_shape, device, hidden_sizes, activation, add_skip_connections, add_max_features), 
+                *build_auction_net_torso(observation_shape, hidden_sizes, activation, add_skip_connections, add_max_features), 
                 layer_init(nn.Linear(num_hidden_features, 1), std=actor_std)
             )
             self.critic_head = nn.Sequential(
-                *self.build_torso(num_actions, observation_shape, device, hidden_sizes, activation, add_skip_connections, add_max_features),
+                *build_auction_net_torso(observation_shape, hidden_sizes, activation, add_skip_connections, add_max_features),
                 nn.Flatten(),
                 layer_init(nn.Linear(num_bundles*num_hidden_features, 1), std=critic_std),
             )
@@ -121,26 +167,12 @@ class AuctionNet(nn.Module):
         self.num_actions = num_actions
         self.register_buffer("mask_value", torch.tensor(INVALID_ACTION_PENALTY))
 
-    def build_torso(self, num_actions, observation_shape, device, hidden_sizes, activation=nn.ReLU, add_skip_connections=True, add_max_features=True):
-        layers = []
-        in_features, num_bundles = observation_shape
-        num_hidden_features = hidden_sizes[0]
-
-        if add_max_features:
-            layers.append(LinearWithMax(in_features, num_hidden_features))
-        else:
-            layers.append(layer_init(nn.Linear(in_features, num_hidden_features), std=1))
-        layers.append(string_to_activation(activation)())
-        for i in range(len(hidden_sizes) - 1):
-            layers.append(ResidualLayer(num_hidden_features, activation, add_skip_connections, add_max_features))
-        return layers
-
     def forward(self, x):
         """
         x: (batch_size, features, bundles)
         output: (batch_size, bundles)
         """
-        print(x.shape)
+        # print(x.shape)
         x = x.permute(0, 2, 1) # (batch_size, bundles, features)
         if self.use_torso:
             torso_output = self.torso(x)

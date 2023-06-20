@@ -94,7 +94,7 @@ class Command(BaseCommand):
 
 
         result_saver = DBPolicySaver(eq_solver_run=eq_solver_run) if not opts.dry_run else None
-        dispatcher = DBBRDispatcher(game_db.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path, opts.dispatch_br, opts.eval_inline) if not opts.dry_run else None
+        dispatcher = DBBRDispatcher(game_db.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path, opts.dispatch_br, opts.eval_inline, opts.profile_memory) if not opts.dry_run else None
         eval_episode_timer = EpisodeTimer(opts.eval_every, early_frequency=opts.eval_every_early, fixed_episodes=opts.eval_exactly, eval_zero=opts.eval_zero)
         report_timer = EpisodeTimer(opts.report_freq)
 

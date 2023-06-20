@@ -166,6 +166,7 @@ def add_profiling_flags(parser):
     parser.add_argument('--pprofile_file', type=str, default='profile.txt')
     parser.add_argument('--cprofile', type=util.strtobool, default=0)
     parser.add_argument('--cprofile_file', type=str, default='cprofile.txt')
+    parser.add_argument('--profile_memory', type=util.strtobool, default=0)
 
 def add_experiment_flags(parser):
     parser.add_argument('--experiment_name', type=str)
@@ -190,6 +191,7 @@ def add_dispatching_flags(parser):
 
 def add_wandb_flags(parser, default=True):
     parser.add_argument('--use_wandb', type=util.strtobool, default=1 if default else 0) 
+    parser.add_argument('--wandb_step_interval', type=int, default=1024, help='Approximate number of steps between wandb logs')
     parser.add_argument('--wandb_note', type=str, default='') 
 
 def add_eval_flags(parser):

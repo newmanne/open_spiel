@@ -1,21 +1,19 @@
 num_envs: 1
 solver_type: dqn
-agent_fn: auctionnet
+agent_fn: auctionqnet
 agent_fn_kwargs:
   activation: tanh
   add_skip_connections: true
   hidden_sizes:
   - 128
   - 128
-  - 128
-  use_torso: false
-replay_buffer_capacity: 50_000
+replay_buffer_capacity: 10_000
 batch_size: 1024
 learning_rate: 0.01
 update_target_network_every: 1000
 learn_every: 16
 min_buffer_size_to_learn: 1000
-epsilon_end: 0.05
-epsilon_start: 0.9
+epsilon_end: 0.01
+epsilon_start: 0.5
 optimizer_str: sgd
 loss_str: mse

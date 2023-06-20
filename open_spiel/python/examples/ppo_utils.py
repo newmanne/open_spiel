@@ -65,6 +65,7 @@ DQN_DEFAULTS = {
   'loss_str': "mse",
   'agent_fn': 'mlp',
   'agent_fn_kwargs': {},
+  'use_wandb': False,
 }
     
 
@@ -305,7 +306,7 @@ def make_env_and_policy(game, config, env_params=None):
 
 class PPOTrainingLoop:
 
-  def __init__(self, game, env, agents, total_timesteps, players_to_train=None, report_timer=None, eval_timer=None, policy_diff_threshold=1e-3, max_policy_diff_count=9999, use_wandb=False):
+  def __init__(self, game, env, agents, total_timesteps, players_to_train=None, report_timer=None, eval_timer=None, policy_diff_threshold=1e-3, max_policy_diff_count=9999, use_wandb=False, wandb_step_interval=1024):
     self.game = game
     self.env = env
     self.agents = agents
@@ -320,6 +321,7 @@ class PPOTrainingLoop:
     self.max_policy_diff_count = max_policy_diff_count
     self.policy_diff_count = 0
     self.use_wandb = use_wandb
+    self.wandb_step_interval = wandb_step_interval
 
   def add_report_hook(self, hook):
     self.report_hooks.append(hook)
@@ -341,6 +343,8 @@ class PPOTrainingLoop:
 
     batch_size = int(len(self.env) * num_steps)
     num_updates = self.total_timesteps // batch_size
+    if self.use_wandb:
+      wandb_update_interval = max(self.wandb_step_interval // batch_size, 1)
 
     logging.info(f"Training for {num_updates} updates")
     logging.info(f"Fixed agents are {self.fixed_agents}. Learning agents are {self.players_to_train}")
@@ -356,6 +360,7 @@ class PPOTrainingLoop:
 
       for _ in range(num_steps):
           for player_id, agent in enumerate(self.agents): 
+              
               agent_output = agent.step(time_step, is_evaluation=player_id in self.fixed_agents)
               # Could get round from TS here and log probs?
               time_step, reward, done, unreset_time_steps = self.env.step(agent_output, reset_if_done=True)
@@ -376,7 +381,7 @@ class PPOTrainingLoop:
             policy_changed = True
 
       # Commit wandb
-      if self.use_wandb:
+      if self.use_wandb and update % wandb_update_interval == 0:
         # TODO: Make this way less specific to our game/abstract it more
         import wandb
         stats_dict = AuctionStatTrackingDecorator.merge_stats(self.env)
@@ -388,11 +393,7 @@ class PPOTrainingLoop:
             log_stats_dict[f'{prefix}/mean_auction_length'] = np.mean(stats_dict['auction_lengths'])
         if 'welfares' in stats_dict:
             log_stats_dict[f'{prefix}/mean_welfare'] = np.mean(stats_dict['welfares'])
-        
-        # TODO: DONT MAKE THIS EACH TIME, JUST RESET IT 
-        e = EnvParams(num_envs=1, sync=False, normalize_rewards=False).make_env(self.game)
-        e.reset()
-
+       
         for player_id in range(len(self.agents)):
           if 'raw_rewards' in stats_dict:
             log_stats_dict[f'{prefix}/player_{player_id}_mean_reward'] = np.mean(stats_dict['raw_rewards'][player_id])
@@ -402,12 +403,18 @@ class PPOTrainingLoop:
 
           if 'traps' in stats_dict:
             log_stats_dict[f'{prefix}/player_{player_id}_traps'] = np.mean(stats_dict['traps'][player_id])
-
-          step_output = self.agents[player_id].step(e.get_time_step(), is_evaluation=True)
-          probs = step_output.probs
-          e.step([step_output.action])
-          for action_id in range(len(probs)):
-            log_stats_dict[f'actions/player_{player_id}_action_{action_id}_prob'] = probs[action_id]
+ 
+        # Initial state action probabilities -- disabled for now
+        # TODO: DONT MAKE THIS EACH TIME, JUST RESET IT 
+        # e = EnvParams(num_envs=1, sync=False, normalize_rewards=False).make_env(self.game)
+        # e.reset()
+        # for player_id in range(len(self.agents)):
+        #   step_output = self.agents[player_id].step(e.get_time_step(), is_evaluation=True)
+        #   probs = step_output.probs
+        #   e.step([step_output.action])
+        #   for action_id in range(len(probs)):
+        #     log_stats_dict[f'actions/player_{player_id}_action_{action_id}_prob'] = probs[action_id]
+        
 
           # from open_spiel.python.observation import make_observation
           # observer = make_observation(self.game, params=observer_params)
@@ -461,13 +468,13 @@ def ppo_checkpoint(env_and_model, step, alg_start_time, compute_nash_conv=False,
   }
   return checkpoint
 
-def run_ppo(env_and_policy, total_steps, result_saver=None, seed=1234, compute_nash_conv=False, dispatcher=None, report_timer=None, eval_timer=None, use_wandb=False):
+def run_ppo(env_and_policy, total_steps, result_saver=None, seed=1234, compute_nash_conv=False, dispatcher=None, report_timer=None, eval_timer=None, use_wandb=False, wandb_step_interval=1024):
   # This may have already been done, but do it again. Required to do it outside to ensure that networks get initilized the same way, which usually happens elsewhere
   fix_seeds(seed)
   game, env, agents = env_and_policy.game, env_and_policy.env, env_and_policy.agents
 
   alg_start_time = time.time()
-  trainer = PPOTrainingLoop(game, env, agents, total_steps, report_timer=report_timer, eval_timer=eval_timer, use_wandb=use_wandb)
+  trainer = PPOTrainingLoop(game, env, agents, total_steps, report_timer=report_timer, eval_timer=eval_timer, use_wandb=use_wandb, wandb_step_interval=wandb_step_interval)
 
   def eval_hook(update, total_steps):
     logging.info("Running eval hook")

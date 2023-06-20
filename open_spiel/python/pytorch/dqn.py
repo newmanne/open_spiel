@@ -25,7 +25,7 @@ import torch.nn.functional as F
 
 from open_spiel.python import rl_agent
 from open_spiel.python.utils.replay_buffer import ReplayBuffer
-from open_spiel.python.pytorch.auction_nets import AuctionNet, layer_init, string_to_activation, CategoricalMasked, INVALID_ACTION_PENALTY
+from open_spiel.python.pytorch.auction_nets import AuctionQNet
 
 
 Transition = collections.namedtuple(
@@ -120,7 +120,7 @@ class DQN(rl_agent.AbstractAgent):
                state_representation_size,
                num_actions,
                hidden_layers_sizes=128,
-               agent_fn=AuctionNet,
+               agent_fn=AuctionQNet,
                agent_fn_kwargs=None,
                replay_buffer_capacity=10000,
                batch_size=128,
@@ -135,7 +135,9 @@ class DQN(rl_agent.AbstractAgent):
                epsilon_decay_duration=int(1e6),
                optimizer_str="sgd",
                device='cpu',
-               loss_str="mse"):
+               loss_str="mse",
+               use_wandb=False,
+               ):
     """Initialize the DQN agent."""
 
     # This call to locals() is used to store every argument used to initialize
@@ -154,14 +156,12 @@ class DQN(rl_agent.AbstractAgent):
     if isinstance(agent_fn, str):
         agent_fns = {
             'mlp': MLP,
-            'auctionnet': AuctionNet,
+            'auctionqnet': AuctionQNet,
         }
         try:
             agent_fn = agent_fns[agent_fn.lower()]
         except KeyError:
             raise ValueError(f"Unknown agent_fn {agent_fn}")
-
-    print(state_representation_size)
 
     if isinstance(hidden_layers_sizes, int):
       hidden_layers_sizes = [hidden_layers_sizes]
@@ -220,6 +220,8 @@ class DQN(rl_agent.AbstractAgent):
     else:
       raise ValueError("Not implemented, choose from 'adam' and 'sgd'.")
 
+    self.use_wandb = use_wandb
+
   def step(self, time_step, is_evaluation=False, add_transition_record=True):
     """Returns the action to be taken and updates the Q-network if needed.
 
@@ -245,6 +247,7 @@ class DQN(rl_agent.AbstractAgent):
       info_state =time_step.observations["info_state"][self.player_id]
       legal_actions = time_step.observations["legal_actions"][self.player_id]
       epsilon = self._get_epsilon(is_evaluation)
+      # print(info_state)
       action, probs = self._epsilon_greedy(info_state, legal_actions, epsilon)
     else:
       action = None
@@ -320,7 +323,7 @@ class DQN(rl_agent.AbstractAgent):
       action = np.random.choice(legal_actions)
       probs[legal_actions] = 1.0 / len(legal_actions)
     else:
-      info_state = torch.Tensor(np.reshape(info_state, [1, -1]))
+      info_state = torch.Tensor(np.reshape(info_state, [1, -1])).reshape((-1,) + self.input_shape).to(self.device)
       q_values = self._q_network(info_state).detach()[0]
       legal_q_values = q_values[legal_actions]
       action = legal_actions[torch.argmax(legal_q_values)]
@@ -352,19 +355,17 @@ class DQN(rl_agent.AbstractAgent):
       return None
 
     transitions = self._replay_buffer.sample(self._batch_size)
-    info_states = torch.Tensor([t.info_state for t in transitions])
-    actions = torch.LongTensor([t.action for t in transitions])
-    rewards = torch.Tensor([t.reward for t in transitions])
-    next_info_states = torch.Tensor([t.next_info_state for t in transitions])
-    are_final_steps = torch.Tensor([t.is_final_step for t in transitions])
-    legal_actions_mask = torch.Tensor(
-        np.array([t.legal_actions_mask for t in transitions]))
+    info_states = torch.Tensor(np.array([t.info_state for t in transitions])).reshape((-1,) + self.input_shape)
+    actions = torch.LongTensor(np.array([t.action for t in transitions]))
+    rewards = torch.Tensor(np.array([t.reward for t in transitions]))
+    next_info_states = torch.Tensor(np.array([t.next_info_state for t in transitions])).reshape((-1,) + self.input_shape)
+    are_final_steps = torch.Tensor(np.array([t.is_final_step for t in transitions]))
+    legal_actions_mask = torch.Tensor(np.array(np.array([t.legal_actions_mask for t in transitions]))).reshape(-1, self._num_actions)
 
     self._q_values = self._q_network(info_states)
     self._target_q_values = self._target_q_network(next_info_states).detach()
     if self._double_dqn:
       next_q_values = self._q_network(next_info_states).cpu().detach()
-
 
     illegal_actions = 1 - legal_actions_mask
     illegal_logits = illegal_actions * ILLEGAL_ACTION_LOGITS_PENALTY
@@ -388,6 +389,16 @@ class DQN(rl_agent.AbstractAgent):
     self._optimizer.zero_grad()
     loss.backward()
     self._optimizer.step()
+
+    if self.use_wandb:
+      import wandb
+      prefix = f'network_{self.player_id}'
+      wandb.log({
+        f"{prefix}/learning_rate": self._optimizer.param_groups[0]["lr"],
+        f"{prefix}/loss": loss.item(),
+        f"{prefix}/epsilon": self._get_epsilon(False),
+        f"{prefix}/step_counter": self._step_counter,
+      })
 
     return loss
 

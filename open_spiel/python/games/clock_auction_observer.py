@@ -1,4 +1,5 @@
-from open_spiel.python.games.clock_auction_base import AuctionParams, InformationPolicyConstants, InformationPolicy
+from open_spiel.python.games.clock_auction_base import AuctionParams, InformationPolicyConstants, InformationPolicy, MAX_CACHE_SIZE
+
 import numpy as np
 from functools import lru_cache
 from cachetools import LRUCache
@@ -13,7 +14,7 @@ class ClockAuctionObserver:
     if not isinstance(auction_params, AuctionParams):
       raise ValueError("params must be an AuctionParams object")
     self.auction_params = auction_params
-    self.tensor_cache = LRUCache(maxsize=50_000)
+    self.tensor_cache = LRUCache(maxsize=MAX_CACHE_SIZE)
 
     num_players = len(auction_params.player_types)
     num_products = auction_params.num_products
@@ -173,7 +174,7 @@ class ClockAuctionObserver:
     
     self.tensor_cache[my_hash_key] = tuple(self.tensor)
 
-  @lru_cache(maxsize=None)
+  @lru_cache(maxsize=MAX_CACHE_SIZE)
   def string_from(self, state, player):
     """Observation of `state` from the PoV of `player`, as a string."""
     pieces = []

@@ -32,7 +32,7 @@ class DBPolicySaver:
 
 class DBBRDispatcher:
 
-    def __init__(self, num_players, eval_overrides, br_overrides, eq_solver_run, br_portfolio_path, dispatch_br, eval_inline=False):
+    def __init__(self, num_players, eval_overrides, br_overrides, eq_solver_run, br_portfolio_path, dispatch_br, eval_inline=False, profile_memory=False):
         self.num_players = num_players
         self.eval_overrides = eval_overrides
         self.br_overrides = br_overrides
@@ -40,12 +40,21 @@ class DBBRDispatcher:
         self.br_portfolio_path = br_portfolio_path
         self.dispatch_br = dispatch_br
         self.eval_inline = eval_inline
+        self.profile_memory = profile_memory
 
     def dispatch(self, t):
         from auctions.management.commands.ppo_eval import eval_command
         # TODO: This isn't reading from eval_overrides, which is a problem! You could imagine parsing it...
         # TODO: Could modify this to leverage the game cache if that would help
 
+        from pympler import muppy, summary
+        def profile_memory_if_enabled():
+            if self.profile_memory:
+                all_objects = muppy.get_objects()
+                sum1 = summary.summarize(all_objects)
+                summary.print_(sum1)
+        
+        profile_memory_if_enabled()
         
         parser = argparse.ArgumentParser()
         add_eval_flags(parser)
@@ -61,10 +70,15 @@ class DBBRDispatcher:
             if self.eval_inline:
                 logger.info(f"Running inline straightforward eval for player {player} at t={t}")
                 eval_command(t, eq.experiment.name, eq.name, straightforward, reseed=False, **eval_args) 
+                profile_memory_if_enabled()
+
                 logger.info(f"Running inline trembling eval for player {player} at t={t}")
                 eval_command(t, eq.experiment.name, eq.name, tremble, reseed=False, **eval_args) 
+                profile_memory_if_enabled()
+
                 logger.info(f"Running inline modal eval for player {player} at t={t}")
                 eval_command(t, eq.experiment.name, eq.name, {player: 'modal'}, reseed=False, **eval_args) 
+                profile_memory_if_enabled()
             else:
                 dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, str(straightforward), overrides=self.eval_overrides)
                 dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, str(tremble), overrides=self.eval_overrides)
