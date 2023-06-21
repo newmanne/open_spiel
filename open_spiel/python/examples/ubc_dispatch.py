@@ -5,8 +5,24 @@ import glob
 import os
 from pathlib import Path
 from open_spiel.python.examples.ubc_utils import EVAL_DIR, BR_DIR, CONFIG_ROOT, config_path_from_config_name, safe_config_name, random_string
+import time
 
+BASE_OUTPUT_DIR = os.environ['CLOCK_AUCTION_OUTPUT_ROOT']
+CLUSTER = os.environ.get('SPIEL_CLUSTER', 'ada')
 
+# TODO: I want to do #SBATCH --partition=ada_cpu_long,vickrey but this doesn't work. WHYYYYYY
+if CLUSTER == 'ada':
+    preamble = """#SBATCH --partition=vickrey
+#SBATCH --mem 20G"""
+    load_py = """source ~/.bashrc
+    source activate py38"""
+    shell = '#!/bin/bash'
+else:
+    shell = '#!/bin/sh'
+    preamble = ''
+    load_py = """export PYTHONPATH=${{OPENSPIEL_PATH}}:$PYTHONPATH
+export PYTHONPATH=${{OPENSPIEL_PATH}}/build/python:$PYTHONPATH"""
+    
 def verify_config():
     spiel_path = os.environ.get('OPENSPIEL_CLUSTER_PATH')
     if spiel_path is None:
@@ -30,9 +46,14 @@ def write_and_submit(experiment_output_dir, experiment_name, job_file_text, subm
     write_job_file(job_file_path, job_file_text)
     # print(f"Writing job to {job_file_path}")
     if submit:
-        os.system(f'cd {experiment_output_dir} && sbatch {job_file_path}')
+        if CLUSTER == 'ada':
+            command = f"ssh borg.cs.ubc.ca 'cd {experiment_output_dir} && /opt/slurm/bin/sbatch {job_file_path}'"
+            # print(command)
+            os.system(command)
+        else:
+            os.system(f'cd {experiment_output_dir} && sbatch {job_file_path}')
 
-def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', submit=True, cpus=16, overrides='', cfr_also=False, database=True, n_seeds=1, start_seed=100, alg='ppo', extra_name=''):
+def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', submit=True, cpus=4, overrides='', cfr_also=False, database=True, n_seeds=1, start_seed=100, alg='ppo', extra_name=''):
     '''yml_config is either a folder or a single config'''
 
     if base_job_name is None:
@@ -70,7 +91,7 @@ def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', 
 
     spiel_path, config_dir, pydir, manage_path = verify_config()
 
-    experiment_output_dir = f'/shared/outputs/{base_job_name}'
+    experiment_output_dir = f'{BASE_OUTPUT_DIR}/{base_job_name}'
 
     for experiment in experiments:
         solver = experiment.get('solver', 'nfsp')
@@ -91,17 +112,22 @@ def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', 
 
         Path(output_dir).mkdir(parents=True, exist_ok=True)
 
+        if CLUSTER == 'ada':
+            time.sleep(0.3) # FS is stupid and sometimes you need to wait or the file won't exist.
+
         slurm_job_name = experiment_name + '_' + base_job_name
-        job_file_text = f"""#!/bin/sh
+        job_file_text = f"""{shell}
+{preamble}
 #SBATCH --cpus-per-task={cpus}
 #SBATCH --job-name={slurm_job_name}
 #SBATCH --time=5-0:00:00 # days-hh:mm:ss
 #SBATCH -e slurm-%j-{slurm_job_name}.err
 #SBATCH -o slurm-%j-{slurm_job_name}.out
 
+set -e
+
+{load_py}
 export OPENSPIEL_PATH={spiel_path}
-export PYTHONPATH=${{OPENSPIEL_PATH}}:$PYTHONPATH
-export PYTHONPATH=${{OPENSPIEL_PATH}}/build/python:$PYTHONPATH
 
 CMD=`{command}`
 echo $CMD
@@ -111,7 +137,7 @@ eval $CMD
     logging.info(f"Dispatched {len(experiments)} experiments!")
 
 
-def dispatch_br_database(experiment_name, run_name, t, br_player, configs, submit=True, cpus=16, overrides=''):
+def dispatch_br_database(experiment_name, run_name, t, br_player, configs, submit=True, cpus=4, overrides=''):
     if os.path.exists(config_path_from_config_name(configs)):
         dispatch_single_br_database(experiment_name, run_name, t, br_player, configs, submit, cpus, overrides)
     else:
@@ -125,28 +151,28 @@ def dispatch_single_br_database(experiment_name, run_name, t, br_player, config,
     command = f'python {manage_path} {django_command} --experiment_name {experiment_name} --run_name {run_name} --t {t} --br_player {br_player} --dispatch_rewards True {overrides} --config {config}'
 
     slurm_job_name = f'br_{br_player}_{experiment_name}_{run_name}_{t}_{config.replace("/", "_")}'
-    job_file_text = f"""#!/bin/sh
+    job_file_text = f"""{shell}
+{preamble}
 #SBATCH --cpus-per-task={cpus}
 #SBATCH --job-name={slurm_job_name}
 #SBATCH --time=5-0:00:00 # days-hh:mm:ss
 #SBATCH -e slurm-%j-{slurm_job_name}.err
 #SBATCH -o slurm-%j-{slurm_job_name}.out
 
+{load_py}
 export OPENSPIEL_PATH={spiel_path}
-export PYTHONPATH=${{OPENSPIEL_PATH}}:$PYTHONPATH
-export PYTHONPATH=${{OPENSPIEL_PATH}}/build/python:$PYTHONPATH
 
 CMD=`{command}`
 echo $CMD
 eval $CMD
 """
 
-    experiment_dir = f'/shared/outputs/{experiment_name}/{run_name}/{BR_DIR}'
+    experiment_dir = f'{BASE_OUTPUT_DIR}/{experiment_name}/{run_name}/{BR_DIR}'
     write_and_submit(experiment_dir, slurm_job_name, job_file_text, submit)
 
     logging.info(f"Dispatched experiment!")
 
-def dispatch_eval_database(t, experiment_name, run_name, br_mapping=dict(), submit=True, cpus=16, overrides='', django_command='ppo_eval'):
+def dispatch_eval_database(t, experiment_name, run_name, br_mapping=dict(), submit=True, cpus=4, overrides='', django_command='ppo_eval'):
     spiel_path, config_dir, pydir, manage_path = verify_config()
 
     slurm_job_name = f'eval_{run_name}_{t}_{experiment_name}'
@@ -154,18 +180,19 @@ def dispatch_eval_database(t, experiment_name, run_name, br_mapping=dict(), subm
     command = f'python {manage_path} {django_command} --experiment_name {experiment_name} --run_name {run_name} --t {t} {overrides} --br_mapping "{br_mapping_str}"'
     slurm_job_name += '_' + random_string(10)
 
-    experiment_dir = f'/shared/outputs/{experiment_name}/{run_name}/{EVAL_DIR}'
+    experiment_dir = f'{BASE_OUTPUT_DIR}/{experiment_name}/{run_name}/{EVAL_DIR}'
 
-    job_file_text = f"""#!/bin/sh
+    job_file_text = f"""{shell}
+{preamble}
 #SBATCH --cpus-per-task={cpus}
 #SBATCH --job-name={slurm_job_name}
 #SBATCH --time=5-0:00:00 # days-hh:mm:ss
 #SBATCH -e slurm-%j-{slurm_job_name}.err
 #SBATCH -o slurm-%j-{slurm_job_name}.out
 
+{load_py}
 export OPENSPIEL_PATH={spiel_path}
-export PYTHONPATH=${{OPENSPIEL_PATH}}:$PYTHONPATH
-export PYTHONPATH=${{OPENSPIEL_PATH}}/build/python:$PYTHONPATH
+
 CMD=`{command}`
 echo $CMD
 eval $CMD
@@ -173,10 +200,10 @@ eval $CMD
     write_and_submit(experiment_dir, slurm_job_name, job_file_text, submit)
     logging.info(f"Dispatched experiment!")
 
-def dispatch_from_checkpoint(checkpoint_pk, game_name, config, experiment_name, base_job_name, cpus=16, overrides=''):
+def dispatch_from_checkpoint(checkpoint_pk, game_name, config, experiment_name, base_job_name, cpus=4, overrides=''):
     overrides += f' --parent_checkpoint_pk {checkpoint_pk}'
     spiel_path, config_dir, pydir, manage_path = verify_config()
-    experiment_output_dir = f'/shared/outputs/{base_job_name}'
+    experiment_output_dir = f'{BASE_OUTPUT_DIR}/{base_job_name}'
     output_dir = f'{experiment_output_dir}/{experiment_name}'
 
     command = f'python {manage_path} ppo --seed 1234 --filename {game_name}.json --network_config_file {config} --experiment_name {base_job_name} --job_name "{experiment_name}" {overrides}'
@@ -184,16 +211,16 @@ def dispatch_from_checkpoint(checkpoint_pk, game_name, config, experiment_name, 
     Path(output_dir).mkdir(parents=True, exist_ok=True)
 
     slurm_job_name = experiment_name + '_' + base_job_name
-    job_file_text = f"""#!/bin/sh
+    job_file_text = f"""{shell}
+{preamble}
 #SBATCH --cpus-per-task={cpus}
 #SBATCH --job-name={slurm_job_name}
 #SBATCH --time=5-0:00:00 # days-hh:mm:ss
 #SBATCH -e slurm-%j-{slurm_job_name}.err
 #SBATCH -o slurm-%j-{slurm_job_name}.out
 
+{load_py}
 export OPENSPIEL_PATH={spiel_path}
-export PYTHONPATH=${{OPENSPIEL_PATH}}:$PYTHONPATH
-export PYTHONPATH=${{OPENSPIEL_PATH}}/build/python:$PYTHONPATH
 
 CMD=`{command}`
 echo $CMD

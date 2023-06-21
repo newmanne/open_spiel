@@ -19,7 +19,7 @@ import shutil
 from open_spiel.python.examples.ubc_math_utils import fast_choice
 import signal
 
-CONFIG_ROOT = '/apps/open_spiel/notebooks/configs'
+CONFIG_ROOT = os.environ['OPENSPIEL_PATH'] + '/notebooks/configs'
 
 CLOCK_AUCTION = 'clock_auction'
 

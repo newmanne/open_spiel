@@ -11,8 +11,9 @@ import pyspiel
 from distutils import util
 import json
 from open_spiel.python.examples.ppo_eval import EvalDefaults
+import os
 
-OUTPUT_ROOT = '/shared/outputs'
+OUTPUT_ROOT = os.environ['CLOCK_AUCTION_OUTPUT_ROOT'] 
 
 def get_or_create_game(game_name):
     try:

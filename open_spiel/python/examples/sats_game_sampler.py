@@ -28,7 +28,7 @@ from open_spiel.python.examples.env_and_policy import *
 import copy
 
 import sys
-sys.path.append('/apps/sats/python')
+# sys.path.append('/apps/sats/python')
 from pysats import map_generators, run_sats
 
 from open_spiel.python.algorithms import get_all_states_with_policy
@@ -46,7 +46,6 @@ import argparse
 from distutils import util
 PREFIX = 'may30'
 CONFIG_DIR = os.environ['CLOCK_AUCTION_CONFIG_DIR']
-PYSATS = '/apps/sats/python'
 
 def has_non_zero_allocations(df):
     # Returns true if for each player, there exists a type combo of opponents such that it is allocated at least one item (no one should ever have 0 hope)
