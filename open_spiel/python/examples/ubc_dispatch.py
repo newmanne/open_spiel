@@ -10,9 +10,8 @@ import time
 BASE_OUTPUT_DIR = os.environ['CLOCK_AUCTION_OUTPUT_ROOT']
 CLUSTER = os.environ.get('SPIEL_CLUSTER', 'ada')
 
-# TODO: I want to do #SBATCH --partition=ada_cpu_long,vickrey but this doesn't work. WHYYYYYY
 if CLUSTER == 'ada':
-    preamble = """#SBATCH --partition=vickrey
+    preamble = """#SBATCH --partition=ada_cpu_long,vickrey
 #SBATCH --mem 20G"""
     load_py = """source ~/.bashrc
     source activate py38"""
@@ -20,8 +19,8 @@ if CLUSTER == 'ada':
 else:
     shell = '#!/bin/sh'
     preamble = ''
-    load_py = """export PYTHONPATH=${{OPENSPIEL_PATH}}:$PYTHONPATH
-export PYTHONPATH=${{OPENSPIEL_PATH}}/build/python:$PYTHONPATH"""
+    load_py = """export PYTHONPATH=${OPENSPIEL_PATH}:$PYTHONPATH
+export PYTHONPATH=${OPENSPIEL_PATH}/build/python:$PYTHONPATH"""
     
 def verify_config():
     spiel_path = os.environ.get('OPENSPIEL_CLUSTER_PATH')

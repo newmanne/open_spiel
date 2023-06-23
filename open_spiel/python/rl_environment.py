@@ -540,3 +540,7 @@ class Environment(object):
     assert (
         self._game.get_type().dynamics == pyspiel.GameType.Dynamics.MEAN_FIELD)
     self._mfg_distribution = mfg_distribution
+
+  def clear_cache(self):
+    if self.observer:
+      self.observer.clear_cache()

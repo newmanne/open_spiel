@@ -1,9 +1,9 @@
 from open_spiel.python.games.clock_auction_base import AuctionParams, InformationPolicyConstants, InformationPolicy, MAX_CACHE_SIZE
-
 import numpy as np
 from functools import lru_cache
 from cachetools import LRUCache
 from cachetools.keys import hashkey
+import logging
 
 class ClockAuctionObserver:
   """Observer, conforming to the PyObserver interface (see observation.py)."""
@@ -173,6 +173,11 @@ class ClockAuctionObserver:
       raise ValueError(f"Observation {self.dict} has values > 1")
     
     self.tensor_cache[my_hash_key] = tuple(self.tensor)
+
+  def clear_cache(self):
+    logging.info("Clearing tensor cache")
+    del self.tensor_cache
+    self.tensor_cache = LRUCache(maxsize=MAX_CACHE_SIZE)
 
   @lru_cache(maxsize=MAX_CACHE_SIZE)
   def string_from(self, state, player):

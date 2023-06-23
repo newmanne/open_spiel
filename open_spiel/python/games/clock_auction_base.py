@@ -7,7 +7,7 @@ import numpy as np
 
 DEFAULT_MAX_ROUNDS = 100
 DEFAULT_AGENT_MEMORY = 1
-MAX_CACHE_SIZE = 125_000
+MAX_CACHE_SIZE = 50_000
 
 class ActivityPolicy(enum.IntEnum):
   ON = 0

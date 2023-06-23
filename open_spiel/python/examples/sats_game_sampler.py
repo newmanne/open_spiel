@@ -28,8 +28,7 @@ from open_spiel.python.examples.env_and_policy import *
 import copy
 
 import sys
-# sys.path.append('/apps/sats/python')
-from pysats import map_generators, run_sats
+from open_spiel.python.examples.pysats import map_generators, run_sats
 
 from open_spiel.python.algorithms import get_all_states_with_policy
 import time
@@ -63,6 +62,37 @@ def has_non_zero_allocations(df):
 
 def run_iter(solver):
     solver.iteration()
+
+
+def max_straightfoward_rounds(game, alternating=False, num_samples=1):
+    terminal_rounds = []
+    auction_params = game.auction_params
+    for _ in range(num_samples):
+        for combo in type_combos(game):
+            # What if each bidder makes their straightforward demand?
+            prices = np.array(auction_params.opening_prices, dtype=np.float64)
+            demand = np.zeros(auction_params.num_products)
+            r = 1
+            while True:
+                for bidder_type in combo:
+                    bidder = bidder_type['bidder']
+                    profits = bidder.get_profits(prices)
+                    package = bidder.all_bids[profits.argmax()]
+                    demand += package
+
+                od = demand > auction_params.licenses
+                if any(od):
+                    if alternating:
+                        idx = np.random.choice(np.where(od)[0])
+                    else:
+                        idx = od
+                    prices[idx] = prices[idx] * (1 + auction_params.increment)
+                    r += 1
+                    demand = np.zeros(auction_params.num_products)
+                else:
+                    break
+            terminal_rounds.append(r)
+    return max(terminal_rounds)
 
 class SignalTimeout(ValueError):
     pass
@@ -156,6 +186,18 @@ def test_config_is_wieldy(config, max_game_tree_size=None, external=True):
                 retval['failure_reason'] = 'Not enough competition'
                 return retval
         
+
+            # Test how many rounds the worst-case straightforward solution is
+            if max_straightfoward_rounds(game) > 8:
+                retval['failed'] = True
+                retval['failure_reason'] = 'Straightforward too long'
+            
+            if max_straightfoward_rounds(game, alternating=True, num_samples=100) > 7:
+                retval['failed'] = True
+                retval['failure_reason'] = 'Worst-case straightfoward too long'
+
+            # A stricter version of the above, where all bidders submit straightforward demands but only 1 overdemanded product's price (randomly) rises
+
             # Test #2: Is this game way too big? (Is this the right metric? We're using MCCFR aftearall... The whole point is NOT needing to expand)
             # This is VERY slow... (fails after 15 minutes for 5_000 nodes, say)
             if max_game_tree_size is not None:
@@ -188,9 +230,9 @@ def main(seed=1234, output='configs.pkl', external=True, geography=None, track_m
     N_CONFIGS = 5
     MIN_TYPES = 2
     MAX_TYPES = 2
-    MIN_BIDDERS = 3
-    MAX_BIDDERS = 3
-    MAX_ACTION_SPACE = 16
+    MIN_BIDDERS = 2
+    MAX_BIDDERS = 2
+    MAX_ACTION_SPACE = 12
     MAX_NUM_LICENSES = 6
 
     failures = defaultdict(int)
@@ -293,7 +335,7 @@ def main(seed=1234, output='configs.pkl', external=True, geography=None, track_m
                     elif bidder['type'] == 'national':
                         bidder['market_share'] = {
                             'lower': 0.08,
-                            'upper': 0.22,
+                            'upper': 0.15,
                         }
 
                     # Want higher marginal values on secondary licenses

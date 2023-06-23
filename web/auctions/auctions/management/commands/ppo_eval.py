@@ -8,8 +8,18 @@ from open_spiel.python.examples.ubc_decorators import TakeSingleActionDecorator,
 from open_spiel.python.examples.straightforward_agent import StraightforwardAgent
 from distutils import util
 from open_spiel.python.algorithms.exploitability import nash_conv
+import os, psutil
+import humanize
 
 logger = logging.getLogger(__name__)
+
+# def profile_memory_if_enabled():
+#     mem_usage = psutil.Process(os.getpid()).memory_info().rss #/ 1024 ** 2
+#     logging.info(f"Memory usage {humanize.naturalsize(mem_usage, binary=True)}") 
+#     all_objects = muppy.get_objects()
+#     sum1 = summary.summarize(all_objects)
+#     summary.print_(sum1)
+
 
 def make_fake_br(equilibrium_solver_run_checkpoint, br_player, name):
     # Create a "fake" listing for the straightforward BR
@@ -26,11 +36,6 @@ def make_fake_br(equilibrium_solver_run_checkpoint, br_player, name):
 
 
 def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, seed=EvalDefaults.DEFAULT_SEED, report_freq=EvalDefaults.DEFAULT_REPORT_FREQ, num_samples=EvalDefaults.DEFAULT_NUM_SAMPLES, compute_efficiency=False, num_envs=EvalDefaults.DEFAULT_NUM_ENVS, reseed=True, store_samples=True):
-    import os, psutil
-    logging.info("BEFORE EVAL")
-    logging.info(str(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2)) # MiB
-
-    
     if br_mapping is None:
         br_mapping = dict()
     '''br_mapping is a dict with keys of player_ids mapping to br_names'''
@@ -85,6 +90,19 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
     # RUN EVAL
     eval_output = run_eval(env_and_policy, num_samples=num_samples, report_freq=report_freq, seed=seed, compute_efficiency=compute_efficiency)
 
+    # Run NashConv only if all players are modal
+    # (running NashConv against non-modal players takes a ton more memory and time)
+    # TODO: is this safe to do on larger games, or will it run out of memory?
+    all_modal = (len(br_mapping) == game.num_players()) and np.all([v == 'modal' for v in br_mapping.values()])
+    logging.info(f"I AM ALL MODAL {all_modal}")
+    nc = None
+    if all_modal:
+        nc_time_limit_seconds = 150
+        logging.info(f"Computing NC for up to {nc_time_limit_seconds} seconds")
+        worked, nc = time_bounded_run(nc_time_limit_seconds, nash_conv, game, env_and_policy.make_policy())
+        if not worked:
+            logging.info("Aborted NC calc run because time")
+
     # SAVE EVAL
     if not dry_run:
         mean_rewards = []
@@ -94,16 +112,6 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
             )
         
         eval_output = convert_pesky_np(eval_output)
-
-        # Run NashConv only if all players are modal
-        # (running NashConv against non-modal players takes a ton more memory and time)
-        # TODO: is this safe to do on larger games, or will it run out of memory?
-        all_modal = (len(br_mapping) == game.num_players()) and np.all([v == 'modal' for v in br_mapping.values()])
-        nc = None
-        if all_modal:
-            worked, nc = time_bounded_run(300, nash_conv, game, env_and_policy.make_policy())
-            if not worked:
-                logging.info("Aborted NC calc run because time")
 
         Evaluation.objects.create(
             name = name,
@@ -116,8 +124,28 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
         )
         logging.info("Saved to DB")
 
-    print("AFTER EVAL")
-    logging.info(str(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2)) # MiB
+    logging.info("AFTER EVAL")
+    
+    # Some horrible mmeory leak exists. The following abonomination seems to fix it. I don't know which elements are all entirely necessary
+    import gc
+    import functools
+    gc.collect()
+
+    from open_spiel.python.games.clock_auction_observer import ClockAuctionObserver
+    observers = [a for a in gc.get_objects() if isinstance(a, ClockAuctionObserver)]
+    for observer in observers:
+        observer.clear_cache()
+
+    wrappers = [a for a in gc.get_objects() if isinstance(a, functools._lru_cache_wrapper)]
+    for wrapper in wrappers:
+        if 'ClockAuction' in wrapper.__qualname__:
+            wrapper.cache_clear()
+
+    for env in env_and_policy.env.envs:
+        env.clear_cache()
+    game.clear_cache() 
+    del game
+    del env_and_policy
 
     return eval_output
 

@@ -6,6 +6,7 @@ import logging
 import math
 from open_spiel.python.games.clock_auction_parser import parse_auction_params
 from open_spiel.python.games.clock_auction_observer import ClockAuctionObserver
+
 from cachetools import LRUCache
 from open_spiel.python.games.clock_auction_base import AuctionParams, LotteryState, ActivityPolicy, UndersellPolicy, InformationPolicy, InformationPolicyConstants, ValueFormat, BidderState, MAX_CACHE_SIZE
 from pulp import LpProblem, LpMinimize, LpVariable, LpStatus, LpBinary, lpSum, lpDot, LpMaximize, LpInteger, value
@@ -192,6 +193,14 @@ class ClockAuctionGame(pyspiel.Game):
     observer = self.make_py_observer()
     return observer.observation_shape
 
+  def clear_cache(self):
+    if hasattr(self, 'lottery_cache'):
+      logging.info("Clearing lottery cache")
+      self.lottery_cache.clear()
+    if hasattr(self, 'state_cache'):
+      logging.info("Clearing state cache")
+      self.state_cache.clear()
+
 class ClockAuctionState(pyspiel.State):
   """A python version of the Atari Game state."""
 
@@ -247,9 +256,10 @@ class ClockAuctionState(pyspiel.State):
     else:
       return self._cur_player
 
-  @lru_cache(maxsize=MAX_CACHE_SIZE) # would probably be better to use a per-instance cache here, but this is probably close enough
-  def _legal_actions(self, player):
+  @cached_property
+  def _cached_legal_actions(self):
     """Returns a list of legal actions, sorted in ascending order."""
+    player = self._cur_player
     assert player >= 0 
     legal_actions = []
     bidder = self.bidders[player]
@@ -302,6 +312,9 @@ class ClockAuctionState(pyspiel.State):
     
     return legal_actions.nonzero()[0]
 
+  def _legal_actions(self, player):
+    return self._cached_legal_actions
+
   # Override
   def apply_action(self, action):
     raise ValueError("You are circumventing caching!!! Use state.child()")
@@ -312,6 +325,7 @@ class ClockAuctionState(pyspiel.State):
     self.__dict__.pop('_chance_outcomes', None) 
     self.__dict__.pop('_returns', None) 
     self.__dict__.pop('_my_hash', None) 
+    self.__dict__.pop('_cached_legal_actions', None) 
 
   def _apply_action(self, action):
     """Applies the specified action to the state.

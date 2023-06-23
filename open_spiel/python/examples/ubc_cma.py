@@ -8,7 +8,6 @@ import scipy.stats
 from collections import defaultdict
 import pickle
 
-from auctions.webutils import ppo_db_checkpoint_loader
 
 def type_combos(game):
     types = [game.auction_params.player_types[player] for player in range(game.num_players())]
@@ -280,6 +279,7 @@ def get_results(run, game_cache=None, skip_single_chance_nodes=True):
     if solver_type == 'cfr':
         policy = pickle.loads(final_checkpoint.policy)
     else:
+        from auctions.webutils import ppo_db_checkpoint_loader # Get around import stuff for sats_game-sampler
         policy = ppo_db_checkpoint_loader(final_checkpoint).make_policy()
 
     return game, final_checkpoint, policy
