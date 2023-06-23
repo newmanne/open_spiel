@@ -126,6 +126,7 @@ class Evaluation(TimeStampedModel):
     mean_rewards = ArrayField(models.FloatField()) # For quick nash conv calcs
     best_response = models.OneToOneField(BestResponse, on_delete=CASCADE, null=True)
     nash_conv = models.FloatField(null=True)
+    player_improvements = ArrayField(models.FloatField(), null=True)
 
     class Meta:
         unique_together = ('checkpoint', 'name',)

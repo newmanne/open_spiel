@@ -43,8 +43,6 @@ import argparse
 # from pympler.tracker import SummaryTracker
 
 from distutils import util
-PREFIX = 'may30'
-CONFIG_DIR = os.environ['CLOCK_AUCTION_CONFIG_DIR']
 
 def has_non_zero_allocations(df):
     # Returns true if for each player, there exists a type combo of opponents such that it is allocated at least one item (no one should ever have 0 hope)
@@ -232,8 +230,9 @@ def main(seed=1234, output='configs.pkl', external=True, geography=None, track_m
     MAX_TYPES = 2
     MIN_BIDDERS = 2
     MAX_BIDDERS = 2
-    MAX_ACTION_SPACE = 12
-    MAX_NUM_LICENSES = 6
+    MAX_ACTION_SPACE = 9
+    MAX_NUM_LICENSES = 5
+    # TODO: see more magic constants in the wieldy function
 
     failures = defaultdict(int)
 

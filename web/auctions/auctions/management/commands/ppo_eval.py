@@ -92,15 +92,18 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
 
     # Run NashConv only if all players are modal
     # (running NashConv against non-modal players takes a ton more memory and time)
-    # TODO: is this safe to do on larger games, or will it run out of memory?
+    # TODO: This is not necessarily safe and has a tendency to run out of memory and crash the program :(. Can we isolate it better? 
     all_modal = (len(br_mapping) == game.num_players()) and np.all([v == 'modal' for v in br_mapping.values()])
-    logging.info(f"I AM ALL MODAL {all_modal}")
     nc = None
+    player_improvements = None
     if all_modal:
-        nc_time_limit_seconds = 150
+        nc_time_limit_seconds = 300
         logging.info(f"Computing NC for up to {nc_time_limit_seconds} seconds")
-        worked, nc = time_bounded_run(nc_time_limit_seconds, nash_conv, game, env_and_policy.make_policy())
-        if not worked:
+        # use_cpp_br=True
+        worked, (nc, player_improvements) = time_bounded_run(nc_time_limit_seconds, nash_conv, game, env_and_policy.make_policy(), return_only_nash_conv=False)
+        if worked:
+            logging.info(f"NC results: NashConv:{nc} PlayerImprovements: {player_improvements}")
+        else:
             logging.info("Aborted NC calc run because time")
 
     # SAVE EVAL
@@ -121,6 +124,7 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
             mean_rewards = mean_rewards,
             best_response = best_response if real_br else None,
             nash_conv = nc,
+            player_impovements = player_improvements,
         )
         logging.info("Saved to DB")
 

@@ -12,13 +12,15 @@ CLUSTER = os.environ.get('SPIEL_CLUSTER', 'ada')
 
 if CLUSTER == 'ada':
     preamble = """#SBATCH --partition=ada_cpu_long,vickrey
+#SBATCH --cpus-per-task=4
 #SBATCH --mem 20G"""
     load_py = """source ~/.bashrc
     source activate py38"""
     shell = '#!/bin/bash'
 else:
+    # Slurm on RONIN doesn't repsect memory issues, so we just isolate one job per node
     shell = '#!/bin/sh'
-    preamble = ''
+    preamble = '#SBATCH --cpus-per-task=16'
     load_py = """export PYTHONPATH=${OPENSPIEL_PATH}:$PYTHONPATH
 export PYTHONPATH=${OPENSPIEL_PATH}/build/python:$PYTHONPATH"""
     
@@ -52,7 +54,7 @@ def write_and_submit(experiment_output_dir, experiment_name, job_file_text, subm
         else:
             os.system(f'cd {experiment_output_dir} && sbatch {job_file_path}')
 
-def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', submit=True, cpus=4, overrides='', cfr_also=False, database=True, n_seeds=1, start_seed=100, alg='ppo', extra_name=''):
+def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', submit=True, overrides='', cfr_also=False, database=True, n_seeds=1, start_seed=100, alg='ppo', extra_name=''):
     '''yml_config is either a folder or a single config'''
 
     if base_job_name is None:
@@ -117,7 +119,6 @@ def dispatch_experiments(yml_config, base_job_name=None, game_name='parking_1', 
         slurm_job_name = experiment_name + '_' + base_job_name
         job_file_text = f"""{shell}
 {preamble}
-#SBATCH --cpus-per-task={cpus}
 #SBATCH --job-name={slurm_job_name}
 #SBATCH --time=5-0:00:00 # days-hh:mm:ss
 #SBATCH -e slurm-%j-{slurm_job_name}.err
@@ -136,23 +137,22 @@ eval $CMD
     logging.info(f"Dispatched {len(experiments)} experiments!")
 
 
-def dispatch_br_database(experiment_name, run_name, t, br_player, configs, submit=True, cpus=4, overrides=''):
+def dispatch_br_database(experiment_name, run_name, t, br_player, configs, submit=True, overrides=''):
     if os.path.exists(config_path_from_config_name(configs)):
-        dispatch_single_br_database(experiment_name, run_name, t, br_player, configs, submit, cpus, overrides)
+        dispatch_single_br_database(experiment_name, run_name, t, br_player, configs, submit, overrides)
     else:
         # Multiple configs
         for br_config_path in glob.glob(f'{CONFIG_ROOT}/{configs}/*.yml'):
-            dispatch_single_br_database(experiment_name, run_name, t, br_player, br_config_path.replace(f'{CONFIG_ROOT}/', '').replace('.yml', ''), submit, cpus, overrides)
+            dispatch_single_br_database(experiment_name, run_name, t, br_player, br_config_path.replace(f'{CONFIG_ROOT}/', '').replace('.yml', ''), submit, overrides)
 
 
-def dispatch_single_br_database(experiment_name, run_name, t, br_player, config, submit, cpus, overrides, django_command='ppo_br'):
+def dispatch_single_br_database(experiment_name, run_name, t, br_player, config, submit, overrides, django_command='ppo_br'):
     spiel_path, config_dir, pydir, manage_path = verify_config()
     command = f'python {manage_path} {django_command} --experiment_name {experiment_name} --run_name {run_name} --t {t} --br_player {br_player} --dispatch_rewards True {overrides} --config {config}'
 
     slurm_job_name = f'br_{br_player}_{experiment_name}_{run_name}_{t}_{config.replace("/", "_")}'
     job_file_text = f"""{shell}
 {preamble}
-#SBATCH --cpus-per-task={cpus}
 #SBATCH --job-name={slurm_job_name}
 #SBATCH --time=5-0:00:00 # days-hh:mm:ss
 #SBATCH -e slurm-%j-{slurm_job_name}.err
@@ -171,7 +171,7 @@ eval $CMD
 
     logging.info(f"Dispatched experiment!")
 
-def dispatch_eval_database(t, experiment_name, run_name, br_mapping=dict(), submit=True, cpus=4, overrides='', django_command='ppo_eval'):
+def dispatch_eval_database(t, experiment_name, run_name, br_mapping=dict(), submit=True, overrides='', django_command='ppo_eval'):
     spiel_path, config_dir, pydir, manage_path = verify_config()
 
     slurm_job_name = f'eval_{run_name}_{t}_{experiment_name}'
@@ -183,7 +183,6 @@ def dispatch_eval_database(t, experiment_name, run_name, br_mapping=dict(), subm
 
     job_file_text = f"""{shell}
 {preamble}
-#SBATCH --cpus-per-task={cpus}
 #SBATCH --job-name={slurm_job_name}
 #SBATCH --time=5-0:00:00 # days-hh:mm:ss
 #SBATCH -e slurm-%j-{slurm_job_name}.err
@@ -199,7 +198,7 @@ eval $CMD
     write_and_submit(experiment_dir, slurm_job_name, job_file_text, submit)
     logging.info(f"Dispatched experiment!")
 
-def dispatch_from_checkpoint(checkpoint_pk, game_name, config, experiment_name, base_job_name, cpus=4, overrides=''):
+def dispatch_from_checkpoint(checkpoint_pk, game_name, config, experiment_name, base_job_name, overrides=''):
     overrides += f' --parent_checkpoint_pk {checkpoint_pk}'
     spiel_path, config_dir, pydir, manage_path = verify_config()
     experiment_output_dir = f'{BASE_OUTPUT_DIR}/{base_job_name}'
@@ -212,7 +211,6 @@ def dispatch_from_checkpoint(checkpoint_pk, game_name, config, experiment_name, 
     slurm_job_name = experiment_name + '_' + base_job_name
     job_file_text = f"""{shell}
 {preamble}
-#SBATCH --cpus-per-task={cpus}
 #SBATCH --job-name={slurm_job_name}
 #SBATCH --time=5-0:00:00 # days-hh:mm:ss
 #SBATCH -e slurm-%j-{slurm_job_name}.err
