@@ -30,7 +30,7 @@ class JointRLAgentPolicy(policy.Policy):
   """
 
   def __init__(self, game, agents: Dict[int, rl_agent.AbstractAgent],
-               use_observation: bool):
+               use_observation: bool, string_only=False):
     """Initializes the joint RL agent policy.
 
     Args:
@@ -44,6 +44,8 @@ class JointRLAgentPolicy(policy.Policy):
     player_ids = list(sorted(agents.keys()))
     super().__init__(game, player_ids)
     self._agents = agents
+    self.string_only = string_only
+
     self._obs = {
         "info_state": [None] * game.num_players(),
         "legal_actions": [None] * game.num_players()
@@ -67,9 +69,10 @@ class JointRLAgentPolicy(policy.Policy):
 
     self._obs['state'] = state
     self._obs["current_player"] = player_id
-    self._obs["info_state"][player_id] = (
-        state.observation_tensor(player_id)
-        if self._use_observation else state.information_state_tensor(player_id))
+    if not self.string_only:
+      self._obs["info_state"][player_id] = (
+          state.observation_tensor(player_id)
+          if self._use_observation else state.information_state_tensor(player_id))
     self._obs["legal_actions"][player_id] = legal_actions
 
     info_state = rl_environment.TimeStep(observations=self._obs, rewards=None, discounts=None, step_type=None)

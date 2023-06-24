@@ -22,17 +22,19 @@ from open_spiel.python.examples.ubc_math_utils import fast_choice
 class OutcomeSamplingSolver(mccfr.MCCFRSolverBase):
   """An implementation of outcome sampling MCCFR."""
 
-  def __init__(self, game):
-    super().__init__(game)
+  def __init__(self, game, explore_prob=0.25, tremble_prob=0.01, **kwargs):
+    super().__init__(game, **kwargs)
     # This is the epsilon exploration factor. When sampling episodes, the
     # updating player will sampling according to expl * uniform + (1 - expl) *
     # current_policy.
-    self._expl = 0.25
+    self._expl = explore_prob
     
     # Opponent sampling 
-    self._tremble = 0.01 
-    # TODO: make this a hyperparameter
+    self._tremble = tremble_prob
     # TODO: add uniform? softmax? tremble to similar bids?
+
+    if self.regret_matching_plus:
+      self.touched = set()
 
     assert game.get_type().dynamics == pyspiel.GameType.Dynamics.SEQUENTIAL, (
         "MCCFR requires sequential games. If you're trying to run it " +
@@ -45,10 +47,15 @@ class OutcomeSamplingSolver(mccfr.MCCFRSolverBase):
     An iteration consists of one episode for each player as the update
     player.
     """
+    self._iteration += 1 # TODO: Would be better if this were in a super so you didn't have to repeat in external
     for update_player in range(self._num_players):
       state = self._game.new_initial_state()
-      self._episode(
-          state, update_player, my_reach=1.0, opp_reach=1.0, sample_reach=1.0)
+      self._episode(state, update_player, my_reach=1.0, opp_reach=1.0, sample_reach=1.0)
+    
+      if self.regret_matching_plus:
+        for k in self.touched:
+          self._infostates[k][mccfr.REGRET_INDEX] = self._infostates[k][mccfr.REGRET_INDEX].clip(min=0)
+        self.touched = set()
 
   def _baseline(self, state, info_state, aidx):  # pylint: disable=unused-argument
     # Default to vanilla outcome sampling
@@ -153,6 +160,8 @@ class OutcomeSamplingSolver(mccfr.MCCFRSolverBase):
         # choosing sampled_aidx at this information state.
         cf_action_value = child_values[aidx] * opp_reach / sample_reach
         self._add_regret(info_state_key, aidx, cf_action_value - cf_value)
+        if self.regret_matching_plus:
+          self.touched.add(info_state_key)
 
       # update the average policy
       for aidx in range(num_legal_actions):

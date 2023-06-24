@@ -124,7 +124,7 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
             mean_rewards = mean_rewards,
             best_response = best_response if real_br else None,
             nash_conv = nc,
-            player_impovements = player_improvements,
+            player_improvements = player_improvements,
         )
         logging.info("Saved to DB")
 

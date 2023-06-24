@@ -1,0 +1,4 @@
+solver_type: cfr
+solver: mccfr
+sampling_method: outcome
+regret_matching_plus: True

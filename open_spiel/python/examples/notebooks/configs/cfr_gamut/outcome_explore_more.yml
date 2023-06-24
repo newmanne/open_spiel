@@ -1,0 +1,4 @@
+solver_type: cfr
+solver: mccfr
+sampling_method: outcome
+explore_prob: 0.4

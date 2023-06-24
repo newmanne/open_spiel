@@ -48,12 +48,25 @@ def load_solver(solver_config, game):
     elif solver_name == "mccfr":
         logger.info("Using MCCFR solver")
         sampling_method = solver_config['sampling_method']
+
+        solver_kwargs = dict()
+        if 'linear_averaging' in solver_config:
+            solver_kwargs['linear_averaging'] = solver_config['linear_averaging']
+        if 'regret_matching_plus' in solver_config:
+            solver_kwargs['regret_matching_plus'] = solver_config['regret_matching_plus']
+
         if sampling_method == "outcome":
             logger.info("Using outcome sampling")
-            solver = OutcomeSamplingSolver(game)
+
+            if 'explore_prob' in solver_config:
+                solver_kwargs['explore_prob'] = solver_config['explore_prob']
+            if 'tremble_prob' in solver_config:
+                solver_kwargs['tremble_prob'] = solver_config['tremble_prob']
+
+            solver = OutcomeSamplingSolver(game, **solver_kwargs)
         else:
             logger.info("Using external sampling")
-            solver = ExternalSamplingSolver(game)
+            solver = ExternalSamplingSolver(game, **solver_kwargs)
     return solver
 
 class CFRAgent:

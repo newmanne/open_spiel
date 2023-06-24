@@ -132,7 +132,6 @@ class ClockAuctionObserver:
 
   def set_from(self, state, player):
     """Updates `tensor` and `dict` to reflect `state` from PoV of `player`."""
-
     # BE VERY VERY CAREFUL NOT TO OVERRIDE THE DICT ENTRIES FROM POINTING INTO THE TENSOR
     # Very subtle e.g., self.dict["sor_profits"][:] = profits vs self.dict["sor_profits"] = profits
     my_hash_key = hashkey(state, player, self.normalize)

@@ -64,10 +64,13 @@ class AveragePolicy(policy.Policy):
 class MCCFRSolverBase(object):
   """A base class for both outcome MCCFR and external MCCFR."""
 
-  def __init__(self, game):
+  def __init__(self, game, regret_matching_plus=False, linear_averaging=False):
     self._game = game
     self._infostates = {}  # infostate keys -> [regrets, avg strat, visit count]
     self._num_players = game.num_players()
+    self.regret_matching_plus = regret_matching_plus
+    self.linear_averaging = linear_averaging
+    self._iteration = 0 # For linear averaging
 
   def _lookup_infostate_info(self, info_state_key, num_legal_actions):
     """Looks up an information set table for the given key.
@@ -97,7 +100,7 @@ class MCCFRSolverBase(object):
     return self._infostates[info_state_key]
 
   def _add_regret(self, info_state_key, action_idx, amount):
-    self._infostates[info_state_key][REGRET_INDEX][action_idx] += amount
+    self._infostates[info_state_key][REGRET_INDEX][action_idx] += amount if not self.linear_averaging else amount * self._iteration
 
   def _add_avstrat(self, info_state_key, action_idx, amount):
     self._infostates[info_state_key][AVG_POLICY_INDEX][action_idx] += amount

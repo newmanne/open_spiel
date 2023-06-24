@@ -1,0 +1,4 @@
+solver_type: cfr
+solver: mccfr
+sampling_method: external
+linear_averaging: true

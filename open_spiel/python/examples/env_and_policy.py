@@ -10,8 +10,8 @@ class EnvAndPolicy:
     agents: List
     game: pyspiel.Game
 
-    def make_policy(self, agents=None) -> JointRLAgentPolicy:
+    def make_policy(self, agents=None, string_only=False) -> JointRLAgentPolicy:
         if agents is None:
             agents = self.agents
         agent_dict = {agent.player_id: agent for agent in agents}
-        return JointRLAgentPolicy(self.game, agent_dict, False)
+        return JointRLAgentPolicy(self.game, agent_dict, False, string_only=string_only)

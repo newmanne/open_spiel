@@ -29,8 +29,8 @@ class AverageType(enum.Enum):
 class ExternalSamplingSolver(mccfr.MCCFRSolverBase):
   """An implementation of external sampling MCCFR."""
 
-  def __init__(self, game, average_type=AverageType.SIMPLE):
-    super().__init__(game)
+  def __init__(self, game, average_type=AverageType.SIMPLE, **kwargs):
+    super().__init__(game, **kwargs)
     # How to average the strategy. The 'simple' type does the averaging for
     # player i + 1 mod num_players on player i's regret update pass; in two
     # players this corresponds to the standard implementation (updating the
@@ -61,6 +61,7 @@ class ExternalSamplingSolver(mccfr.MCCFRSolverBase):
     An iteration consists of one episode for each player as the update
     player.
     """
+    self._iteration += 1
     for player in range(self._num_players):
       self._update_regrets(self._game.new_initial_state(), player)
     if self._average_type == AverageType.FULL:

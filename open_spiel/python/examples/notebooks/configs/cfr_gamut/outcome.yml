@@ -1,0 +1,3 @@
+solver_type: cfr
+solver: mccfr
+sampling_method: outcome
