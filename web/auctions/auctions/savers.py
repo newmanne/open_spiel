@@ -6,6 +6,7 @@ import open_spiel.python.examples.ubc_dispatch as dispatch
 from open_spiel.python.examples.ubc_utils import players_not_me
 from auctions.webutils import add_eval_flags
 import argparse
+from compress_pickle import dumps, loads
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ class DBPolicySaver:
             walltime = result['walltime'],
             nash_conv = None, # Probably never used
             approx_nash_conv = None, # To be added later
-            policy = pickle.dumps(result['policy']),
+            policy = dumps(result['policy'], compression='gzip'),
             t = episode,
         )
         

@@ -20,7 +20,7 @@ if CLUSTER == 'ada':
 else:
     # Slurm on RONIN doesn't repsect memory issues, so we just isolate one job per node
     shell = '#!/bin/sh'
-    preamble = '#SBATCH --cpus-per-task=16'
+    preamble = '#SBATCH --cpus-per-task=8' # Split nodes in 2
     load_py = """export PYTHONPATH=${OPENSPIEL_PATH}:$PYTHONPATH
 export PYTHONPATH=${OPENSPIEL_PATH}/build/python:$PYTHONPATH"""
     

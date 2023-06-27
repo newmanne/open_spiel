@@ -9,6 +9,7 @@ import logging
 from django_extensions.db.models import TimeStampedModel
 import pickle
 import pyspiel
+from compress_pickle import dumps, loads
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +82,7 @@ class EquilibriumSolverRunCheckpoint(TimeStampedModel):
         return f'{self.equilibrium_solver_run} Iteration {self.t}'
 
     def get_model(self):
-        return pickle.loads(self.policy)
+        return loads(self.policy, compression='gzip')
 
     def get_old_eval(self):
         return self.evaluation_set.get(name='')
@@ -126,6 +127,7 @@ class Evaluation(TimeStampedModel):
     mean_rewards = ArrayField(models.FloatField()) # For quick nash conv calcs
     best_response = models.OneToOneField(BestResponse, on_delete=CASCADE, null=True)
     nash_conv = models.FloatField(null=True)
+    nash_conv_runtime = models.FloatField(null=True)
     player_improvements = ArrayField(models.FloatField(), null=True)
 
     class Meta:

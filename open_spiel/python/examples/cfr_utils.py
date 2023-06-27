@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 CFR_DEFAULTS = {
 }
-    
 
 def read_cfr_config(config_name):
     config_file = config_path_from_config_name(config_name)
@@ -54,6 +53,9 @@ def load_solver(solver_config, game):
             solver_kwargs['linear_averaging'] = solver_config['linear_averaging']
         if 'regret_matching_plus' in solver_config:
             solver_kwargs['regret_matching_plus'] = solver_config['regret_matching_plus']
+        if 'regret_init' in solver_config:
+            solver_kwargs['regret_init'] = solver_config['regret_init']
+            solver_kwargs['regret_init_strength'] = solver_config.get('regret_init_strength', 1)
 
         if sampling_method == "outcome":
             logger.info("Using outcome sampling")

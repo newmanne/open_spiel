@@ -106,7 +106,7 @@ def main(_):
             action_list, prob_list = zip(*outcomes)
             action = np.random.choice(action_list, p=prob_list)
             print("Sampled outcome: ", state.action_to_string(state.current_player(), action))
-        state.apply_action(action)
+        state = state.child(action)
 
       elif state.is_simultaneous_node():
         # Simultaneous node: sample actions for all players.
@@ -133,7 +133,7 @@ def main(_):
         action_string = state.action_to_string(state.current_player(), action)
         print("Player", state.current_player(), "randomly sampled action: ",
               action_string)
-        state.apply_action(action)
+        state = state.child(action)
 
       print(str(state))
 

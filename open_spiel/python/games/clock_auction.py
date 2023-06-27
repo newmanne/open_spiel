@@ -8,7 +8,7 @@ from open_spiel.python.games.clock_auction_parser import parse_auction_params
 from open_spiel.python.games.clock_auction_observer import ClockAuctionObserver
 
 from cachetools import LRUCache
-from open_spiel.python.games.clock_auction_base import AuctionParams, LotteryState, ActivityPolicy, UndersellPolicy, InformationPolicy, InformationPolicyConstants, ValueFormat, BidderState, MAX_CACHE_SIZE
+from open_spiel.python.games.clock_auction_base import AuctionParams, LotteryState, ActivityPolicy, UndersellPolicy, InformationPolicy, TiebreakingPolicy, InformationPolicyConstants, ValueFormat, BidderState, MAX_CACHE_SIZE
 from pulp import LpProblem, LpMinimize, LpVariable, LpStatus, LpBinary, lpSum, lpDot, LpMaximize, LpInteger, value
 import pandas as pd
 from functools import lru_cache, cached_property
@@ -17,7 +17,7 @@ import inspect
 ACTION_TIEBREAK_EPS = 0
 
 def make_key(bidders):
-  key = (tuple([(b.activity, tuple(b.processed_demand[-1]), tuple(b.submitted_demand[-1])) for b in bidders]))
+  key = (tuple([(b.get_max_activity(), tuple(b.processed_demand[-1]), tuple(b.submitted_demand[-1])) for b in bidders]))
   return key
 
 def _apply_bid(auction_params, change_request, bid, points, current_agg):
@@ -49,7 +49,7 @@ def _apply_bid(auction_params, change_request, bid, points, current_agg):
 
 def stateless_process_bids(auction_params, bidders, current_agg, processing_queue):
   # Compute the output without modifying any state and return the solution (everyone's processed demand)
-  points = [bidder.activity for bidder in bidders]
+  points = [bidder.get_max_activity() for bidder in bidders]
   bids = []
   for player_id, bidder in enumerate(bidders):
     last_round_holdings = bidder.processed_demand[-1]
@@ -285,7 +285,7 @@ class ClockAuctionState(pyspiel.State):
     legal_actions[np.where(bidder.bidder.get_values() < 0)[0]] = 0 # Shorthand to make actions illegal, does not really mean "negative value"
 
     if self.auction_params.activity_policy == ActivityPolicy.ON:
-      legal_actions[np.where(bidder.activity < self.auction_params.all_bids_activity)[0]] = 0
+      legal_actions[np.where(bidder.get_max_activity() < self.auction_params.all_bids_activity)[0]] = 0
 
 
     # if hard_budget_on:
@@ -348,8 +348,8 @@ class ClockAuctionState(pyspiel.State):
 
       if self.auction_params.activity_policy == ActivityPolicy.ON:
         bid_activity_cost = self.auction_params.all_bids_activity[action]
-        if bidder.activity < bid_activity_cost:
-          raise ValueError(f"Bidder {self._cur_player} is not active enough ({bidder.activity}) to bid on {bid} with cost of {bid_activity_cost}")
+        if bidder.get_max_activity() < bid_activity_cost:
+          raise ValueError(f"Bidder {self._cur_player} is not active enough ({bidder.get_max_activity()}) to bid on {bid} with cost of {bid_activity_cost}")
 
       bidder.submitted_demand.append(np.array(bid))
 
@@ -367,8 +367,9 @@ class ClockAuctionState(pyspiel.State):
               submitted_demand=[np.zeros(self.auction_params.num_products, dtype=int)], # Start with this dummy entry so we can always index by round
               processed_demand=[np.zeros(self.auction_params.num_products, dtype=int)],
               bidder=self.auction_params.player_types[len(self.bidders)][action]['bidder'],
-              activity=self.auction_params.max_activity,
+              activity=[self.auction_params.max_activity],
               type_index=action,
+              grace_rounds=self.auction_params.grace_rounds,
             )
           )
         if len(self.bidders) == self.num_players(): # All of the assignments have been made
@@ -403,8 +404,22 @@ class ClockAuctionState(pyspiel.State):
       for product_id in range(self.auction_params.num_products):
         current = bidder.processed_demand[-1][product_id]
         requested = bidder.submitted_demand[-1][product_id]
-        if current != requested:
+
+        if requested > current:
+          # always process demand increases all at once
           self.processing_queue.append((player_id, product_id, requested - current))
+        elif requested < current:
+          # in DROP_BY_PLAYER, also process demand _decreases_ all at once
+          if self.auction_params.tiebreaking_policy == TiebreakingPolicy.DROP_BY_PLAYER:
+            self.processing_queue.append((player_id, product_id, requested - current))
+          # in DROP_BY_LICENSE, process demand decreases one at a time
+          elif self.auction_params.tiebreaking_policy == TiebreakingPolicy.DROP_BY_LICENSE:
+            for _ in range(current - requested):
+              self.processing_queue.append((player_id, product_id, -1))
+          else:
+            raise ValueError(f"Unknown tiebreaking policy: {self.auction_params.tiebreaking_policy}")
+        else: # requested == current
+          pass
 
   def _handle_bids(self):
     # Demand Processing
@@ -425,7 +440,9 @@ class ClockAuctionState(pyspiel.State):
           seen = []
           # 1) Find the number of permtuations
           n_permutations = math.factorial(len(self.processing_queue))
-          # 2) Try ALL of them. Surely you could be much smarter about this (e.g, don't I need >= 2 drop bids for this ordering to matter? And even then, given that I always e.g. put drop bids at the front, couldn't I achieve every outcome still while having many fewer permutations?
+          # 2) Try ALL of them. 
+          # TODO: Surely you could be much smarter about this (e.g, don't I need >= 2 drop bids for this ordering to matter? And even then, given that I always e.g. put drop bids at the front, couldn't I achieve every outcome still while having many fewer permutations?)
+          # If it becomes the bottleneck, then use https://more-itertools.readthedocs.io/en/stable/api.html#more_itertools.distinct_permutations
           for i in range(n_permutations):
             queue = permute_array(self.processing_queue, i)
             processed = stateless_process_bids(self.auction_params, self.bidders, self.aggregate_demand[-1].copy(), queue)
@@ -482,14 +499,25 @@ class ClockAuctionState(pyspiel.State):
     returns = np.zeros_like(self._final_payments)
     final_prices = self.posted_prices[-1]
 
+    # Calculate final payments (need to do this first so we can calculate spite bonuses)
     for player_id, bidder in enumerate(self.bidders):
       final_bid = bidder.processed_demand[-1]
       payment = final_bid @ final_prices
       self._final_payments[player_id] = payment
+
+    # Calculate utilities
+    for player_id, bidder in enumerate(self.bidders):
+      final_bid = bidder.processed_demand[-1]
       value = bidder.bidder.value_for_package(final_bid)
-      returns[player_id] = value - payment 
+
+      other_payments = sum(self._final_payments[i] for i in range(self.num_players()) if i != player_id)
+      pricing_bonus = bidder.bidder.pricing_bonus * other_payments
+
+      player_return = value - self._final_payments[player_id] + pricing_bonus
       if self.tiebreak_actions:
-        returns[player_id] += self._action_rewards[player_id]
+        player_return += self._action_rewards[player_id]
+
+      returns[player_id] = bidder.bidder.get_utility(player_return)
 
 
     return returns
@@ -555,8 +583,8 @@ class ClockAuctionState(pyspiel.State):
     for bidder in self.bidders:
       bid = bidder.processed_demand[-1].copy()
       
-      # Lower activity based on processed demand (TODO: May want to revisit this for grace period)
-      bidder.activity = bid @ self.auction_params.activity
+      # Update activity history
+      bidder.activity.append(bid @ self.auction_params.activity)
       aggregate_demand += bid
 
     # Calculate excess demand
@@ -723,6 +751,29 @@ class ClockAuctionState(pyspiel.State):
 
   def __hash__(self): # Two states that have the same history are the same
     return self._my_hash
+
+  def regret_init(self, regret_init: str):
+    """
+    Return the initial regret for each action, based on the current state of the game.
+    For CFR.
+    """
+    if regret_init == 'straightforward_clock' or regret_init == 'straightforward_sor':  
+      player = self._cur_player
+      prices = self.clock_prices if regret_init == 'straightforward_clock' else self.sor_prices
+      profits = self.bidders[player].bidder.get_profits(prices[-1])
+      legal_profits = [profits[i] for i in self.legal_actions()]
+
+      # map max legal profit to 1 and min to 0
+      # except if max = min: then return 0 for all
+      if np.max(legal_profits) == np.min(legal_profits):
+        rescaled_profits = np.zeros_like(legal_profits)
+      else:
+        rescaled_profits = (legal_profits - np.min(legal_profits)) / (np.max(legal_profits) - np.min(legal_profits))
+      return rescaled_profits
+
+    else:
+      raise ValueError(f"Unknown regret initializer {regret_init}")
+
 
 # Register the game with the OpenSpiel library
 pyspiel.register_game(_GAME_TYPE, ClockAuctionGame)

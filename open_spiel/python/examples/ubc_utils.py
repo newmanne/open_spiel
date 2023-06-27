@@ -18,6 +18,7 @@ import yaml
 import shutil
 from open_spiel.python.examples.ubc_math_utils import fast_choice
 import signal
+import time
 
 CONFIG_ROOT = os.environ['OPENSPIEL_PATH'] + '/notebooks/configs'
 
@@ -249,9 +250,11 @@ def signal_handler(*args):
 def time_bounded_run(t, f, *args, **kwargs):
     signal.signal(signal.SIGALRM, signal_handler)
     signal.alarm(t)
+    start_time = time.time()
     try:
-        return True, f(*args, **kwargs)
+        result = f(*args, **kwargs)
+        return True, time.time() - start_time, result
     except SignalTimeout as ex:
-        return False, None
+        return False, time.time() - start_time, None
     finally:
         signal.alarm(0) # Clear alarm

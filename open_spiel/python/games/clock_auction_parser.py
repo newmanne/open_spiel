@@ -1,7 +1,7 @@
 import logging
 import json
 from open_spiel.python.examples.ubc_utils import num_to_letter
-from open_spiel.python.games.clock_auction_base import AuctionParams, ActivityPolicy, UndersellPolicy, InformationPolicy, ValueFormat, DEFAULT_AGENT_MEMORY, DEFAULT_MAX_ROUNDS, action_to_bundles
+from open_spiel.python.games.clock_auction_base import AuctionParams, ActivityPolicy, UndersellPolicy, InformationPolicy, TiebreakingPolicy, ValueFormat, DEFAULT_AGENT_MEMORY, DEFAULT_MAX_ROUNDS, action_to_bundles
 import numpy as np
 from collections import defaultdict
 import os
@@ -52,9 +52,14 @@ def parse_auction_params(file_name):
     if isinstance(undersell_policy, str):
       undersell_policy = UndersellPolicy[undersell_policy.upper()]
 
+    tiebreaking_policy = game_params.get('tiebreaking_policy', TiebreakingPolicy.DROP_BY_PLAYER)
+    if isinstance(tiebreaking_policy, str):
+      tiebreaking_policy = TiebreakingPolicy[tiebreaking_policy.upper()]
+
     fold_randomness = game_params.get('fold_randomness', True)
 
     reveal_type_round = int(game_params.get('reveal_type_round', -1))
+    grace_rounds = int(game_params.get('grace_rounds', 1))
 
     all_bids = action_to_bundles(licenses)
     bid_to_index = dict()
@@ -81,17 +86,18 @@ def parse_auction_params(file_name):
         pricing_bonus = player_type.get('pricing_bonus', 0)
         drop_out_heuristic = player_type.get('drop_out_heuristic', True)
         name = player_type.get('name', None)
+        utility_function_config = player_type.get('utility_function', {'name': 'quasilinear'})
 
         if value_format == ValueFormat.LINEAR:
           if len(values) != num_products:
             raise ValueError("Number of values must match number of products.")
-          bidder = LinearBidder(values, budget, pricing_bonus, all_bids, drop_out_heuristic)  
+          bidder = LinearBidder(values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config)
         elif value_format == ValueFormat.FULL:
           if len(values) != len(all_bids):
             raise ValueError("Number of values must match number of bids.")
-          bidder = EnumeratedValueBidder(values, budget, pricing_bonus, all_bids, drop_out_heuristic, name, straightforward=player_type.get('straightforward', False))
+          bidder = EnumeratedValueBidder(values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config, name, straightforward=player_type.get('straightforward', False))
         elif value_format == ValueFormat.MARGINAL:
-          bidder = MarginalValueBidder(values, budget, pricing_bonus, all_bids, drop_out_heuristic)
+          bidder = MarginalValueBidder(values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config)
         else:
           raise ValueError("Unknown value format")
         
@@ -111,8 +117,10 @@ def parse_auction_params(file_name):
       bid_to_index=bid_to_index,
       all_bids_activity=all_bids_activity,
       activity_policy=activity_policy,
+      grace_rounds=grace_rounds,
       undersell_policy=undersell_policy,
       information_policy=information_policy,
+      tiebreaking_policy=tiebreaking_policy,
       reveal_type_round=reveal_type_round,
       fold_randomness=fold_randomness,
       agent_memory=game_params.get('agent_memory', DEFAULT_AGENT_MEMORY),

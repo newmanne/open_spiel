@@ -68,6 +68,12 @@ class ExternalSamplingSolver(mccfr.MCCFRSolverBase):
       reach_probs = np.ones(self._num_players, dtype=np.float64)
       self._full_update_average(self._game.new_initial_state(), reach_probs)
 
+    if self.regret_matching_plus:
+      for k in self.touched:
+        self._infostates[k][mccfr.REGRET_INDEX] = self._infostates[k][mccfr.REGRET_INDEX].clip(min=0)
+      self.touched = set()
+
+
   def _full_update_average(self, state, reach_probs):
     """Performs a full update average.
 
@@ -93,10 +99,8 @@ class ExternalSamplingSolver(mccfr.MCCFRSolverBase):
     legal_actions = state.legal_actions()
     num_legal_actions = len(legal_actions)
 
-    infostate_info = self._lookup_infostate_info(info_state_key,
-                                                 num_legal_actions)
-    policy = self._regret_matching(infostate_info[mccfr.REGRET_INDEX],
-                                   num_legal_actions)
+    infostate_info = self._lookup_infostate_info(info_state_key, num_legal_actions, state)
+    policy = self._regret_matching(infostate_info[mccfr.REGRET_INDEX], num_legal_actions)
 
     for action_idx in range(num_legal_actions):
       new_reach_probs = np.copy(reach_probs)
@@ -135,10 +139,8 @@ class ExternalSamplingSolver(mccfr.MCCFRSolverBase):
     legal_actions = state.legal_actions()
     num_legal_actions = len(legal_actions)
 
-    infostate_info = self._lookup_infostate_info(info_state_key,
-                                                 num_legal_actions)
-    policy = self._regret_matching(infostate_info[mccfr.REGRET_INDEX],
-                                   num_legal_actions)
+    infostate_info = self._lookup_infostate_info(info_state_key, num_legal_actions, state)
+    policy = self._regret_matching(infostate_info[mccfr.REGRET_INDEX], num_legal_actions)
 
     value = 0
     child_values = np.zeros(num_legal_actions, dtype=np.float64)
@@ -158,8 +160,10 @@ class ExternalSamplingSolver(mccfr.MCCFRSolverBase):
     if cur_player == player:
       # Update regrets.
       for action_idx in range(num_legal_actions):
-        self._add_regret(info_state_key, action_idx,
-                         child_values[action_idx] - value)
+        self._add_regret(info_state_key, action_idx, child_values[action_idx] - value)
+        if self.regret_matching_plus:
+          self.touched.add(info_state_key)
+
     # Simple average does averaging on the opponent node. To do this in a game
     # with more than two players, we only update the player + 1 mod num_players,
     # which reduces to the standard rule in 2 players.

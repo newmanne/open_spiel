@@ -1,8 +1,22 @@
 import numpy as np
 
+def quasilinear_utility(profit):
+  return profit
+
+def risk_averse_utility(profit, alpha=1):
+  if alpha == 0:
+    return profit
+  else:
+    return (1 - np.exp(-alpha * profit)) / alpha
+
+UTILITY_FUNCTIONS = {
+  'quasilinear': quasilinear_utility,
+  'risk_averse': risk_averse_utility
+}
+
 class Bidder:
 
-  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic) -> None:
+  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config) -> None:
     self.values = np.array(values)
     self.budget = budget
     self.pricing_bonus = pricing_bonus
@@ -10,6 +24,10 @@ class Bidder:
     self.bundle_values = None
     self.drop_out_heuristic = drop_out_heuristic
     self.straightforward = False
+
+    self.utility_function = UTILITY_FUNCTIONS[utility_function_config.pop('name')]
+    self.utility_function_kwargs = utility_function_config
+    
 
   def value_for_package(package, package_index=None):
     raise NotImplementedError()
@@ -25,11 +43,14 @@ class Bidder:
   
   def get_profits(self, prices):
     return self.get_values() - (self.all_bids @ np.asarray(prices))
+
+  def get_utility(self, profit):
+    return self.utility_function(profit, **self.utility_function_kwargs)
   
 class LinearBidder(Bidder):
 
-  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic) -> None:
-    super().__init__(values, budget, pricing_bonus, all_bids, drop_out_heuristic)
+  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config) -> None:
+    super().__init__(values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config)
     self.bundle_values = all_bids @ self.values
 
   def value_for_package(self, package, package_index=None):
@@ -40,8 +61,8 @@ class LinearBidder(Bidder):
 
 class MarginalValueBidder(Bidder):
 
-  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic) -> None:
-    super().__init__(values, budget, pricing_bonus, all_bids, drop_out_heuristic)
+  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config) -> None:
+    super().__init__(values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config)
     self.bundle_values = [self.value_for_package(bid) for bid in all_bids]
 
   def value_for_package(self, package, package_index=None):
@@ -55,8 +76,8 @@ class MarginalValueBidder(Bidder):
 
 class EnumeratedValueBidder(Bidder):
 
-  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic, name, straightforward=False) -> None:
-    super().__init__(values, budget, pricing_bonus, all_bids, drop_out_heuristic)
+  def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config, name, straightforward=False) -> None:
+    super().__init__(values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config)
     self.bundle_values = self.values
     self.name = name
     self.straightforward = straightforward

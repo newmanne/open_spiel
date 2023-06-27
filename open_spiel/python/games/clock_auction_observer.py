@@ -32,7 +32,7 @@ class ClockAuctionObserver:
     # Constants (but vary each round)
     # TODO: If you reinitialize this, the shape is "wrong" 
     # self.pieces.append(("round", (1,), lambda state, **kwargs: state.round, self.auction_params.max_round)) # TODO: This is controversial for ML based methods because they can just condition on it and it might hurt generalization
-    self.pieces.append(("my_activity", (num_bundles,), lambda bidder, **kwargs: bidder.activity if bidder is not None else self.auction_params.max_activity, self.auction_params.max_activity))
+    self.pieces.append(("my_activity", (num_bundles,), lambda bidder, **kwargs: bidder.get_max_activity() if bidder is not None else self.auction_params.max_activity, self.auction_params.max_activity)) # Note: this would wreck perfect recall without access to processed demand history
     self.pieces.append(("sor_exposure", (num_bundles,), lambda state, bidder, **kwargs: bidder.processed_demand[-1] @ state.sor_prices[-1] if bidder is not None else 0, self.auction_params.max_budget))
 
     ######## 1 per bundle quantities #######
@@ -189,7 +189,7 @@ class ClockAuctionObserver:
     if self.auction_params.skip_single_chance_nodes:
       pieces.append(f"sub{np.array(state.bidders[player].submitted_demand[-self.auction_params.agent_memory:]).tolist()}") # Need this for perfect recall
     if "activity" in self.dict:
-      pieces.append(f"a{state.bidders[player].activity}")
+      pieces.append(f"a{state.bidders[player].get_max_activity()}")
     if "agg_demand_history" in self.dict:
         agg = np.array(state.aggregate_demand[-self.auction_params.agent_memory:])
         if self.auction_params.information_policy == InformationPolicy.HIDE_DEMAND:

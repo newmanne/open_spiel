@@ -206,7 +206,7 @@ class EnvParams:
 
 class EpisodeTimer:
 
-  def __init__(self, frequency, early_frequency=None, fixed_episodes=None, eval_zero=False):
+  def __init__(self, frequency, early_frequency=None, fixed_episodes=None, eval_zero=False, every_seconds=None):
     if fixed_episodes is None:
       fixed_episodes = []
     self.fixed_episodes = fixed_episodes
@@ -217,6 +217,9 @@ class EpisodeTimer:
     self.eval_zero = eval_zero
     self.last_known_ep = -1
 
+    self.every_seconds = every_seconds
+    self.last_update_time = time.time()
+
   def should_trigger(self, ep):
     if ep > self.frequency: # Move on from early frequency if needed
       self.cur_frequency = self.frequency
@@ -226,7 +229,13 @@ class EpisodeTimer:
       if self._should_trigger(self.last_known_ep):
         # Note in the reports you might see unround numbers because of how we do it (e.g., logs for episode 10_007)
         self.last_known_ep = ep
+        self.last_update_time = time.time()
         return True
+
+    # Lastly, check if time expired
+    if self.every_seconds and time.time() - self.last_update_time > self.every_seconds:
+      self.last_update_time = time.time()
+      return True
 
     return False
 

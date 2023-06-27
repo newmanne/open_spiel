@@ -31,6 +31,10 @@ class ValueFormat(enum.IntEnum):
   FULL = 1
   MARGINAL = 2
 
+class TiebreakingPolicy(enum.IntEnum):
+  DROP_BY_PLAYER = 0
+  DROP_BY_LICENSE = 1
+
 @dataclass
 class LotteryState:
   activity: List[int] = field(default_factory=lambda : [])
@@ -57,8 +61,11 @@ class AuctionParams:
   all_bids_activity: List[int] = None
 
   activity_policy: ActivityPolicy = ActivityPolicy.ON
+  grace_rounds: int = 1
+
   undersell_policy: UndersellPolicy = UndersellPolicy.UNDERSELL
   information_policy: InformationPolicy = InformationPolicy.SHOW_DEMAND
+  tiebreaking_policy: TiebreakingPolicy = TiebreakingPolicy.DROP_BY_PLAYER
 
   agent_memory: int = DEFAULT_AGENT_MEMORY
 
@@ -89,9 +96,13 @@ class AuctionParams:
 class BidderState:
   processed_demand: List[List[int]] = field(default_factory=lambda : [])
   submitted_demand: List[List[int]] = field(default_factory=lambda : [])
-  activity: int = None
+  activity: List[int] = field(default_factory=lambda : [])
   bidder: object = None # clock_auction_bidders.Bidder (type is clock_auction_bidders.Bidder but not worth the import chaos)
   type_index: int = None
+  grace_rounds: int = 1
+
+  def get_max_activity(self):
+    return max(self.activity[-self.grace_rounds:])
 
 def action_to_bundles(licenses):
     bids = []

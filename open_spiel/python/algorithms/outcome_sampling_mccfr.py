@@ -33,9 +33,6 @@ class OutcomeSamplingSolver(mccfr.MCCFRSolverBase):
     self._tremble = tremble_prob
     # TODO: add uniform? softmax? tremble to similar bids?
 
-    if self.regret_matching_plus:
-      self.touched = set()
-
     assert game.get_type().dynamics == pyspiel.GameType.Dynamics.SEQUENTIAL, (
         "MCCFR requires sequential games. If you're trying to run it " +
         "on a simultaneous (or normal-form) game, please first transform it " +
@@ -100,11 +97,8 @@ class OutcomeSamplingSolver(mccfr.MCCFRSolverBase):
     info_state_key = state.information_state_string(cur_player)
     legal_actions = state.legal_actions()
     num_legal_actions = len(legal_actions)
-    infostate_info = self._lookup_infostate_info(info_state_key,
-                                                 num_legal_actions)
-    policy = self._regret_matching(infostate_info[mccfr.REGRET_INDEX],
-                                   num_legal_actions)
-
+    infostate_info = self._lookup_infostate_info(info_state_key, num_legal_actions, state)
+    policy = self._regret_matching(infostate_info[mccfr.REGRET_INDEX], num_legal_actions)
     
     uniform_weight = self._expl if cur_player == update_player else self._tremble
     uniform_policy = (np.ones(num_legal_actions, dtype=np.float64) / num_legal_actions)

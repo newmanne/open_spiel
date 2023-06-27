@@ -64,15 +64,19 @@ class AveragePolicy(policy.Policy):
 class MCCFRSolverBase(object):
   """A base class for both outcome MCCFR and external MCCFR."""
 
-  def __init__(self, game, regret_matching_plus=False, linear_averaging=False):
+  def __init__(self, game, regret_matching_plus=False, linear_averaging=False, regret_init='uniform', regret_init_strength = 1.):
     self._game = game
     self._infostates = {}  # infostate keys -> [regrets, avg strat, visit count]
     self._num_players = game.num_players()
     self.regret_matching_plus = regret_matching_plus
+    if self.regret_matching_plus:
+      self.touched = set()
     self.linear_averaging = linear_averaging
     self._iteration = 0 # For linear averaging
+    self.regret_init = regret_init
+    self.regret_init_strength = regret_init_strength
 
-  def _lookup_infostate_info(self, info_state_key, num_legal_actions):
+  def _lookup_infostate_info(self, info_state_key, num_legal_actions, state):
     """Looks up an information set table for the given key.
 
     Args:
@@ -92,8 +96,13 @@ class MCCFRSolverBase(object):
 
     # Start with a small amount of regret and total accumulation, to give a
     # uniform policy: this will get erased fast.
+
+    initial_regrets = np.ones(num_legal_actions, dtype=np.float64) / 1e6
+    if self.regret_init != 'uniform': # TODO: If you run on non-clock auction, hasattr
+      initial_regrets += state.regret_init(self.regret_init) * self.regret_init_strength
+
     self._infostates[info_state_key] = [
-        np.ones(num_legal_actions, dtype=np.float64) / 1e6,
+        initial_regrets,
         np.ones(num_legal_actions, dtype=np.float64) / 1e6,
         # 0, #FIXME
     ]

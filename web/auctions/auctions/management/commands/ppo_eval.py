@@ -96,13 +96,15 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
     all_modal = (len(br_mapping) == game.num_players()) and np.all([v == 'modal' for v in br_mapping.values()])
     nc = None
     player_improvements = None
+    nash_conv_runtime = None
     if all_modal:
         nc_time_limit_seconds = 300
         logging.info(f"Computing NC for up to {nc_time_limit_seconds} seconds")
-        # use_cpp_br=True
-        worked, (nc, player_improvements) = time_bounded_run(nc_time_limit_seconds, nash_conv, game, env_and_policy.make_policy(), return_only_nash_conv=False)
+        worked, nash_conv_runtime, res = time_bounded_run(nc_time_limit_seconds, nash_conv, game, env_and_policy.make_policy(), return_only_nash_conv=False)
         if worked:
-            logging.info(f"NC results: NashConv:{nc} PlayerImprovements: {player_improvements}")
+            (nc, player_improvements) = res
+            player_improvements = list(player_improvements) # For db saving
+            logging.info(f"NC results: NashConv:{nc} PlayerImprovements: {player_improvements}. Took {nash_conv_runtime:.2f} s")
         else:
             logging.info("Aborted NC calc run because time")
 
@@ -125,6 +127,7 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
             best_response = best_response if real_br else None,
             nash_conv = nc,
             player_improvements = player_improvements,
+            nash_conv_runtime = nash_conv_runtime
         )
         logging.info("Saved to DB")
 

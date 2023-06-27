@@ -12,6 +12,7 @@ from distutils import util
 import json
 from open_spiel.python.examples.ppo_eval import EvalDefaults
 import os
+from compress_pickle import dumps, loads
 
 OUTPUT_ROOT = os.environ['CLOCK_AUCTION_OUTPUT_ROOT'] 
 
@@ -53,13 +54,13 @@ def ppo_db_checkpoint_loader(checkpoint, env_params=None):
     env_and_policy = env_and_policy_from_run(checkpoint.equilibrium_solver_run, env_params=env_params)
     solver_type = checkpoint.equilibrium_solver_run.config.get('solver_type', 'ppo')
     if solver_type == 'cfr':
-        policy = pickle.loads(checkpoint.policy)
+        policy = loads(checkpoint.policy, compression='gzip')
         for agent in env_and_policy.agents:
             agent.policy = policy
     else:
         # Restore the parameters
         policy = env_and_policy.make_policy()
-        policy.restore(pickle.loads(checkpoint.policy))
+        policy.restore(loads(checkpoint.policy, compression='gzip'))
     return env_and_policy
 
 
@@ -67,7 +68,7 @@ def load_ppo_agent(best_response):
     # Takes a DB best response object and returns the PPO agent
     db_game = best_response.checkpoint.equilibrium_solver_run.game
     br_agent = make_ppo_agent(best_response.br_player, best_response.config, db_game.load_as_spiel())
-    br_agent.restore(pickle.loads(best_response.model))
+    br_agent.restore(loads(best_response.model, compression='gzip'))
     return br_agent
 
 class AttrDict(dict):
@@ -178,6 +179,7 @@ def add_experiment_flags(parser):
 def add_reporting_flags(parser):
     parser.add_argument('--report_freq', type=int, default=50_000)
     parser.add_argument('--eval_every', type=int, default=300_000)
+    parser.add_argument('--eval_every_seconds', type=int, default=None)
     parser.add_argument("--eval_every_early", type=int, default=None)
     parser.add_argument("--eval_exactly", nargs="+", default=[], type=int)
     parser.add_argument("--eval_zero", type=util.strtobool, default=1)

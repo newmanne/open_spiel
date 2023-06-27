@@ -1,5 +1,7 @@
 import numpy as np
 
+COMPRESSION_DEFAULT = 'gzip'
+
 # Much faster than np.random.choice, at least for our current version of numpy and our distribution over the arguments
 def fast_choice(options, probs, rng=None):
     cdf = np.cumsum(probs)

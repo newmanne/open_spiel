@@ -95,7 +95,7 @@ class Command(BaseCommand):
 
         result_saver = DBPolicySaver(eq_solver_run=eq_solver_run) if not opts.dry_run else None
         dispatcher = DBBRDispatcher(game_db.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path, opts.dispatch_br, opts.eval_inline, opts.profile_memory) if not opts.dry_run else None
-        eval_episode_timer = EpisodeTimer(opts.eval_every, early_frequency=opts.eval_every_early, fixed_episodes=opts.eval_exactly, eval_zero=opts.eval_zero)
+        eval_episode_timer = EpisodeTimer(opts.eval_every, early_frequency=opts.eval_every_early, fixed_episodes=opts.eval_exactly, eval_zero=opts.eval_zero, every_seconds=opts.eval_every_seconds)
         report_timer = EpisodeTimer(opts.report_freq)
 
         game = game_db.load_as_spiel()
@@ -108,20 +108,21 @@ class Command(BaseCommand):
 
 
 def trigger(solver, i, start_time, result_saver, dispatcher):
-    print("--------")
-    print(i)
+    logger.info("--------")
+    logger.info(i)
     import os, psutil
-    print(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2) # MiB
+    # TODO: Use humanize for byte sizes, switch to logger
+    logger.info(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2) # MiB
     policy = solver.average_policy()
     checkpoint = dict(episode=i, walltime=time.time() - start_time, policy=policy)
     if result_saver is not None:
         checkpoint_name = result_saver.save(checkpoint)
         if dispatcher is not None:
             dispatcher.dispatch(checkpoint_name)
-    print("POST")
+    logger.info("POST")
     import os, psutil
-    print(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2) # MiB
-    print("--------")
+    logger.info(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2) # MiB
+    logger.info("--------")
 
 
 

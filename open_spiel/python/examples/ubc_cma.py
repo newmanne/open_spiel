@@ -7,7 +7,7 @@ from tqdm import tqdm
 import scipy.stats
 from collections import defaultdict
 import pickle
-
+from compress_pickle import dumps, loads
 
 def type_combos(game):
     types = [game.auction_params.player_types[player] for player in range(game.num_players())]
@@ -262,7 +262,7 @@ def convert_nested_lists_to_tuples(lst):
     return lst
 
 
-def get_results(run, game_cache=None, skip_single_chance_nodes=True):
+def get_results(run, game_cache=None, skip_single_chance_nodes=True, load_policy=True):
     """Load the game, final checkpoint, and policy for a single run.
     """
     if game_cache is None:
@@ -275,12 +275,15 @@ def get_results(run, game_cache=None, skip_single_chance_nodes=True):
     if final_checkpoint is None:
         raise ValueError("None final checkpoint?")
     
-    solver_type = run.config.get('solver_type', 'ppo')
-    if solver_type == 'cfr':
-        policy = pickle.loads(final_checkpoint.policy)
+    if load_policy:
+        solver_type = run.config.get('solver_type', 'ppo')
+        if solver_type == 'cfr':
+            policy = loads(final_checkpoint.policy, compression='gzip')
+        else:
+            from auctions.webutils import ppo_db_checkpoint_loader # Get around import stuff for sats_game-sampler
+            policy = ppo_db_checkpoint_loader(final_checkpoint).make_policy()
     else:
-        from auctions.webutils import ppo_db_checkpoint_loader # Get around import stuff for sats_game-sampler
-        policy = ppo_db_checkpoint_loader(final_checkpoint).make_policy()
+        policy = None
 
     return game, final_checkpoint, policy
 
