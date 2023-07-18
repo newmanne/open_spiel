@@ -287,6 +287,8 @@ class GameTree(pygraphviz.AGraph):
 
     if self.policy:
       action_probs = self.policy.action_probabilities(state) if not state.is_chance_node() else dict(state.chance_outcomes())
+      # if not state.is_chance_node():
+      #   print(state.information_state_string(), action_probs)
 
     for action in state.legal_actions():
       kwargs = dict(state_prob_limit=state_prob_limit, state_prob=state_prob, action_prob_limit=action_prob_limit)

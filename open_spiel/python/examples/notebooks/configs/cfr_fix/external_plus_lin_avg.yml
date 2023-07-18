@@ -1,0 +1,5 @@
+solver_type: cfr
+solver: mccfr
+sampling_method: external
+regret_matching_plus: true
+linear_averaging: true

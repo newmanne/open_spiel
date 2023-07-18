@@ -292,6 +292,10 @@ def get_algorithm_from_run(run):
     alg = run.config.get('solver_type', 'PPO')
     if alg == 'cfr':
         alg += '_' + run.config.get('sampling_method', '')
+        if run.config.get('linear_averaging'):
+            alg += '_linear'
+        if run.config.get('regret_maching_plus'):
+            alg += '+'
     return alg
 
 def display_history_distributions(history_dists):

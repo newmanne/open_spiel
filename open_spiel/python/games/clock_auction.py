@@ -15,6 +15,7 @@ from functools import lru_cache, cached_property
 import inspect
 
 ACTION_TIEBREAK_EPS = 0
+SOR_BID_BONUS_RHO = 2 # Up to 2 units of bonus points up for grabs for bidding truthfully. Still kinda sucks at breaking indifference when profits are similar because the bonuses will be correspondingly similar.
 
 def make_key(bidders):
   key = (tuple([(b.get_max_activity(), tuple(b.processed_demand[-1]), tuple(b.submitted_demand[-1])) for b in bidders]))
@@ -228,6 +229,9 @@ class ClockAuctionState(pyspiel.State):
     self.tiebreak_actions = True
     self._action_rewards = defaultdict(float)
 
+    self.reward_sor_bids = True
+    self._sor_bid_profits = defaultdict(list)
+
   # An LRU cache here is a bad idea - it will get too big. Just use the game cache
   def child(self, action):
     key = tuple(self.history() + [action])
@@ -345,6 +349,12 @@ class ClockAuctionState(pyspiel.State):
       if self.tiebreak_actions:
         self._action_rewards[self._cur_player] += action * ACTION_TIEBREAK_EPS
       ###
+      ### Break indifference by preferring bids with high SOR profit
+      if self.reward_sor_bids:
+        sor_profits = bidder.bidder.get_profits(self.sor_prices[-1])
+        # Rescale sor_profits to be in 0 1
+        normalized_sor_profits = (sor_profits - sor_profits.min()) / (sor_profits.max() - sor_profits.min())
+        self._sor_bid_profits[self._cur_player].append(normalized_sor_profits[action])
 
       if self.auction_params.activity_policy == ActivityPolicy.ON:
         bid_activity_cost = self.auction_params.all_bids_activity[action]
@@ -367,7 +377,8 @@ class ClockAuctionState(pyspiel.State):
               submitted_demand=[np.zeros(self.auction_params.num_products, dtype=int)], # Start with this dummy entry so we can always index by round
               processed_demand=[np.zeros(self.auction_params.num_products, dtype=int)],
               bidder=self.auction_params.player_types[len(self.bidders)][action]['bidder'],
-              activity=[self.auction_params.max_activity],
+              activity=[],
+              max_possible_activity=self.auction_params.max_activity,
               type_index=action,
               grace_rounds=self.auction_params.grace_rounds,
             )
@@ -516,6 +527,8 @@ class ClockAuctionState(pyspiel.State):
       player_return = value - self._final_payments[player_id] + pricing_bonus
       if self.tiebreak_actions:
         player_return += self._action_rewards[player_id]
+      if self.reward_sor_bids:
+        player_return += SOR_BID_BONUS_RHO * np.mean(self._sor_bid_profits[player_id]) 
 
       returns[player_id] = bidder.bidder.get_utility(player_return)
 
