@@ -96,7 +96,7 @@ class SignalTimeout(ValueError):
     pass
 
 
-def is_mccfr_iter_slow(game, external=True, num_iters=5000, cutoff=20):
+def is_mccfr_iter_slow(game, external=True, num_iters=2000, cutoff=20):
     # Note: 277 iters/s would be 1M iterations in an hour
     # Note cache needs warming up so times are a bit deceiving, especially if cutoff is too short
     
@@ -229,9 +229,9 @@ def main(seed=1234, output='configs.pkl', external=True, geography=None, track_m
     MIN_TYPES = 2
     MAX_TYPES = 2
     MIN_BIDDERS = 2
-    MAX_BIDDERS = 2
-    MAX_ACTION_SPACE = 9
-    MAX_NUM_LICENSES = 5
+    MAX_BIDDERS = 3
+    MAX_ACTION_SPACE = 27
+    MAX_NUM_LICENSES = 6
     # TODO: see more magic constants in the wieldy function
 
     failures = defaultdict(int)
@@ -241,7 +241,6 @@ def main(seed=1234, output='configs.pkl', external=True, geography=None, track_m
         'scale': 1_000_000,
         'auction_params': {
             'increment': .3,
-            'fold_randomness': True,
             'max_rounds': 10, # TODO: Think!
         },
         'bidders': [
@@ -266,9 +265,14 @@ def main(seed=1234, output='configs.pkl', external=True, geography=None, track_m
             else:
                 x['map'] = geography
 
-            selected_map = map_generators[x['map']]()
+            map_generator, bid_to_quantity_matrix = map_generators[x['map']]
+            selected_map = map_generator()
+            if bid_to_quantity_matrix is None:
+                bid_to_quantity_matrix = np.eye(len(selected_map))
+                
+            num_regions, num_products = bid_to_quantity_matrix.shape
             licenses = []
-            for _ in range(len(selected_map)):
+            for _ in range(num_products):
                 licenses.append(rng.integers(1, MAX_NUM_LICENSES + 1))
 
             if np.product([l+1 for l in licenses]) > MAX_ACTION_SPACE:
@@ -283,7 +287,11 @@ def main(seed=1234, output='configs.pkl', external=True, geography=None, track_m
             license_mhz = 10
             mhz_per_pop_open = 0.232 # Real value (for 3800 I think?)
 
-            ap['opening_price'] = [int(np.round(license_mhz * mhz_per_pop_open * node.population / x['scale'])) for node in selected_map]
+            region_opening_prices = np.array([int(np.round(license_mhz * mhz_per_pop_open * node.population / x['scale'])) for node in selected_map])
+            product_opening_prices = region_opening_prices @ bid_to_quantity_matrix # opening prices of encumbered licenses are proportional to bandwidth
+            product_opening_prices = np.clip(product_opening_prices, np.min(region_opening_prices) * 0.05, None) # signalling products are worth 5% of cheapest region
+            product_opening_prices = np.array([int(np.round(p)) for p in product_opening_prices])
+            ap['opening_price'] = product_opening_prices.tolist()
             ap['activity'] = [op for op in ap['opening_price']]
 
             bidders = x['bidders']
@@ -313,7 +321,7 @@ def main(seed=1234, output='configs.pkl', external=True, geography=None, track_m
                             'lower': 0.04,
                             'upper': 0.1,
                         }
-                        bidder['hq'] = rng.integers(len(ap['licenses']))
+                        bidder['hq'] = rng.integers(len(selected_map))
                     elif bidder['type'] == 'local':
                         bidder['market_share'] = {
                             'lower': 0.05,
@@ -336,6 +344,16 @@ def main(seed=1234, output='configs.pkl', external=True, geography=None, track_m
                             'lower': 0.08,
                             'upper': 0.15,
                         }
+                        if num_regions == 3:
+                            bidder['b'] = {
+                                'lower': .15,
+                                'upper': .5
+                            }
+                        elif num_regions == 2:
+                            bidder['b'] = {
+                                'lower': .3,
+                                'upper': .9
+                            }
 
                     # Want higher marginal values on secondary licenses
                     MARKET_SHARE_BOOST = 5 # TODO: Sample this from 1 to 10?

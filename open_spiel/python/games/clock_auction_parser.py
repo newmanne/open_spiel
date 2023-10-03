@@ -56,8 +56,6 @@ def parse_auction_params(file_name):
     if isinstance(tiebreaking_policy, str):
       tiebreaking_policy = TiebreakingPolicy[tiebreaking_policy.upper()]
 
-    fold_randomness = game_params.get('fold_randomness', True)
-
     reveal_type_round = int(game_params.get('reveal_type_round', -1))
     grace_rounds = int(game_params.get('grace_rounds', 1))
 
@@ -122,6 +120,5 @@ def parse_auction_params(file_name):
       information_policy=information_policy,
       tiebreaking_policy=tiebreaking_policy,
       reveal_type_round=reveal_type_round,
-      fold_randomness=fold_randomness,
       agent_memory=game_params.get('agent_memory', DEFAULT_AGENT_MEMORY),
     )

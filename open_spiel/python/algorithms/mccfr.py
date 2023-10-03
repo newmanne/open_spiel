@@ -16,6 +16,9 @@
 
 import numpy as np
 from open_spiel.python import policy
+from cachetools import LRUCache
+
+INFOSET_CACHE_SIZE = 500_000
 
 REGRET_INDEX = 0
 AVG_POLICY_INDEX = 1
@@ -27,8 +30,11 @@ class AveragePolicy(policy.Policy):
   def __init__(self, game, player_ids, infostates):
     # Do not create a copy of the dictionary
     # but work on the same object
+
+    # NOTE (Neil): Adding the dict b/c I don't want to mess with the LRU cache when accessing things in the policy
+
     super().__init__(game, player_ids)
-    self._infostates = infostates
+    self._infostates = dict(infostates)
 
   def action_probabilities(self, state, player_id=None):
     """Returns the MCCFR average policy for a player in a state.
@@ -66,7 +72,7 @@ class MCCFRSolverBase(object):
 
   def __init__(self, game, regret_matching_plus=False, linear_averaging=False, regret_init='uniform', regret_init_strength = 1.):
     self._game = game
-    self._infostates = {}  # infostate keys -> [regrets, avg strat, visit count]
+    self._infostates = LRUCache(INFOSET_CACHE_SIZE)  # infostate keys -> [regrets, avg strat, visit count]
     self._num_players = game.num_players()
     self.regret_matching_plus = regret_matching_plus
     if self.regret_matching_plus:
@@ -145,3 +151,7 @@ class MCCFRSolverBase(object):
       return np.ones(num_legal_actions, dtype=np.float64) / num_legal_actions
     else:
       return positive_regrets / sum_pos_regret
+
+  def get_solver_stats(self):
+    # TODO: other stats
+    return {'num_infostates': len(self._infostates)}

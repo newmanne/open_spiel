@@ -116,6 +116,9 @@ class BestResponse(TimeStampedModel):
     def __str__(self):
         return f'Player {self.br_player} BR ({self.name}) to {self.checkpoint}'
 
+    def load_model(self):
+        return loads(self.model, compression='gzip')
+
     class Meta:
         unique_together = ('checkpoint', 'br_player', 'name',)
 
@@ -128,7 +131,10 @@ class Evaluation(TimeStampedModel):
     best_response = models.OneToOneField(BestResponse, on_delete=CASCADE, null=True)
     nash_conv = models.FloatField(null=True)
     nash_conv_runtime = models.FloatField(null=True)
-    player_improvements = ArrayField(models.FloatField(), null=True)
+    nash_conv_player_improvements = ArrayField(models.FloatField(), null=True)
+    heuristic_conv = models.FloatField(null=True)
+    heuristic_conv_runtime = models.FloatField(null=True)
+    heuristic_conv_player_improvements = ArrayField(models.FloatField(), null=True)
 
     class Meta:
         unique_together = ('checkpoint', 'name',)

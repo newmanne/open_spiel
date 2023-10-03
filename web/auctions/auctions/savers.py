@@ -33,7 +33,7 @@ class DBPolicySaver:
 
 class DBBRDispatcher:
 
-    def __init__(self, num_players, eval_overrides, br_overrides, eq_solver_run, br_portfolio_path, dispatch_br, eval_inline=False, profile_memory=False):
+    def __init__(self, num_players, eval_overrides, br_overrides, eq_solver_run, br_portfolio_path, dispatch_br, eval_inline=False, profile_memory=False, use_wandb=False):
         self.num_players = num_players
         self.eval_overrides = eval_overrides
         self.br_overrides = br_overrides
@@ -42,25 +42,19 @@ class DBBRDispatcher:
         self.dispatch_br = dispatch_br
         self.eval_inline = eval_inline
         self.profile_memory = profile_memory
+        self.use_wandb = use_wandb
 
-    def dispatch(self, t):
+    def dispatch(self, t, policy=None, game=None):
         from auctions.management.commands.ppo_eval import eval_command
         # TODO: This isn't reading from eval_overrides, which is a problem! You could imagine parsing it...
         # TODO: Could modify this to leverage the game cache if that would help
-
-        from pympler import muppy, summary
-        def profile_memory_if_enabled():
-            if self.profile_memory:
-                all_objects = muppy.get_objects()
-                sum1 = summary.summarize(all_objects)
-                summary.print_(sum1)
-        
-        profile_memory_if_enabled()
         
         parser = argparse.ArgumentParser()
         add_eval_flags(parser)
         eval_args = vars(parser.parse_args(self.eval_overrides.split()))
         eval_args = {k.replace('eval_', ''):v for k,v in eval_args.items()}
+        eval_args['game'] = game
+        eval_args['policy'] = policy
         eq = self.eq_solver_run
 
         # Let's just do all this inline always for now
@@ -70,16 +64,13 @@ class DBBRDispatcher:
             modal = {player: 'modal'}
             if self.eval_inline:
                 logger.info(f"Running inline straightforward eval for player {player} at t={t}")
-                eval_command(t, eq.experiment.name, eq.name, straightforward, reseed=False, **eval_args) 
-                profile_memory_if_enabled()
+                eval_command(t, eq.experiment.name, eq.name, straightforward, reseed=False, use_wandb=self.use_wandb, **eval_args) 
 
                 logger.info(f"Running inline trembling eval for player {player} at t={t}")
-                eval_command(t, eq.experiment.name, eq.name, tremble, reseed=False, **eval_args) 
-                profile_memory_if_enabled()
+                eval_command(t, eq.experiment.name, eq.name, tremble, reseed=False, use_wandb=self.use_wandb, **eval_args) 
 
                 logger.info(f"Running inline modal eval for player {player} at t={t}")
-                eval_command(t, eq.experiment.name, eq.name, {player: 'modal'}, reseed=False, **eval_args) 
-                profile_memory_if_enabled()
+                eval_command(t, eq.experiment.name, eq.name, {player: 'modal'}, reseed=False, use_wandb=self.use_wandb, **eval_args) 
             else:
                 dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, str(straightforward), overrides=self.eval_overrides)
                 dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, str(tremble), overrides=self.eval_overrides)
@@ -93,9 +84,9 @@ class DBBRDispatcher:
         br_mapping = {p: 'modal' for p in range(self.num_players)}
         if self.eval_inline:
             logger.info(f"Running inline overall eval at t={t}")
-            eval_command(t, eq.experiment.name, eq.name, reseed=False, **eval_args) 
+            eval_command(t, eq.experiment.name, eq.name, reseed=False, use_wandb=self.use_wandb, **eval_args) 
             logger.info(f"Running inline overall modal eval at t={t}")
-            eval_command(t, eq.experiment.name, eq.name, br_mapping, reseed=False, **eval_args) 
+            eval_command(t, eq.experiment.name, eq.name, br_mapping, reseed=False, use_wandb=self.use_wandb, **eval_args) 
         else:
             dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, overrides=self.eval_overrides)
             dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, str(br_mapping), overrides=self.eval_overrides)

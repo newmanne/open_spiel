@@ -9,6 +9,8 @@ from collections import defaultdict
 import pickle
 from compress_pickle import dumps, loads
 
+from open_spiel.python.games.clock_auction_base import InformationPolicy, ActivityPolicy, UndersellPolicy, TiebreakingPolicy
+
 def type_combos(game):
     types = [game.auction_params.player_types[player] for player in range(game.num_players())]
     for player_type in types:
@@ -19,17 +21,19 @@ def type_combos(game):
     return type_combos
 
 def analyze_samples(samples, game):
+    players = list(samples['raw_rewards'].keys())
     record = dict()
-    welfares = np.zeros(len(samples['raw_rewards']['0']))
-    revenues = np.zeros(len(samples['raw_rewards']['0']))
+    welfares = np.zeros(len(samples['raw_rewards'][players[0]]))
+    revenues = np.zeros(len(samples['raw_rewards'][players[0]]))
     record['total_entropy'] = 0
     n_players = len(samples['raw_rewards'].keys())
     record['unsold'] = np.array(game.auction_params.licenses, dtype=np.float64)
 
-    for player in range(n_players):
-        player = str(player)
+    for player in players:
+        # player = str(player)
         rewards = pd.Series(samples['raw_rewards'][player])
         payments = pd.Series(samples['payments'][player])
+        record[f'p{player}_exposure_frac'] = rewards[rewards < 0].mean()
         record[f'p{player}_utility'] = rewards.mean()
         record[f'p{player}_payment'] = payments.mean()
         record[f'p{player}_total_entropies'] = np.array(samples['total_entropies'][player]).mean()
@@ -44,7 +48,7 @@ def analyze_samples(samples, game):
     record['auction_lengths'] = np.array(samples['auction_lengths']).mean()
 
 
-    arr = np.array(samples['allocations']['0']).astype(int) # TODO: only player 0's allocation.
+    arr = np.array(samples['allocations'][players[0]]).astype(int) # TODO: only player 0's allocation.
     c = Counter(tuple(map(tuple, arr)))
     record['common_allocations'] = c.most_common(5)
     return record
@@ -271,7 +275,7 @@ def get_results(run, game_cache=None, skip_single_chance_nodes=True, load_policy
     game.auction_params.skip_single_chance_nodes = skip_single_chance_nodes # for backwards compatibility
     game_cache[run.game.name] = game
 
-    final_checkpoint = run.equilibriumsolverruncheckpoint_set.last()
+    final_checkpoint = run.equilibriumsolverruncheckpoint_set.defer('policy').last()
     if final_checkpoint is None:
         raise ValueError("None final checkpoint?")
     
@@ -305,3 +309,49 @@ def display_history_distributions(history_dists):
             print(f'{probs:.3f} {history}')
         print()
 
+
+def rule_set_to_value_structure(s):
+    if 'spite' in s:
+        return 'spite'
+    elif 'risk_averse' in s:
+        return 'risk_averse'
+    else:
+        return 'quasi_linear'
+
+def rule_set_to_rule(s):
+    if 'high_speed' in s:
+        return 'high_speed'
+    elif 'medium_speed' in s:
+        return 'medium_speed'
+    elif 'grace' in s:
+        return 'grace'
+    elif 'tie_break' in s:
+        return 'tie_break'
+    elif 'undersell_allowed' in s:
+        return 'undersell_allowed'
+    elif 'hide_demand' in s:
+        return 'hide_demand'
+    elif 'no_activity' in s:
+        return 'no_activity'
+    else:
+        return 'base'
+    
+def get_game_info(game, game_db):
+    game_name = game_db.name
+    # Base is like sep19_encumbered_4 4 without all the crap before or afer in game_name. This will fail horribly if you don't have exactly 2 underscores.
+    base_game_name = '_'.join(game_name.split('/')[1].split('_')[:3]) # Stupid naming convention that will surely bite us later
+    rule_set = game_name.split(base_game_name)[-1][1:-5]
+    value_structure = rule_set_to_value_structure(rule_set)
+    rule = rule_set_to_rule(rule_set)
+
+    return {
+        'base_game_name': base_game_name,
+        'information_policy': InformationPolicy(game.auction_params.information_policy).name,
+        'activity_policy': ActivityPolicy(game.auction_params.activity_policy).name,
+        'undersell_policy': UndersellPolicy(game.auction_params.undersell_policy).name,
+        'tiebreaking_policy': TiebreakingPolicy(game.auction_params.tiebreaking_policy).name,
+        'grace_rounds': game.auction_params.grace_rounds,
+        'clock_speed': game.auction_params.increment,
+        'value_structure': value_structure,
+        'rule': rule,
+    }

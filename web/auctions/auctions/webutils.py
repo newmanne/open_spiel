@@ -122,9 +122,9 @@ def get_checkpoint(run, t=None):
     filter_kwargs = dict(equilibrium_solver_run=run)
     if t is None:
         # Get the latest
-        t = EquilibriumSolverRunCheckpoint.objects.filter(**filter_kwargs).order_by('-t')[0].t
+        t = EquilibriumSolverRunCheckpoint.objects.defer('policy').filter(**filter_kwargs).order_by('-t')[0].t
     filter_kwargs['t'] = t
-    equilibrium_solver_run_checkpoint = EquilibriumSolverRunCheckpoint.objects.get(**filter_kwargs)
+    equilibrium_solver_run_checkpoint = EquilibriumSolverRunCheckpoint.objects.defer('policy').get(**filter_kwargs)
     return equilibrium_solver_run_checkpoint
 
 def find_best_checkpoint(run, max_t=None):
@@ -136,7 +136,7 @@ def find_best_checkpoint(run, max_t=None):
 
 
 def convert_pesky_np(d):
-    # TODO: This solution is dumb in retrospect: Use a serializer
+    # TODO: This solution is dumb in retrospect: Use a serializer See NpEncoder
     '''Django complains it doesn't know to JSON serialize numpy arrays'''
     if isinstance(d, np.ndarray):
         return convert_pesky_np(d.tolist())
@@ -202,6 +202,7 @@ def add_eval_flags(parser):
     parser.add_argument('--eval_report_freq', type=int, default=EvalDefaults.DEFAULT_REPORT_FREQ)
     parser.add_argument('--eval_num_envs', type=int, default=EvalDefaults.DEFAULT_NUM_ENVS)
     parser.add_argument('--eval_compute_efficiency', type=util.strtobool, default=EvalDefaults.DEFAULT_COMPUTE_EFFICIENCY)
+    parser.add_argument('--eval_restrict_to_heuristics', type=util.strtobool, default=EvalDefaults.DEFAULT_RESTRICT_TO_HEURISTICS)
 
 
 

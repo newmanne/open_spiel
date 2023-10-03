@@ -1,7 +1,11 @@
 from django.core.management.base import BaseCommand
 from open_spiel.python.examples.ppo_utils import EpisodeTimer
-from open_spiel.python.examples.cfr_utils import read_cfr_config, load_solver
-from open_spiel.python.examples.ubc_utils import fix_seeds, apply_optional_overrides, setup_directory_structure
+from open_spiel.python.examples.cfr_utils import read_cfr_config, load_solver, make_cfr_agent
+from open_spiel.python.examples.ubc_utils import fix_seeds, apply_optional_overrides, setup_directory_structure, time_bounded_run
+from open_spiel.python.examples.ubc_cma import get_game_info
+from open_spiel.python.examples.ubc_decorators import ModalAgentDecorator
+from open_spiel.python.algorithms.exploitability import nash_conv
+from open_spiel.python.rl_agent_policy import JointRLAgentPolicy
 import sys
 import logging
 from auctions.models import *
@@ -14,6 +18,8 @@ import time
 import humanize
 import functools
 import gc
+import wandb
+
 
 logger = logging.getLogger(__name__)
 
@@ -61,14 +67,6 @@ class Command(BaseCommand):
         logging.info(f'Network params: {config}')
         logging.info(f'Command line commands {opts}')
 
-        if opts.use_wandb:
-            import wandb
-            config['track_stats'] = True
-            config['clear_on_report'] = True
-            config['game_name'] = game_name
-            config['cfg'] = config_name
-            wandb.init(project=experiment_name, entity="ubc-algorithms", name=run_name, notes=opts.wandb_note, config=config, tags=[game_name])
-
         # 1) Make the game if it doesn't exist
         game_db = get_or_create_game(game_name)
 
@@ -94,12 +92,24 @@ class Command(BaseCommand):
 
 
         result_saver = DBPolicySaver(eq_solver_run=eq_solver_run) if not opts.dry_run else None
-        dispatcher = DBBRDispatcher(game_db.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path, opts.dispatch_br, opts.eval_inline, opts.profile_memory) if not opts.dry_run else None
+        dispatcher = DBBRDispatcher(game_db.num_players, opts.eval_overrides, opts.br_overrides, eq_solver_run, opts.br_portfolio_path, opts.dispatch_br, opts.eval_inline, opts.profile_memory, opts.use_wandb) if not opts.dry_run else None
         eval_episode_timer = EpisodeTimer(opts.eval_every, early_frequency=opts.eval_every_early, fixed_episodes=opts.eval_exactly, eval_zero=opts.eval_zero, every_seconds=opts.eval_every_seconds)
         report_timer = EpisodeTimer(opts.report_freq)
 
         game = game_db.load_as_spiel()
         solver = load_solver(config, game)
+
+        game_info = get_game_info(game, game_db)
+
+        if opts.use_wandb:
+            import wandb
+            config['track_stats'] = True
+            config['clear_on_report'] = True
+            config['game_name'] = game_name
+            config['cfg'] = config_name
+            config.update(game_info)
+            wandb.init(project=experiment_name, entity="ubc-algorithms", name=run_name, notes=opts.wandb_note, config=config)
+
 
         cmd = lambda: run_cfr(config, game, solver, opts.total_timesteps, result_saver=result_saver, seed=seed, compute_nash_conv=opts.compute_nash_conv, dispatcher=dispatcher, report_timer=report_timer, eval_timer=eval_episode_timer, use_wandb=opts.use_wandb, time_limit_seconds=opts.time_limit_seconds)
         profile_cmd(cmd, opts.pprofile, opts.pprofile_file, opts.cprofile, opts.cprofile_file)
@@ -107,24 +117,32 @@ class Command(BaseCommand):
         logging.info("All done. Goodbye")
 
 
-def trigger(solver, i, start_time, result_saver, dispatcher):
-    logger.info("--------")
-    logger.info(i)
-    import os, psutil
-    # TODO: Use humanize for byte sizes, switch to logger
-    logger.info(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2) # MiB
+def trigger(solver, i, start_time, result_saver, dispatcher, use_wandb=False):
     policy = solver.average_policy()
     checkpoint = dict(episode=i, walltime=time.time() - start_time, policy=policy)
     if result_saver is not None:
         checkpoint_name = result_saver.save(checkpoint)
         if dispatcher is not None:
-            dispatcher.dispatch(checkpoint_name)
-    logger.info("POST")
-    import os, psutil
-    logger.info(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2) # MiB
-    logger.info("--------")
+            dispatcher.dispatch(checkpoint_name, policy, solver._game)
+            if use_wandb:
+                wandb.log({}, step=i, commit=True)
 
 
+def compute_heuristic_conv(game, solver, time_limit_seconds):
+    avg_policy = solver.average_policy()
+    agents = {}
+    for player_id in range(game.num_players()):
+        agents[player_id] = make_cfr_agent(player_id, None, None)
+        agents[player_id].policy = avg_policy
+        agents[player_id] = ModalAgentDecorator(agents[player_id])
+    policy = JointRLAgentPolicy(game, agents, False)
+
+    worked, heuristic_conv_runtime, res = time_bounded_run(time_limit_seconds, nash_conv, game, policy, return_only_nash_conv=False, restrict_to_heuristics=True)
+    if worked:
+        (hc, heuristic_conv_player_improvements, br_policies) = res
+    else:
+        (hc, heuristic_conv_player_improvements, br_policies) = (None, None, None)
+    return worked, hc, heuristic_conv_player_improvements, heuristic_conv_runtime
 
 def run_cfr(solver_config, game, solver, total_timesteps, result_saver=None, seed=1234, dispatcher=None, report_timer=None, eval_timer=None, use_wandb=False, compute_nash_conv=False, time_limit_seconds=None):
     start_time = time.time()
@@ -143,6 +161,8 @@ def run_cfr(solver_config, game, solver, total_timesteps, result_saver=None, see
         last_iter = i == total_timesteps - 1
 
         if report_timer is not None and report_timer.should_trigger(i) and i > 0:
+            wandb_data = {}
+
             avg_iter_time = (time.time() - start_time) / i
             extrapolated_time = (total_timesteps - i) * avg_iter_time
             logger.info(f"Starting iteration {i}. At the current rate, you will finish in {humanize.naturaldelta(extrapolated_time, minimum_unit='seconds')}")
@@ -160,11 +180,34 @@ def run_cfr(solver_config, game, solver, total_timesteps, result_saver=None, see
                     else:
                         hit_rate = cache_info.hits / (cache_info.hits + cache_info.misses)
                     logger.info(f"{wrapper.__qualname__}: Hit rate {hit_rate:.2%}")
+                    wandb_data[f'{wrapper.__qualname__}_hit_rate'] = hit_rate
+
+            # solver stats
+            solver_stats = solver.get_solver_stats()
+            wandb_data.update({f'mccfr_{k}': v for k, v in solver_stats.items()})
+
+            # HeuristicConv
+            logger.info("Computing HeuristicConv...")
+            hc_worked, hc, heuristic_conv_player_improvements, heuristic_conv_runtime = compute_heuristic_conv(game, solver, 300)
+            if hc_worked: 
+                logger.info(f"Heuristic Conv: {hc:.3f} (computed in {heuristic_conv_runtime:.3f} seconds)")
+                for player in range(len(heuristic_conv_player_improvements)):
+                    logger.info(f"Player {player} improvement: {heuristic_conv_player_improvements[player]}")
+
+                wandb_data.update({
+                    'heuristic_conv': hc, 
+                    'heuristic_conv_runtime': heuristic_conv_runtime,
+                    **{f'heuristic_conv_player_improvements_{p}': v for p, v in enumerate(heuristic_conv_player_improvements)},
+                })
+            else:
+                logger.info("Heuristic Conv timed out")
 
             # TODO: These caches I would love to see, as they are the most important. But they aren't instrumented because they aren't from a decorator...
             # logger.info(f"State cache stats: {game.state_cache.cache_info()}")
             # logger.info(f"Lottery cache stats: {game.lottery_cache.cache_info()}")
 
+            if use_wandb:
+                wandb.log(wandb_data, step=i, commit=True)
 
         if solver_config['solver'] == 'mccfr':
             solver.iteration()
@@ -172,7 +215,7 @@ def run_cfr(solver_config, game, solver, total_timesteps, result_saver=None, see
             solver.evaluate_and_update_policy()
 
         if eval_timer and (eval_timer.should_trigger(i)):
-            trigger(solver, i, start_time, result_saver, dispatcher)
+            trigger(solver, i, start_time, result_saver, dispatcher, use_wandb=use_wandb)
 
     # One last time
-    trigger(solver, i, start_time, result_saver, dispatcher)
+    trigger(solver, i, start_time, result_saver, dispatcher, use_wandb=use_wandb)

@@ -50,7 +50,6 @@ import collections
 import enum
 from absl import logging
 import numpy as np
-from open_spiel.python.observation import make_observation
 from copy import deepcopy
 
 # import StepOutput
@@ -160,8 +159,7 @@ class Environment(object):
                mfg_distribution=None,
                mfg_population=None,
                enable_legality_check=False,
-               use_observer_api=False,
-               observer_params=None,
+               observer=None,
                include_state=False,
                use_child=True, # The way we've built caching into the clock auction, this is the way to do it
                **kwargs): 
@@ -235,9 +233,7 @@ class Environment(object):
       assert 0 <= mfg_population < self._num_players
 
     # MODIFIED
-    self.observer = None
-    if use_observer_api:
-      self.observer = make_observation(self._game, params=observer_params)
+    self.observer = observer
 
   def seed(self, seed=None):
     self._chance_event_sampler.seed(self._game)

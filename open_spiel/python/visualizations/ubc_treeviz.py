@@ -114,7 +114,7 @@ def default_edge_decorator(parent, unused_child, action, **kwargs):
   return attrs
 
 
-def make_policy_decorators(policy):
+def make_policy_decorators(policy, br_policies=None):
     def edge_weight_by_policy_decorator(parent_state, unused_child, action, **kwargs):
         attrs = default_edge_decorator(parent_state, unused_child, action)  # get default attributes
         if int(parent_state.current_player()) < 0:
@@ -127,6 +127,11 @@ def make_policy_decorators(policy):
         attrs['arrowsize'] = action_prob * attrs['arrowsize']
         attrs['penwidth'] = action_prob
         attrs['label'] = f'[{action_prob:.2f}] {attrs["label"]}'
+        
+        if br_policies is not None:
+            player_br_policy = br_policies[parent_state.current_player()]
+            action_regret = player_br_policy.value(parent_state) - player_br_policy.q_value(parent_state, action)
+            attrs['label'] += f' (regret = {action_regret:.1f})'
         
         # legal_actions = parent_state.legal_actions()
         # parent_tensor = parent_state.information_state_tensor()

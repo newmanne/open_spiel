@@ -248,13 +248,16 @@ def signal_handler(*args):
     raise SignalTimeout()
 
 def time_bounded_run(t, f, *args, **kwargs):
-    signal.signal(signal.SIGALRM, signal_handler)
-    signal.alarm(t)
     start_time = time.time()
     try:
+        signal.signal(signal.SIGALRM, signal_handler)
+        signal.alarm(t)
         result = f(*args, **kwargs)
         return True, time.time() - start_time, result
     except SignalTimeout as ex:
+        return False, time.time() - start_time, None
+    except ValueError as ex2: # ValueError: Missing value for wrapped C++ type: Python instance was disowned. No idea what to do. Let's just pretend we timed out.
+        logging.warning("Super weird error!")
         return False, time.time() - start_time, None
     finally:
         signal.alarm(0) # Clear alarm

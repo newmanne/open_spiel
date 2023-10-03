@@ -50,7 +50,6 @@ class AuctionParams:
   num_products: int = 0
   increment: float = 0.1
   reveal_type_round: int = None
-  fold_randomness: bool = True # If true, figure out which tie-breaking paths are equivalent by running all variations of the queue processing algorithm. Results in smaller game tree. Only relevant if the algorithm actually does a full traversal.
   skip_single_chance_nodes: bool = True # If true, skip chance nodes that only have 1 outcome. Results in smaller game tree. Only relevant if the algorithm actually does a full traversal.
 
   max_round: int = DEFAULT_MAX_ROUNDS

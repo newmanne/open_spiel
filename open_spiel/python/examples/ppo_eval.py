@@ -92,8 +92,9 @@ class EvalDefaults:
     DEFAULT_SEED = 1234
     DEFAULT_COMPUTE_EFFICIENCY = False
     DEFAULT_NUM_ENVS = 8
+    DEFAULT_RESTRICT_TO_HEURISTICS = False
 
-def run_eval(env_and_policy, num_samples=EvalDefaults.DEFAULT_NUM_SAMPLES, report_freq=EvalDefaults.DEFAULT_REPORT_FREQ, seed=EvalDefaults.DEFAULT_SEED, compute_efficiency=EvalDefaults.DEFAULT_COMPUTE_EFFICIENCY):
+def run_eval(env_and_policy, num_samples=EvalDefaults.DEFAULT_NUM_SAMPLES, report_freq=EvalDefaults.DEFAULT_REPORT_FREQ, seed=EvalDefaults.DEFAULT_SEED, compute_efficiency=EvalDefaults.DEFAULT_COMPUTE_EFFICIENCY, restrict_to_heuristics=EvalDefaults.DEFAULT_RESTRICT_TO_HEURISTICS):
     # TODO: So many unused vars here
     checkpoint = eval_agents_parallel(env_and_policy.env, env_and_policy.agents, num_samples, report_timer=EpisodeTimer(report_freq))
     checkpoint.update(AuctionStatTrackingDecorator.merge_stats(env_and_policy.env))
