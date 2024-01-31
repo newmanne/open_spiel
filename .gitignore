@@ -85,3 +85,4 @@ open_spiel/python/examples/notebooks/results/
 open_spiel/python/examples/notebooks/output/
 
 *profile*.txt
+*.lp
