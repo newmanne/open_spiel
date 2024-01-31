@@ -220,18 +220,21 @@ class AuctionStatTrackingDecorator(EnvDecorator):
         self.clear()
 
         self.current_episode_entropies = defaultdict(float)
+        self.current_episode_mode_probabilities = defaultdict(list)
 
     def clear(self):
         self.rewards = defaultdict(list)
         self.payments = defaultdict(list)
         self.allocations = defaultdict(list)
         self.auction_lengths = []
+        self.num_lotteries = []
         self.welfares = []
         self.revenues = []
         self.processed_demands = defaultdict(list)
         self.types = defaultdict(list)
 
         self.total_entropies = defaultdict(list)
+        self.avg_mode_probabilities = defaultdict(list)
 
     def fill_metrics(self, time_step, state):
         for player_id, reward in enumerate(time_step.rewards):
@@ -239,6 +242,7 @@ class AuctionStatTrackingDecorator(EnvDecorator):
         for player_id, payment in enumerate(state.get_final_payments()):
             self.payments[player_id].append(payment)
         self.revenues.append(state.revenue)
+        
         for player_id, allocation in enumerate(state.get_allocation()):
             self.allocations[player_id].append(allocation.tolist())
             self.processed_demands[player_id].append(state.bidders[player_id].processed_demand) # TODO: watch for array convert
@@ -247,8 +251,12 @@ class AuctionStatTrackingDecorator(EnvDecorator):
             self.total_entropies[player_id].append(self.current_episode_entropies[player_id])
             self.current_episode_entropies[player_id] = 0
 
+            self.avg_mode_probabilities[player_id].append(np.mean(self.current_episode_mode_probabilities[player_id]))
+            self.current_episode_mode_probabilities[player_id] = []
+
         self.auction_lengths.append(state.round)
         self.welfares.append(state.get_welfare())
+        self.num_lotteries.append(state.num_lotteries)
 
 
     def step(self, step_outputs):
@@ -256,6 +264,7 @@ class AuctionStatTrackingDecorator(EnvDecorator):
         prev_player = prev_state.current_player()
         for step_output in step_outputs:
             self.current_episode_entropies[prev_player] += scipy.stats.entropy(step_output.probs)
+            self.current_episode_mode_probabilities[prev_player].append(np.max(np.asarray(step_output.probs)))
 
         _ = self._env.step(step_outputs)
         time_step = self._env.get_time_step()
@@ -286,6 +295,8 @@ class AuctionStatTrackingDecorator(EnvDecorator):
             'processed_demands': self.processed_demands,
             'types': self.types,
             'total_entropies': self.total_entropies,
+            'avg_mode_probabilities': self.avg_mode_probabilities,
+            'num_lotteries': self.num_lotteries,
         }
 
     @staticmethod

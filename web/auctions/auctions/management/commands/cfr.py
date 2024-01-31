@@ -109,6 +109,8 @@ class Command(BaseCommand):
             config['cfg'] = config_name
             config.update(game_info)
             wandb.init(project=experiment_name, entity="ubc-algorithms", name=run_name, notes=opts.wandb_note, config=config)
+            # configure wandb to use "global_step" as the x axis for all plots
+            wandb.define_metric("*", step_metric="global_step")
 
 
         cmd = lambda: run_cfr(config, game, solver, opts.total_timesteps, result_saver=result_saver, seed=seed, compute_nash_conv=opts.compute_nash_conv, dispatcher=dispatcher, report_timer=report_timer, eval_timer=eval_episode_timer, use_wandb=opts.use_wandb, time_limit_seconds=opts.time_limit_seconds)
@@ -124,8 +126,8 @@ def trigger(solver, i, start_time, result_saver, dispatcher, use_wandb=False):
         checkpoint_name = result_saver.save(checkpoint)
         if dispatcher is not None:
             dispatcher.dispatch(checkpoint_name, policy, solver._game)
-            if use_wandb:
-                wandb.log({}, step=i, commit=True)
+            # if use_wandb:
+            #     wandb.log({}, step=i, commit=True)
 
 
 def compute_heuristic_conv(game, solver, time_limit_seconds):
@@ -207,7 +209,7 @@ def run_cfr(solver_config, game, solver, total_timesteps, result_saver=None, see
             # logger.info(f"Lottery cache stats: {game.lottery_cache.cache_info()}")
 
             if use_wandb:
-                wandb.log(wandb_data, step=i, commit=True)
+                wandb.log({**wandb_data, 'global_step': i})
 
         if solver_config['solver'] == 'mccfr':
             solver.iteration()

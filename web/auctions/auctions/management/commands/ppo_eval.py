@@ -198,7 +198,7 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
 
         if use_wandb:
             wandb_data = {
-                **analyze_samples(eval_output, game),
+                **analyze_samples(eval_output, game, restrict_to_wandb=True),
                 **{f'mean_reward_{p}': v for p, v in enumerate(mean_rewards)}
             }
             if hc is not None:
@@ -213,7 +213,7 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
                     'nash_conv_runtime': nash_conv_runtime,
                     **{f'nash_conv_player_improvements_{p}': v for p, v in enumerate(nash_conv_player_improvements)}
                 })
-            wandb.log({f'{name}_{k}': v for k, v in wandb_data.items()}, step=t, commit=False)
+            wandb.log({f'eval_{"base" if name == "" else name}/{k}': v for k, v in wandb_data.items()})
 
     logging.info("AFTER EVAL")
     

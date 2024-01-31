@@ -88,12 +88,22 @@ class EquilibriumSolverRunCheckpoint(TimeStampedModel):
         return self.evaluation_set.get(name='')
     
     def get_modal_eval(self):
+        return self.get_named_eval('modal')
+
+    def get_straightforward_eval(self):
+        return self.get_named_eval('straightforward')
+
+    def get_trembling_eval(self):
+        return self.get_named_eval('tremble')
+
+    def get_named_eval(self, name):
         modal_name = ''
         for p in range(self.equilibrium_solver_run.game.num_players):
             if modal_name:
                 modal_name += '+'
-            modal_name += f'p{p}=modal'
+            modal_name += f'p{p}={name}'
         return self.evaluation_set.get(name=modal_name)
+
 
     @property
     def game(self):

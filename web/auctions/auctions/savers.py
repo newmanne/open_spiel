@@ -66,11 +66,11 @@ class DBBRDispatcher:
                 logger.info(f"Running inline straightforward eval for player {player} at t={t}")
                 eval_command(t, eq.experiment.name, eq.name, straightforward, reseed=False, use_wandb=self.use_wandb, **eval_args) 
 
-                logger.info(f"Running inline trembling eval for player {player} at t={t}")
-                eval_command(t, eq.experiment.name, eq.name, tremble, reseed=False, use_wandb=self.use_wandb, **eval_args) 
+                # logger.info(f"Running inline trembling eval for player {player} at t={t}")
+                # eval_command(t, eq.experiment.name, eq.name, tremble, reseed=False, use_wandb=self.use_wandb, **eval_args) 
 
-                logger.info(f"Running inline modal eval for player {player} at t={t}")
-                eval_command(t, eq.experiment.name, eq.name, {player: 'modal'}, reseed=False, use_wandb=self.use_wandb, **eval_args) 
+                # logger.info(f"Running inline modal eval for player {player} at t={t}")
+                # eval_command(t, eq.experiment.name, eq.name, {player: 'modal'}, reseed=False, use_wandb=self.use_wandb, **eval_args) 
             else:
                 dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, str(straightforward), overrides=self.eval_overrides)
                 dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, str(tremble), overrides=self.eval_overrides)
@@ -87,6 +87,11 @@ class DBBRDispatcher:
             eval_command(t, eq.experiment.name, eq.name, reseed=False, use_wandb=self.use_wandb, **eval_args) 
             logger.info(f"Running inline overall modal eval at t={t}")
             eval_command(t, eq.experiment.name, eq.name, br_mapping, reseed=False, use_wandb=self.use_wandb, **eval_args) 
+            logger.info(f"Running inline trembling eval at t={t}")
+            eval_command(t, eq.experiment.name, eq.name, {p: 'tremble' for p in range(self.num_players)}, reseed=False, use_wandb=self.use_wandb, **eval_args) 
+            logger.info(f"Running inline straightforward eval at t={t}")
+            eval_command(t, eq.experiment.name, eq.name, {p: 'straightforward' for p in range(self.num_players)}, reseed=False, use_wandb=self.use_wandb, **eval_args) 
+
         else:
             dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, overrides=self.eval_overrides)
             dispatch.dispatch_eval_database(t, eq.experiment.name, eq.name, str(br_mapping), overrides=self.eval_overrides)
