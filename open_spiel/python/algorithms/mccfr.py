@@ -22,7 +22,8 @@ INFOSET_CACHE_SIZE = 500_000
 
 REGRET_INDEX = 0
 AVG_POLICY_INDEX = 1
-# VISIT_COUNT_INDEX = 2 #FIXME
+VISIT_COUNT_INDEX = 2
+AVG_REWARD_INDEX = 3
 
 class AveragePolicy(policy.Policy):
   """A policy object representing the average policy for MCCFR algorithms."""
@@ -70,7 +71,7 @@ class AveragePolicy(policy.Policy):
 class MCCFRSolverBase(object):
   """A base class for both outcome MCCFR and external MCCFR."""
 
-  def __init__(self, game, regret_matching_plus=False, linear_averaging=False, regret_init='uniform', regret_init_strength = 1.):
+  def __init__(self, game, regret_matching_plus=False, linear_averaging=False, regret_init='uniform', regret_init_strength = 1., avg_reward_decay=1.0):
     self._game = game
     self._infostates = LRUCache(INFOSET_CACHE_SIZE)  # infostate keys -> [regrets, avg strat, visit count]
     self._num_players = game.num_players()
@@ -81,6 +82,7 @@ class MCCFRSolverBase(object):
     self._iteration = 0 # For linear averaging
     self.regret_init = regret_init
     self.regret_init_strength = regret_init_strength
+    self.avg_reward_decay = avg_reward_decay
 
   def _lookup_infostate_info(self, info_state_key, num_legal_actions, state):
     """Looks up an information set table for the given key.
@@ -108,9 +110,10 @@ class MCCFRSolverBase(object):
       initial_regrets += state.regret_init(self.regret_init) * self.regret_init_strength
 
     self._infostates[info_state_key] = [
-        initial_regrets,
-        np.ones(num_legal_actions, dtype=np.float64) / 1e6,
-        # 0, #FIXME
+        initial_regrets, # regret list
+        np.ones(num_legal_actions, dtype=np.float64) / 1e6, # avg policy
+        0, # visit count
+        0, # avg reward
     ]
     return self._infostates[info_state_key]
 
@@ -120,8 +123,11 @@ class MCCFRSolverBase(object):
   def _add_avstrat(self, info_state_key, action_idx, amount):
     self._infostates[info_state_key][AVG_POLICY_INDEX][action_idx] += amount
 
-  # def _add_visit(self, info_state_key): #FIXME
-  #   self._infostates[info_state_key][VISIT_COUNT_INDEX] += 1 #FIXME
+  def _add_visit(self, info_state_key):
+    self._infostates[info_state_key][VISIT_COUNT_INDEX] += 1
+
+  def _add_reward(self, info_state_key, reward):
+    self._infostates[info_state_key][AVG_REWARD_INDEX] = self.avg_reward_decay * (self._infostates[info_state_key][AVG_REWARD_INDEX]) + (1 - self.avg_reward_decay) * reward
 
   def average_policy(self):
     """Computes the average policy, containing the policy for all players.

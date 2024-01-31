@@ -49,9 +49,8 @@ def fix_seeds(seed):
     # torch.use_deterministic_algorithms(True) # See https://github.com/pytorch/pytorch/issues/50469
 
 def single_action_result(legal_actions, num_actions, as_output=False):
-    probs = np.zeros(num_actions)
     action = legal_actions[0]
-    probs[action] = 1.0
+    probs = np.array([1.0])
     if as_output:
         return StepOutput(action=action, probs=probs)
     return action, probs

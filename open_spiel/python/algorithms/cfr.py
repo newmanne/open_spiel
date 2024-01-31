@@ -128,7 +128,7 @@ class _CFRSolverBase(object):
   """
 
   def __init__(self, game, alternating_updates, linear_averaging,
-               regret_matching_plus):
+               regret_matching_plus, regret_init_strength=0):
     # pyformat: disable
     """Initializer.
 
@@ -173,6 +173,7 @@ class _CFRSolverBase(object):
     self._linear_averaging = linear_averaging
     self._alternating_updates = alternating_updates
     self._regret_matching_plus = regret_matching_plus
+    self.regret_init_strength = regret_init_strength
 
   def _initialize_info_state_nodes(self, state):
     """Initializes info_state_nodes.
@@ -201,6 +202,13 @@ class _CFRSolverBase(object):
       info_state_node = _InfoStateNode(
           legal_actions=legal_actions,
           index_in_tabular_policy=self._current_policy.state_lookup[info_state])
+      
+
+      ## ADDED
+      for k in info_state_node.cumulative_regret:
+        info_state_node.cumulative_regret[k] = np.random.rand() * self.regret_init_strength
+      ## END
+
       self._info_state_nodes[info_state] = info_state_node
 
     for action in info_state_node.legal_actions:
@@ -345,6 +353,10 @@ class _CFRSolverBase(object):
         action: prob_vec[action] for action in info_state_node.legal_actions
     }
 
+  def get_solver_stats(self):
+    return {'num_infostates': len(self._info_state_nodes)}
+
+
 
 def _regret_matching(cumulative_regrets, legal_actions):
   """Returns an info state policy by applying regret-matching.
@@ -475,12 +487,14 @@ class CFRPlusSolver(_CFRSolver):
   ```
   """
 
-  def __init__(self, game):
+  def __init__(self, game, regret_init_strength=0):
     super(CFRPlusSolver, self).__init__(
         game,
         regret_matching_plus=True,
         alternating_updates=True,
-        linear_averaging=True)
+        linear_averaging=True,
+        regret_init_strength=regret_init_strength
+        )
 
 
 class CFRSolver(_CFRSolver):
@@ -492,9 +506,11 @@ class CFRSolver(_CFRSolver):
   paper) because it has been proved to be far more efficient.
   """
 
-  def __init__(self, game):
+  def __init__(self, game, regret_init_strength=0):
     super(CFRSolver, self).__init__(
         game,
         regret_matching_plus=False,
         alternating_updates=True,
-        linear_averaging=False)
+        linear_averaging=False,
+        regret_init_strength=regret_init_strength
+        )
