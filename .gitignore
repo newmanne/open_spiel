@@ -86,3 +86,4 @@ open_spiel/python/examples/notebooks/output/
 
 *profile*.txt
 *.lp
+*auctions.log

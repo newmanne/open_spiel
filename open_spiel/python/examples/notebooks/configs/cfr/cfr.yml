@@ -1,0 +1,3 @@
+solver_type: cfr
+solver: cfrplus
+regret_init_strength: 1000
