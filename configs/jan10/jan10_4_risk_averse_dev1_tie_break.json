@@ -1,0 +1,225 @@
+{
+  "activity": [
+    12,
+    8
+  ],
+  "agent_memory": 10,
+  "heuristic_deviations": 1,
+  "increment": 0.05,
+  "information_policy": "show_demand",
+  "licenses": [
+    3,
+    3
+  ],
+  "max_rounds": 10,
+  "opening_price": [
+    12,
+    8
+  ],
+  "tiebreaking_policy": "DROP_BY_LICENSE",
+  "license_names": [
+    "British Columbia"
+  ],
+  "players": [
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            20,
+            28,
+            35,
+            22,
+            31,
+            38,
+            46,
+            34,
+            42,
+            49,
+            57,
+            45,
+            52,
+            60,
+            68
+          ],
+          "value_format": "full",
+          "budget": 68,
+          "prob": 0.3333333333333333,
+          "name": "local",
+          "action_prefix": [
+            12,
+            12
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.014705882352941176
+          }
+        },
+        {
+          "value": [
+            0,
+            16,
+            27,
+            35,
+            21,
+            31,
+            39,
+            47,
+            34,
+            42,
+            50,
+            59,
+            46,
+            53,
+            64,
+            75
+          ],
+          "value_format": "full",
+          "budget": 75,
+          "prob": 0.3333333333333333,
+          "name": "local",
+          "action_prefix": [
+            12,
+            12
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.013333333333333334
+          }
+        },
+        {
+          "value": [
+            0,
+            17,
+            23,
+            28,
+            18,
+            25,
+            30,
+            35,
+            27,
+            32,
+            37,
+            41,
+            34,
+            38,
+            43,
+            47
+          ],
+          "value_format": "full",
+          "budget": 47,
+          "prob": 0.3333333333333333,
+          "name": "local",
+          "action_prefix": [
+            12,
+            12
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.02127659574468085
+          }
+        }
+      ]
+    },
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            25,
+            36,
+            45,
+            29,
+            40,
+            49,
+            58,
+            44,
+            53,
+            62,
+            72,
+            57,
+            66,
+            76,
+            86
+          ],
+          "value_format": "full",
+          "budget": 86,
+          "prob": 0.3333333333333333,
+          "name": "local",
+          "action_prefix": [
+            12,
+            12
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.011627906976744186
+          }
+        },
+        {
+          "value": [
+            0,
+            17,
+            25,
+            32,
+            20,
+            28,
+            35,
+            42,
+            31,
+            38,
+            45,
+            52,
+            41,
+            48,
+            56,
+            64
+          ],
+          "value_format": "full",
+          "budget": 64,
+          "prob": 0.3333333333333333,
+          "name": "local",
+          "action_prefix": [
+            12,
+            12
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.015625
+          }
+        },
+        {
+          "value": [
+            0,
+            21,
+            30,
+            37,
+            24,
+            33,
+            40,
+            47,
+            36,
+            43,
+            50,
+            58,
+            46,
+            54,
+            61,
+            68
+          ],
+          "value_format": "full",
+          "budget": 68,
+          "prob": 0.3333333333333333,
+          "name": "local",
+          "action_prefix": [
+            12,
+            12
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.014705882352941176
+          }
+        }
+      ]
+    }
+  ]
+}

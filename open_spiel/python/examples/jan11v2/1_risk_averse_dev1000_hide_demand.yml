@@ -1,0 +1,86 @@
+auction_params:
+  activity:
+  - 12
+  - 7
+  agent_memory: 10
+  heuristic_deviations: 1000
+  increment: 0.15
+  information_policy: hide_demand
+  licenses:
+  - 2
+  - 5
+  max_rounds: 10
+  opening_price:
+  - 12
+  - 7
+bidders:
+- action_prefix:
+  - 5
+  player: 0
+  types:
+  - local_regions:
+    - 1
+    market_share:
+      lower: 0.3
+      upper: 0.5
+    type: local
+    value_per_subscriber:
+      lower: 30
+      upper: 50
+  - local_regions:
+    - 1
+    market_share:
+      lower: 0.3
+      upper: 0.5
+    type: local
+    value_per_subscriber:
+      lower: 30
+      upper: 50
+- action_prefix:
+  - 5
+  player: 1
+  types:
+  - local_regions:
+    - 1
+    market_share:
+      lower: 0.3
+      upper: 0.5
+    type: local
+    value_per_subscriber:
+      lower: 30
+      upper: 50
+  - local_regions:
+    - 1
+    market_share:
+      lower: 0.3
+      upper: 0.5
+    type: local
+    value_per_subscriber:
+      lower: 30
+      upper: 50
+- action_prefix:
+  - 5
+  player: 2
+  types:
+  - local_regions:
+    - 1
+    market_share:
+      lower: 0.3
+      upper: 0.5
+    type: local
+    value_per_subscriber:
+      lower: 30
+      upper: 50
+  - local_regions:
+    - 1
+    market_share:
+      lower: 0.3
+      upper: 0.5
+    type: local
+    value_per_subscriber:
+      lower: 30
+      upper: 50
+map: BCEncumbered
+risk_averse: true
+sats_seed: 724450230
+scale: 1000000

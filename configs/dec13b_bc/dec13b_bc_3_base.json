@@ -1,0 +1,124 @@
+{
+  "activity": [
+    12,
+    8
+  ],
+  "agent_memory": 10,
+  "heuristic_deviations": 0,
+  "increment": 0.3,
+  "information_policy": "hide_demand",
+  "licenses": [
+    3,
+    2
+  ],
+  "max_rounds": 10,
+  "opening_price": [
+    12,
+    8
+  ],
+  "license_names": [
+    "British Columbia"
+  ],
+  "players": [
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            22,
+            32,
+            25,
+            36,
+            45,
+            40,
+            49,
+            57,
+            52,
+            61,
+            71
+          ],
+          "value_format": "full",
+          "budget": 71,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            9
+          ]
+        },
+        {
+          "value": [
+            0,
+            17,
+            32,
+            24,
+            36,
+            47,
+            41,
+            51,
+            62,
+            56,
+            68,
+            84
+          ],
+          "value_format": "full",
+          "budget": 84,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            22,
+            33,
+            26,
+            37,
+            47,
+            41,
+            51,
+            61,
+            55,
+            66,
+            78
+          ],
+          "value_format": "full",
+          "budget": 78,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            9
+          ]
+        },
+        {
+          "value": [
+            0,
+            28,
+            40,
+            31,
+            45,
+            55,
+            49,
+            60,
+            70,
+            64,
+            75,
+            86
+          ],
+          "value_format": "full",
+          "budget": 86,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            9
+          ]
+        }
+      ]
+    }
+  ]
+}

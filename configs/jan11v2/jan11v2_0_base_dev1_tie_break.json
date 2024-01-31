@@ -1,0 +1,211 @@
+{
+  "activity": [
+    12,
+    7
+  ],
+  "agent_memory": 10,
+  "heuristic_deviations": 1,
+  "increment": 0.15,
+  "information_policy": "show_demand",
+  "licenses": [
+    2,
+    5
+  ],
+  "max_rounds": 10,
+  "opening_price": [
+    12,
+    7
+  ],
+  "tiebreaking_policy": "DROP_BY_LICENSE",
+  "license_names": [
+    "British Columbia"
+  ],
+  "players": [
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            7,
+            18,
+            28,
+            53,
+            84,
+            13,
+            25,
+            42,
+            74,
+            90,
+            99,
+            32,
+            63,
+            87,
+            96,
+            105,
+            114
+          ],
+          "value_format": "full",
+          "budget": 114,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            5
+          ]
+        },
+        {
+          "value": [
+            0,
+            5,
+            13,
+            20,
+            39,
+            61,
+            9,
+            18,
+            32,
+            54,
+            65,
+            71,
+            24,
+            47,
+            63,
+            69,
+            76,
+            82
+          ],
+          "value_format": "full",
+          "budget": 82,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            7,
+            17,
+            25,
+            51,
+            74,
+            12,
+            23,
+            41,
+            69,
+            79,
+            87,
+            32,
+            60,
+            77,
+            85,
+            92,
+            100
+          ],
+          "value_format": "full",
+          "budget": 100,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            5
+          ]
+        },
+        {
+          "value": [
+            0,
+            7,
+            18,
+            35,
+            46,
+            50,
+            12,
+            29,
+            45,
+            49,
+            52,
+            56,
+            41,
+            48,
+            51,
+            55,
+            58,
+            62
+          ],
+          "value_format": "full",
+          "budget": 62,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            7,
+            18,
+            37,
+            52,
+            56,
+            12,
+            31,
+            50,
+            54,
+            58,
+            63,
+            44,
+            53,
+            57,
+            61,
+            65,
+            69
+          ],
+          "value_format": "full",
+          "budget": 69,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            5
+          ]
+        },
+        {
+          "value": [
+            0,
+            7,
+            17,
+            29,
+            55,
+            72,
+            12,
+            23,
+            46,
+            69,
+            76,
+            83,
+            37,
+            64,
+            74,
+            81,
+            87,
+            94
+          ],
+          "value_format": "full",
+          "budget": 94,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            5
+          ]
+        }
+      ]
+    }
+  ]
+}
