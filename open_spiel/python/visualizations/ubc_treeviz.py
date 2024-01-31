@@ -126,7 +126,7 @@ def make_policy_decorators(policy, br_policies=None):
         action_prob = policy.action_probabilities(parent_state)[action]
         attrs['arrowsize'] = action_prob * attrs['arrowsize']
         attrs['penwidth'] = action_prob
-        attrs['label'] = f'[{action_prob:.2f}] {attrs["label"]}'
+        attrs['label'] = f'[p = {action_prob:.2f}]\n{attrs["label"]}'
         
         if br_policies is not None:
             player_br_policy = br_policies[parent_state.current_player()]
@@ -166,6 +166,15 @@ def make_policy_decorators(policy, br_policies=None):
                 scale_factor = 1
               # attrs["width"] = _WIDTH * scale_factor
               attrs["height"] = _HEIGHT * scale_factor
+        elif state.is_chance_node():
+            pass
+        else:
+            # change default label (because the entire information state string is overkill)
+            current_player = state.current_player()
+            round_num = state.round
+            processed_demand = state.bidders[current_player].processed_demand[-1].tolist()
+            prices = state.sor_prices[-1].round(2).tolist()
+            attrs['label'] = f'Round {round_num}\nSOR: {prices}\nPD: {processed_demand}'
 
         # TODO: If terminal, report allocation
         # {'label': 'Current player: 0\np0v125, 125b150\n', 'fontsize': 8, 'width': 0.25, 'height': 0.25, 'margin': 0.01, 'shape': 'square', 'color': 'blue'}
@@ -208,9 +217,13 @@ class GameTree(pygraphviz.AGraph):
                policy=None,
                state_prob_limit=None,
                action_prob_limit=None,
+               transpose=False,
                **kwargs):
     kwargs["directed"] = kwargs.get("directed", True)
     super(GameTree, self).__init__(**kwargs)
+
+    if transpose:
+      self.graph_attr.update(rankdir="LR")
 
     # We use pygraphviz.AGraph.add_subgraph to cluster nodes, and it requires a
     # default constructor. Thus game needs to be optional.
@@ -292,6 +305,7 @@ class GameTree(pygraphviz.AGraph):
 
     if self.policy:
       action_probs = self.policy.action_probabilities(state) if not state.is_chance_node() else dict(state.chance_outcomes())
+    #   print(action_probs)
       # if not state.is_chance_node():
       #   print(state.information_state_string(), action_probs)
 
@@ -299,6 +313,8 @@ class GameTree(pygraphviz.AGraph):
       kwargs = dict(state_prob_limit=state_prob_limit, state_prob=state_prob, action_prob_limit=action_prob_limit)
       if self.policy:
         action_prob = action_probs[action]
+        # print(action_probs)
+        # print(action, action_prob)
         if action_prob_limit is not None and action_prob < action_prob_limit:
           # This action is never chosen, so we'll just not draw it or it's descendents
           continue
