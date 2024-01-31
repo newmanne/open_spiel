@@ -66,6 +66,11 @@ def map_ontario_quebec():
 map_generators = {
     '3Province': (map_one, None),
     'BC': (map_bc, None),
+    # BC only, with a second encumbered license with 60% coverage
+    'BCEncumbered': (map_bc, np.array([[1, 0.6]])),
+    # ditto, but with 40% coverage
+    'BCEncumbered40': (map_bc, np.array([[1, 0.4]])),
+    
     'OntarioQuebec': (map_ontario_quebec, None),
     # Ontario+Quebec map, but Quebec also has an encumbered license with 70% coverage (product #3)
     'OntarioQuebecEncumbered': (map_ontario_quebec, np.array([[1, 0, 0], [0, 1, 0.7]])),
@@ -127,19 +132,32 @@ def subscriber_value(x, max_capacity, z_lower, z_upper, population, market_share
 
 class Bidder:
 
-    def __init__(self, market_share_sampler, value_per_subscriber_sampler, auction_map=None, licenses_in_region=None, scale=1, name=None) -> None:
+    def __init__(self, market_share_sampler, value_per_subscriber_sampler, auction_map=None, licenses_in_region=None, scale=1, name=None, z_spread=0.1) -> None:
+        """
+        Generic bidder class.
+
+        Args:
+        - market_share_sampler: float sampler for market share
+        - value_per_subscriber_sampler: float sampler for value per subscriber
+        - auction_map: map from one of the map generators
+        - licenses_in_region: list of number of licenses in each region
+        - scale: scale factor applied to all values
+        - name: name of bidder
+        - z_spread: set bidder's z_lower and z_upper to market_share +/- z_spread
+        """
         self.region_to_params = dict()
         self.regions = list(auction_map.nodes)
         self.licenses_in_region = licenses_in_region
         self.auction_map = auction_map
         self.scale = scale
         self.name = name
+        self.z_spread = z_spread
         for region_index, region in enumerate(self.regions):
             market_share = market_share_sampler.sample()
             max_capacity = self.licenses_in_region[region_index] * synergy(self.licenses_in_region[region_index])
             region_params = BidderRegionParams(
-                z_lower=(max(0, market_share - 0.3) / (market_share * region.population)) * max_capacity, 
-                z_upper=(min(1, market_share + 0.3) / (market_share * region.population)) * max_capacity, 
+                z_lower=(max(0, market_share - z_spread) / (market_share * region.population)) * max_capacity, 
+                z_upper=(min(1, market_share + z_spread) / (market_share * region.population)) * max_capacity, 
                 max_subscriber_value=value_per_subscriber_sampler.sample(),
                 market_share=market_share,
                 region=region,
@@ -288,6 +306,7 @@ def run_sats(config, output_file, seed=1234):
                 'lower': 700,
                 'upper': 1200,
             },
+            'z_spread': 0.1,
             'k_max': 2, 
             'b': {
               'lower': 0.1,
@@ -304,6 +323,7 @@ def run_sats(config, output_file, seed=1234):
                 'lower': 500,
                 'upper': 840,
             },
+            'z_spread': 0.1,
             'gamma_factor': 0.42,
         }, 
         'local': {
@@ -315,7 +335,8 @@ def run_sats(config, output_file, seed=1234):
             'value_per_subscriber': {
                 'lower': 60,
                 'upper': 100,
-            }
+            },
+            'z_spread': 0.1,
         },
         'explicit': {
             'name': 'explicit',
@@ -354,11 +375,6 @@ def run_sats(config, output_file, seed=1234):
                 if bidder_count > 1:
                     kwargs_to_use['name'] = f"{kwargs_to_use['name']}_{count}"
                 bidder.append(bidder_func(**kwargs_to_use))
-                # print(bidder[-1].region_to_params)
-                # for region_params in bidder[-1].region_to_params.values():
-                #     print(region_params.region.name)
-                #     print(region_params.market_share * region_params.max_subscriber_value)
-                # print()
 
         bidders.append(bidder)
 
@@ -375,29 +391,31 @@ def run_sats(config, output_file, seed=1234):
                 'budget': bidder_type.budget(bid_quantities),
                 'prob': 1. / len(bidder),
                 'name': bidder_type.name,
+                'action_prefix': [],
                 # 'drop_out_heuristic': config['bidders'][bidder_id].get('drop_out_heuristic', True)
             }
-            b = config['bidders'][bidder_id]['types'][bidder_type_index]
+            bidder_config = config['bidders'][bidder_id]
+            cfg = bidder_config['types'][bidder_type_index]
             if risk_averse: # Should come in the config at the bidder level like below, but a bit annoying b/c better access to values here
                 type_object['utility_function'] = {'name': 'risk_averse', 'alpha': 1 / type_object['budget']}
             if pricing_bonus is not None:
                 type_object['pricing_bonus'] = pricing_bonus
-            if 'pricing_bonus' in b:
-                type_object['pricing_bonus'] = b['pricing_bonus']
-            if 'prob' in b:
-                type_object['prob'] = b['prob']
-            if 'straightforward' in b:
-                type_object['straightforward'] = b['straightforward']
+            if 'pricing_bonus' in cfg:
+                type_object['pricing_bonus'] = cfg['pricing_bonus']
+            if 'prob' in cfg:
+                type_object['prob'] = cfg['prob']
+            if 'straightforward' in cfg:
+                type_object['straightforward'] = cfg['straightforward']
+            if 'action_prefix' in bidder_config:
+                type_object['action_prefix'] = bidder_config['action_prefix']
 
             type_list.append(type_object)
         player['type'] = type_list    
         auction_params['players'].append(player)
 
-    # print(auction_params)
-
     # Write to disk
     with open(output_file, 'w') as fh:
-        json.dump(auction_params, fh, cls=NpEncoder)
+        json.dump(auction_params, fh, cls=NpEncoder, indent=2)
     
     return auction_params
 

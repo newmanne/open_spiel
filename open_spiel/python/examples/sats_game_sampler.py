@@ -96,13 +96,11 @@ class SignalTimeout(ValueError):
     pass
 
 
-def is_mccfr_iter_slow(game, external=True, num_iters=2000, cutoff=20):
+def is_mccfr_iter_slow(game, external=True, num_iters=2000, cutoff=20, verbose=True):
     # Note: 277 iters/s would be 1M iterations in an hour
     # Note cache needs warming up so times are a bit deceiving, especially if cutoff is too short
     
     # 25 iters/s means 1M in 11 hours
-
-    print("Starting test for slowness")
     solver = ExternalSamplingSolver(game) if external else OutcomeSamplingSolver(game)
     start = time.time()
     MIN_TIME = 1
@@ -134,7 +132,7 @@ def is_mccfr_iter_slow(game, external=True, num_iters=2000, cutoff=20):
             break
     
     if num_iters_done > 2:
-        print(f"Speed of {(num_iters_done + 1)/elapsed:.2f} iters/s")
+        if verbose: print(f"MCCFR: speed of {(num_iters_done + 1)/elapsed:.2f} iters/s")
     return failed
 
 
@@ -153,26 +151,28 @@ def all_products_overdemanded(game):
     return good_products.all()
 
 
-def test_config_is_wieldy(config, max_game_tree_size=None, external=True):    
+def test_config_is_wieldy(config, max_game_tree_size=None, external=True, test_speed=True, min_mccfr_iters=20, max_rounds=20, max_rounds_alternating=25, verbose=True):    
     # This function is really a combination of interesting and wieldy
 
 
     start = time.time()
     retval = dict(failed=False)
     # Make the file in a tmp place
-    with tempfile.NamedTemporaryFile(mode='w+') as fp:
+    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as fp:
         sats_config = run_sats(config, fp.name, seed=config['sats_seed'])
         retval['sats_config'] = sats_config
+
+        # raise ValueError(str(sats_config))
 
         try:
             game = pyspiel.load_game('python_clock_auction', dict(filename=fp.name))
             df, combo_to_score, scorer = efficient_allocation(game, factor_in_opening_prices=True, verbose=False)
 
-            if not (df['allocation'].apply(np.sum) == sum(game.auction_params.licenses)).all():
-                # Some combos do not sell everything, let's skip those for now
-                retval['failed'] = True
-                retval['failure_reason'] = 'There exists a combo that does not sell everything'
-                return retval
+            # if not (df['allocation'].apply(np.sum) == sum(game.auction_params.licenses)).all():
+            #     # Some combos do not sell everything, let's skip those for now
+            #     retval['failed'] = True
+            #     retval['failure_reason'] = 'There exists a combo that does not sell everything'
+            #     return retval
             
             if not has_non_zero_allocations(df):
                 retval['failed'] = True
@@ -186,13 +186,19 @@ def test_config_is_wieldy(config, max_game_tree_size=None, external=True):
         
 
             # Test how many rounds the worst-case straightforward solution is
-            if max_straightfoward_rounds(game) > 8:
+            straightforward_rounds = max_straightfoward_rounds(game)
+            if verbose: print(f"straightforward_rounds: {straightforward_rounds}")
+            if straightforward_rounds > max_rounds:
                 retval['failed'] = True
                 retval['failure_reason'] = 'Straightforward too long'
+                return retval
             
-            if max_straightfoward_rounds(game, alternating=True, num_samples=100) > 7:
+            alternating_straightforward_rounds = max_straightfoward_rounds(game, alternating=True, num_samples=100)
+            if verbose: print(f"alternating_straightforward_rounds: {alternating_straightforward_rounds}")
+            if alternating_straightforward_rounds > max_rounds_alternating:
                 retval['failed'] = True
                 retval['failure_reason'] = 'Worst-case straightfoward too long'
+                return retval
 
             # A stricter version of the above, where all bidders submit straightforward demands but only 1 overdemanded product's price (randomly) rises
 
@@ -200,20 +206,24 @@ def test_config_is_wieldy(config, max_game_tree_size=None, external=True):
             # This is VERY slow... (fails after 15 minutes for 5_000 nodes, say)
             if max_game_tree_size is not None:
                 try:
-                    print("Checking wieldy")
+                    if verbose: print("Checking wieldy")
                     get_all_states_with_policy.get_all_info_states_with_policy(game, max_num_states=max_game_tree_size)
                 except get_all_states_with_policy.TooManyStates:
-                    print(f"Failed tree after {time.time() - start:.1f}s")
+                    if verbose: print(f"Failed tree after {time.time() - start:.1f}s")
                     retval['failed'] = True
                     retval['failure_reason'] = 'Game tree size too large'
                     return retval
             
             # Test #3: Is this practically solvable in a reasonable amount of time?
-            if is_mccfr_iter_slow(game, external=external):
-                print("Cutoff exceeded")
-                retval['failed'] = True
-                retval['failure_reason'] = 'Slow MCCFR iters'
-                return retval
+                    
+
+            if test_speed:
+                if verbose: print("Starting test for slowness")
+                if is_mccfr_iter_slow(game, external=external, cutoff=min_mccfr_iters):
+                    if verbose: print("Cutoff exceeded")
+                    retval['failed'] = True
+                    retval['failure_reason'] = 'Slow MCCFR iters'
+                    return retval
         finally:
             del game
 
