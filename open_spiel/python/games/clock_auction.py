@@ -15,8 +15,7 @@ from functools import lru_cache, cached_property
 import inspect
 import more_itertools
 
-ACTION_TIEBREAK_EPS = 0
-SOR_BID_BONUS_RHO = 1 # Units of bonus points up for grabs for bidding truthfully. Still kinda sucks at breaking indifference when profits are similar because the bonuses will be correspondingly similar.
+
 
 def make_key(bidders):
   key = (tuple([(b.get_max_activity(), tuple(b.processed_demand[-1]), tuple(b.submitted_demand[-1])) for b in bidders]))
@@ -66,7 +65,7 @@ def stateless_process_bids(auction_params, bidders, current_agg, processing_queu
 
     - try:
       - process each bid in the unfinished queue; restart from beginning of unfinished queue if even partially successful
-    - until nothing changes
+    - until nothing changess
   """
   starting_agg_demand = current_agg.copy()
   unfinished_queue = []
@@ -239,10 +238,8 @@ class ClockAuctionState(pyspiel.State):
     self.legal_action_mask = np.ones(len(self.auction_params.all_bids), dtype=bool)
     self.processing_queue = None
     self.folded_chance_outcomes = None
-
-    # TODO: This should really be a decorator or at the very least be read from auction params but I'm tired
-    self.tiebreak_actions = True
-    self._action_rewards = defaultdict(float)
+    self.num_lotteries = 0
+    self.heuristic_deviations = np.zeros(self.num_players())
 
     self.reward_sor_bids = True
     self._sor_bid_profits = defaultdict(list)
@@ -274,6 +271,15 @@ class ClockAuctionState(pyspiel.State):
       return pyspiel.PlayerId.CHANCE
     else:
       return self._cur_player
+    
+  def get_prefix_action(self):
+    bidder = self.bidders[self._cur_player]
+    action_prefix = self.auction_params.player_types[self._cur_player][bidder.type_index]['action_prefix']
+    num_bids_submitted = len(bidder.submitted_demand) - 1
+    if num_bids_submitted < len(action_prefix):
+      return action_prefix[num_bids_submitted]
+    else:
+      return None
 
   @cached_property
   def _cached_legal_actions(self):
@@ -306,7 +312,6 @@ class ClockAuctionState(pyspiel.State):
     if self.auction_params.activity_policy == ActivityPolicy.ON:
       legal_actions[np.where(bidder.get_max_activity() < self.auction_params.all_bids_activity)[0]] = 0
 
-
     # if hard_budget_on:
     #   legal_actions[prices > budget] = 0
 
@@ -321,10 +326,10 @@ class ClockAuctionState(pyspiel.State):
     #   legal_actions[0] = 0
 
     if bidder.bidder.straightforward:
-      clock_price = np.asarray(self.clock_prices[-1])
-      clock_profits = bidder.bidder.get_profits(clock_price) # Select your favorite bundle at the clock prices is our naive straightforward bidder. This is problematic though because you can get stuck etc.
-      clock_profits[np.where(legal_actions == 0)[0]] = -1
-      return [np.argmax(clock_profits)]
+      sor_prices = np.asarray(self.sor_prices[-1])
+      sor_profits = bidder.bidder.get_profits(sor_prices) # Select your favorite bundle at the sor prices is our naive straightforward bidder. Obviously risk of dropping and lack of forecasting are issues etc.
+      sor_profits[np.where(legal_actions == 0)[0]] = -1
+      return [np.argmax(sor_profits)]
 
     if legal_actions.sum() == 0:
       raise ValueError("No legal actions!\n{self}")
@@ -332,7 +337,21 @@ class ClockAuctionState(pyspiel.State):
     return legal_actions.nonzero()[0]
 
   def _legal_actions(self, player):
-    return self._cached_legal_actions
+    # If you're in your action prefix, you can only bid the next action in your action prefix
+    prefix_action = self.get_prefix_action()
+
+    if prefix_action is None and self.auction_params.heuristic_deviations is not None and self.heuristic_deviations[player] >= self.auction_params.heuristic_deviations: # If you have used up your deviations
+      return sorted(set(self.heuristic_actions().values()))
+    else:
+      legal_actions = self._cached_legal_actions
+      if prefix_action is not None:
+        if prefix_action in legal_actions:
+          return [prefix_action]
+        else:
+          raise ValueError(f"Action prefix included action {prefix_action}, which is not legal for player {player} with legal actions {legal_actions}")
+      else:
+        # print(f"Out of action prefix ({num_bids_submitted} >= {len(action_prefix)})")
+        return legal_actions
 
   def heuristic_actions(self):
     return self._heuristic_actions
@@ -341,14 +360,20 @@ class ClockAuctionState(pyspiel.State):
   def _heuristic_actions(self):
     """Return a dictionary of heuristic_name -> action_id."""
 
+    # if in action prefix, you can only bid the next action in your action prefix
+    prefix_action = self.get_prefix_action()
+    if prefix_action is not None:
+      return {'action_prefix': prefix_action}
+
     # setup
     player = self._cur_player
     bidder = self.bidders[player]
-    legal_actions = self.legal_actions(player)
+    legal_actions = self._cached_legal_actions 
+    
+    #self.legal_actions(player) prevent circular references when heuristic deviations is true
 
     heuristics = {}
 
-    # straightforward
     sor_prices = np.asarray(self.sor_prices[-1])
     sor_profits = bidder.bidder.get_profits(sor_prices)
     heuristics['straightforward_sor'] = max(legal_actions, key=lambda a: sor_profits[a])
@@ -356,6 +381,23 @@ class ClockAuctionState(pyspiel.State):
     clock_prices = np.asarray(self.clock_prices[-1])
     clock_profits = bidder.bidder.get_profits(clock_prices)
     heuristics['straightforward_clock'] = max(legal_actions, key=lambda a: clock_profits[a])
+
+    # straightforward
+    for type_index, ptype in enumerate(self.auction_params.player_types[player]):
+      # TODO:
+      if type_index != bidder.type_index:
+        continue
+
+      suffix = f'_bluff_{type_index}' if type_index != bidder.type_index else ''
+      b = ptype['bidder']
+
+      sor_prices = np.asarray(self.sor_prices[-1])
+      sor_profits = b.get_profits(sor_prices)
+      heuristics[f'straightforward_sor{suffix}'] = max(legal_actions, key=lambda a: sor_profits[a])
+
+      clock_prices = np.asarray(self.clock_prices[-1])
+      clock_profits = b.get_profits(clock_prices)
+      heuristics[f'straightforward_clock{suffix}'] = max(legal_actions, key=lambda a: clock_profits[a])
 
     # maintain bid
     if len(bidder.submitted_demand) >= 1:
@@ -405,6 +447,12 @@ class ClockAuctionState(pyspiel.State):
   def _apply_action(self, action):
     """Applies the specified action to the state.
     """
+
+    #### Log whether action taken was a heuristic or not. Do this BEFORE we clear the cache ####
+    if not self.is_chance_node() and self.auction_params.heuristic_deviations is not None:
+      if action not in self.heuristic_actions().values():
+        self.heuristic_deviations[self._cur_player] += 1
+
     # IF YOU APPLY AN ACTION, YOU MODIFY THE STATE SO YOU MUST CLEAR ALL CACHED PROPERTIES
     self.clear_cached_properties()
 
@@ -416,14 +464,11 @@ class ClockAuctionState(pyspiel.State):
       assert self.round == len(bidder.submitted_demand)
       bid = self.auction_params.all_bids[action]
 
-      ### Tiebreak to prefer larger actions
-      if self.tiebreak_actions:
-        self._action_rewards[self._cur_player] += action * ACTION_TIEBREAK_EPS
       ###
       ### Break indifference by preferring bids with high SOR profit
       if self.reward_sor_bids:
         sor_profits = bidder.bidder.get_profits(self.sor_prices[-1])
-        # Rescale sor_profits to be in 0 1
+        # Rescale sor_profits to be in -1 0
         normalized_sor_profits = (sor_profits - sor_profits.min()) / (sor_profits.max() - sor_profits.min()) - 1 if sor_profits.max() != sor_profits.min() else np.zeros_like(sor_profits)
         self._sor_bid_profits[self._cur_player].append(normalized_sor_profits[action])
 
@@ -439,7 +484,6 @@ class ClockAuctionState(pyspiel.State):
         self._handle_bids()
       else:
         self._cur_player += 1 # Advance player and collect more bids
-
     else: # CHANCE NODE
       if self.round == 1:
         if len(self.bidders) < self.num_players(): # Chance node assigns a value and budget to a player
@@ -539,6 +583,7 @@ class ClockAuctionState(pyspiel.State):
       if self.auction_params.skip_single_chance_nodes and len(self.folded_chance_outcomes['lottery']) == 1:
         self._handle_chance_tiebreak(0)
       else:
+        self.num_lotteries += 1
         self._is_chance = True
     else:
       raise ValueError("Unknown undersell policy")
@@ -547,18 +592,31 @@ class ClockAuctionState(pyspiel.State):
     """Action -> string."""
     if player == pyspiel.PlayerId.CHANCE:
       if len(self.bidders) < self.num_players():
-        return f'Assign player {len(self.bidders)} type {self.auction_params.player_types[len(self.bidders)][action]["bidder"]}'
+        return f'P{len(self.bidders)} type: {self.auction_params.player_types[len(self.bidders)][action]["bidder"]}'
       else:
         return f'Tie-break action {action}'
     else:
       bid = self.auction_params.all_bids[action]
       activity = self.auction_params.all_bids_activity[action]
       price = bid @ self.clock_prices[-1] 
-      return f'Bid for {bid} licenses @ ${price:.2f} with activity {activity}'
+    #   return f'Bid for {bid} licenses @ ${price:.2f} with activity {activity}'
+      return f'Bid {tuple(bid)}'
 
   def is_terminal(self):
     """Returns True if the game is over."""
     return self._game_over
+
+  def make_potential_function(self, func_name):
+    if '_potential_normalized' not in func_name:
+      func_name += '_potential_normalized'
+    if func_name.startswith('neg_'):
+      reward_function = self.make_potential_function(func_name[4:])
+      return lambda state: -reward_function(state)
+    else:
+      def generic_reward(state):
+        return getattr(state, func_name)
+      return generic_reward
+
 
   @cached_property
   def _returns(self):
@@ -585,10 +643,12 @@ class ClockAuctionState(pyspiel.State):
       pricing_bonus = bidder.bidder.pricing_bonus * other_payments
 
       player_return = value - self._final_payments[player_id] + pricing_bonus
-      if self.tiebreak_actions:
-        player_return += self._action_rewards[player_id]
+
       if self.reward_sor_bids:
-        player_return += SOR_BID_BONUS_RHO * np.sum(self._sor_bid_profits[player_id]) # Possibly encourages longer auctions, but we can check by comparing to NC in original game
+        player_return += self.auction_params.sor_bid_bonus_rho * np.sum(self._sor_bid_profits[player_id]) # Possibly encourages shorter auctions, but we can check by comparing to NC in original game
+
+      if self.auction_params.reward_shaping:
+        player_return += self.auction_params.sor_bid_bonus_rho * self.make_potential_function(self.auction_params.reward_shaping)(self)
 
       returns[player_id] = bidder.bidder.get_utility(player_return)
 

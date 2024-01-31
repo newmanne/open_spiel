@@ -5,9 +5,11 @@ from dataclasses import dataclass, field
 from functools import cached_property
 import numpy as np
 
+
+
 DEFAULT_MAX_ROUNDS = 100
 DEFAULT_AGENT_MEMORY = 1
-MAX_CACHE_SIZE = 50_000
+MAX_CACHE_SIZE = 100_000
 
 class ActivityPolicy(enum.IntEnum):
   ON = 0
@@ -67,6 +69,10 @@ class AuctionParams:
   tiebreaking_policy: TiebreakingPolicy = TiebreakingPolicy.DROP_BY_PLAYER
 
   agent_memory: int = DEFAULT_AGENT_MEMORY
+  heuristic_deviations: int = None
+  reward_shaping: str = None
+
+  sor_bid_bonus_rho: float = 1. # Units of bonus points up for grabs for bidding truthfully. Still kinda sucks at breaking indifference when profits are similar because the bonuses will be correspondingly similar.
 
   @cached_property
   def max_activity(self):
