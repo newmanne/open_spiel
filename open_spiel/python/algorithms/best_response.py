@@ -168,7 +168,7 @@ class BestResponsePolicy(openspiel_policy.Policy):
     else:
       return list(self._policy.action_probabilities(state).items())
 
-  @_memoize_method(key_fn=lambda state: state.history_str())
+  # @_memoize_method(key_fn=lambda state: state.history_str())
   def value(self, state):
     """Returns the value of the specified state to the best-responder."""
     if state.is_terminal():
@@ -201,7 +201,7 @@ class BestResponsePolicy(openspiel_policy.Policy):
     else:
       return self.value(state.child(action))
 
-  @_memoize_method()
+  # @_memoize_method()
   def best_response_action(self, infostate):
     """Returns the best response for this information state."""
     infoset = self.infosets[infostate]

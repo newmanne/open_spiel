@@ -23,11 +23,6 @@ def compute_br_value(
     state, 
     player_id, 
     policy, 
-    prune_subgames=True, 
-    value_lower_bound=NEGATIVE_INF, 
-    deviations_allowed=NO_DEVIATION_LIMIT, 
-    accuracy_threshold=0,
-    verbose=False
 ):
     """Computes the best response value for a given player.
     
@@ -48,19 +43,20 @@ def compute_br_value(
         return state.player_return(player_id)
     
     elif state.is_chance_node():
+        return sum(prob * compute_br_value(state.child(action), player_id, policy) for action, prob in state.chance_outcomes())
+
         value = 0
         chance_outcomes = state.chance_outcomes()
-        return sum(prob * compute_br_value(state.child(action), player_id, policy, prune_subgames, value_lower_bound, deviations_allowed, accuracy_threshold) for action, prob in chance_outcomes)
-        # for i in range(len(chance_outcomes)):
-        #     action, prob = chance_outcomes[i]
-        #     # can only prune in the last chance node
-        #     if i == len(chance_outcomes) - 1:
-        #         # need prob * child value + current value > value_lower_bound
-        #         # or: child value > (value_lower_bound - current value) / prob 
-        #         remaining_value_needed = (value_lower_bound - value) / prob
-        #         value += prob * compute_br_value(state.child(action), player_id, policy, prune_subgames, remaining_value_needed, deviations_allowed, accuracy_threshold)
-        #     else:
-        #         value += prob * compute_br_value(state.child(action), player_id, policy, prune_subgames, NEGATIVE_INF, deviations_allowed, accuracy_threshold)
+        for i in range(len(chance_outcomes)):
+            action, prob = chance_outcomes[i]
+            # can only prune in the last chance node
+            if i == len(chance_outcomes) - 1:
+                # need prob * child value + current value > value_lower_bound
+                # or: child value > (value_lower_bound - current value) / prob 
+                remaining_value_needed = (value_lower_bound - value) / prob
+                value += prob * compute_br_value(state.child(action), player_id, policy, remaining_value_needed, accuracy_threshold)
+            else:
+                value += prob * compute_br_value(state.child(action), player_id, policy, NEGATIVE_INF, accuracy_threshold)
         return value 
     
     elif state.is_simultaneous_node():
@@ -72,44 +68,23 @@ def compute_br_value(
         if max(opponent_strategy.values()) == 1.0: # TODO: check if close to 1 instead?
             # find the action 
             action = max(opponent_strategy, key=opponent_strategy.get)
-            return compute_br_value(state.child(action), player_id, policy, prune_subgames, value_lower_bound, deviations_allowed, accuracy_threshold)
+            return compute_br_value(state.child(action), player_id, policy)
 
         # otherwise, we can't prune
         else:
-            return sum(
-                prob * compute_br_value(state.child(action), player_id, policy, prune_subgames, NEGATIVE_INF, deviations_allowed, accuracy_threshold)
-                for action, prob in policy.action_probabilities(state).items()
-            )
+            raise NotImplementedError("Opponent strategies must be deterministic.")
         
     else: # current player is the best responder
         legal_actions = state.legal_actions()
-        if prune_subgames:
-            try:
-                if value_lower_bound > NEGATIVE_INF:
-                    child_upper_bounds = state.player_return_upper_bounds()
-                    good_actions = [legal_actions[i] for i in range(len(legal_actions)) if child_upper_bounds[i] > value_lower_bound + accuracy_threshold]
-                    if verbose:
-                        print(f'exploring {len(good_actions)} / {len(legal_actions)} actions (lower bound: {value_lower_bound:.3f})')
-                    legal_actions = good_actions
-            except AttributeError:
-                pass
-
-        best_value = value_lower_bound
-        if deviations_allowed != NO_DEVIATION_LIMIT:
-            modal_action = max(policy.action_probabilities(state), key=policy.action_probabilities(state).get)
+        best_value = NEGATIVE_INF
+        best_action = None
 
         for action in legal_actions:
-            if deviations_allowed == NO_DEVIATION_LIMIT: # unlimited deviations
-                value = compute_br_value(state.child(action), player_id, policy, prune_subgames, best_value, deviations_allowed, accuracy_threshold)
-            else: # limited number of deviations
-                if action == modal_action: # playing the modal action doesn't count as a deviation
-                    value = compute_br_value(state.child(action), player_id, policy, prune_subgames, best_value, deviations_allowed, accuracy_threshold)
-                elif deviations_allowed > 0: # otherwise, we can only deviate if we have deviations left
-                    value = compute_br_value(state.child(action), player_id, policy, prune_subgames, best_value, deviations_allowed - 1, accuracy_threshold)
-                else:
-                    continue
-
+            value = compute_br_value(state.child(action), player_id, policy)
             if value > best_value:
                 best_value = value
+                best_action = action
+
+        print(state.information_state_string(), best_action, best_value)
 
         return best_value

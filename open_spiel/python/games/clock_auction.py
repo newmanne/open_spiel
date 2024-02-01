@@ -15,6 +15,7 @@ from functools import lru_cache, cached_property
 import inspect
 
 ACTION_TIEBREAK_EPS = 0
+SOR_BID_BONUS_RHO = 0.03 # TODO: In the current (normalization) scheme, this ought to be a constant, like 2
 
 def make_key(bidders):
   key = (tuple([(b.get_max_activity(), tuple(b.processed_demand[-1]), tuple(b.submitted_demand[-1])) for b in bidders]))
@@ -228,6 +229,9 @@ class ClockAuctionState(pyspiel.State):
     self.tiebreak_actions = True
     self._action_rewards = defaultdict(float)
 
+    self.reward_sor_bids = True
+    self._sor_bid_profits = defaultdict(list)
+
   # An LRU cache here is a bad idea - it will get too big. Just use the game cache
   def child(self, action):
     key = tuple(self.history() + [action])
@@ -345,6 +349,12 @@ class ClockAuctionState(pyspiel.State):
       if self.tiebreak_actions:
         self._action_rewards[self._cur_player] += action * ACTION_TIEBREAK_EPS
       ###
+      ### Break indifference by preferring bids with high SOR profit
+      if self.reward_sor_bids:
+        sor_profits = bidder.bidder.get_profits(self.sor_prices[-1])
+        # Rescale sor_profits to be in 0 1
+        normalized_sor_profits = (sor_profits - sor_profits.min()) / (sor_profits.max() - sor_profits.min())
+        self._sor_bid_profits[self._cur_player].append(normalized_sor_profits[action])
 
       if self.auction_params.activity_policy == ActivityPolicy.ON:
         bid_activity_cost = self.auction_params.all_bids_activity[action]
@@ -367,7 +377,8 @@ class ClockAuctionState(pyspiel.State):
               submitted_demand=[np.zeros(self.auction_params.num_products, dtype=int)], # Start with this dummy entry so we can always index by round
               processed_demand=[np.zeros(self.auction_params.num_products, dtype=int)],
               bidder=self.auction_params.player_types[len(self.bidders)][action]['bidder'],
-              activity=[self.auction_params.max_activity],
+              activity=[],
+              max_possible_activity=self.auction_params.max_activity,
               type_index=action,
               grace_rounds=self.auction_params.grace_rounds,
             )
@@ -516,6 +527,9 @@ class ClockAuctionState(pyspiel.State):
       player_return = value - self._final_payments[player_id] + pricing_bonus
       if self.tiebreak_actions:
         player_return += self._action_rewards[player_id]
+      if self.reward_sor_bids:
+        # TODO: In the current (normalization) scheme, this should just be a +=. Not changing now b/c active code running and want consistency
+        player_return = SOR_BID_BONUS_RHO * np.mean(self._sor_bid_profits[player_id]) + (1 - SOR_BID_BONUS_RHO) * player_return
 
       returns[player_id] = bidder.bidder.get_utility(player_return)
 
@@ -752,27 +766,69 @@ class ClockAuctionState(pyspiel.State):
   def __hash__(self): # Two states that have the same history are the same
     return self._my_hash
 
-  def regret_init(self, regret_init: str):
+  def get_named_policy(self, policy_name: str):
     """
-    Return the initial regret for each action, based on the current state of the game.
     For CFR.
+    Return an unnormalized policy for each action, based on the current state of the game.
+
+    Args:
+      policy_name: Name of the policy to use. Options are:
+      - 'straightforward_clock': proportional to the profit at clock prices
+      - 'straightforward_sor': proportional to the profit at start-of-round prices
+      - 'uniform': uniform over legal actions
+
+    Returns:
+      A list of floats proportional to the probability of taking each legal action.
+      (May not sum to 1.)
     """
-    if regret_init == 'straightforward_clock' or regret_init == 'straightforward_sor':  
+    if policy_name == 'straightforward_clock' or policy_name == 'straightforward_sor':  
       player = self._cur_player
-      prices = self.clock_prices if regret_init == 'straightforward_clock' else self.sor_prices
+      prices = self.clock_prices if policy_name == 'straightforward_clock' else self.sor_prices
       profits = self.bidders[player].bidder.get_profits(prices[-1])
       legal_profits = [profits[i] for i in self.legal_actions()]
 
       # map max legal profit to 1 and min to 0
-      # except if max = min: then return 0 for all
+      # except if max = min: then return 1 for all
       if np.max(legal_profits) == np.min(legal_profits):
-        rescaled_profits = np.zeros_like(legal_profits)
+        rescaled_profits = np.ones_like(legal_profits)
       else:
         rescaled_profits = (legal_profits - np.min(legal_profits)) / (np.max(legal_profits) - np.min(legal_profits))
       return rescaled_profits
 
+    elif policy_name == 'uniform':
+      return np.ones(self.num_distinct_actions) / self.num_distinct_actions
     else:
-      raise ValueError(f"Unknown regret initializer {regret_init}")
+      raise ValueError(f"Unknown regret initializer {policy_name}")
+    
+  def player_return_upper_bounds(self):
+    # Upper bound: 
+    # assume you get your favourite bundle at the start-of-round price,
+    # and your opponent spends as much as possible
+    # TODO: how to refactor to keep in sync with _returns()
+
+    player_id = self._cur_player
+    bidder = self.bidders[player_id]
+    optimistic_returns = bidder.bidder.get_profits(self.sor_prices[-1])
+
+    if self.tiebreak_actions:
+      # TODO: add action rewards -- something like ACTION_TIEBREAK_EPS * [(action id this round) + (max action id every round until auction ends)
+      # Ignoring now because ACTION_TIEBREAK_EPS = 0.
+      pass
+    if self.reward_sor_bids:
+      # Upper bound: assume you get the maximum possible bonus 
+      optimistic_returns = SOR_BID_BONUS_RHO * 1 + (1 - SOR_BID_BONUS_RHO) * optimistic_returns
+      # pass
+
+    # add pricing bonus, assuming your opponent spends as much as possible
+    # TODO: this is a hack -- uses the fact that budget = max value
+    max_pricing_bonus = bidder.bidder.pricing_bonus * sum(
+      self.bidders[i].bidder.get_budget() for i in players_not_me(player_id, self.num_players())
+    )
+    optimistic_returns += max_pricing_bonus
+
+    # compute utility for each outcome
+    optimistic_utilities = [bidder.bidder.get_utility(profit) for profit in optimistic_returns]
+    return optimistic_utilities
 
 
 # Register the game with the OpenSpiel library

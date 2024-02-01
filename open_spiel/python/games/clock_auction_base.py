@@ -99,10 +99,14 @@ class BidderState:
   activity: List[int] = field(default_factory=lambda : [])
   bidder: object = None # clock_auction_bidders.Bidder (type is clock_auction_bidders.Bidder but not worth the import chaos)
   type_index: int = None
+  max_possible_activity: int = 0
   grace_rounds: int = 1
 
   def get_max_activity(self):
-    return max(self.activity[-self.grace_rounds:])
+    if len(self.activity) == 0:
+      return self.max_possible_activity
+    else:
+      return max(self.activity[-self.grace_rounds:])
 
 def action_to_bundles(licenses):
     bids = []

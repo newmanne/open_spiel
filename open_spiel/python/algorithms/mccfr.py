@@ -54,6 +54,12 @@ class AveragePolicy(policy.Policy):
     info_state_key = state.information_state_string(player_id)
     retrieved_infostate = self._infostates.get(info_state_key, None)
     if retrieved_infostate is None:
+      # TODO: add a flag to select default policy
+      # default_policy = 'straightforward_sor'
+      # default_policy = 'uniform'
+      # policy_probs_unnormalized = state.get_named_policy(default_policy)
+      # policy_probs = policy_probs_unnormalized / policy_probs_unnormalized.sum()
+      # return {legal_actions[i]: policy_probs[i] for i in range(len(legal_actions))}
       return {a: 1 / len(legal_actions) for a in legal_actions}
     avstrat = (
         retrieved_infostate[AVG_POLICY_INDEX] /
@@ -99,8 +105,8 @@ class MCCFRSolverBase(object):
 
     initial_regrets = np.ones(num_legal_actions, dtype=np.float64) / 1e6
     if self.regret_init != 'uniform': # TODO: If you run on non-clock auction, hasattr
-      initial_regrets += state.regret_init(self.regret_init) * self.regret_init_strength
-
+      initial_regrets += state.get_named_policy(self.regret_init) * self.regret_init_strength
+    
     self._infostates[info_state_key] = [
         initial_regrets,
         np.ones(num_legal_actions, dtype=np.float64) / 1e6,
