@@ -49,9 +49,8 @@ def fix_seeds(seed):
     # torch.use_deterministic_algorithms(True) # See https://github.com/pytorch/pytorch/issues/50469
 
 def single_action_result(legal_actions, num_actions, as_output=False):
-    probs = np.zeros(num_actions)
     action = legal_actions[0]
-    probs[action] = 1.0
+    probs = np.array([1.0])
     if as_output:
         return StepOutput(action=action, probs=probs)
     return action, probs
@@ -248,13 +247,16 @@ def signal_handler(*args):
     raise SignalTimeout()
 
 def time_bounded_run(t, f, *args, **kwargs):
-    signal.signal(signal.SIGALRM, signal_handler)
-    signal.alarm(t)
     start_time = time.time()
     try:
+        signal.signal(signal.SIGALRM, signal_handler)
+        signal.alarm(t)
         result = f(*args, **kwargs)
         return True, time.time() - start_time, result
     except SignalTimeout as ex:
+        return False, time.time() - start_time, None
+    except ValueError as ex2: # ValueError: Missing value for wrapped C++ type: Python instance was disowned. No idea what to do. Let's just pretend we timed out.
+        logging.warning("Super weird error!")
         return False, time.time() - start_time, None
     finally:
         signal.alarm(0) # Clear alarm

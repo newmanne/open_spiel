@@ -14,7 +14,7 @@ from dataclasses import asdict
 from open_spiel.python.env_decorator import AuctionStatTrackingDecorator
 from open_spiel.python.algorithms import cfr, outcome_sampling_mccfr, expected_game_score, exploitability, get_all_states_with_policy
 from open_spiel.python.algorithms.outcome_sampling_mccfr import OutcomeSamplingSolver
-from open_spiel.python.algorithms.external_sampling_mccfr import ExternalSamplingSolver
+from open_spiel.python.algorithms.external_sampling_mccfr import ExternalSamplingSolver, AverageType
 
 logger = logging.getLogger(__name__)
 
@@ -35,12 +35,18 @@ def read_cfr_config(config_name):
 
 def load_solver(solver_config, game):
     solver_name = solver_config['solver']
+    solver_kwargs = dict()
+
     if solver_name == "cfr":
         logger.info("Using CFR solver")
-        solver = cfr.CFRSolver(game)
+        if 'regret_init_strength' in solver_config:
+            solver_kwargs['regret_init_strength'] = solver_config.get('regret_init_strength', 0)
+        solver = cfr.CFRSolver(game, **solver_kwargs)
     elif solver_name == "cfrplus":
         logger.info("Using CFR+ solver")
-        solver = cfr.CFRPlusSolver(game)
+        if 'regret_init_strength' in solver_config:
+            solver_kwargs['regret_init_strength'] = solver_config.get('regret_init_strength', 0)
+        solver = cfr.CFRPlusSolver(game, **solver_kwargs)
     elif solver_name == "cfrbr":
         logger.info("Using CFR-BR solver")
         solver = cfr.CFRBRSolver(game)
@@ -48,7 +54,6 @@ def load_solver(solver_config, game):
         logger.info("Using MCCFR solver")
         sampling_method = solver_config['sampling_method']
 
-        solver_kwargs = dict()
         if 'linear_averaging' in solver_config:
             solver_kwargs['linear_averaging'] = solver_config['linear_averaging']
         if 'regret_matching_plus' in solver_config:
@@ -56,6 +61,8 @@ def load_solver(solver_config, game):
         if 'regret_init' in solver_config:
             solver_kwargs['regret_init'] = solver_config['regret_init']
             solver_kwargs['regret_init_strength'] = solver_config.get('regret_init_strength', 1)
+        if 'avg_reward_decay' in solver_config:
+            solver_kwargs['avg_reward_decay'] = solver_config['avg_reward_decay']
 
         if sampling_method == "outcome":
             logger.info("Using outcome sampling")
@@ -68,6 +75,13 @@ def load_solver(solver_config, game):
             solver = OutcomeSamplingSolver(game, **solver_kwargs)
         else:
             logger.info("Using external sampling")
+
+            if 'average_type' in solver_config:
+                solver_kwargs['average_type'] = AverageType.FULL if solver_config['average_type'] == "full" else AverageType.SIMPLE
+            
+            if 'opponent_explore_prob' in solver_config:
+                solver_kwargs['opponent_explore_prob'] = solver_config['opponent_explore_prob']
+
             solver = ExternalSamplingSolver(game, **solver_kwargs)
     return solver
 

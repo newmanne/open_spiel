@@ -1,0 +1,140 @@
+{
+  "activity": [
+    12,
+    8
+  ],
+  "agent_memory": 10,
+  "heuristic_deviations": 1000,
+  "increment": 0.15,
+  "information_policy": "show_demand",
+  "licenses": [
+    3,
+    2
+  ],
+  "max_rounds": 10,
+  "opening_price": [
+    12,
+    8
+  ],
+  "license_names": [
+    "British Columbia"
+  ],
+  "players": [
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            19,
+            29,
+            22,
+            33,
+            41,
+            36,
+            45,
+            54,
+            49,
+            59,
+            69
+          ],
+          "value_format": "full",
+          "budget": 69,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            9
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.014492753623188406
+          }
+        },
+        {
+          "value": [
+            0,
+            23,
+            33,
+            26,
+            36,
+            45,
+            40,
+            49,
+            58,
+            53,
+            62,
+            71
+          ],
+          "value_format": "full",
+          "budget": 71,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            9
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.014084507042253521
+          }
+        }
+      ]
+    },
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            27,
+            39,
+            31,
+            44,
+            54,
+            48,
+            59,
+            70,
+            63,
+            75,
+            86
+          ],
+          "value_format": "full",
+          "budget": 86,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            9
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.011627906976744186
+          }
+        },
+        {
+          "value": [
+            0,
+            22,
+            32,
+            25,
+            35,
+            44,
+            39,
+            47,
+            56,
+            51,
+            60,
+            69
+          ],
+          "value_format": "full",
+          "budget": 69,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            9
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.014492753623188406
+          }
+        }
+      ]
+    }
+  ]
+}

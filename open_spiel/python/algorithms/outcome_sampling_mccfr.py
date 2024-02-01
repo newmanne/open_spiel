@@ -54,9 +54,9 @@ class OutcomeSamplingSolver(mccfr.MCCFRSolverBase):
           self._infostates[k][mccfr.REGRET_INDEX] = self._infostates[k][mccfr.REGRET_INDEX].clip(min=0)
         self.touched = set()
 
-  def _baseline(self, state, info_state, aidx):  # pylint: disable=unused-argument
+  def _baseline(self, state, info_state_info, aidx):  # pylint: disable=unused-argument
     # Default to vanilla outcome sampling
-    return 0
+    return info_state_info[mccfr.AVG_REWARD_INDEX]
 
   def _baseline_corrected_child_value(self, state, info_state, sampled_aidx,
                                       aidx, child_value, sample_prob):
@@ -162,6 +162,7 @@ class OutcomeSamplingSolver(mccfr.MCCFRSolverBase):
         increment = my_reach * policy[aidx] / sample_reach
         self._add_avstrat(info_state_key, aidx, increment)
 
-      # self._add_visit(info_state_key) #FIXME
+      self._add_visit(info_state_key)
+      self._add_reward(info_state_key, child_value)
 
     return value_estimate

@@ -1,0 +1,6 @@
+solver_type: cfr
+solver: mccfr
+sampling_method: outcome
+explore_prob: 0.4
+linear_averaging: true
+regret_matching_plus: True

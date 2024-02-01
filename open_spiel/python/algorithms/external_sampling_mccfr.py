@@ -29,7 +29,7 @@ class AverageType(enum.Enum):
 class ExternalSamplingSolver(mccfr.MCCFRSolverBase):
   """An implementation of external sampling MCCFR."""
 
-  def __init__(self, game, average_type=AverageType.SIMPLE, **kwargs):
+  def __init__(self, game, average_type=AverageType.SIMPLE, opponent_explore_prob = 0, **kwargs):
     super().__init__(game, **kwargs)
     # How to average the strategy. The 'simple' type does the averaging for
     # player i + 1 mod num_players on player i's regret update pass; in two
@@ -49,6 +49,7 @@ class ExternalSamplingSolver(mccfr.MCCFRSolverBase):
     # matches what was done in Pluribus (Brown and Sandholm. Superhuman AI for
     # multiplayer poker. Science, 11, 2019).
     self._average_type = average_type
+    self.opponent_explore_prob = opponent_explore_prob
 
     assert game.get_type().dynamics == pyspiel.GameType.Dynamics.SEQUENTIAL, (
         "MCCFR requires sequential games. If you're trying to run it " +
@@ -105,13 +106,11 @@ class ExternalSamplingSolver(mccfr.MCCFRSolverBase):
     for action_idx in range(num_legal_actions):
       new_reach_probs = np.copy(reach_probs)
       new_reach_probs[cur_player] *= policy[action_idx]
-      self._full_update_average(
-          state.child(legal_actions[action_idx]), new_reach_probs)
+      self._full_update_average(state.child(legal_actions[action_idx]), new_reach_probs)
 
     # Now update the cumulative policy
     for action_idx in range(num_legal_actions):
-      self._add_avstrat(info_state_key, action_idx,
-                        reach_probs[cur_player] * policy[action_idx])
+      self._add_avstrat(info_state_key, action_idx, reach_probs[cur_player] * policy[action_idx])
 
   def _update_regrets(self, state, player):
     """Runs an episode of external sampling.
@@ -146,30 +145,32 @@ class ExternalSamplingSolver(mccfr.MCCFRSolverBase):
     child_values = np.zeros(num_legal_actions, dtype=np.float64)
     if cur_player != player:
       # Sample at opponent node
-      action_idx = fast_choice(np.arange(num_legal_actions), policy)
+      uniform_policy = np.ones(num_legal_actions, dtype=np.float64) / num_legal_actions
+      sample_policy = self.opponent_explore_prob * uniform_policy + (1.0 - self.opponent_explore_prob) * policy
+      action_idx = fast_choice(np.arange(num_legal_actions), sample_policy)
       # action_idx = np.random.choice(np.arange(num_legal_actions), p=policy)
-      value = self._update_regrets(
-          state.child(legal_actions[action_idx]), player)
+      value = self._update_regrets(state.child(legal_actions[action_idx]), player)
     else:
       # Walk over all actions at my node
       for action_idx in range(num_legal_actions):
-        child_values[action_idx] = self._update_regrets(
-            state.child(legal_actions[action_idx]), player)
+        child_values[action_idx] = self._update_regrets(state.child(legal_actions[action_idx]), player)
         value += policy[action_idx] * child_values[action_idx]
 
     if cur_player == player:
       # Update regrets.
       for action_idx in range(num_legal_actions):
         self._add_regret(info_state_key, action_idx, child_values[action_idx] - value)
-        if self.regret_matching_plus:
-          self.touched.add(info_state_key)
+      if self.regret_matching_plus:
+        self.touched.add(info_state_key)
 
     # Simple average does averaging on the opponent node. To do this in a game
     # with more than two players, we only update the player + 1 mod num_players,
     # which reduces to the standard rule in 2 players.
-    if self._average_type == AverageType.SIMPLE and cur_player == (
-        player + 1) % self._num_players:
+    if self._average_type == AverageType.SIMPLE and cur_player == (player + 1) % self._num_players:
       for action_idx in range(num_legal_actions):
         self._add_avstrat(info_state_key, action_idx, policy[action_idx])
+
+    self._add_visit(info_state_key)
+    self._add_reward(info_state_key, value)
 
     return value

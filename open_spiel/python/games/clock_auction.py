@@ -13,8 +13,9 @@ from pulp import LpProblem, LpMinimize, LpVariable, LpStatus, LpBinary, lpSum, l
 import pandas as pd
 from functools import lru_cache, cached_property
 import inspect
+import more_itertools
 
-ACTION_TIEBREAK_EPS = 0
+
 
 def make_key(bidders):
   key = (tuple([(b.get_max_activity(), tuple(b.processed_demand[-1]), tuple(b.submitted_demand[-1])) for b in bidders]))
@@ -64,7 +65,7 @@ def stateless_process_bids(auction_params, bidders, current_agg, processing_queu
 
     - try:
       - process each bid in the unfinished queue; restart from beginning of unfinished queue if even partially successful
-    - until nothing changes
+    - until nothing changess
   """
   starting_agg_demand = current_agg.copy()
   unfinished_queue = []
@@ -126,15 +127,19 @@ _GAME_TYPE = pyspiel.GameType(
 class ClockAuctionGame(pyspiel.Game):
 
   def __init__(self, params=None):
+    # TODO: Test to make sure the same observer is always used
+    self.observer = None
+    self.normalized_observer = None
+
+
     file_name = params.get('filename', 'parameters.json')
     self.auction_params = parse_auction_params(file_name)
 
-    if self.auction_params.fold_randomness:
-      # Maps from a state to a set of outcomes, with probs 
-      # How to determine a unique entry? If I face the same vector of (activity, processed demands, submitted demand), that implies same lottery mapping to new processed demands regardless of all else!
-      # Note that you could imagine pickling this
-      logging.info("Folding randomness...")
-      self.lottery_cache = LRUCache(maxsize=MAX_CACHE_SIZE)
+    # Maps from a state to a set of outcomes, with probs 
+    # How to determine a unique entry? If I face the same vector of (activity, processed demands, submitted demand), that implies same lottery mapping to new processed demands regardless of all else!
+    # Note that you could imagine pickling this
+    logging.info("Folding randomness...")
+    self.lottery_cache = LRUCache(maxsize=MAX_CACHE_SIZE)
     
     self.state_cache = LRUCache(maxsize=MAX_CACHE_SIZE)
 
@@ -181,12 +186,22 @@ class ClockAuctionGame(pyspiel.Game):
     """Returns an object used for observing game state."""
     if params is None:
       params = dict()
-    
+
     params['auction_params'] = self.auction_params
 
-    return ClockAuctionObserver(
-        iig_obs_type or pyspiel.IIGObservationType(perfect_recall=False),
-        params)
+    should_normalize = params.get('normalize', True)
+    if should_normalize:
+      if self.normalized_observer is None:
+        self.normalized_observer = ClockAuctionObserver(
+            iig_obs_type or pyspiel.IIGObservationType(perfect_recall=False),
+            params)
+      return self.normalized_observer
+    else:
+      if self.observer is None:
+        self.observer = ClockAuctionObserver(
+            iig_obs_type or pyspiel.IIGObservationType(perfect_recall=False),
+            params)
+      return self.observer
 
   def observation_tensor_shape(self):
     """Returns the shape of the observation tensor."""
@@ -223,10 +238,11 @@ class ClockAuctionState(pyspiel.State):
     self.legal_action_mask = np.ones(len(self.auction_params.all_bids), dtype=bool)
     self.processing_queue = None
     self.folded_chance_outcomes = None
+    self.num_lotteries = 0
+    self.heuristic_deviations = np.zeros(self.num_players())
 
-    # TODO: This should really be a decorator or at the very least be read from auction params but I'm tired
-    self.tiebreak_actions = True
-    self._action_rewards = defaultdict(float)
+    self.reward_sor_bids = True
+    self._sor_bid_profits = defaultdict(list)
 
   # An LRU cache here is a bad idea - it will get too big. Just use the game cache
   def child(self, action):
@@ -255,6 +271,15 @@ class ClockAuctionState(pyspiel.State):
       return pyspiel.PlayerId.CHANCE
     else:
       return self._cur_player
+    
+  def get_prefix_action(self):
+    bidder = self.bidders[self._cur_player]
+    action_prefix = self.auction_params.player_types[self._cur_player][bidder.type_index]['action_prefix']
+    num_bids_submitted = len(bidder.submitted_demand) - 1
+    if num_bids_submitted < len(action_prefix):
+      return action_prefix[num_bids_submitted]
+    else:
+      return None
 
   @cached_property
   def _cached_legal_actions(self):
@@ -287,7 +312,6 @@ class ClockAuctionState(pyspiel.State):
     if self.auction_params.activity_policy == ActivityPolicy.ON:
       legal_actions[np.where(bidder.get_max_activity() < self.auction_params.all_bids_activity)[0]] = 0
 
-
     # if hard_budget_on:
     #   legal_actions[prices > budget] = 0
 
@@ -302,10 +326,10 @@ class ClockAuctionState(pyspiel.State):
     #   legal_actions[0] = 0
 
     if bidder.bidder.straightforward:
-      clock_price = np.asarray(self.clock_prices[-1])
-      clock_profits = bidder.bidder.get_profits(clock_price) # Select your favorite bundle at the clock prices is our naive straightforward bidder. This is problematic though because you can get stuck etc.
-      clock_profits[np.where(legal_actions == 0)[0]] = -1
-      return [np.argmax(clock_profits)]
+      sor_prices = np.asarray(self.sor_prices[-1])
+      sor_profits = bidder.bidder.get_profits(sor_prices) # Select your favorite bundle at the sor prices is our naive straightforward bidder. Obviously risk of dropping and lack of forecasting are issues etc.
+      sor_profits[np.where(legal_actions == 0)[0]] = -1
+      return [np.argmax(sor_profits)]
 
     if legal_actions.sum() == 0:
       raise ValueError("No legal actions!\n{self}")
@@ -313,7 +337,99 @@ class ClockAuctionState(pyspiel.State):
     return legal_actions.nonzero()[0]
 
   def _legal_actions(self, player):
-    return self._cached_legal_actions
+    # If you're in your action prefix, you can only bid the next action in your action prefix
+    prefix_action = self.get_prefix_action()
+
+    if prefix_action is None and self.auction_params.heuristic_deviations is not None and self.heuristic_deviations[player] >= self.auction_params.heuristic_deviations: # If you have used up your deviations
+      return sorted(set(self.heuristic_actions().values()))
+    else:
+      legal_actions = self._cached_legal_actions
+      if prefix_action is not None:
+        if prefix_action in legal_actions:
+          return [prefix_action]
+        else:
+          raise ValueError(f"Action prefix included action {prefix_action}, which is not legal for player {player} with legal actions {legal_actions}")
+      else:
+        # print(f"Out of action prefix ({num_bids_submitted} >= {len(action_prefix)})")
+        return legal_actions
+
+  def heuristic_actions(self):
+    return self._heuristic_actions
+
+  @cached_property
+  def _heuristic_actions(self):
+    """Return a dictionary of heuristic_name -> action_id."""
+
+    # if in action prefix, you can only bid the next action in your action prefix
+    prefix_action = self.get_prefix_action()
+    if prefix_action is not None:
+      return {'action_prefix': prefix_action}
+
+    # setup
+    player = self._cur_player
+    bidder = self.bidders[player]
+    legal_actions = self._cached_legal_actions 
+    
+    #self.legal_actions(player) prevent circular references when heuristic deviations is true
+
+    heuristics = {}
+
+    sor_prices = np.asarray(self.sor_prices[-1])
+    sor_profits = bidder.bidder.get_profits(sor_prices)
+    heuristics['straightforward_sor'] = max(legal_actions, key=lambda a: sor_profits[a])
+
+    clock_prices = np.asarray(self.clock_prices[-1])
+    clock_profits = bidder.bidder.get_profits(clock_prices)
+    heuristics['straightforward_clock'] = max(legal_actions, key=lambda a: clock_profits[a])
+
+    # straightforward
+    for type_index, ptype in enumerate(self.auction_params.player_types[player]):
+      # TODO:
+      if type_index != bidder.type_index:
+        continue
+
+      suffix = f'_bluff_{type_index}' if type_index != bidder.type_index else ''
+      b = ptype['bidder']
+
+      sor_prices = np.asarray(self.sor_prices[-1])
+      sor_profits = b.get_profits(sor_prices)
+      heuristics[f'straightforward_sor{suffix}'] = max(legal_actions, key=lambda a: sor_profits[a])
+
+      clock_prices = np.asarray(self.clock_prices[-1])
+      clock_profits = b.get_profits(clock_prices)
+      heuristics[f'straightforward_clock{suffix}'] = max(legal_actions, key=lambda a: clock_profits[a])
+
+    # maintain bid
+    if len(bidder.submitted_demand) >= 1:
+      last_submitted = bidder.submitted_demand[-1]
+      last_submitted_action = self.auction_params.bid_to_index[tuple(last_submitted)]
+      if last_submitted_action in legal_actions:
+        heuristics['maintain_bid'] = last_submitted_action
+
+      last_processed = bidder.processed_demand[-1]
+      last_processed_action = self.auction_params.bid_to_index[tuple(last_processed)]
+      if last_processed_action in legal_actions:
+        heuristics['maintain_processed'] = last_processed_action
+
+    # offer split (i.e., lower demand so that excess demand = 0)
+    # Note: Can't do this w/ hide demand b/c that invovles peaking at information you woudln't have in your info set
+    if len(self.aggregate_demand) >= 1 and self.auction_params.information_policy != InformationPolicy.HIDE_DEMAND:
+      excess_demand = self.aggregate_demand[-1] - self.auction_params.licenses
+      excess_demand[excess_demand < 0] = 0
+      split_bid = bidder.processed_demand[-1] - excess_demand
+      split_bid[split_bid < 0] = 0
+      split_bid_action = self.auction_params.bid_to_index[tuple(split_bid)]
+      if split_bid_action in legal_actions:
+        heuristics['split_bid'] = split_bid_action
+
+    # drop out
+    if 0 in legal_actions:
+      heuristics['drop_out'] = 0
+
+    # max activity
+    heuristics['max_activity'] = max(legal_actions, key=lambda a: self.auction_params.all_bids_activity[a])
+
+    return heuristics
 
   # Override
   def apply_action(self, action):
@@ -326,10 +442,17 @@ class ClockAuctionState(pyspiel.State):
     self.__dict__.pop('_returns', None) 
     self.__dict__.pop('_my_hash', None) 
     self.__dict__.pop('_cached_legal_actions', None) 
+    self.__dict__.pop('_heuristic_actions', None) 
 
   def _apply_action(self, action):
     """Applies the specified action to the state.
     """
+
+    #### Log whether action taken was a heuristic or not. Do this BEFORE we clear the cache ####
+    if not self.is_chance_node() and self.auction_params.heuristic_deviations is not None:
+      if action not in self.heuristic_actions().values():
+        self.heuristic_deviations[self._cur_player] += 1
+
     # IF YOU APPLY AN ACTION, YOU MODIFY THE STATE SO YOU MUST CLEAR ALL CACHED PROPERTIES
     self.clear_cached_properties()
 
@@ -341,10 +464,13 @@ class ClockAuctionState(pyspiel.State):
       assert self.round == len(bidder.submitted_demand)
       bid = self.auction_params.all_bids[action]
 
-      ### Tiebreak to prefer larger actions
-      if self.tiebreak_actions:
-        self._action_rewards[self._cur_player] += action * ACTION_TIEBREAK_EPS
       ###
+      ### Break indifference by preferring bids with high SOR profit
+      if self.reward_sor_bids:
+        sor_profits = bidder.bidder.get_profits(self.sor_prices[-1])
+        # Rescale sor_profits to be in -1 0
+        normalized_sor_profits = (sor_profits - sor_profits.min()) / (sor_profits.max() - sor_profits.min()) - 1 if sor_profits.max() != sor_profits.min() else np.zeros_like(sor_profits)
+        self._sor_bid_profits[self._cur_player].append(normalized_sor_profits[action])
 
       if self.auction_params.activity_policy == ActivityPolicy.ON:
         bid_activity_cost = self.auction_params.all_bids_activity[action]
@@ -358,7 +484,6 @@ class ClockAuctionState(pyspiel.State):
         self._handle_bids()
       else:
         self._cur_player += 1 # Advance player and collect more bids
-
     else: # CHANCE NODE
       if self.round == 1:
         if len(self.bidders) < self.num_players(): # Chance node assigns a value and budget to a player
@@ -367,7 +492,8 @@ class ClockAuctionState(pyspiel.State):
               submitted_demand=[np.zeros(self.auction_params.num_products, dtype=int)], # Start with this dummy entry so we can always index by round
               processed_demand=[np.zeros(self.auction_params.num_products, dtype=int)],
               bidder=self.auction_params.player_types[len(self.bidders)][action]['bidder'],
-              activity=[self.auction_params.max_activity],
+              activity=[],
+              max_possible_activity=self.auction_params.max_activity,
               type_index=action,
               grace_rounds=self.auction_params.grace_rounds,
             )
@@ -380,14 +506,8 @@ class ClockAuctionState(pyspiel.State):
 
   def _handle_chance_tiebreak(self, action):
     # Tie breaking 
-    if self.auction_params.fold_randomness:
-      # Let's just index into the solution that we must have already computed
-      processed = self.folded_chance_outcomes['results'][action]
-      # key = make_key(self.bidders)
-      # processed = self.get_game().lottery_cache.get(key)['results'][action] # TODO: Error when undersell policy is off - you will need to comptue explicitly
-    else:
-      self.processing_queue = permute_array(self.processing_queue, action)
-      processed = stateless_process_bids(self.auction_params, self.bidders, self.aggregate_demand[-1].copy(), self.processing_queue)
+    # Let's just index into the solution that we must have already computed
+    processed = self.folded_chance_outcomes['results'][action]
 
     # Actually copy
     for player_id, bidder in enumerate(self.bidders):
@@ -432,42 +552,38 @@ class ClockAuctionState(pyspiel.State):
     elif self.auction_params.undersell_policy == UndersellPolicy.UNDERSELL:
       self._generate_processing_queue()
 
-      if self.auction_params.fold_randomness:
-        # 1) Is this in the cache?
-        key = make_key(self.bidders)
-        res = self.get_game().lottery_cache.get(key)
-        if res is None:
-          seen = []
-          # 1) Find the number of permtuations
-          n_permutations = math.factorial(len(self.processing_queue))
-          # 2) Try ALL of them. 
-          # TODO: Surely you could be much smarter about this (e.g, don't I need >= 2 drop bids for this ordering to matter? And even then, given that I always e.g. put drop bids at the front, couldn't I achieve every outcome still while having many fewer permutations?)
-          # If it becomes the bottleneck, then use https://more-itertools.readthedocs.io/en/stable/api.html#more_itertools.distinct_permutations
-          for i in range(n_permutations):
-            queue = permute_array(self.processing_queue, i)
-            processed = stateless_process_bids(self.auction_params, self.bidders, self.aggregate_demand[-1].copy(), queue)
-            seen.append(tuple(tuple(p) for p in processed))
+      # 1) Is this in the cache?
+      key = make_key(self.bidders)
+      res = self.get_game().lottery_cache.get(key)
+      if res is None:
+        seen = []
+        # Loop over every unique permutation of the processing queue and find the mapping to processed queues. Unique because when tie-breaking is by unit, some orderings put multiple copies next to each other but are effectively the same.
+        for permutation in more_itertools.distinct_permutations(self.processing_queue):
+          processed = stateless_process_bids(self.auction_params, self.bidders, self.aggregate_demand[-1].copy(), permutation)
+          seen.append(tuple(tuple(p) for p in processed))
 
-          # 3) Only keep the unique ones
-          # OUTCOMES
-          p = pd.Series(seen).value_counts(normalize=True).to_dict()
-          res = {
-            'lottery': list(p.values()),
-            'results': list(p.keys())
-          }
-          # print(f"New state not in cache, processed... {n_permutations} outcomes into {len(p)} outcomes")
-          # 4) Cache it
-          self.get_game().lottery_cache[key] = res
+        # 2) Try ALL of them. 
+        # TODO: Surely you could be much smarter about this (e.g, don't I need >= 2 drop bids for this ordering to matter? And even then, given that I always e.g. put drop bids at the front, couldn't I achieve every outcome still while having many fewer permutations?)
+        # If it becomes the bottleneck, then use https://more-itertools.readthedocs.io/en/stable/api.html#more_itertools.distinct_permutations
 
-        self.folded_chance_outcomes = res
+        # 3) Only keep the unique ones
+        # OUTCOMES
+        p = pd.Series(seen).value_counts(normalize=True).to_dict()
+        res = {
+          'lottery': list(p.values()),
+          'results': list(p.keys())
+        }
+        # print(f"New state not in cache, processed... {n_permutations} outcomes into {len(p)} outcomes")
+        # 4) Cache it
+        self.get_game().lottery_cache[key] = res
 
-        ### Was there only a single outcome? If so, let's remove a chance node here so the game tree is smaller (good for cache size)
-        if self.auction_params.skip_single_chance_nodes and len(self.folded_chance_outcomes['lottery']) == 1:
-          self._handle_chance_tiebreak(0)
-        else:
-          self._is_chance = True
+      self.folded_chance_outcomes = res
 
+      ### Was there only a single outcome? If so, let's remove a chance node here so the game tree is smaller (good for cache size)
+      if self.auction_params.skip_single_chance_nodes and len(self.folded_chance_outcomes['lottery']) == 1:
+        self._handle_chance_tiebreak(0)
       else:
+        self.num_lotteries += 1
         self._is_chance = True
     else:
       raise ValueError("Unknown undersell policy")
@@ -476,18 +592,31 @@ class ClockAuctionState(pyspiel.State):
     """Action -> string."""
     if player == pyspiel.PlayerId.CHANCE:
       if len(self.bidders) < self.num_players():
-        return f'Assign player {len(self.bidders)} type {self.auction_params.player_types[len(self.bidders)][action]["bidder"]}'
+        return f'P{len(self.bidders)} type: {self.auction_params.player_types[len(self.bidders)][action]["bidder"]}'
       else:
         return f'Tie-break action {action}'
     else:
       bid = self.auction_params.all_bids[action]
       activity = self.auction_params.all_bids_activity[action]
       price = bid @ self.clock_prices[-1] 
-      return f'Bid for {bid} licenses @ ${price:.2f} with activity {activity}'
+    #   return f'Bid for {bid} licenses @ ${price:.2f} with activity {activity}'
+      return f'Bid {tuple(bid)}'
 
   def is_terminal(self):
     """Returns True if the game is over."""
     return self._game_over
+
+  def make_potential_function(self, func_name):
+    if '_potential_normalized' not in func_name:
+      func_name += '_potential_normalized'
+    if func_name.startswith('neg_'):
+      reward_function = self.make_potential_function(func_name[4:])
+      return lambda state: -reward_function(state)
+    else:
+      def generic_reward(state):
+        return getattr(state, func_name)
+      return generic_reward
+
 
   @cached_property
   def _returns(self):
@@ -514,8 +643,12 @@ class ClockAuctionState(pyspiel.State):
       pricing_bonus = bidder.bidder.pricing_bonus * other_payments
 
       player_return = value - self._final_payments[player_id] + pricing_bonus
-      if self.tiebreak_actions:
-        player_return += self._action_rewards[player_id]
+
+      if self.reward_sor_bids:
+        player_return += self.auction_params.sor_bid_bonus_rho * np.sum(self._sor_bid_profits[player_id]) # Possibly encourages shorter auctions, but we can check by comparing to NC in original game
+
+      if self.auction_params.reward_shaping:
+        player_return += self.auction_params.sor_bid_bonus_rho * self.make_potential_function(self.auction_params.reward_shaping)(self)
 
       returns[player_id] = bidder.bidder.get_utility(player_return)
 
@@ -564,14 +697,8 @@ class ClockAuctionState(pyspiel.State):
       player_types = self.auction_params.player_types[player_index]
       probs = [t['prob'] for t in player_types]
     else: # Chance node is breaking a tie
-      if self.auction_params.fold_randomness:
-        probs = self.folded_chance_outcomes['lottery']
-        # self.folded_chance_outcomes = None # TODO: I want to do this, but it actually makes it unsafe to call chance_outcomes multiple times in a row, so what can you do.... Definitely opens up a risk though
-      else:
-        chance_outcomes_required = math.factorial(len(self.processing_queue))
-        if chance_outcomes_required > 1_000:
-          return dict(upper=chance_outcomes_required - 1) # This breaks the openspiel API, but otherwise generating the list gets too big and blows up memory. See UBC Chance Event Sampler that knows how to decode this. Also, it's WAYYYY faster than actually making the lists
-        probs = [1 / chance_outcomes_required] * chance_outcomes_required
+      probs = self.folded_chance_outcomes['lottery']
+      # self.folded_chance_outcomes = None # TODO: I want to do this, but it actually makes it unsafe to call chance_outcomes multiple times in a row, so what can you do.... Definitely opens up a risk though
     return list(enumerate(probs))
 
   def chance_outcomes(self):
@@ -752,27 +879,22 @@ class ClockAuctionState(pyspiel.State):
   def __hash__(self): # Two states that have the same history are the same
     return self._my_hash
 
-  def regret_init(self, regret_init: str):
+  def regret_init(self, regret_init_str='all'):
     """
     Return the initial regret for each action, based on the current state of the game.
     For CFR.
     """
-    if regret_init == 'straightforward_clock' or regret_init == 'straightforward_sor':  
-      player = self._cur_player
-      prices = self.clock_prices if regret_init == 'straightforward_clock' else self.sor_prices
-      profits = self.bidders[player].bidder.get_profits(prices[-1])
-      legal_profits = [profits[i] for i in self.legal_actions()]
+    if regret_init_str != 'all':
+      raise NotImplementedError("TODO: allow selecting a subset of heuristics")
 
-      # map max legal profit to 1 and min to 0
-      # except if max = min: then return 0 for all
-      if np.max(legal_profits) == np.min(legal_profits):
-        rescaled_profits = np.zeros_like(legal_profits)
-      else:
-        rescaled_profits = (legal_profits - np.min(legal_profits)) / (np.max(legal_profits) - np.min(legal_profits))
-      return rescaled_profits
+    heuristic_actions = set(self.heuristic_actions().values())
+    legal_actions = self.legal_actions(self.current_player())
+    initial_regrets = np.zeros_like(legal_actions)
+    for i, action in enumerate(legal_actions):
+      if action in heuristic_actions:
+        initial_regrets[i] = np.random.rand()
 
-    else:
-      raise ValueError(f"Unknown regret initializer {regret_init}")
+    return initial_regrets
 
 
 # Register the game with the OpenSpiel library

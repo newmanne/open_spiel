@@ -18,15 +18,15 @@ class StraightforwardAgent(AbstractAgent):
         if time_step.last():
             return
 
+        state = time_step.observations["state"]
+        profits = state.bidders[self.player_id].bidder.get_profits(state.sor_prices[-1])
         legal_actions = time_step.observations["legal_actions"][self.player_id]
-        info_dict = time_step.observations["info_dict"][self.player_id]
-        profits = info_dict['sor_bundle_prices_history'][-1] # TODO: Why not clock profits? I forget...
         legal_profits = [profits[i] for i in legal_actions]
-        
         action = legal_actions[np.argmax(legal_profits)]
 
         # print("I AM PLAYING ACTION ", action, f"AND MY NAME IS PLAYER {self.player_id}")
 
         probs = np.zeros(self.num_actions)
         probs[action] = 1.0
+        probs = probs[legal_actions]
         return StepOutput(action=action, probs=probs)

@@ -1,0 +1,64 @@
+auction_params:
+  activity:
+  - 12
+  - 32
+  - 19
+  agent_memory: 10
+  fold_randomness: true
+  grace_rounds: 2
+  increment: 0.3
+  licenses:
+  - 1
+  - 2
+  - 2
+  max_rounds: 10
+  opening_price:
+  - 12
+  - 32
+  - 19
+bidders:
+- player: 0
+  types:
+  - b:
+      lower: 0.15
+      upper: 0.5
+    market_share:
+      lower: 0.4
+      upper: 0.75
+    type: national
+    value_per_subscriber:
+      lower: 25
+      upper: 35
+  - hq: 1
+    market_share:
+      lower: 0.2
+      upper: 0.5
+    type: regional
+    value_per_subscriber:
+      lower: 25
+      upper: 35
+- player: 1
+  types:
+  - hq: 1
+    market_share:
+      lower: 0.2
+      upper: 0.5
+    type: regional
+    value_per_subscriber:
+      lower: 25
+      upper: 35
+  - local_regions:
+    - 0
+    - 0
+    - 1
+    market_share:
+      lower: 0.25
+      upper: 0.6
+    type: local
+    value_per_subscriber:
+      lower: 25
+      upper: 35
+map: 3Province
+pricing_bonus: 0.05
+sats_seed: 247303500
+scale: 1000000

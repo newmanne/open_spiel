@@ -56,10 +56,13 @@ def parse_auction_params(file_name):
     if isinstance(tiebreaking_policy, str):
       tiebreaking_policy = TiebreakingPolicy[tiebreaking_policy.upper()]
 
-    fold_randomness = game_params.get('fold_randomness', True)
+    heuristic_deviations = game_params.get('heuristic_deviations')
+    reward_shaping = game_params.get('reward_shaping')
 
     reveal_type_round = int(game_params.get('reveal_type_round', -1))
     grace_rounds = int(game_params.get('grace_rounds', 1))
+
+    sor_bid_bonus_rho = float(game_params.get('sor_bid_bonus_rho', 1))
 
     all_bids = action_to_bundles(licenses)
     bid_to_index = dict()
@@ -87,6 +90,7 @@ def parse_auction_params(file_name):
         drop_out_heuristic = player_type.get('drop_out_heuristic', True)
         name = player_type.get('name', None)
         utility_function_config = player_type.get('utility_function', {'name': 'quasilinear'})
+        action_prefix = player_type.get('action_prefix', [])
 
         if value_format == ValueFormat.LINEAR:
           if len(values) != num_products:
@@ -101,7 +105,7 @@ def parse_auction_params(file_name):
         else:
           raise ValueError("Unknown value format")
         
-        types[player_id].append(dict(prob=prob, bidder=bidder))
+        types[player_id].append(dict(prob=prob, bidder=bidder, action_prefix=action_prefix))
 
   logging.info("Done config parsing")
   return AuctionParams(
@@ -122,6 +126,8 @@ def parse_auction_params(file_name):
       information_policy=information_policy,
       tiebreaking_policy=tiebreaking_policy,
       reveal_type_round=reveal_type_round,
-      fold_randomness=fold_randomness,
       agent_memory=game_params.get('agent_memory', DEFAULT_AGENT_MEMORY),
+      heuristic_deviations=heuristic_deviations,
+      reward_shaping=reward_shaping,
+      sor_bid_bonus_rho=sor_bid_bonus_rho
     )

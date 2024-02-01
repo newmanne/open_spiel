@@ -1,0 +1,141 @@
+{
+  "activity": [
+    12,
+    8
+  ],
+  "agent_memory": 10,
+  "heuristic_deviations": 1000,
+  "increment": 0.15,
+  "information_policy": "show_demand",
+  "licenses": [
+    3,
+    2
+  ],
+  "max_rounds": 10,
+  "opening_price": [
+    12,
+    8
+  ],
+  "tiebreaking_policy": "DROP_BY_LICENSE",
+  "license_names": [
+    "British Columbia"
+  ],
+  "players": [
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            26,
+            38,
+            29,
+            42,
+            53,
+            47,
+            57,
+            68,
+            62,
+            73,
+            85
+          ],
+          "value_format": "full",
+          "budget": 85,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            9
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.011764705882352941
+          }
+        },
+        {
+          "value": [
+            0,
+            20,
+            28,
+            22,
+            32,
+            39,
+            35,
+            41,
+            45,
+            43,
+            47,
+            52
+          ],
+          "value_format": "full",
+          "budget": 52,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            9
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.019230769230769232
+          }
+        }
+      ]
+    },
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            21,
+            31,
+            24,
+            35,
+            44,
+            39,
+            47,
+            56,
+            51,
+            60,
+            70
+          ],
+          "value_format": "full",
+          "budget": 70,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            9
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.014285714285714285
+          }
+        },
+        {
+          "value": [
+            0,
+            23,
+            33,
+            26,
+            37,
+            45,
+            40,
+            49,
+            58,
+            53,
+            62,
+            71
+          ],
+          "value_format": "full",
+          "budget": 71,
+          "prob": 0.5,
+          "name": "local",
+          "action_prefix": [
+            9
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.014084507042253521
+          }
+        }
+      ]
+    }
+  ]
+}

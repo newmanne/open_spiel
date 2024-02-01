@@ -88,12 +88,22 @@ class EquilibriumSolverRunCheckpoint(TimeStampedModel):
         return self.evaluation_set.get(name='')
     
     def get_modal_eval(self):
+        return self.get_named_eval('modal')
+
+    def get_straightforward_eval(self):
+        return self.get_named_eval('straightforward')
+
+    def get_trembling_eval(self):
+        return self.get_named_eval('tremble')
+
+    def get_named_eval(self, name):
         modal_name = ''
         for p in range(self.equilibrium_solver_run.game.num_players):
             if modal_name:
                 modal_name += '+'
-            modal_name += f'p{p}=modal'
+            modal_name += f'p{p}={name}'
         return self.evaluation_set.get(name=modal_name)
+
 
     @property
     def game(self):
@@ -116,6 +126,9 @@ class BestResponse(TimeStampedModel):
     def __str__(self):
         return f'Player {self.br_player} BR ({self.name}) to {self.checkpoint}'
 
+    def load_model(self):
+        return loads(self.model, compression='gzip')
+
     class Meta:
         unique_together = ('checkpoint', 'br_player', 'name',)
 
@@ -128,7 +141,10 @@ class Evaluation(TimeStampedModel):
     best_response = models.OneToOneField(BestResponse, on_delete=CASCADE, null=True)
     nash_conv = models.FloatField(null=True)
     nash_conv_runtime = models.FloatField(null=True)
-    player_improvements = ArrayField(models.FloatField(), null=True)
+    nash_conv_player_improvements = ArrayField(models.FloatField(), null=True)
+    heuristic_conv = models.FloatField(null=True)
+    heuristic_conv_runtime = models.FloatField(null=True)
+    heuristic_conv_player_improvements = ArrayField(models.FloatField(), null=True)
 
     class Meta:
         unique_together = ('checkpoint', 'name',)

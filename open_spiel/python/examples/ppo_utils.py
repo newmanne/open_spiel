@@ -17,6 +17,7 @@ from dataclasses import asdict
 from open_spiel.python.env_decorator import AuctionStatTrackingDecorator
 from open_spiel.python.algorithms.exploitability import nash_conv
 from open_spiel.python.examples.cfr_utils import make_cfr_agent
+from open_spiel.python.observation import make_observation
 
 logger = logging.getLogger(__name__)
 
@@ -166,11 +167,13 @@ class EnvParams:
   def make_env(self, game):
     if not self.sync and self.num_envs > 1:
       raise ValueError("Sync must be True if num_envs > 1")
+    
+    # This is better, but still will use a new one each time you eval...
+    observer = make_observation(game, params=self.observer_params)
 
     def gen_env(seed, env_id=0):
         # Only track env_id == 0 so we don't have multi-valued metrics
-
-        env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(seed=seed), use_observer_api=True, history_prefix=self.history_prefix, observer_params=self.observer_params, include_state=self.include_state)
+        env = rl_environment.Environment(game, chance_event_sampler=UBCChanceEventSampler(seed=seed), history_prefix=self.history_prefix, observer=observer, include_state=self.include_state)
         if self.num_states_to_save:
           logger.info("State saving decorator")
           env = StateSavingEnvDecorator(env, self.num_states_to_save)

@@ -1,0 +1,194 @@
+{
+  "activity": [
+    12,
+    8
+  ],
+  "agent_memory": 10,
+  "heuristic_deviations": 1,
+  "increment": 0.1,
+  "information_policy": "hide_demand",
+  "licenses": [
+    3,
+    2
+  ],
+  "max_rounds": 10,
+  "opening_price": [
+    12,
+    8
+  ],
+  "license_names": [
+    "British Columbia"
+  ],
+  "players": [
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            15,
+            27,
+            20,
+            31,
+            39,
+            34,
+            43,
+            52,
+            47,
+            57,
+            70
+          ],
+          "value_format": "full",
+          "budget": 70,
+          "prob": 0.3333333333333333,
+          "name": "local",
+          "action_prefix": [
+            9
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.014285714285714285
+          }
+        },
+        {
+          "value": [
+            0,
+            19,
+            27,
+            21,
+            30,
+            37,
+            33,
+            39,
+            44,
+            41,
+            46,
+            51
+          ],
+          "value_format": "full",
+          "budget": 51,
+          "prob": 0.3333333333333333,
+          "name": "local",
+          "action_prefix": [
+            9
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.0196078431372549
+          }
+        },
+        {
+          "value": [
+            0,
+            20,
+            28,
+            23,
+            31,
+            38,
+            34,
+            41,
+            47,
+            44,
+            49,
+            55
+          ],
+          "value_format": "full",
+          "budget": 55,
+          "prob": 0.3333333333333333,
+          "name": "local",
+          "action_prefix": [
+            9
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.01818181818181818
+          }
+        }
+      ]
+    },
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            18,
+            28,
+            21,
+            32,
+            40,
+            35,
+            44,
+            53,
+            47,
+            58,
+            68
+          ],
+          "value_format": "full",
+          "budget": 68,
+          "prob": 0.3333333333333333,
+          "name": "local",
+          "action_prefix": [
+            9
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.014705882352941176
+          }
+        },
+        {
+          "value": [
+            0,
+            20,
+            30,
+            23,
+            34,
+            42,
+            37,
+            46,
+            54,
+            49,
+            59,
+            68
+          ],
+          "value_format": "full",
+          "budget": 68,
+          "prob": 0.3333333333333333,
+          "name": "local",
+          "action_prefix": [
+            9
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.014705882352941176
+          }
+        },
+        {
+          "value": [
+            0,
+            19,
+            28,
+            21,
+            32,
+            40,
+            35,
+            43,
+            52,
+            47,
+            57,
+            67
+          ],
+          "value_format": "full",
+          "budget": 67,
+          "prob": 0.3333333333333333,
+          "name": "local",
+          "action_prefix": [
+            9
+          ],
+          "utility_function": {
+            "name": "risk_averse",
+            "alpha": 0.014925373134328358
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -5,9 +5,11 @@ from dataclasses import dataclass, field
 from functools import cached_property
 import numpy as np
 
+
+
 DEFAULT_MAX_ROUNDS = 100
 DEFAULT_AGENT_MEMORY = 1
-MAX_CACHE_SIZE = 50_000
+MAX_CACHE_SIZE = 100_000
 
 class ActivityPolicy(enum.IntEnum):
   ON = 0
@@ -50,7 +52,6 @@ class AuctionParams:
   num_products: int = 0
   increment: float = 0.1
   reveal_type_round: int = None
-  fold_randomness: bool = True # If true, figure out which tie-breaking paths are equivalent by running all variations of the queue processing algorithm. Results in smaller game tree. Only relevant if the algorithm actually does a full traversal.
   skip_single_chance_nodes: bool = True # If true, skip chance nodes that only have 1 outcome. Results in smaller game tree. Only relevant if the algorithm actually does a full traversal.
 
   max_round: int = DEFAULT_MAX_ROUNDS
@@ -68,6 +69,10 @@ class AuctionParams:
   tiebreaking_policy: TiebreakingPolicy = TiebreakingPolicy.DROP_BY_PLAYER
 
   agent_memory: int = DEFAULT_AGENT_MEMORY
+  heuristic_deviations: int = None
+  reward_shaping: str = None
+
+  sor_bid_bonus_rho: float = 1. # Units of bonus points up for grabs for bidding truthfully. Still kinda sucks at breaking indifference when profits are similar because the bonuses will be correspondingly similar.
 
   @cached_property
   def max_activity(self):
@@ -99,10 +104,14 @@ class BidderState:
   activity: List[int] = field(default_factory=lambda : [])
   bidder: object = None # clock_auction_bidders.Bidder (type is clock_auction_bidders.Bidder but not worth the import chaos)
   type_index: int = None
+  max_possible_activity: int = 0
   grace_rounds: int = 1
 
   def get_max_activity(self):
-    return max(self.activity[-self.grace_rounds:])
+    if len(self.activity) == 0:
+      return self.max_possible_activity
+    else:
+      return max(self.activity[-self.grace_rounds:])
 
 def action_to_bundles(licenses):
     bids = []

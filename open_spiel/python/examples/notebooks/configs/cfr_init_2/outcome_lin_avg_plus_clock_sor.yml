@@ -1,0 +1,7 @@
+solver_type: cfr
+solver: mccfr
+sampling_method: outcome
+linear_averaging: true
+regret_matching_plus: true
+regret_init: straightforward_clock
+regret_init_strength: 100

@@ -131,6 +131,8 @@ class ClockAuctionObserver:
 
 
   def set_from(self, state, player):
+    # TODO: When you run EVALS in parallel, and you use the same observer object, aren't you risking threading issues here? I'm not going to worry about this for now because we are only using the string reprs
+
     """Updates `tensor` and `dict` to reflect `state` from PoV of `player`."""
     # BE VERY VERY CAREFUL NOT TO OVERRIDE THE DICT ENTRIES FROM POINTING INTO THE TENSOR
     # Very subtle e.g., self.dict["sor_profits"][:] = profits vs self.dict["sor_profits"] = profits

@@ -61,10 +61,21 @@ def map_ontario_quebec():
     ])
     return G
 
+# map_name -> (graph generator, bid to quantity matrix)
+# default bid to quantity matrix (None) is identity
 map_generators = {
-    '3Province': map_one,
-    'BC': map_bc,
-    'OntarioQuebec': map_ontario_quebec,
+    '3Province': (map_one, None),
+    'BC': (map_bc, None),
+    # BC only, with a second encumbered license with 60% coverage
+    'BCEncumbered': (map_bc, np.array([[1, 0.6]])),
+    # ditto, but with 40% coverage
+    'BCEncumbered40': (map_bc, np.array([[1, 0.4]])),
+    
+    'OntarioQuebec': (map_ontario_quebec, None),
+    # Ontario+Quebec map, but Quebec also has an encumbered license with 70% coverage (product #3)
+    'OntarioQuebecEncumbered': (map_ontario_quebec, np.array([[1, 0, 0], [0, 1, 0.7]])),
+    # Ontario+Quebec map, plus a signalling-only product with no value (product #3)
+    'OntarioQuebecSignal': (map_ontario_quebec, np.array([[1, 0, 0], [0, 1, 0]])),
 }
 
 def add_signal(G):
@@ -82,7 +93,7 @@ def generate_bids(licenses): # Important this is the same order as clock_auction
 
 def synergy(n):
     ''' Returns a synergy value for n licenses'''
-    return 1 if n == 1 else 1.2
+    return 1 if n <= 1 else 1.2
 
 # Concrete instantiations of params
 @dataclass 
@@ -121,20 +132,32 @@ def subscriber_value(x, max_capacity, z_lower, z_upper, population, market_share
 
 class Bidder:
 
-    def __init__(self, market_share_sampler, value_per_subscriber_sampler, map=None, all_bids=None, scale=1, name=None) -> None:
+    def __init__(self, market_share_sampler, value_per_subscriber_sampler, auction_map=None, licenses_in_region=None, scale=1, name=None, z_spread=0.1) -> None:
+        """
+        Generic bidder class.
+
+        Args:
+        - market_share_sampler: float sampler for market share
+        - value_per_subscriber_sampler: float sampler for value per subscriber
+        - auction_map: map from one of the map generators
+        - licenses_in_region: list of number of licenses in each region
+        - scale: scale factor applied to all values
+        - name: name of bidder
+        - z_spread: set bidder's z_lower and z_upper to market_share +/- z_spread
+        """
         self.region_to_params = dict()
-        self.regions = list(map.nodes)
-        self.all_bids = all_bids
-        self.map = map
+        self.regions = list(auction_map.nodes)
+        self.licenses_in_region = licenses_in_region
+        self.auction_map = auction_map
         self.scale = scale
         self.name = name
+        self.z_spread = z_spread
         for region_index, region in enumerate(self.regions):
             market_share = market_share_sampler.sample()
-            licenses_in_region = self.all_bids[-1][region_index]
-            max_capacity = licenses_in_region * synergy(licenses_in_region)
+            max_capacity = self.licenses_in_region[region_index] * synergy(self.licenses_in_region[region_index])
             region_params = BidderRegionParams(
-                z_lower=(max(0, market_share - 0.3) / (market_share * region.population)) * max_capacity, 
-                z_upper=(min(1, market_share + 0.3) / (market_share * region.population)) * max_capacity, 
+                z_lower=(max(0, market_share - z_spread) / (market_share * region.population)) * max_capacity, 
+                z_upper=(min(1, market_share + z_spread) / (market_share * region.population)) * max_capacity, 
                 max_subscriber_value=value_per_subscriber_sampler.sample(),
                 market_share=market_share,
                 region=region,
@@ -154,19 +177,19 @@ class Bidder:
             if region_params.region == SIGNAL:
                 continue
             gamma = self.gamma(region_params, package)
-            if gamma < 0:
+            if gamma < 0 and sum(package) > 0:
                 raise ValueError(f'Negative gamma: {gamma} for package {package} for bidder {self}')
             sv = self.independent_region_value(region_params, p)
             independent_region_value = region_params.market_share * region_params.region.population * sv
             v += independent_region_value * gamma
         return max(0, int(v / self.scale))
 
-    def output_clock_auction(self):
+    def output_clock_auction(self, all_bids):
         # Return my values in clock auction format as list comprehension
-        return [self.value(bid) for bid in self.all_bids]
+        return [self.value(bid) for bid in all_bids]
 
-    def budget(self):
-        return max(self.output_clock_auction())
+    def budget(self, all_bids):
+        return max(self.output_clock_auction(all_bids))
 
 class LocalBidder(Bidder):
 
@@ -185,7 +208,7 @@ class RegionalBidder(Bidder):
         self.gamma_factor = gamma_factor
 
     def gamma(self, region_params, package):
-        return self.gamma_factor**(len(nx.shortest_path(self.map, self.hq, region_params.region)) - 1)
+        return self.gamma_factor**(len(nx.shortest_path(self.auction_map, self.hq, region_params.region)) - 1)
 
 class NationalBidder(Bidder):
     
@@ -204,6 +227,9 @@ class NationalBidder(Bidder):
         return f'National bidder with b={self.b}'
 
 class ExplicitBidder:
+    """
+    TODO: this is probably broken after allowing encumbered licenses.
+    """
 
     def __init__(self, name=None, values=None, all_bids=None, budget=None, **kwargs) -> None:
         self.name = name
@@ -234,23 +260,33 @@ def run_sats(config, output_file, seed=1234):
 
     # Generate map
     try:
-        map = map_generators[config['map']]()
+        map_generator, bid_to_quantity_matrix = map_generators[config['map']]
+        auction_map = map_generator()
     except KeyError:
         raise ValueError(f"Unknown map {config['map']} not found")
     
     signal_amount = config.get('signal', 0)
     if signal_amount:
-        map = add_signal(map)
+        auction_map = add_signal(auction_map)
         auction_params['licenses'].append(signal_amount)
         auction_params['activity'].append(1)
         auction_params['opening_price'].append(10)
 
     scale = config['scale']
     all_bids = generate_bids(auction_params['licenses'])
+    if bid_to_quantity_matrix is None:
+        bid_to_quantity_matrix = np.eye(len(auction_params['licenses']))
+    bid_quantities = all_bids @ bid_to_quantity_matrix.T
+    licenses_in_region = bid_quantities[-1]
+
+
+
+    risk_averse = config.get('risk_averse', False) # Right now binary, could imagine doing this better
+    pricing_bonus = config.get('pricing_bonus')
 
     shared_bidder_args = {
-        'map': map,
-        'all_bids': all_bids,
+        'auction_map': auction_map,
+        'licenses_in_region': licenses_in_region,
         'scale': scale,
     }
     bidder_generators = {
@@ -270,6 +306,7 @@ def run_sats(config, output_file, seed=1234):
                 'lower': 700,
                 'upper': 1200,
             },
+            'z_spread': 0.1,
             'k_max': 2, 
             'b': {
               'lower': 0.1,
@@ -286,6 +323,7 @@ def run_sats(config, output_file, seed=1234):
                 'lower': 500,
                 'upper': 840,
             },
+            'z_spread': 0.1,
             'gamma_factor': 0.42,
         }, 
         'local': {
@@ -297,7 +335,8 @@ def run_sats(config, output_file, seed=1234):
             'value_per_subscriber': {
                 'lower': 60,
                 'upper': 100,
-            }
+            },
+            'z_spread': 0.1,
         },
         'explicit': {
             'name': 'explicit',
@@ -336,15 +375,10 @@ def run_sats(config, output_file, seed=1234):
                 if bidder_count > 1:
                     kwargs_to_use['name'] = f"{kwargs_to_use['name']}_{count}"
                 bidder.append(bidder_func(**kwargs_to_use))
-                # print(bidder[-1].region_to_params)
-                # for region_params in bidder[-1].region_to_params.values():
-                #     print(region_params.region.name)
-                #     print(region_params.market_share * region_params.max_subscriber_value)
-                # print()
 
         bidders.append(bidder)
 
-    auction_params['license_names'] = [node.name for node in map.nodes]
+    auction_params['license_names'] = [node.name for node in auction_map.nodes]
 
     auction_params['players'] = []
     for bidder_id, bidder in enumerate(bidders):
@@ -352,27 +386,36 @@ def run_sats(config, output_file, seed=1234):
         type_list = []
         for bidder_type_index, bidder_type in enumerate(bidder):
             type_object = {
-                'value': bidder_type.output_clock_auction(),
+                'value': bidder_type.output_clock_auction(bid_quantities),
                 'value_format': 'full',
-                'budget': bidder_type.budget(),
+                'budget': bidder_type.budget(bid_quantities),
                 'prob': 1. / len(bidder),
                 'name': bidder_type.name,
+                'action_prefix': [],
                 # 'drop_out_heuristic': config['bidders'][bidder_id].get('drop_out_heuristic', True)
             }
-            if 'prob' in config['bidders'][bidder_id]['types'][bidder_type_index]:
-                type_object['prob'] = config['bidders'][bidder_id]['types'][bidder_type_index]['prob']
-            if 'straightforward' in config['bidders'][bidder_id]['types'][bidder_type_index]:
-                type_object['straightforward'] = config['bidders'][bidder_id]['types'][bidder_type_index]['straightforward']
+            bidder_config = config['bidders'][bidder_id]
+            cfg = bidder_config['types'][bidder_type_index]
+            if risk_averse: # Should come in the config at the bidder level like below, but a bit annoying b/c better access to values here
+                type_object['utility_function'] = {'name': 'risk_averse', 'alpha': 1 / type_object['budget']}
+            if pricing_bonus is not None:
+                type_object['pricing_bonus'] = pricing_bonus
+            if 'pricing_bonus' in cfg:
+                type_object['pricing_bonus'] = cfg['pricing_bonus']
+            if 'prob' in cfg:
+                type_object['prob'] = cfg['prob']
+            if 'straightforward' in cfg:
+                type_object['straightforward'] = cfg['straightforward']
+            if 'action_prefix' in bidder_config:
+                type_object['action_prefix'] = bidder_config['action_prefix']
 
             type_list.append(type_object)
         player['type'] = type_list    
         auction_params['players'].append(player)
 
-    # print(auction_params)
-
     # Write to disk
     with open(output_file, 'w') as fh:
-        json.dump(auction_params, fh, cls=NpEncoder)
+        json.dump(auction_params, fh, cls=NpEncoder, indent=2)
     
     return auction_params
 

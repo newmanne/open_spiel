@@ -1,0 +1,63 @@
+auction_params:
+  activity:
+  - 32
+  - 19
+  - 13
+  agent_memory: 10
+  fold_randomness: true
+  heuristic_deviations: 2
+  increment: 0.3
+  licenses:
+  - 5
+  - 1
+  - 1
+  max_rounds: 10
+  opening_price:
+  - 32
+  - 19
+  - 13
+  undersell_policy: UNDERSELL_ALLOWED
+bidders:
+- player: 0
+  types:
+  - local_regions:
+    - 0
+    - 1
+    market_share:
+      lower: 0.25
+      upper: 0.6
+    type: local
+    value_per_subscriber:
+      lower: 25
+      upper: 35
+  - b:
+      lower: 0.3
+      upper: 0.9
+    market_share:
+      lower: 0.4
+      upper: 0.75
+    type: national
+    value_per_subscriber:
+      lower: 25
+      upper: 35
+- player: 1
+  types:
+  - hq: 0
+    market_share:
+      lower: 0.2
+      upper: 0.5
+    type: regional
+    value_per_subscriber:
+      lower: 25
+      upper: 35
+  - hq: 0
+    market_share:
+      lower: 0.2
+      upper: 0.5
+    type: regional
+    value_per_subscriber:
+      lower: 25
+      upper: 35
+map: OntarioQuebecEncumbered
+sats_seed: 519728600
+scale: 1000000

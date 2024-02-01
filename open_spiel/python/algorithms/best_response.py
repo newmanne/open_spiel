@@ -92,7 +92,8 @@ class BestResponsePolicy(openspiel_policy.Policy):
                player_id,
                policy,
                root_state=None,
-               cut_threshold=0.0):
+               cut_threshold=0.0,
+               restrict_to_heuristics=False):
     """Initializes the best-response calculation.
 
     Args:
@@ -103,16 +104,18 @@ class BestResponsePolicy(openspiel_policy.Policy):
         the game root state is used.
       cut_threshold: The probability to cut when calculating the value.
         Increasing this value will trade off accuracy for speed.
+      restrict_to_heuristics: if True, can only play the actions in state.heuristic_actions()
     """
     self._num_players = game.num_players()
     self._player_id = player_id
     self._policy = policy
+    self._restrict_to_heuristics = restrict_to_heuristics
     if root_state is None:
       root_state = game.new_initial_state()
-    self._root_state = root_state
     self.infosets = self.info_sets(root_state)
 
     self._cut_threshold = cut_threshold
+    
 
   def info_sets(self, state):
     """Returns a dict of infostatekey to list of (state, cf_probability)."""
@@ -160,7 +163,8 @@ class BestResponsePolicy(openspiel_policy.Policy):
     if state.current_player() == self._player_id:
       # Counterfactual reach probabilities exclude the best-responder's actions,
       # hence return probability 1.0 for every action.
-      return [(action, 1.0) for action in state.legal_actions()]
+      allowed_actions = self.get_allowed_actions(state)
+      return [(action, 1.0) for action in allowed_actions]
     elif state.is_chance_node():
       return state.chance_outcomes()
     elif state.is_simultaneous_node():
@@ -205,11 +209,26 @@ class BestResponsePolicy(openspiel_policy.Policy):
   def best_response_action(self, infostate):
     """Returns the best response for this information state."""
     infoset = self.infosets[infostate]
+
     # Get actions from the first (state, cf_prob) pair in the infoset list.
+    state = infoset[0][0]
+    allowed_actions = self.get_allowed_actions(state)
+
     # Return the best action by counterfactual-reach-weighted state-value.
     return max(
-        infoset[0][0].legal_actions(self._player_id),
+        allowed_actions,
         key=lambda a: sum(cf_p * self.q_value(s, a) for s, cf_p in infoset))
+
+  def get_allowed_actions(self, state):
+    if self._restrict_to_heuristics:
+      allowed_actions = list(state.heuristic_actions().values())
+      policy_probs = self._policy.action_probabilities(state)
+      policy_action = max(policy_probs, key=policy_probs.get)
+      allowed_actions.append(policy_action)
+      allowed_actions = sorted(set(allowed_actions))
+    else:
+      allowed_actions = state.legal_actions(self._player_id)
+    return allowed_actions
 
   def action_probabilities(self, state, player_id=None):
     """Returns the policy for a player in a state.
@@ -232,6 +251,8 @@ class BestResponsePolicy(openspiel_policy.Policy):
         self.best_response_action(state.information_state_string(player_id)): 1
     }
 
+  def delete_fields_for_saving(self):
+    del self._policy
 
 class CPPBestResponsePolicy(openspiel_policy.Policy):
   """Computes best response action_probabilities using open_spiel's C++ backend.

@@ -35,6 +35,7 @@ flags.DEFINE_string("filename", 'parameters.json', "Filename with parameters")
 flags.DEFINE_string("parameters", None, "String to be evaluated")
 flags.DEFINE_bool("turn_based", False, "Convert simultaneous to turn based")
 flags.DEFINE_bool("show_obs", False, "Show observation")
+flags.DEFINE_bool("show_infostate_string", False, "Show infostate string")
 
 flags.DEFINE_integer("num_plays", 1, "Number of times to play")
 flags.DEFINE_integer("seed", None, "Seed")
@@ -127,9 +128,12 @@ def main(_):
           print(f"OBSERVATION DICT P{state.current_player()}")
           pprint(observation.dict)
           # print(observation.tensor)
+        if FLAGS.show_infostate_string:
+          print("Infostate: ", state.information_state_string(state.current_player()))
 
         # Decision node: sample action for the single current player
         action = np.random.choice(state.legal_actions(state.current_player()))
+        print(f"Legal actions: {state.legal_actions(state.current_player())}")
         action_string = state.action_to_string(state.current_player(), action)
         print("Player", state.current_player(), "randomly sampled action: ",
               action_string)
