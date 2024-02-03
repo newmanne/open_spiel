@@ -44,3 +44,7 @@ django-cors-headers
 django-debug-toolbar
 django-extensions
 plotly >= 5.6.0
+
+# UBC additions
+more-itertools
+cplex

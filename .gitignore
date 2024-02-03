@@ -88,3 +88,4 @@ open_spiel/python/examples/notebooks/output/
 *.lp
 *auctions.log
 open_spiel/python/examples/notebooks/configs/wandb
+open_spiel/pybind11_abseil
