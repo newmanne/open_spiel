@@ -1,8 +1,9 @@
 from dataclasses import dataclass, field
 from open_spiel.python import rl_environment
 from open_spiel.python.examples.env_and_policy import EnvAndPolicy
-from open_spiel.python.examples.ubc_decorators import TremblingAgentDecorator
+from open_spiel.python.examples.ubc_decorators import TremblingAgentDecorator, ModalAgentDecorator
 from open_spiel.python.examples.ubc_utils import *
+from open_spiel.python.rl_agent_policy import JointRLAgentPolicy
 import numpy as np
 from open_spiel.python.pytorch.ppo import PPO
 from open_spiel.python.pytorch.dqn import DQN
@@ -161,7 +162,7 @@ class EnvParams:
   trap_value: float = None
   trap_delay: int = 0
 
-  include_state: bool = False
+  include_state: bool = True
 
 
   def make_env(self, game):
@@ -311,20 +312,32 @@ def make_env_and_policy(game, config, env_params=None):
   else:
       agent_fn = make_ppo_agent
 
-
   env = env_params.make_env(game)
   agents = [agent_fn(player_id, config, game) for player_id in range(game.num_players())]
   return EnvAndPolicy(env=env, agents=agents, game=game)
 
-class PPOTrainingLoop:
+def compute_heuristic_conv(game, agents, time_limit_seconds):
+  modal_agents = {}
+  for player_id in range(game.num_players()):
+    modal_agents[player_id] = ModalAgentDecorator(agents[player_id])
+  modal_policy = JointRLAgentPolicy(game, modal_agents, False)
 
-  def __init__(self, game, env, agents, total_timesteps, players_to_train=None, report_timer=None, eval_timer=None, policy_diff_threshold=1e-3, max_policy_diff_count=9999, use_wandb=False, wandb_step_interval=1024):
-    self.game = game
-    self.env = env
-    self.agents = agents
+  worked, heuristic_conv_runtime, res = time_bounded_run(time_limit_seconds, nash_conv, game, modal_policy, return_only_nash_conv=False, restrict_to_heuristics=True)
+  if worked:
+      (hc, heuristic_conv_player_improvements, br_policies) = res
+  else:
+      (hc, heuristic_conv_player_improvements, br_policies) = (None, None, None)
+  return worked, hc, heuristic_conv_player_improvements, heuristic_conv_runtime
+
+class PPOTrainingLoop:
+  def __init__(self, env_and_policy, total_timesteps, players_to_train=None, report_timer=None, eval_timer=None, policy_diff_threshold=1e-3, max_policy_diff_count=9999, use_wandb=False, wandb_step_interval=1024, time_limit_seconds=None):
+    self.env_and_policy = env_and_policy
+    self.game = env_and_policy.game
+    self.env = env_and_policy.env
+    self.agents = env_and_policy.agents
     self.total_timesteps = total_timesteps
-    self.players_to_train = players_to_train if players_to_train is not None else list(range(game.num_players()))
-    self.fixed_agents = set(range(game.num_players())) - set(self.players_to_train)
+    self.players_to_train = players_to_train if players_to_train is not None else list(range(self.game.num_players()))
+    self.fixed_agents = set(range(self.game.num_players())) - set(self.players_to_train)
     self.report_timer = report_timer     
     self.report_hooks = []
     self.eval_timer = eval_timer
@@ -334,6 +347,7 @@ class PPOTrainingLoop:
     self.policy_diff_count = 0
     self.use_wandb = use_wandb
     self.wandb_step_interval = wandb_step_interval
+    self.time_limit_seconds = time_limit_seconds
 
   def add_report_hook(self, hook):
     self.report_hooks.append(hook)
@@ -359,10 +373,17 @@ class PPOTrainingLoop:
       wandb_update_interval = max(self.wandb_step_interval // batch_size, 1)
 
     logging.info(f"Training for {num_updates} updates")
+    if self.time_limit_seconds:
+        logger.info(f"Running for a time limit of {self.time_limit_seconds} seconds")
     logging.info(f"Fixed agents are {self.fixed_agents}. Learning agents are {self.players_to_train}")
     time_step = self.env.reset()
+    start_time = time.time()
 
     for update in range(1, num_updates + 1):
+      if self.time_limit_seconds and time.time() - start_time > self.time_limit_seconds:
+        logger.info("Out of time!")
+        break
+
       if self.report_timer is not None and self.report_timer.should_trigger(update * batch_size):
         for hook in self.report_hooks:
           hook(update, update * batch_size)
@@ -415,6 +436,22 @@ class PPOTrainingLoop:
 
           if 'traps' in stats_dict:
             log_stats_dict[f'{prefix}/player_{player_id}_traps'] = np.mean(stats_dict['traps'][player_id])
+
+        # HeuristicConv
+        logger.info("Computing HeuristicConv...")
+        hc_worked, hc, heuristic_conv_player_improvements, heuristic_conv_runtime = compute_heuristic_conv(self.game, self.agents, 300)
+        if hc_worked: 
+          logger.info(f"Heuristic Conv: {hc:.3f} (computed in {heuristic_conv_runtime:.3f} seconds)")
+          for player in range(len(heuristic_conv_player_improvements)):
+            logger.info(f"Player {player} improvement: {heuristic_conv_player_improvements[player]}")
+
+          log_stats_dict.update({
+            'heuristic_conv': hc, 
+            'heuristic_conv_runtime': heuristic_conv_runtime,
+            **{f'heuristic_conv_player_improvements_{p}': v for p, v in enumerate(heuristic_conv_player_improvements)},
+          })
+        else:
+          logger.info("Heuristic Conv timed out")
  
         # Initial state action probabilities -- disabled for now
         # TODO: DONT MAKE THIS EACH TIME, JUST RESET IT 
@@ -480,13 +517,12 @@ def ppo_checkpoint(env_and_model, step, alg_start_time, compute_nash_conv=False,
   }
   return checkpoint
 
-def run_ppo(env_and_policy, total_steps, result_saver=None, seed=1234, compute_nash_conv=False, dispatcher=None, report_timer=None, eval_timer=None, use_wandb=False, wandb_step_interval=1024):
+def run_ppo(env_and_policy, total_steps, result_saver=None, seed=1234, compute_nash_conv=False, dispatcher=None, report_timer=None, eval_timer=None, use_wandb=False, wandb_step_interval=1024, time_limit_seconds=None):
   # This may have already been done, but do it again. Required to do it outside to ensure that networks get initilized the same way, which usually happens elsewhere
   fix_seeds(seed)
-  game, env, agents = env_and_policy.game, env_and_policy.env, env_and_policy.agents
 
   alg_start_time = time.time()
-  trainer = PPOTrainingLoop(game, env, agents, total_steps, report_timer=report_timer, eval_timer=eval_timer, use_wandb=use_wandb, wandb_step_interval=wandb_step_interval)
+  trainer = PPOTrainingLoop(env_and_policy, total_steps, report_timer=report_timer, eval_timer=eval_timer, use_wandb=use_wandb, wandb_step_interval=wandb_step_interval, time_limit_seconds=time_limit_seconds)
 
   def eval_hook(update, total_steps):
     logging.info("Running eval hook")

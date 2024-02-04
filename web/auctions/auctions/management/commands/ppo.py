@@ -23,6 +23,7 @@ class Command(BaseCommand):
 
         parser.add_argument('--overwrite_db', type=util.strtobool, default=0)
         parser.add_argument('--dry_run', type=util.strtobool, default=0)
+        parser.add_argument('--time_limit_seconds', type=int, default=None)
 
         # Directory
         parser.add_argument('--output_dir', type=str, default='output') # Note: DONT NAME THIS "checkpoints" because of a jupyter notebook bug
@@ -76,7 +77,7 @@ class Command(BaseCommand):
             config['clear_on_report'] = True
             config['game_name'] = game_name
             config['cfg'] = config_name
-            wandb.init(project=experiment_name, entity="ubc-algorithms", name=run_name, notes=opts.wandb_note, config=config, tags=[game_name])
+            wandb.init(project=experiment_name, entity="ubc-algorithms", name=run_name, notes=opts.wandb_note, config=config)
 
         # 1) Make the game if it doesn't exist
         game_db = get_or_create_game(game_name)
@@ -125,6 +126,6 @@ class Command(BaseCommand):
         eval_episode_timer = EpisodeTimer(opts.eval_every, early_frequency=opts.eval_every_early, fixed_episodes=opts.eval_exactly, eval_zero=opts.eval_zero)
         report_timer = EpisodeTimer(opts.report_freq)
 
-        cmd = lambda: run_ppo(env_and_policy, opts.total_timesteps, result_saver=result_saver, seed=seed, compute_nash_conv=opts.compute_nash_conv, dispatcher=dispatcher, report_timer=report_timer, eval_timer=eval_episode_timer, use_wandb=opts.use_wandb, wandb_step_interval=opts.wandb_step_interval)
+        cmd = lambda: run_ppo(env_and_policy, opts.total_timesteps, result_saver=result_saver, seed=seed, compute_nash_conv=opts.compute_nash_conv, dispatcher=dispatcher, report_timer=report_timer, eval_timer=eval_episode_timer, use_wandb=opts.use_wandb, wandb_step_interval=opts.wandb_step_interval, time_limit_seconds=opts.time_limit_seconds)
         profile_cmd(cmd, opts.pprofile, opts.pprofile_file, opts.cprofile, opts.cprofile_file)
         
