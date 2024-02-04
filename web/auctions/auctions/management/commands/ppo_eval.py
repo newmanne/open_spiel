@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from open_spiel.python.examples.ppo_eval import run_eval, EvalDefaults
 from open_spiel.python.examples.ubc_utils import series_to_quantiles, fix_seeds, players_not_me, time_bounded_run
-from open_spiel.python.examples.ubc_cma import analyze_samples
+from open_spiel.python.examples.ubc_cma import analyze_samples, get_modal_nash_conv_new_rho
 import logging
 from auctions.models import *
 from auctions.webutils import *
@@ -93,13 +93,13 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
     # RUN EVAL
     eval_output = run_eval(env_and_policy, num_samples=num_samples, report_freq=report_freq, seed=seed, compute_efficiency=compute_efficiency)
 
-    # Run NashConv only if all players are modal
+    # Run NashConv only if all players are modal or all players are straightforward
     # (running NashConv against non-modal players takes a ton more memory and time)
     # TODO: This is not necessarily safe and has a tendency to run out of memory and crash the program :(. Can we isolate it better? 
     all_modal = (len(br_mapping) == game.num_players()) and np.all([v == 'modal' for v in br_mapping.values()])
+    all_straightforward = (len(br_mapping) == game.num_players()) and np.all([v == 'straightforward' for v in br_mapping.values()])
     nc, nash_conv_player_improvements, nash_conv_runtime, hc, heuristic_conv_player_improvements, heuristic_conv_runtime = None, None, None, None, None, None
-    if all_modal:
-
+    if all_modal or all_straightforward:
         if not restrict_to_heuristics:
             # compute nash_conv
             nc_time_limit_seconds = 300
@@ -170,6 +170,24 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
         else:
             logging.info("Aborted HC calc run because time")
 
+    # if we solved a modified game, also compute NashConv on the original game
+    rho = game.auction_params.sor_bid_bonus_rho
+    validation_info = {}
+    if rho == 0:
+        # for base game, write nash_conv and heuristic_conv as computed above
+        validation_info.update({
+            'nash_conv_rho_0': nc,
+            'heuristic_conv_rho_0': hc,
+        })
+    else:
+        # otherwise, compute nash_conv and heuristic_conv for the rho=0 game
+        nc_rho_0 = get_modal_nash_conv_new_rho(game.load_as_spiel(), env_and_policy.make_policy(), c, rho=0, restrict_to_heuristics=False) 
+        hc_rho_0 = get_modal_nash_conv_new_rho(game.load_as_spiel(), env_and_policy.make_policy(), c, rho=0, restrict_to_heuristics=True)
+        validation_info.update({
+            'nash_conv_rho_0': nc_rho_0,
+            'heuristic_conv_rho_0': hc_rho_0,
+        })
+
     # SAVE EVAL
     if not dry_run:
         mean_rewards = []
@@ -193,6 +211,7 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
             heuristic_conv = hc,
             heuristic_conv_player_improvements = heuristic_conv_player_improvements,
             heuristic_conv_runtime = heuristic_conv_runtime,
+            validation_info = validation_info
         )
         logging.info("Saved to DB")
 
@@ -213,6 +232,7 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
                     'nash_conv_runtime': nash_conv_runtime,
                     **{f'nash_conv_player_improvements_{p}': v for p, v in enumerate(nash_conv_player_improvements)}
                 })
+            wandb_data.update(validation_info)
             wandb.log({f'eval_{"base" if name == "" else name}/{k}': v for k, v in wandb_data.items()})
 
     logging.info("AFTER EVAL")

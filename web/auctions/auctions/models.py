@@ -145,6 +145,7 @@ class Evaluation(TimeStampedModel):
     heuristic_conv = models.FloatField(null=True)
     heuristic_conv_runtime = models.FloatField(null=True)
     heuristic_conv_player_improvements = ArrayField(models.FloatField(), null=True)
+    validation_info = JSONField(null=True) # for additional NashConv-like calculations
 
     class Meta:
         unique_together = ('checkpoint', 'name',)
