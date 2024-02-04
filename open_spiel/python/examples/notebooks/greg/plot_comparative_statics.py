@@ -9,7 +9,8 @@ plt.style.use('https://raw.githubusercontent.com/gregdeon/plots/main/style.mplst
 plt.rcParams['axes.titlesize'] = 7
 plt.rcParams['figure.dpi'] = 300
 
-RESULTS_FNAME = 'cached_results_jan19.csv'
+# RESULTS_FNAME = 'cached_results_jan19.csv'
+RESULTS_FNAME = 'results/feb3_test_short_v4.csv'
 FIGURE_DIR = 'figures/comparative_statics'
 FIGURE_WIDTH = 7
 
@@ -112,31 +113,34 @@ if __name__ == '__main__':
         os.makedirs(FIGURE_DIR, exist_ok=True)
 
     df = pd.read_csv(RESULTS_FNAME)
+    print(df.config.value_counts())
 
     # main plot: 4 types, trembling on, straightforward bonus
-    plot_metrics_by_game(df.query('n_types == 4 and rho == 1 and config == "cfr_port_10_extexternal_plus_linear"'), fname='comparative_statics.png')
+    plot_metrics_by_game(df.query('n_types == 4 and rho == 1 and config == "ppo_jun8_23ppo_76"'), fname='comparative_statics_ppo.png')
+    
+    # plot_metrics_by_game(df.query('n_types == 4 and rho == 1 and config == "cfr_port_10_extexternal_plus_linear"'), fname='comparative_statics.png')
 
     # varying number of types
-    for num_types in [1, 2, 3, 4]:
-        plot_metrics_by_game(
-            df.query(f'n_types == {num_types} and rho == 1 and config == "cfr_port_10_extexternal_plus_linear"'), 
-            fname=f'comparative_statics_{num_types}_types.png'
-        )    
+    # for num_types in [1, 2, 3, 4]:
+    #     plot_metrics_by_game(
+    #         df.query(f'n_types == {num_types} and rho == 1 and config == "cfr_port_10_extexternal_plus_linear"'), 
+    #         fname=f'comparative_statics_{num_types}_types.png'
+    #     )    
         
-        plot_metrics_by_game(
-            df.query(f'n_types == {num_types} and rho == 0 and config == "cfr_port_10_extexternal_plus_linear"'), 
-            fname=f'comparative_statics_{num_types}_types_straightforward.png',
-            straightforward=True
-        )    
+    #     plot_metrics_by_game(
+    #         df.query(f'n_types == {num_types} and rho == 0 and config == "cfr_port_10_extexternal_plus_linear"'), 
+    #         fname=f'comparative_statics_{num_types}_types_straightforward.png',
+    #         straightforward=True
+    #     )    
 
-    # removing straightforward bonus
-    plot_metrics_by_game(
-        df.query(f'n_types == 4 and rho == 0 and config == "cfr_port_10_extexternal_plus_linear"'), 
-        fname=f'comparative_statics_no_straightforward_bonus.png'
-    )
+    # # removing straightforward bonus
+    # plot_metrics_by_game(
+    #     df.query(f'n_types == 4 and rho == 0 and config == "cfr_port_10_extexternal_plus_linear"'), 
+    #     fname=f'comparative_statics_no_straightforward_bonus.png'
+    # )
 
-    # removing trembling
-    plot_metrics_by_game(
-        df.query(f'n_types == 4 and rho == 1 and config == "cfr_port_10_extexternal_plus_linear_no_trem"'),
-        fname=f'comparative_statics_no_trembling.png'
-    )
+    # # removing trembling
+    # plot_metrics_by_game(
+    #     df.query(f'n_types == 4 and rho == 1 and config == "cfr_port_10_extexternal_plus_linear_no_trem"'),
+    #     fname=f'comparative_statics_no_trembling.png'
+    # )
