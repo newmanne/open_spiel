@@ -3,6 +3,7 @@ auction_params:
   - 12
   - 7
   agent_memory: 10
+  base_game_name: jan12_repro_4t_4
   heuristic_deviations: 1000
   increment: 0.05
   information_policy: show_demand
@@ -13,6 +14,7 @@ auction_params:
   opening_price:
   - 12
   - 7
+  rule: base
   sor_bid_bonus_rho: 1
 bidders:
 - action_prefix:

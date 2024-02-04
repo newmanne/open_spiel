@@ -1,0 +1,80 @@
+{
+  "activity": [
+    12,
+    7
+  ],
+  "agent_memory": 10,
+  "base_game_name": "jan12_repro_1t_2",
+  "heuristic_deviations": 1000,
+  "increment": 0.05,
+  "information_policy": "show_demand",
+  "licenses": [
+    1,
+    4
+  ],
+  "max_rounds": 10,
+  "opening_price": [
+    12,
+    7
+  ],
+  "rule": "tie_break",
+  "sor_bid_bonus_rho": 1,
+  "tiebreaking_policy": "DROP_BY_LICENSE",
+  "license_names": [
+    "British Columbia"
+  ],
+  "players": [
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            7,
+            17,
+            42,
+            56,
+            12,
+            33,
+            53,
+            61,
+            69
+          ],
+          "value_format": "full",
+          "budget": 69,
+          "prob": 1.0,
+          "name": "local",
+          "action_prefix": [
+            3,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            6,
+            19,
+            32,
+            36,
+            10,
+            31,
+            35,
+            39,
+            43
+          ],
+          "value_format": "full",
+          "budget": 43,
+          "prob": 1.0,
+          "name": "local",
+          "action_prefix": [
+            3,
+            3
+          ]
+        }
+      ]
+    }
+  ]
+}
