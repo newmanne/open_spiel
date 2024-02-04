@@ -11,7 +11,7 @@ BASE_OUTPUT_DIR = os.environ['CLOCK_AUCTION_OUTPUT_ROOT']
 CLUSTER = os.environ.get('SPIEL_CLUSTER', 'ada')
 
 if CLUSTER == 'ada':
-    preamble = """#SBATCH --partition=ada_cpu_long,vickrey
+    preamble = """#SBATCH --partition=ada_cpu_long
 #SBATCH --cpus-per-task=4
 #SBATCH --mem 20G"""
     load_py = """source ~/.bashrc
@@ -48,7 +48,7 @@ def write_and_submit(experiment_output_dir, experiment_name, job_file_text, subm
     # print(f"Writing job to {job_file_path}")
     if submit:
         if CLUSTER == 'ada':
-            command = f"ssh borg.cs.ubc.ca 'cd {experiment_output_dir} && /opt/slurm/bin/sbatch {job_file_path}'"
+            command = f'cd {experiment_output_dir} && /opt/slurm/bin/sbatch {job_file_path}'
             # print(command)
             os.system(command)
         else:

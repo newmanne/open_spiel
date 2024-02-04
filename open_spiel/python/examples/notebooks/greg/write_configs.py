@@ -31,6 +31,8 @@ def convert_pesky_np(d):
         return [convert_pesky_np(x) for x in d]
     elif isinstance(d, np.int64):
         return int(d)
+    elif isinstance(d, np.float32):
+        return float(d)
     elif isinstance(d, dict):
         return {k: convert_pesky_np(v) for k, v in d.items()}
     else:
