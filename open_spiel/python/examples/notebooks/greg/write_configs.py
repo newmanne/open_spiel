@@ -38,7 +38,7 @@ def convert_pesky_np(d):
     else:
         return d
 
-def generate_mods(base_config):
+def generate_mods(base_config, base_game_name):
     """
     TODO: find a way to write configs without constantly needing to edit this function...
     """
@@ -54,6 +54,8 @@ def generate_mods(base_config):
             config['auction_params']['heuristic_deviations'] = deviations
             config['auction_params']['sor_bid_bonus_rho'] = rho
             config['auction_params']['information_policy'] = 'show_demand'
+            config['auction_params']['base_game_name'] = base_game_name
+            config['auction_params']['rule'] = 'base'
             
             # Base config
             base_string = f'base_dev{deviations}_rho{rho}_t{n_types}'
@@ -62,6 +64,7 @@ def generate_mods(base_config):
             # Tiebreaking
             tie_break = copy.deepcopy(mods[base_string])
             tie_break['auction_params']['tiebreaking_policy'] = TiebreakingPolicy.DROP_BY_LICENSE.name
+            tie_break['auction_params']['rule'] = 'tie_break'
             mods[f'{base_string}_tie_break'] = tie_break
 
     return mods
@@ -80,7 +83,7 @@ def main(args):
     print(f'Loaded {len(configs)} samples.')
 
     # Generate a set of modified configs for each game
-    all_mods = {i: generate_mods(config) for i, config in enumerate(configs)}
+    all_mods = {i: generate_mods(config, base_game_name=f'{prefix}_{i}') for i, config in enumerate(configs)}
     print(f'Created {sum(len(mods) for mods in all_mods.values())} modified configs for {len(all_mods)} base games.')
 
     # Write out YML files for the modified games

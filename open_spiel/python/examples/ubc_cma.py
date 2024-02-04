@@ -342,15 +342,6 @@ def display_history_distributions(history_dists):
             print(f'{probs:.3f} {history}')
         print()
 
-
-def rule_set_to_value_structure(s):
-    if 'spite' in s:
-        return 'spite'
-    elif 'risk_averse' in s:
-        return 'risk_averse'
-    else:
-        return 'quasi_linear'
-
 def rule_set_to_rule(s):
     if 'high_speed' in s:
         return 'high_speed'
@@ -370,17 +361,11 @@ def rule_set_to_rule(s):
         return 'base'
     
 def get_game_info(game, game_db):
-    game_name = game_db.name
-    # Base is like sep19_encumbered_4 4 without all the crap before or afer in game_name. This will fail horribly if you don't have exactly 2 underscores.
-
-    if '/' not in game_name:
-        base_game_name = game_name
-        rule_set = 'base'
-        rule = 'base'
+    if 'base_game_name' in game.auction_params:
+        base_game_name = game.auction_params['base_game_name']
+        rule = game.auction_params['rule']
     else:
-        base_game_name = '_'.join(game_name.split('/')[1].split('_')[:3]) # Stupid naming convention that will surely bite us later
-        rule_set = game_name.split(base_game_name)[-1][1:-5]
-        rule = rule_set_to_rule(rule_set)
+        raise ValueError('No base_game_name in game.auction_params -- probably an old run.')
 
     try:
         value_structure = game_db.config['players'][0]['type'][0]['utility_function']['name']    
