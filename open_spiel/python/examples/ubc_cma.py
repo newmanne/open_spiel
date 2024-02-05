@@ -399,12 +399,9 @@ def get_modal_nash_conv(game, policy, config):
     modal_policy = env_and_policy.make_policy()
     return get_nash_conv(game, modal_policy)
 
-def get_nash_conv(game, policy, restrict_to_heuristics=False):
-    worked, time_taken, retval = time_bounded_run(300, nash_conv, game, policy, return_only_nash_conv=True, restrict_to_heuristics=restrict_to_heuristics)
-    if worked:
-        return retval
-    else:
-        return None
+def get_nash_conv(game, policy, time_limit_seconds=300, return_only_nash_conv=True, restrict_to_heuristics=False):
+    worked, time_taken, retval = time_bounded_run(time_limit_seconds, nash_conv, game, policy, return_only_nash_conv=return_only_nash_conv, restrict_to_heuristics=restrict_to_heuristics)
+    return time_taken, retval
 
 def get_straightforward_nash_conv(game):
     env_and_policy = make_env_and_policy(game, dict())
@@ -415,7 +412,7 @@ def get_straightforward_nash_conv(game):
 
 
 '''Copy of game b/c we modify params. Use load_as_spiel() e.g.'''
-def get_modal_nash_conv_new_rho(game_copy, policy, config, rho=0, restrict_to_heuristics=False):
+def get_modal_nash_conv_new_rho(game_copy, policy, config, rho=0, time_limit_seconds=300, return_only_nash_conv=True, restrict_to_heuristics=False):
     game_copy.auction_params.sor_bid_bonus_rho = rho
     env_and_policy = make_env_and_policy(game_copy, dict(config))
     for agent in env_and_policy.agents:
@@ -423,4 +420,4 @@ def get_modal_nash_conv_new_rho(game_copy, policy, config, rho=0, restrict_to_he
     for player in range(game_copy.num_players()):
         env_and_policy.agents[player] = ModalAgentDecorator(env_and_policy.agents[player])
     modal_policy = env_and_policy.make_policy()
-    return get_nash_conv(game_copy, modal_policy, restrict_to_heuristics=restrict_to_heuristics)
+    return get_nash_conv(game_copy, modal_policy, time_limit_seconds=time_limit_seconds, return_only_nash_conv=return_only_nash_conv, restrict_to_heuristics=restrict_to_heuristics)
