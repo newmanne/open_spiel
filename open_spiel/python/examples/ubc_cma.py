@@ -301,7 +301,7 @@ def get_results(run, game_cache=None, skip_single_chance_nodes=True, load_policy
     game.auction_params.skip_single_chance_nodes = skip_single_chance_nodes # for backwards compatibility
     game_cache[run.game.name] = game
 
-
+    final_checkpoint = None
     for final_checkpoint in run.equilibriumsolverruncheckpoint_set.defer('policy').order_by('-t'):
         try:
             final_checkpoint.get_modal_eval()
@@ -361,9 +361,9 @@ def rule_set_to_rule(s):
         return 'base'
     
 def get_game_info(game, game_db):
-    if 'base_game_name' in game.auction_params:
-        base_game_name = game.auction_params['base_game_name']
-        rule = game.auction_params['rule']
+    if hasattr(game.auction_params, 'base_game_name'):
+        base_game_name = game.auction_params.base_game_name
+        rule = game.auction_params.rule
     else:
         raise ValueError('No base_game_name in game.auction_params -- probably an old run.')
 

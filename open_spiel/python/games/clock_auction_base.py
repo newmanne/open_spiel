@@ -74,6 +74,9 @@ class AuctionParams:
 
   sor_bid_bonus_rho: float = 1. # Units of bonus points up for grabs for bidding truthfully. Still kinda sucks at breaking indifference when profits are similar because the bonuses will be correspondingly similar.
 
+  base_game_name: str = ''
+  rule: str = ''
+
   @cached_property
   def max_activity(self):
     return np.array(self.activity) @ np.array(self.licenses)

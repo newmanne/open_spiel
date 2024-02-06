@@ -129,5 +129,7 @@ def parse_auction_params(file_name):
       agent_memory=game_params.get('agent_memory', DEFAULT_AGENT_MEMORY),
       heuristic_deviations=heuristic_deviations,
       reward_shaping=reward_shaping,
-      sor_bid_bonus_rho=sor_bid_bonus_rho
+      sor_bid_bonus_rho=sor_bid_bonus_rho,
+      base_game_name=game_params.get('base_game_name', ''),
+      rule=game_params.get('rule', ''),
     )
