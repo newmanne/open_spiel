@@ -260,11 +260,12 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
                     'nash_conv_runtime': nash_conv_runtime,
                     **{f'nash_conv_player_improvements_{p}': v for p, v in enumerate(nash_conv_player_improvements)}
                 })
-            for k, v in validation_info.items():
-                if isinstance(v, Iterable):
-                    wandb_data.update({f'{k}_{i}': vi for i, vi in enumerate(v)})
-                else: 
-                    wandb_data[k] = v
+            if validation_info is not None:
+                for k, v in validation_info.items():
+                    if isinstance(v, Iterable):
+                        wandb_data.update({f'{k}_{i}': vi for i, vi in enumerate(v)})
+                    else: 
+                        wandb_data[k] = v
 
             wandb.log({f'eval_{"base" if name == "" else name}/{k}': v for k, v in wandb_data.items()})
 

@@ -11,7 +11,7 @@ BASE_OUTPUT_DIR = os.environ['CLOCK_AUCTION_OUTPUT_ROOT']
 CLUSTER = os.environ.get('SPIEL_CLUSTER', 'ada')
 
 if CLUSTER == 'ada':
-    preamble = """#SBATCH --partition=ada_cpu_long
+    preamble = """#SBATCH --partition=ada_cpu_long,vickrey
 #SBATCH --cpus-per-task=4
 #SBATCH --mem 20G"""
     load_py = """source ~/.bashrc
