@@ -46,7 +46,7 @@ def fix_seeds(seed):
     logging.info(f"Setting numpy and torch seed to {seed}")
     np.random.seed(seed)
     torch.manual_seed(seed)
-    # torch.use_deterministic_algorithms(True) # See https://github.com/pytorch/pytorch/issues/50469
+    torch.use_deterministic_algorithms(True) # See https://github.com/pytorch/pytorch/issues/50469
 
 def single_action_result(legal_actions, num_actions, as_output=False):
     action = legal_actions[0]

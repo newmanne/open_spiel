@@ -437,21 +437,22 @@ class PPOTrainingLoop:
           if 'traps' in stats_dict:
             log_stats_dict[f'{prefix}/player_{player_id}_traps'] = np.mean(stats_dict['traps'][player_id])
 
-        # HeuristicConv
-        logger.info("Computing HeuristicConv...")
-        hc_worked, hc, heuristic_conv_player_improvements, heuristic_conv_runtime = compute_heuristic_conv(self.game, self.agents, 300)
-        if hc_worked: 
-          logger.info(f"Heuristic Conv: {hc:.3f} (computed in {heuristic_conv_runtime:.3f} seconds)")
-          for player in range(len(heuristic_conv_player_improvements)):
-            logger.info(f"Player {player} improvement: {heuristic_conv_player_improvements[player]}")
+        # HeuristicConv: disabled for now (not very informative for small games)
+        logger.info("Skipping HeuristicConv calculation.") 
+        # logger.info("Computing HeuristicConv...")
+        # hc_worked, hc, heuristic_conv_player_improvements, heuristic_conv_runtime = compute_heuristic_conv(self.game, self.agents, 300)
+        # if hc_worked: 
+        #   logger.info(f"Heuristic Conv: {hc:.3f} (computed in {heuristic_conv_runtime:.3f} seconds)")
+        #   for player in range(len(heuristic_conv_player_improvements)):
+        #     logger.info(f"Player {player} improvement: {heuristic_conv_player_improvements[player]}")
 
-          log_stats_dict.update({
-            'heuristic_conv': hc, 
-            'heuristic_conv_runtime': heuristic_conv_runtime,
-            **{f'heuristic_conv_player_improvements_{p}': v for p, v in enumerate(heuristic_conv_player_improvements)},
-          })
-        else:
-          logger.info("Heuristic Conv timed out")
+        #   log_stats_dict.update({
+        #     'heuristic_conv': hc, 
+        #     'heuristic_conv_runtime': heuristic_conv_runtime,
+        #     **{f'heuristic_conv_player_improvements_{p}': v for p, v in enumerate(heuristic_conv_player_improvements)},
+        #   })
+        # else:
+        #   logger.info("Heuristic Conv timed out")
  
         # Initial state action probabilities -- disabled for now
         # TODO: DONT MAKE THIS EACH TIME, JUST RESET IT 
