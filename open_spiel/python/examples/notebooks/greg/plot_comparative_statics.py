@@ -10,8 +10,9 @@ plt.rcParams['axes.titlesize'] = 7
 plt.rcParams['figure.dpi'] = 300
 
 # RESULTS_FNAME = 'cached_results_jan19.csv'
-RESULTS_FNAME = 'results/feb3_test_short_v4.csv'
-FIGURE_DIR = 'figures/comparative_statics'
+# RESULTS_FNAME = 'results/feb3_test_short_v4.csv'
+RESULTS_FNAME = '/global/scratch/open_spiel/open_spiel/open_spiel/python/examples/notebooks/greg/results/feb5_v2.csv'
+FIGURE_DIR = '/global/scratch/open_spiel/open_spiel/open_spiel/python/examples/notebooks/greg/figures/comparative_statics'
 FIGURE_WIDTH = 7
 
 # names + color scheme
@@ -49,10 +50,6 @@ def my_fmt(x, pos):
     if x == 0:
         return '0'
     return f'{x:.2f}'
-
-
-
-
 
 def plot_metrics_by_game(df, metrics=None, fname='plot.png', straightforward=False):
     if metrics is None:
@@ -116,7 +113,31 @@ if __name__ == '__main__':
     print(df.config.value_counts())
 
     # main plot: 4 types, trembling on, straightforward bonus
-    plot_metrics_by_game(df.query('n_types == 4 and rho == 1 and config == "ppo_jun8_23ppo_76"'), fname='comparative_statics_ppo.png')
+    df_4t_ppo = df.query('n_types == 4 and rho == 1 and config == "ppo_jun8_23ppo_76"')
+    plot_metrics_by_game(df_4t_ppo, fname='comparative_statics_4t_ppo.png')
+    print(df_4t_ppo.nash_conv.describe())
+
+    df_4t_ppo_rho0 = df.query('n_types == 4 and rho == 0 and config == "ppo_jun8_23ppo_76"')
+    plot_metrics_by_game(df_4t_ppo_rho0, fname='comparative_statics_4t_ppo_rho0.png')
+    print(df_4t_ppo_rho0.nash_conv.describe())
+
+    df_4t_cfr = df.query('n_types == 4 and rho == 1 and config == "cfr_port_10_extexternal_plus_linear"')
+    plot_metrics_by_game(df_4t_cfr, fname='comparative_statics_4t_cfr.png')
+    print(df_4t_cfr.nash_conv.describe())
+
+    df_4t_cfr_no_trem = df.query('n_types == 4 and rho == 1 and config == "cfr_port_10_extexternal_plus_linear_no_trem"')
+    plot_metrics_by_game(df_4t_cfr_no_trem, fname='comparative_statics_4t_cfr_no_trem.png')
+
+    df_4t_both = df.query('n_types == 4 and rho == 1 and config != "cfr_port_10_extexternal_plus_linear_no_trem"')
+    plot_metrics_by_game(df_4t_both, fname='comparative_statics_4t_both.png')
+
+    df_4t_all = df.query('n_types == 4 and rho == 1')
+    plot_metrics_by_game(df_4t_both, fname='comparative_statics_4t_all.png')
+
+    df_4t_cfr_no_features = df.query('n_types == 4 and rho == 0 and config == "cfr_port_10_extexternal_plus_linear_no_trem"')
+    plot_metrics_by_game(df_4t_cfr_no_features, fname='comparative_statics_4t_cfr_no_features.png')
+    
+    plot_metrics_by_game(df_4t_ppo, fname='comparative_statics_4t_straightforward.png', straightforward=True)
     
     # plot_metrics_by_game(df.query('n_types == 4 and rho == 1 and config == "cfr_port_10_extexternal_plus_linear"'), fname='comparative_statics.png')
 
