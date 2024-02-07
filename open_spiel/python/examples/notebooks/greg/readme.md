@@ -6,7 +6,5 @@ To generate experiment plots:
     2. Write game config files with `write_configs.py`. (Adapted from `SATSGameSampler.ipynb`.)
 3. Launch Slurm jobs with `launch_experiment.ipynb`. (Adapted from `CFRLauncher-Dec11.ipynb`.)
 4. After jobs finish, parse results with `parse_results.ipynb`.
-5. Make plots with `plot_comparative_statics.py`.
-
-
-
+5. Make plots with `plot_comparative_statics.py`. (TODO: clean this up to make plots a bit more reproducible.)
+6. Analyze a single run with `analyze_run.ipynb`.

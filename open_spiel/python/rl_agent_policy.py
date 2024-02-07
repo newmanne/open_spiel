@@ -78,7 +78,12 @@ class JointRLAgentPolicy(policy.Policy):
     info_state = rl_environment.TimeStep(observations=self._obs, rewards=None, discounts=None, step_type=None)
 
     p = self._agents[player_id].step(info_state, is_evaluation=True).probs
-    prob_dict = {action: p[i] for i, action in enumerate(legal_actions)}
+    if len(p) > len(legal_actions):
+      # assume p includes probabilities for all actions (hopefully with 0 probability for illegal actions)
+      prob_dict = {action: p[action] for action in legal_actions}
+    else:
+      # assume p includes probabilities only for legal actions
+      prob_dict = {action: p[i] for i, action in enumerate(legal_actions)}
 
     return prob_dict
 
