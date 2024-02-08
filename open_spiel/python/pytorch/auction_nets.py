@@ -12,6 +12,37 @@ class CategoricalMasked(Categorical):
         logits = torch.where(masks.bool(), logits, mask_value)
         super(CategoricalMasked, self).__init__(probs, logits, validate_args)
 
+def safe_sample(logits, legal_actions_masks, actions=None, mask_value=INVALID_ACTION_PENALTY, max_retries=100):
+    """
+    Sample from Categorical distributions, restricted to legal actions.
+
+    Note that Categorical.sample() can return 0-probability actions (see https://github.com/pytorch/pytorch/issues/91863). We work around this by retrying up to max_retries times. This is unlikely to succeed in extreme cases (e.g., very large batch sizes), where it is possible for virtually every sample to include an illegal action.
+
+    Args:
+    - logits: (batch_size, num_actions) tensor of logits
+    - legal_actions_masks: (batch_size, num_actions) boolean tensor
+
+    Returns:
+    - actions: (batch_size,) tensor of sampled actions
+    - action_log_probs: (batch_size,) tensor of log probabilities of the sampled actions
+    - entropies: (batch_size,) tensor of entropies of the action distributions
+    - probs: (batch_size, num_actions) tensor of all action probabilities 
+    """
+    dist = CategoricalMasked(logits=logits, masks=legal_actions_masks, mask_value=mask_value)
+    if actions is None:
+        actions = dist.sample()
+        if not torch.all(legal_actions_masks[torch.arange(len(logits)), actions]):
+            # TODO: more efficient to resample individual illegal actions, rather than the whole batch...
+            logging.info(f'Sampled an illegal action! Retrying up to {max_retries} times...')
+            for i in range(max_retries):
+                actions = dist.sample()
+                if torch.all(legal_actions_masks[torch.arange(len(logits)), actions]):
+                    logging.info(f'Successfully sampled a legal action after {i+1} retries.')
+                    break
+            else:
+                raise ValueError(f'Sampled an illegal action {max_retries} times in a row. \nLogits: {logits}\nMasks: {legal_actions_masks}\nActions: {actions}')
+    return actions, dist.log_prob(actions), dist.entropy(), dist.probs
+
 def string_to_activation(activation_string_or_func):
     activations = {
         'relu': nn.ReLU,
@@ -197,19 +228,14 @@ class AuctionNet(nn.Module):
         if legal_actions_mask is None: # TODO: Should you be taking this as a feature?
             legal_actions_mask = torch.ones((len(x), self.num_actions)).bool()
 
+        # Get logits from network
         logits, critic_value = self.actor_and_critic(x)
         if torch.isnan(logits).any():
             raise ValueError("Training is messed up - logits are NaN")
 
-        probs = CategoricalMasked(logits=logits, masks=legal_actions_mask, mask_value=self.mask_value)
-        if action is None:
-            action = probs.sample()
-
-        # print("START")
-        # print(x, logits, critic_value)
-        # print("END")
-
-        return action, probs.log_prob(action), probs.entropy(), critic_value, probs.probs
+        # Sample actions 
+        actions, log_probs, entropies, probs = safe_sample(logits, legal_actions_mask, actions=action, mask_value=self.mask_value)      
+        return actions, log_probs, entropies, critic_value, probs
 
     def get_value(self, x):
         # logging.info(x.shape)

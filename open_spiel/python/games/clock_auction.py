@@ -475,7 +475,7 @@ class ClockAuctionState(pyspiel.State):
       if self.auction_params.activity_policy == ActivityPolicy.ON:
         bid_activity_cost = self.auction_params.all_bids_activity[action]
         if bidder.get_max_activity() < bid_activity_cost:
-          raise ValueError(f"Bidder {self._cur_player} is not active enough ({bidder.get_max_activity()}) to bid on {bid} with cost of {bid_activity_cost}")
+          raise ValueError(f"Bidder {self._cur_player} is not active enough ({bidder.get_max_activity()}) to bid on {bid} with cost of {bid_activity_cost}. \nHistory: {self.history()}. \nInfostate string: {self.information_state_string(self._cur_player)}. \nAction: {action}. \nLegal actions: {self.legal_actions(self._cur_player)}. ")
 
       bidder.submitted_demand.append(np.array(bid))
 
