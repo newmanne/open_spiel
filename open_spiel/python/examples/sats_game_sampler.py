@@ -179,10 +179,11 @@ def test_config_is_wieldy(config, max_game_tree_size=None, external=True, test_s
                 retval['failure_reason'] = 'There exists a type that is hopelessly weak (never allocated)'
                 return retval
             
-            if not all_products_overdemanded(game):
-                retval['failed'] = True
-                retval['failure_reason'] = 'Not enough competition'
-                return retval
+            # FIXME: add flag to enable/disable
+            # if not all_products_overdemanded(game):
+            #     retval['failed'] = True
+            #     retval['failure_reason'] = 'Not enough competition'
+            #     return retval
         
 
             # Test how many rounds the worst-case straightforward solution is
@@ -219,7 +220,8 @@ def test_config_is_wieldy(config, max_game_tree_size=None, external=True, test_s
 
             if test_speed:
                 if verbose: print("Starting test for slowness")
-                if is_mccfr_iter_slow(game, external=external, cutoff=min_mccfr_iters):
+                mccfr_iter_time = 20 # 20 seconds
+                if is_mccfr_iter_slow(game, external=external, cutoff=mccfr_iter_time, num_iters=min_mccfr_iters * mccfr_iter_time):
                     if verbose: print("Cutoff exceeded")
                     retval['failed'] = True
                     retval['failure_reason'] = 'Slow MCCFR iters'

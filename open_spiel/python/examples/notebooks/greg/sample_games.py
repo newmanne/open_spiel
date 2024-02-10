@@ -4,19 +4,61 @@ import numpy as np
 from tqdm import tqdm
 import pickle
 import copy
-import time
 import os
+import time
+import tempfile
+
+import matplotlib.pyplot as plt
+plt.style.use('https://raw.githubusercontent.com/gregdeon/plots/main/style.mplstyle')
 
 from open_spiel.python.examples.pysats import map_generators, run_sats
 from open_spiel.python.examples.sats_game_sampler import test_config_is_wieldy 
 from open_spiel.python.games.clock_auction_base import action_to_bundles 
 
+LICENSE_MHZ = 10
+
+# --- plotting
+FIGURE_DIR = '/global/scratch/open_spiel/open_spiel/notebooks/greg/figures/sampler'
+PID_TO_STYLE = {
+    0: 'solid',
+    1: 'dotted',
+    2: 'dashed',
+}
+
+def visualize_values(config, fname=None):
+    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as fp:
+        sats_config = run_sats(config, fp.name, seed=config['sats_seed'])
+
+    bundles = action_to_bundles(config['auction_params']['licenses'])
+    auction_map, encumberance = map_generators[config['map']]
+    spectrum_per_license = np.array(encumberance).reshape(-1, 1) * LICENSE_MHZ
+    bandwidths = (bundles @ spectrum_per_license).flatten()
+    idx = np.argsort(bandwidths)
+
+    for player_id in range(len(sats_config['players'])):
+        for type_id in range(len(sats_config['players'][player_id]['type'])):
+            values = np.array(sats_config['players'][player_id]['type'][type_id]['value']) #- 12 * bandwidths[idx] # You aren't paying less than this
+            plt.plot(bandwidths[idx], values[idx], label=f'Player {player_id} Type {type_id}', linestyle=PID_TO_STYLE[player_id])
+            plt.scatter(bandwidths[idx], values[idx], s=4, clip_on=False)
+    plt.legend()
+    plt.xlabel('Bandwidth')
+    plt.ylabel('Value')
+    plt.xlim(0, None)
+    plt.ylim(0, None)
+    # plt.axhline(12*4*.6*1.05*1.05)
+    if fname is None:
+        plt.show()
+    else:
+        full_fname = f'{FIGURE_DIR}/{fname}'
+        plt.savefig(full_fname, bbox_inches='tight')
+        print(f'Saved plot to {full_fname}')
+    plt.close()
+
+# --- sampling
 def print_failure_reasons(failures_dict, print_fn=print):
     print_fn('Failure reasons:')
     for failure_reason, count in sorted(failures_dict.items(), key=lambda x: x[1], reverse=True):
         print_fn(f"- {failure_reason}: {count}")
-
-
 
 def sample_games(args):
     if args.delete_if_exists:
@@ -65,10 +107,9 @@ def sample_games(args):
             ap = x['auction_params']
             ap['licenses'] = args.licenses
 
-            license_mhz = 10
             mhz_per_pop_open = 0.232 # Real value (for 3800 I think?)
 
-            region_opening_prices = np.array([int(np.round(license_mhz * mhz_per_pop_open * node.population / x['scale'])) for node in selected_map])
+            region_opening_prices = np.array([int(np.round(LICENSE_MHZ * mhz_per_pop_open * node.population / x['scale'])) for node in selected_map])
             product_opening_prices = region_opening_prices @ bid_to_quantity_matrix # opening prices of encumbered licenses are proportional to bandwidth
             product_opening_prices = np.clip(product_opening_prices, np.min(region_opening_prices) * 0.05, None) # signalling products are worth 5% of cheapest region
             product_opening_prices = np.array([int(np.round(p)) for p in product_opening_prices])
@@ -98,9 +139,13 @@ def sample_games(args):
                         },
                         'z_spread': args.z_spread,
                         'local_regions': [1],
+                        'allow_float_values': args.allow_float_values,
                     }
 
                     bidder_types.append(bidder)
+
+            if args.plot_values:
+                visualize_values(x, fname=f'{x["sats_seed"]}.png')
                     
             retval = test_config_is_wieldy(x, external=args.use_external_mccfr, min_mccfr_iters=args.min_mccfr_iters, max_rounds=args.max_straightforward_rounds, max_rounds_alternating=args.max_straightforward_rounds_alternating, verbose=False)
             if not retval['failed']:
@@ -148,6 +193,7 @@ if __name__ == "__main__":
     parser.add_argument('--min_market_share', type=float, default=0.35)
     parser.add_argument('--max_market_share', type=float, default=0.5)
     parser.add_argument('--z_spread', type=float, default=0.1)
+    parser.add_argument('--allow_float_values', action='store_true')
 
     # wieldiness/interestingness settings
     parser.add_argument('--max_straightforward_rounds', type=int, default=20)
@@ -160,6 +206,7 @@ if __name__ == "__main__":
     parser.add_argument('--output', type=str, default='configs/debug.pkl')
     parser.add_argument('--delete_if_exists', action='store_true', help='Delete existing output file before writing new one') 
     parser.add_argument('--report_interval', type=int, default=30, help='How often to print failure reasons (in seconds)')
+    parser.add_argument('--plot_values', action='store_true', help='Plot the values of the sampled games')
 
     args = parser.parse_args()
     sample_games(args)

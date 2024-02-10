@@ -132,7 +132,7 @@ def subscriber_value(x, max_capacity, z_lower, z_upper, population, market_share
 
 class Bidder:
 
-    def __init__(self, market_share_sampler, value_per_subscriber_sampler, auction_map=None, licenses_in_region=None, scale=1, name=None, z_spread=0.1) -> None:
+    def __init__(self, market_share_sampler, value_per_subscriber_sampler, auction_map=None, licenses_in_region=None, scale=1, name=None, z_spread=0.1, allow_float_values=False) -> None:
         """
         Generic bidder class.
 
@@ -144,6 +144,7 @@ class Bidder:
         - scale: scale factor applied to all values
         - name: name of bidder
         - z_spread: set bidder's z_lower and z_upper to market_share +/- z_spread
+        - allow_float_values: if False, truncate values to integers
         """
         self.region_to_params = dict()
         self.regions = list(auction_map.nodes)
@@ -152,6 +153,7 @@ class Bidder:
         self.scale = scale
         self.name = name
         self.z_spread = z_spread
+        self.allow_float_values = allow_float_values
         for region_index, region in enumerate(self.regions):
             market_share = market_share_sampler.sample()
             max_capacity = self.licenses_in_region[region_index] * synergy(self.licenses_in_region[region_index])
@@ -182,7 +184,11 @@ class Bidder:
             sv = self.independent_region_value(region_params, p)
             independent_region_value = region_params.market_share * region_params.region.population * sv
             v += independent_region_value * gamma
-        return max(0, int(v / self.scale))
+
+        v_scaled = v / self.scale
+        if not self.allow_float_values:
+            v_scaled = int(v_scaled)
+        return max(0, v_scaled)
 
     def output_clock_auction(self, all_bids):
         # Return my values in clock auction format as list comprehension
@@ -311,7 +317,8 @@ def run_sats(config, output_file, seed=1234):
             'b': {
               'lower': 0.1,
               'upper': 0.3,  
-            } 
+            },
+            'allow_float_values': False,
         },
         'regional': {
             'name': 'regional',
@@ -325,6 +332,7 @@ def run_sats(config, output_file, seed=1234):
             },
             'z_spread': 0.1,
             'gamma_factor': 0.42,
+            'allow_float_values': False,
         }, 
         'local': {
             'name': 'local',
@@ -337,6 +345,7 @@ def run_sats(config, output_file, seed=1234):
                 'upper': 100,
             },
             'z_spread': 0.1,
+            'allow_float_values': False,
         },
         'explicit': {
             'name': 'explicit',

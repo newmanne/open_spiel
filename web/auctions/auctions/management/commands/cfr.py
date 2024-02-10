@@ -189,20 +189,21 @@ def run_cfr(solver_config, game, solver, total_timesteps, result_saver=None, see
             wandb_data.update({f'mccfr_{k}': v for k, v in solver_stats.items()})
 
             # HeuristicConv
-            logger.info("Computing HeuristicConv...")
-            hc_worked, hc, heuristic_conv_player_improvements, heuristic_conv_runtime = compute_heuristic_conv(game, solver, 300)
-            if hc_worked: 
-                logger.info(f"Heuristic Conv: {hc:.3f} (computed in {heuristic_conv_runtime:.3f} seconds)")
-                for player in range(len(heuristic_conv_player_improvements)):
-                    logger.info(f"Player {player} improvement: {heuristic_conv_player_improvements[player]}")
+            logger.info('Skipping HeuristicConv.')
+            # logger.info("Computing HeuristicConv...")
+            # hc_worked, hc, heuristic_conv_player_improvements, heuristic_conv_runtime = compute_heuristic_conv(game, solver, 300)
+            # if hc_worked: 
+            #     logger.info(f"Heuristic Conv: {hc:.3f} (computed in {heuristic_conv_runtime:.3f} seconds)")
+            #     for player in range(len(heuristic_conv_player_improvements)):
+            #         logger.info(f"Player {player} improvement: {heuristic_conv_player_improvements[player]}")
 
-                wandb_data.update({
-                    'heuristic_conv': hc, 
-                    'heuristic_conv_runtime': heuristic_conv_runtime,
-                    **{f'heuristic_conv_player_improvements_{p}': v for p, v in enumerate(heuristic_conv_player_improvements)},
-                })
-            else:
-                logger.info("Heuristic Conv timed out")
+            #     wandb_data.update({
+            #         'heuristic_conv': hc, 
+            #         'heuristic_conv_runtime': heuristic_conv_runtime,
+            #         **{f'heuristic_conv_player_improvements_{p}': v for p, v in enumerate(heuristic_conv_player_improvements)},
+            #     })
+            # else:
+            #     logger.info("Heuristic Conv timed out")
 
             # TODO: These caches I would love to see, as they are the most important. But they aren't instrumented because they aren't from a decorator...
             # logger.info(f"State cache stats: {game.state_cache.cache_info()}")

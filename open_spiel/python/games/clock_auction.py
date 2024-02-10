@@ -382,22 +382,22 @@ class ClockAuctionState(pyspiel.State):
     clock_profits = bidder.bidder.get_profits(clock_prices)
     heuristics['straightforward_clock'] = max(legal_actions, key=lambda a: clock_profits[a])
 
-    # straightforward
-    for type_index, ptype in enumerate(self.auction_params.player_types[player]):
-      # TODO:
-      if type_index != bidder.type_index:
-        continue
+    # # straightforward
+    # for type_index, ptype in enumerate(self.auction_params.player_types[player]):
+    #   # TODO:
+    #   if type_index != bidder.type_index:
+    #     continue
 
-      suffix = f'_bluff_{type_index}' if type_index != bidder.type_index else ''
-      b = ptype['bidder']
+    #   suffix = f'_bluff_{type_index}' if type_index != bidder.type_index else ''
+    #   b = ptype['bidder']
 
-      sor_prices = np.asarray(self.sor_prices[-1])
-      sor_profits = b.get_profits(sor_prices)
-      heuristics[f'straightforward_sor{suffix}'] = max(legal_actions, key=lambda a: sor_profits[a])
+    #   sor_prices = np.asarray(self.sor_prices[-1])
+    #   sor_profits = b.get_profits(sor_prices)
+    #   heuristics[f'straightforward_sor{suffix}'] = max(legal_actions, key=lambda a: sor_profits[a])
 
-      clock_prices = np.asarray(self.clock_prices[-1])
-      clock_profits = b.get_profits(clock_prices)
-      heuristics[f'straightforward_clock{suffix}'] = max(legal_actions, key=lambda a: clock_profits[a])
+    #   clock_prices = np.asarray(self.clock_prices[-1])
+    #   clock_profits = b.get_profits(clock_prices)
+    #   heuristics[f'straightforward_clock{suffix}'] = max(legal_actions, key=lambda a: clock_profits[a])
 
     # maintain bid
     if len(bidder.submitted_demand) >= 1:
