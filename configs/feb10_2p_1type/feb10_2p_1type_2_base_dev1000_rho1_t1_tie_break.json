@@ -1,0 +1,80 @@
+{
+  "activity": [
+    12,
+    7
+  ],
+  "agent_memory": 10,
+  "base_game_name": "feb10_2p_1type_2",
+  "heuristic_deviations": 1000,
+  "increment": 0.05,
+  "information_policy": "show_demand",
+  "licenses": [
+    1,
+    4
+  ],
+  "max_rounds": 10,
+  "opening_price": [
+    12,
+    7
+  ],
+  "rule": "tie_break",
+  "sor_bid_bonus_rho": 1,
+  "tiebreaking_policy": "DROP_BY_LICENSE",
+  "license_names": [
+    "British Columbia"
+  ],
+  "players": [
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            5.598148184432441,
+            16.604376952761495,
+            31.48080692294743,
+            35.49408313051732,
+            9.330246974054068,
+            28.01856714835456,
+            34.156324394660686,
+            38.16960060223058,
+            42.182876809800476
+          ],
+          "value_format": "full",
+          "budget": 42.182876809800476,
+          "prob": 1.0,
+          "name": "local",
+          "action_prefix": [
+            3,
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "type": [
+        {
+          "value": [
+            0,
+            7.129782169853124,
+            18.397086945204418,
+            43.09595022986272,
+            50.37243242750437,
+            11.882970283088541,
+            34.86299580164329,
+            48.27646454085477,
+            54.56436820080357,
+            60.85227186075238
+          ],
+          "value_format": "full",
+          "budget": 60.85227186075238,
+          "prob": 1.0,
+          "name": "local",
+          "action_prefix": [
+            3,
+            3
+          ]
+        }
+      ]
+    }
+  ]
+}

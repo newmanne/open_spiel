@@ -1,0 +1,137 @@
+auction_params:
+  activity:
+  - 12
+  - 7
+  agent_memory: 10
+  base_game_name: feb8_3p_7supply_2
+  heuristic_deviations: 1000
+  increment: 0.05
+  information_policy: show_demand
+  licenses:
+  - 1
+  - 7
+  max_rounds: 10
+  opening_price:
+  - 12
+  - 7
+  rule: tie_break
+  sor_bid_bonus_rho: 0
+  tiebreaking_policy: DROP_BY_LICENSE
+bidders:
+- action_prefix:
+  - 3
+  - 3
+  player: 0
+  types:
+  - allow_float_values: true
+    local_regions:
+    - 1
+    market_share:
+      lower: 0.15
+      upper: 0.2
+    type: local
+    value_per_subscriber:
+      lower: 35
+      upper: 50
+    z_spread: 0.1
+  - allow_float_values: true
+    local_regions:
+    - 1
+    market_share:
+      lower: 0.15
+      upper: 0.2
+    type: local
+    value_per_subscriber:
+      lower: 35
+      upper: 50
+    z_spread: 0.1
+  - allow_float_values: true
+    local_regions:
+    - 1
+    market_share:
+      lower: 0.15
+      upper: 0.2
+    type: local
+    value_per_subscriber:
+      lower: 35
+      upper: 50
+    z_spread: 0.1
+- action_prefix:
+  - 3
+  - 3
+  player: 1
+  types:
+  - allow_float_values: true
+    local_regions:
+    - 1
+    market_share:
+      lower: 0.15
+      upper: 0.2
+    type: local
+    value_per_subscriber:
+      lower: 35
+      upper: 50
+    z_spread: 0.1
+  - allow_float_values: true
+    local_regions:
+    - 1
+    market_share:
+      lower: 0.15
+      upper: 0.2
+    type: local
+    value_per_subscriber:
+      lower: 35
+      upper: 50
+    z_spread: 0.1
+  - allow_float_values: true
+    local_regions:
+    - 1
+    market_share:
+      lower: 0.15
+      upper: 0.2
+    type: local
+    value_per_subscriber:
+      lower: 35
+      upper: 50
+    z_spread: 0.1
+- action_prefix:
+  - 3
+  - 3
+  player: 2
+  types:
+  - allow_float_values: true
+    local_regions:
+    - 1
+    market_share:
+      lower: 0.15
+      upper: 0.2
+    type: local
+    value_per_subscriber:
+      lower: 35
+      upper: 50
+    z_spread: 0.1
+  - allow_float_values: true
+    local_regions:
+    - 1
+    market_share:
+      lower: 0.15
+      upper: 0.2
+    type: local
+    value_per_subscriber:
+      lower: 35
+      upper: 50
+    z_spread: 0.1
+  - allow_float_values: true
+    local_regions:
+    - 1
+    market_share:
+      lower: 0.15
+      upper: 0.2
+    type: local
+    value_per_subscriber:
+      lower: 35
+      upper: 50
+    z_spread: 0.1
+map: BCEncumbered
+sats_seed: 987940579
+scale: 1000000

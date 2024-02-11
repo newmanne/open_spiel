@@ -113,7 +113,7 @@ class Command(BaseCommand):
             wandb.define_metric("*", step_metric="global_step")
 
 
-        cmd = lambda: run_cfr(config, game, solver, opts.total_timesteps, result_saver=result_saver, seed=seed, compute_nash_conv=opts.compute_nash_conv, dispatcher=dispatcher, report_timer=report_timer, eval_timer=eval_episode_timer, use_wandb=opts.use_wandb, time_limit_seconds=opts.time_limit_seconds)
+        cmd = lambda: run_cfr(config, game, solver, opts.total_timesteps, result_saver=result_saver, seed=seed, compute_nash_conv_on_report=opts.compute_nash_conv, dispatcher=dispatcher, report_timer=report_timer, eval_timer=eval_episode_timer, use_wandb=opts.use_wandb, time_limit_seconds=opts.time_limit_seconds)
         profile_cmd(cmd, opts.pprofile, opts.pprofile_file, opts.cprofile, opts.cprofile_file)
 
         logging.info("All done. Goodbye")
@@ -130,7 +130,7 @@ def trigger(solver, i, start_time, result_saver, dispatcher, use_wandb=False):
             #     wandb.log({}, step=i, commit=True)
 
 
-def compute_heuristic_conv(game, solver, time_limit_seconds):
+def compute_nash_conv(game, solver, time_limit_seconds, restrict_to_heuristics=False):
     avg_policy = solver.average_policy()
     agents = {}
     for player_id in range(game.num_players()):
@@ -139,14 +139,14 @@ def compute_heuristic_conv(game, solver, time_limit_seconds):
         agents[player_id] = ModalAgentDecorator(agents[player_id])
     policy = JointRLAgentPolicy(game, agents, False)
 
-    worked, heuristic_conv_runtime, res = time_bounded_run(time_limit_seconds, nash_conv, game, policy, return_only_nash_conv=False, restrict_to_heuristics=True)
+    worked, nash_conv_runtime, res = time_bounded_run(time_limit_seconds, nash_conv, game, policy, return_only_nash_conv=False, restrict_to_heuristics=restrict_to_heuristics)
     if worked:
-        (hc, heuristic_conv_player_improvements, br_policies) = res
+        (nc, heuristic_conv_player_improvements, br_policies) = res
     else:
-        (hc, heuristic_conv_player_improvements, br_policies) = (None, None, None)
-    return worked, hc, heuristic_conv_player_improvements, heuristic_conv_runtime
+        (nc, heuristic_conv_player_improvements, br_policies) = (None, None, None)
+    return worked, nc, heuristic_conv_player_improvements, nash_conv_runtime
 
-def run_cfr(solver_config, game, solver, total_timesteps, result_saver=None, seed=1234, dispatcher=None, report_timer=None, eval_timer=None, use_wandb=False, compute_nash_conv=False, time_limit_seconds=None):
+def run_cfr(solver_config, game, solver, total_timesteps, result_saver=None, seed=1234, dispatcher=None, report_timer=None, eval_timer=None, use_wandb=False, compute_nash_conv_on_report=False, time_limit_seconds=None):
     start_time = time.time()
     # TODO: Wandb see ppo_utils: How often should we do this? On report? Eval? 
     # RUN SOLVER
@@ -188,22 +188,24 @@ def run_cfr(solver_config, game, solver, total_timesteps, result_saver=None, see
             solver_stats = solver.get_solver_stats()
             wandb_data.update({f'mccfr_{k}': v for k, v in solver_stats.items()})
 
-            # HeuristicConv
-            logger.info('Skipping HeuristicConv.')
-            # logger.info("Computing HeuristicConv...")
-            # hc_worked, hc, heuristic_conv_player_improvements, heuristic_conv_runtime = compute_heuristic_conv(game, solver, 300)
-            # if hc_worked: 
-            #     logger.info(f"Heuristic Conv: {hc:.3f} (computed in {heuristic_conv_runtime:.3f} seconds)")
-            #     for player in range(len(heuristic_conv_player_improvements)):
-            #         logger.info(f"Player {player} improvement: {heuristic_conv_player_improvements[player]}")
+            # NashConv (TODO: add flag for heuristicconv)
+            if compute_nash_conv_on_report:
+                logger.info("Computing NashConv...")
+                nc_worked, nc, nash_conv_player_improvements, nash_conv_runtime = compute_nash_conv(game, solver, 300)
+                if nc_worked: 
+                    logger.info(f"NashConv: {nc:.3f} (computed in {nash_conv_runtime:.3f} seconds)")
+                    for player in range(len(nash_conv_player_improvements)):
+                        logger.info(f"Player {player} improvement: {nash_conv_player_improvements[player]}")
 
-            #     wandb_data.update({
-            #         'heuristic_conv': hc, 
-            #         'heuristic_conv_runtime': heuristic_conv_runtime,
-            #         **{f'heuristic_conv_player_improvements_{p}': v for p, v in enumerate(heuristic_conv_player_improvements)},
-            #     })
-            # else:
-            #     logger.info("Heuristic Conv timed out")
+                    wandb_data.update({
+                        'nash_conv': nc, 
+                        'nash_conv_runtime': nash_conv_runtime,
+                        **{f'nash_conv_player_improvements_{p}': v for p, v in enumerate(nash_conv_player_improvements)},
+                    })
+                else:
+                    logger.info("NashConv timed out")
+            else:
+                logger.info('Skipping NashConv.')
 
             # TODO: These caches I would love to see, as they are the most important. But they aren't instrumented because they aren't from a decorator...
             # logger.info(f"State cache stats: {game.state_cache.cache_info()}")

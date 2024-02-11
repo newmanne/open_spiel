@@ -1,0 +1,98 @@
+auction_params:
+  activity:
+  - 12
+  - 7
+  agent_memory: 10
+  base_game_name: feb10_2p_3type_4
+  heuristic_deviations: 1000
+  increment: 0.05
+  information_policy: show_demand
+  licenses:
+  - 1
+  - 4
+  max_rounds: 10
+  opening_price:
+  - 12
+  - 7
+  rule: base
+  sor_bid_bonus_rho: 0
+bidders:
+- action_prefix:
+  - 3
+  - 3
+  player: 0
+  types:
+  - allow_float_values: true
+    local_regions:
+    - 1
+    market_share:
+      lower: 0.35
+      upper: 0.5
+    type: local
+    value_per_subscriber:
+      lower: 20
+      upper: 30
+    z_spread: 0.1
+  - allow_float_values: true
+    local_regions:
+    - 1
+    market_share:
+      lower: 0.35
+      upper: 0.5
+    type: local
+    value_per_subscriber:
+      lower: 20
+      upper: 30
+    z_spread: 0.1
+  - allow_float_values: true
+    local_regions:
+    - 1
+    market_share:
+      lower: 0.35
+      upper: 0.5
+    type: local
+    value_per_subscriber:
+      lower: 20
+      upper: 30
+    z_spread: 0.1
+- action_prefix:
+  - 3
+  - 3
+  player: 1
+  types:
+  - allow_float_values: true
+    local_regions:
+    - 1
+    market_share:
+      lower: 0.35
+      upper: 0.5
+    type: local
+    value_per_subscriber:
+      lower: 20
+      upper: 30
+    z_spread: 0.1
+  - allow_float_values: true
+    local_regions:
+    - 1
+    market_share:
+      lower: 0.35
+      upper: 0.5
+    type: local
+    value_per_subscriber:
+      lower: 20
+      upper: 30
+    z_spread: 0.1
+  - allow_float_values: true
+    local_regions:
+    - 1
+    market_share:
+      lower: 0.35
+      upper: 0.5
+    type: local
+    value_per_subscriber:
+      lower: 20
+      upper: 30
+    z_spread: 0.1
+map: BCEncumbered
+sats_seed: 319097058
+scale: 1000000
