@@ -31,7 +31,7 @@ def make_fake_br(equilibrium_solver_run_checkpoint, br_player, name):
             )
     return best_response
 
-def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, seed=EvalDefaults.DEFAULT_SEED, report_freq=EvalDefaults.DEFAULT_REPORT_FREQ, num_samples=EvalDefaults.DEFAULT_NUM_SAMPLES, compute_efficiency=False, num_envs=EvalDefaults.DEFAULT_NUM_ENVS, restrict_to_heuristics=EvalDefaults.DEFAULT_RESTRICT_TO_HEURISTICS, reseed=True, store_samples=True, use_wandb=False, game=None, policy=None):
+def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, seed=EvalDefaults.DEFAULT_SEED, report_freq=EvalDefaults.DEFAULT_REPORT_FREQ, num_samples=EvalDefaults.DEFAULT_NUM_SAMPLES, compute_efficiency=False, num_envs=EvalDefaults.DEFAULT_NUM_ENVS, restrict_to_heuristics=EvalDefaults.DEFAULT_RESTRICT_TO_HEURISTICS, reseed=True, store_samples=True, use_wandb=False, game=None, policy=None, rho=0):
     '''br_mapping is a dict with keys of player_ids mapping to br_names'''
 
     if br_mapping is None:
@@ -58,6 +58,17 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
     else:
         env_and_policy = ppo_db_checkpoint_loader(equilibrium_solver_run_checkpoint, env_params=env_params)
         game = env_and_policy.game
+
+    # Modify rho if necessary
+    if rho is None or rho == game.auction_params.sor_bid_bonus_rho:
+        logger.info(f"Running evaluation with game's original rho value ({game.auction_params.sor_bid_bonus_rho})")
+    else:
+        logger.info(f"Running evaluation on modified game with rho = {rho}")
+        game_rho = game.load_copy()
+        game_rho.auction_params.sor_bid_bonus_rho = rho
+
+        env_and_policy.game = game_rho
+        game = game_rho
 
     real_br = False
     name = ''
@@ -174,45 +185,45 @@ def eval_command(t, experiment_name, run_name, br_mapping=None, dry_run=False, s
 
     # for modal: if we solved a modified game, also compute NashConv on the original game
     validation_info = None
-    if all_modal:
-        rho = game.auction_params.sor_bid_bonus_rho
-        validation_info = {}
-        if rho == 0:
-            # for base game, write nash_conv and heuristic_conv as computed above
-            logging.info(f"Game had no indifference-breaking; using previously computed NashConvs")
-            if not restrict_to_heuristics:
-                validation_info.update({
-                    'rho_0_nash_conv': nc,
-                    'rho_0_nash_conv_runtime': nash_conv_runtime,
-                    'rho_0_nash_conv_player_improvements': nash_conv_player_improvements,
-                })
-            validation_info.update({
-                'rho_0_heuristic_conv': hc,
-                'rho_0_heuristic_conv_runtime': heuristic_conv_runtime,
-                'rho_0_heuristic_conv_player_improvements': heuristic_conv_player_improvements,
-            })
-        else:
-            # otherwise, compute nash_conv and heuristic_conv for the rho=0 game
-            # note that we need to make a copy of the game to avoid modifying the original one
-            game_db = equilibrium_solver_run_checkpoint.equilibrium_solver_run.game
-            if not restrict_to_heuristics:
-                logging.info(f"Computing NashConv on game with rho=0 for up to {nc_time_limit_seconds} seconds")
-                nc_rho_0_runtime, nc_rho_0_res = get_modal_nash_conv_new_rho(game_db.load_as_spiel(), env_and_policy.make_policy(), c, rho=0, return_only_nash_conv=False, restrict_to_heuristics=False, time_limit_seconds=nc_time_limit_seconds)
-                nc_rho_0, nc_rho_0_player_improvements, _ = nc_rho_0_res if nc_rho_0_res is not None else (None, None, None)
-                validation_info.update({
-                    'rho_0_nash_conv': nc_rho_0,
-                    'rho_0_nash_conv_runtime': nc_rho_0_runtime,
-                    'rho_0_nash_conv_player_improvements': nc_rho_0_player_improvements,
-                })
+    # if all_modal:
+    #     rho = game.auction_params.sor_bid_bonus_rho
+    #     validation_info = {}
+    #     if rho == 0:
+    #         # for base game, write nash_conv and heuristic_conv as computed above
+    #         logging.info(f"Game had no indifference-breaking; using previously computed NashConvs")
+    #         if not restrict_to_heuristics:
+    #             validation_info.update({
+    #                 'rho_0_nash_conv': nc,
+    #                 'rho_0_nash_conv_runtime': nash_conv_runtime,
+    #                 'rho_0_nash_conv_player_improvements': nash_conv_player_improvements,
+    #             })
+    #         validation_info.update({
+    #             'rho_0_heuristic_conv': hc,
+    #             'rho_0_heuristic_conv_runtime': heuristic_conv_runtime,
+    #             'rho_0_heuristic_conv_player_improvements': heuristic_conv_player_improvements,
+    #         })
+    #     else:
+    #         # otherwise, compute nash_conv and heuristic_conv for the rho=0 game
+    #         # note that we need to make a copy of the game to avoid modifying the original one
+    #         game_db = equilibrium_solver_run_checkpoint.equilibrium_solver_run.game
+    #         if not restrict_to_heuristics:
+    #             logging.info(f"Computing NashConv on game with rho=0 for up to {nc_time_limit_seconds} seconds")
+    #             nc_rho_0_runtime, nc_rho_0_res = get_modal_nash_conv_new_rho(game_db.load_as_spiel(), env_and_policy.make_policy(), c, rho=0, return_only_nash_conv=False, restrict_to_heuristics=False, time_limit_seconds=nc_time_limit_seconds)
+    #             nc_rho_0, nc_rho_0_player_improvements, _ = nc_rho_0_res if nc_rho_0_res is not None else (None, None, None)
+    #             validation_info.update({
+    #                 'rho_0_nash_conv': nc_rho_0,
+    #                 'rho_0_nash_conv_runtime': nc_rho_0_runtime,
+    #                 'rho_0_nash_conv_player_improvements': nc_rho_0_player_improvements,
+    #             })
 
-            logging.info(f"Computing HeuristicConv on game with rho=0 for up to {nc_time_limit_seconds} seconds")
-            hc_rho_0_runtime, hc_rho_0_res = get_modal_nash_conv_new_rho(game_db.load_as_spiel(), env_and_policy.make_policy(), c, rho=0, return_only_nash_conv=False, restrict_to_heuristics=True, time_limit_seconds=nc_time_limit_seconds)
-            hc_rho_0_res, hc_rho_0_player_improvements, _ = hc_rho_0_res if hc_rho_0_res is not None else (None, None, None)
-            validation_info.update({                
-                'rho_0_heuristic_conv': hc_rho_0_res,
-                'rho_0_heuristic_conv_runtime': hc_rho_0_runtime, 
-                'rho_0_heuristic_conv_player_improvements': hc_rho_0_player_improvements,
-            })
+    #         logging.info(f"Computing HeuristicConv on game with rho=0 for up to {nc_time_limit_seconds} seconds")
+    #         hc_rho_0_runtime, hc_rho_0_res = get_modal_nash_conv_new_rho(game_db.load_as_spiel(), env_and_policy.make_policy(), c, rho=0, return_only_nash_conv=False, restrict_to_heuristics=True, time_limit_seconds=nc_time_limit_seconds)
+    #         hc_rho_0_res, hc_rho_0_player_improvements, _ = hc_rho_0_res if hc_rho_0_res is not None else (None, None, None)
+    #         validation_info.update({                
+    #             'rho_0_heuristic_conv': hc_rho_0_res,
+    #             'rho_0_heuristic_conv_runtime': hc_rho_0_runtime, 
+    #             'rho_0_heuristic_conv_player_improvements': hc_rho_0_player_improvements,
+    #         })
 
     # SAVE EVAL
     if not dry_run:

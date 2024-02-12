@@ -216,6 +216,9 @@ class ClockAuctionGame(pyspiel.Game):
       logging.info("Clearing state cache")
       self.state_cache.clear()
 
+  def load_copy(self):
+    return pyspiel.load_game('python_clock_auction', self.get_parameters())
+
 class ClockAuctionState(pyspiel.State):
   """A python version of the Atari Game state."""
 

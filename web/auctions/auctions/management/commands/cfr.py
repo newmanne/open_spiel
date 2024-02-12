@@ -130,16 +130,27 @@ def trigger(solver, i, start_time, result_saver, dispatcher, use_wandb=False):
             #     wandb.log({}, step=i, commit=True)
 
 
-def compute_nash_conv(game, solver, time_limit_seconds, restrict_to_heuristics=False):
+def compute_nash_conv(game, solver, time_limit_seconds, restrict_to_heuristics=False, rho=None):
+    if rho is None:
+        logger.info("Computing NashConv on original game...")
+        nc_game = game
+    elif game.auction_params.sor_bid_bonus_rho == rho:
+        logger.info(f"Computing NashConv on original game (rho already set to {rho})...")
+        nc_game = game
+    else:
+        logger.info(f"Computing NashConv on copy of game with rho={rho}...")
+        nc_game = game.load_copy()
+        nc_game.auction_params.sor_bid_bonus_rho = rho
+
     avg_policy = solver.average_policy()
     agents = {}
-    for player_id in range(game.num_players()):
+    for player_id in range(nc_game.num_players()):
         agents[player_id] = make_cfr_agent(player_id, None, None)
         agents[player_id].policy = avg_policy
         agents[player_id] = ModalAgentDecorator(agents[player_id])
-    policy = JointRLAgentPolicy(game, agents, False)
+    policy = JointRLAgentPolicy(nc_game, agents, False)
 
-    worked, nash_conv_runtime, res = time_bounded_run(time_limit_seconds, nash_conv, game, policy, return_only_nash_conv=False, restrict_to_heuristics=restrict_to_heuristics)
+    worked, nash_conv_runtime, res = time_bounded_run(time_limit_seconds, nash_conv, nc_game, policy, return_only_nash_conv=False, restrict_to_heuristics=restrict_to_heuristics)
     if worked:
         (nc, heuristic_conv_player_improvements, br_policies) = res
     else:
@@ -148,7 +159,7 @@ def compute_nash_conv(game, solver, time_limit_seconds, restrict_to_heuristics=F
 
 def run_cfr(solver_config, game, solver, total_timesteps, result_saver=None, seed=1234, dispatcher=None, report_timer=None, eval_timer=None, use_wandb=False, compute_nash_conv_on_report=False, time_limit_seconds=None):
     start_time = time.time()
-    # TODO: Wandb see ppo_utils: How often should we do this? On report? Eval? 
+
     # RUN SOLVER
 
     if time_limit_seconds:
@@ -188,10 +199,9 @@ def run_cfr(solver_config, game, solver, total_timesteps, result_saver=None, see
             solver_stats = solver.get_solver_stats()
             wandb_data.update({f'mccfr_{k}': v for k, v in solver_stats.items()})
 
-            # NashConv (TODO: add flag for heuristicconv)
+            # NashConv (TODO: add flags for heuristicconv and rho)
             if compute_nash_conv_on_report:
-                logger.info("Computing NashConv...")
-                nc_worked, nc, nash_conv_player_improvements, nash_conv_runtime = compute_nash_conv(game, solver, 300)
+                nc_worked, nc, nash_conv_player_improvements, nash_conv_runtime = compute_nash_conv(game, solver, 300, rho=0)
                 if nc_worked: 
                     logger.info(f"NashConv: {nc:.3f} (computed in {nash_conv_runtime:.3f} seconds)")
                     for player in range(len(nash_conv_player_improvements)):
