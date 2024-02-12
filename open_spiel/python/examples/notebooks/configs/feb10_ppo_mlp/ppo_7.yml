@@ -1,0 +1,31 @@
+agent_fn: PPOAgent
+agent_fn_kwargs:
+  actor_activation: tanh
+  actor_hidden_sizes: &id001
+  - 256
+  - 256
+  critic_activation: tanh
+  critic_hidden_sizes: *id001
+anneal_lr: false
+clip_coef: 0.20964809394577855
+clip_vloss: true
+entropy_coef: 0.0
+gae: false
+gae_lambda: 0.9814320591555058
+gamma: 1.0
+learning_rate: 0.0003
+max_grad_norm: 0.7464381005459002
+normalize_advantages: true
+num_annealing_updates: null
+num_envs: 16
+num_minibatches: 4
+optimizer: adam
+optimizer_kwargs:
+  betas:
+  - 0.8158807740731789
+  - 0.9866550980170564
+steps_per_batch: 128
+target_kl: null
+track_stats: true
+update_epochs: 16
+value_coef: 0.3909491080830281

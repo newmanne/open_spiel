@@ -29,6 +29,15 @@ source activate py38""",
 source activate py38""",
             'shell': '#!/bin/bash'
         }
+    elif cluster == 'ada_cpu_short':
+        return {
+            'preamble': """#SBATCH --partition=ada_cpu_short
+#SBATCH --cpus-per-task=4
+#SBATCH --mem 20G""",
+            'load_py': """source ~/.bashrc
+source activate py38""",
+            'shell': '#!/bin/bash'
+        }
     else: # RONIN
         # Slurm on RONIN doesn't repsect memory issues, so we just isolate one job per node
         return {

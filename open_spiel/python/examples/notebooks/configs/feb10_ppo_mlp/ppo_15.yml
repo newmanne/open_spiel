@@ -1,0 +1,32 @@
+agent_fn: PPOAgent
+agent_fn_kwargs:
+  actor_activation: relu
+  actor_hidden_sizes: &id001
+  - 256
+  - 256
+  - 256
+  critic_activation: relu
+  critic_hidden_sizes: *id001
+anneal_lr: true
+clip_coef: 0.0004492225466128709
+clip_vloss: false
+entropy_coef: 3.0e-05
+gae: false
+gae_lambda: 0.9642166933388564
+gamma: 1.0
+learning_rate: 0.0001
+max_grad_norm: 0.4817857006897557
+normalize_advantages: true
+num_annealing_updates: null
+num_envs: 4
+num_minibatches: 8
+optimizer: adam
+optimizer_kwargs:
+  betas:
+  - 0.8417880259255057
+  - 0.8012621243677204
+steps_per_batch: 128
+target_kl: null
+track_stats: true
+update_epochs: 4
+value_coef: 0.49949608868793843
