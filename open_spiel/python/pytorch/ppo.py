@@ -66,6 +66,7 @@ class PPOAgent(nn.Module):
         if torch.isnan(logits).any():
             raise ValueError("Training is messed up - logits are NaN")
 
+        # TODO: fix sampling bug
         probs = CategoricalMasked(logits=logits, masks=legal_actions_mask, mask_value=self.mask_value)
         if action is None:
             action = probs.sample()
