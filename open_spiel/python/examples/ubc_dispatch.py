@@ -179,7 +179,7 @@ def dispatch_single_br_database(experiment_name, run_name, t, br_player, config,
     job_file_text = f"""{cluster_details['shell']}
 {cluster_details['preamble']}
 #SBATCH --job-name={slurm_job_name}
-#SBATCH --time=5-0:00:00 # days-hh:mm:ss
+#SBATCH --time=0-2:00:00 # days-hh:mm:ss
 #SBATCH -e slurm-%j-{slurm_job_name}.err
 #SBATCH -o slurm-%j-{slurm_job_name}.out
 

@@ -37,7 +37,7 @@ def run_br(env_and_policy: EnvAndPolicy, br_player: int, total_timesteps: int, c
             logging.info(f"Gap between BR and current strategy: {gap}")
 
     report_timer = EpisodeTimer(report_freq)
-    trainer = PPOTrainingLoop(game, env, agents, total_timesteps, players_to_train=[br_player], report_timer=report_timer, use_wandb=use_wandb)
+    trainer = PPOTrainingLoop(env_and_policy, total_timesteps, players_to_train=[br_player], report_timer=report_timer, use_wandb=use_wandb)
     trainer.add_report_hook(report_hook)
     trainer.training_loop()
 
