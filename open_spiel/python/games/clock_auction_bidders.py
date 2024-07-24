@@ -1,3 +1,7 @@
+"""
+Definitions for bidders with various types of utility functions.
+"""
+
 import numpy as np
 
 def quasilinear_utility(profit):
@@ -15,8 +19,10 @@ UTILITY_FUNCTIONS = {
 }
 
 class Bidder:
-
   def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config) -> None:
+    """
+    Base class for all bidders.
+    """
     self.values = np.array(values)
     self.budget = budget
     self.pricing_bonus = pricing_bonus
@@ -28,7 +34,6 @@ class Bidder:
     self.utility_function = UTILITY_FUNCTIONS[utility_function_config.pop('name')]
     self.utility_function_kwargs = utility_function_config
     
-
   def value_for_package(package, package_index=None):
     raise NotImplementedError()
   
@@ -48,8 +53,10 @@ class Bidder:
     return self.utility_function(profit, **self.utility_function_kwargs)
   
 class LinearBidder(Bidder):
-
   def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config) -> None:
+    """
+    LinearBidders have additive value functions, with a constant marginal value for licenses within each region.
+    """
     super().__init__(values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config)
     self.bundle_values = all_bids @ self.values
 
@@ -60,8 +67,11 @@ class LinearBidder(Bidder):
     return f'LinearValues: {self.values} Budget: {self.budget}'
 
 class MarginalValueBidder(Bidder):
-
   def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config) -> None:
+    """
+    MarginalValueBidders have arbitrary marginal values for licenses within a region,
+    but additive values across regions.
+    """
     super().__init__(values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config)
     self.bundle_values = [self.value_for_package(bid) for bid in all_bids]
 
@@ -75,8 +85,10 @@ class MarginalValueBidder(Bidder):
     return f'MarginalValues: {self.values} Budget: {self.budget}'
 
 class EnumeratedValueBidder(Bidder):
-
   def __init__(self, values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config, name, straightforward=False) -> None:
+    """
+    EnumeratedValueBidders have arbitrary values for every possible bundle.
+    """
     super().__init__(values, budget, pricing_bonus, all_bids, drop_out_heuristic, utility_function_config)
     self.bundle_values = self.values
     self.name = name

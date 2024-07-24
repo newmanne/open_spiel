@@ -8,6 +8,9 @@ import os
 from open_spiel.python.games.clock_auction_bidders import LinearBidder, EnumeratedValueBidder, MarginalValueBidder
 
 def parse_auction_params(file_name):
+  """
+  Load a clock auction config from a file.
+  """
   if file_name.startswith('/'):
     full_path = file_name
   else:

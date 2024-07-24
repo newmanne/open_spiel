@@ -23,7 +23,6 @@ class ClockAuctionObserver:
     # self.round_buffer = 100 if iig_obs_type.perfect_recall else auction_params.agent_memory
     self.round_buffer = auction_params.agent_memory # TODO: We are abusing the API here a bit. Only offers binary perfect recall or not, but we want to interpolate.
 
-    """Initializes an empty observation tensor."""
     # Determine which observation pieces we want to include.
     # NOTE: It should be possible to use the params to exclude some of these if we want a smaller input to the NN (or to have the NN reassamble the tensor from specific pieces).
 
@@ -131,6 +130,9 @@ class ClockAuctionObserver:
 
 
   def set_from(self, state, player):
+    """
+    Update the observation dict and observation tensor to represent a clock auction state.
+    """
     # TODO: When you run EVALS in parallel, and you use the same observer object, aren't you risking threading issues here? I'm not going to worry about this for now because we are only using the string reprs
 
     """Updates `tensor` and `dict` to reflect `state` from PoV of `player`."""

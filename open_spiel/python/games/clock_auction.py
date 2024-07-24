@@ -1,3 +1,7 @@
+"""
+Implementation of the clock auction game.
+"""
+
 from collections import defaultdict
 import numpy as np
 from open_spiel.python.examples.ubc_utils import players_not_me, pulp_solve, random_string, permute_array
@@ -14,8 +18,6 @@ import pandas as pd
 from functools import lru_cache, cached_property
 import inspect
 import more_itertools
-
-
 
 def make_key(bidders):
   key = (tuple([(b.get_max_activity(), tuple(b.processed_demand[-1]), tuple(b.submitted_demand[-1])) for b in bidders]))
@@ -49,7 +51,21 @@ def _apply_bid(auction_params, change_request, bid, points, current_agg):
   return changed, delta
 
 def stateless_process_bids(auction_params, bidders, current_agg, processing_queue):
-  # Compute the output without modifying any state and return the solution (everyone's processed demand)
+  """
+  Compute the updated processed demands after processing the bids in processing_queue,
+  without modifying the state of the game.
+  Return the solution (everyone's processed demand).
+
+  Pseudo-code:
+    for (player_id, product_id, delta) in self.processing_queue:
+        - try to process it
+        - if it fails, add it to the unfinished queue
+
+        - do:
+            - process each bid in the unfinished queue; restart from beginning of unfinished queue if even partially successful
+        - until nothing changess
+  
+  """
   points = [bidder.get_max_activity() for bidder in bidders]
   bids = []
   for player_id, bidder in enumerate(bidders):
@@ -58,15 +74,6 @@ def stateless_process_bids(auction_params, bidders, current_agg, processing_queu
       points[player_id] -= last_round_holdings[j] * auction_params.activity[j]
     bids.append(last_round_holdings.copy())
 
-  """
-  for (player_id, product_id, delta) in self.processing_queue:
-    - try to process it
-    - if it fails, add it to the unfinished queue
-
-    - try:
-      - process each bid in the unfinished queue; restart from beginning of unfinished queue if even partially successful
-    - until nothing changess
-  """
   starting_agg_demand = current_agg.copy()
   unfinished_queue = []
 
@@ -220,7 +227,7 @@ class ClockAuctionGame(pyspiel.Game):
     return pyspiel.load_game('python_clock_auction', self.get_parameters())
 
 class ClockAuctionState(pyspiel.State):
-  """A python version of the Atari Game state."""
+  """Python implementation of the clock auction game."""
 
   def __init__(self, game):
     """Constructor; should only be called by Game.new_initial_state."""
@@ -249,6 +256,10 @@ class ClockAuctionState(pyspiel.State):
 
   # An LRU cache here is a bad idea - it will get too big. Just use the game cache
   def child(self, action):
+    """
+    Return the state reached by playing action ID (action).
+    Cache transitions for performance.
+    """
     key = tuple(self.history() + [action])
     kid = self.get_game().state_cache.get(key) 
     if kid is None:
@@ -276,6 +287,10 @@ class ClockAuctionState(pyspiel.State):
       return self._cur_player
     
   def get_prefix_action(self):
+    """
+    If a bidder is in their action prefix (i.e., they are forced to play a specific action),
+    return the action they must play.
+    """
     bidder = self.bidders[self._cur_player]
     action_prefix = self.auction_params.player_types[self._cur_player][bidder.type_index]['action_prefix']
     num_bids_submitted = len(bidder.submitted_demand) - 1
@@ -340,6 +355,9 @@ class ClockAuctionState(pyspiel.State):
     return legal_actions.nonzero()[0]
 
   def _legal_actions(self, player):
+    """
+    Return a list of action IDs that are legal for this player in this state.
+    """
     # If you're in your action prefix, you can only bid the next action in your action prefix
     prefix_action = self.get_prefix_action()
 
@@ -708,6 +726,9 @@ class ClockAuctionState(pyspiel.State):
     return self._chance_outcomes
 
   def _post_process(self):
+    """
+    Update the auction state after processing bids.
+    """
     # Calculate aggregate demand
     aggregate_demand = np.zeros(self.auction_params.num_products, dtype=int)
     for bidder in self.bidders:

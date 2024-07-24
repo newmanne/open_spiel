@@ -206,6 +206,8 @@ def dispatch_eval_database(t, experiment_name, run_name, br_mapping=dict(), subm
     slurm_job_name += '_' + random_string(10)
 
     experiment_dir = f'{BASE_OUTPUT_DIR}/{experiment_name}/{run_name}/{EVAL_DIR}'
+    Path(experiment_dir).mkdir(parents=True, exist_ok=True) 
+    print(experiment_dir)
 
     job_file_text = f"""{cluster_details['shell']}
 {cluster_details['preamble']}

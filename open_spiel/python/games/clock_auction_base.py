@@ -1,11 +1,13 @@
+"""
+Data structures and constants used throughout the clock auction implementation.
+"""
+
 import enum
 import itertools
-from typing import List, Dict, Tuple, Optional, Any, Union, Iterable
+from typing import List, Dict
 from dataclasses import dataclass, field
 from functools import cached_property
 import numpy as np
-
-
 
 DEFAULT_MAX_ROUNDS = 100
 DEFAULT_AGENT_MEMORY = 1
